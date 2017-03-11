@@ -1,0 +1,237 @@
+
+//////////////////////////////////////////////////////////////////
+//
+//  Arturo Cepeda Pérez
+//  Game Engine
+//
+//  Android
+//
+//  --- Android.cpp ---
+//
+//////////////////////////////////////////////////////////////////
+
+
+#include <jni.h>
+#include <stdio.h>
+#include <memory>
+#include <vector>
+
+#include "cpu-features.h"
+
+#include "config.h"
+#include "Rendering/OpenGL/GERenderSystemES20.h"
+#include "Audio/OpenSL/GEAudioSystemOpenSL.h"
+#include "Core/GEDevice.h"
+#include "Core/GEStateManager.h"
+#include "Core/GETaskManager.h"
+#include "Core/GETimer.h"
+#include "Core/GETime.h"
+#include "Core/GEApplication.h"
+
+using namespace GE;
+using namespace GE::Core;
+using namespace GE::Rendering;
+using namespace GE::Audio;
+
+RenderSystem* cRender;
+AudioSystem* cAudio;
+TaskManager* cTaskManager;
+
+bool bInitialized = false;
+bool bPaused = false;
+
+StateManager cStateManager;
+Timer cTimer;
+double dTime;
+
+int iFingerID[GE_MAX_FINGERS];
+Vector2 vFingerPosition[GE_MAX_FINGERS];
+
+Scaler* cPixelToScreenX;
+Scaler* cPixelToScreenY;
+
+extern "C"
+{
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv* env, jobject obj, jint width, jint height);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateFrame(JNIEnv* env, jobject obj);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Pause(JNIEnv* env, jobject obj);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Resume(JNIEnv* env, jobject obj);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_SetAudioManagerValues(JNIEnv* env, jobject obj, jint sampleRate, jint framesPerBuffer);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputTouchDown(JNIEnv* env, jclass clazz, jint index, jfloat x, jfloat y);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputTouchMove(JNIEnv* env, jclass clazz, jint index, jfloat x, jfloat y);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputTouchUp(JNIEnv* env, jclass clazz, jint index, jfloat x, jfloat y);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputButtonDown(JNIEnv* env, jclass clazz, jint button);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputButtonUp(JNIEnv* env, jclass clazz, jint button);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateAccelerometerStatus(JNIEnv* env, jclass clazz, jfloat x, jfloat y, jfloat z);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateDeviceRotationVector(JNIEnv* env, jclass clazz, jfloat x, jfloat y, jfloat z, jfloat w);
+};
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv* env, jobject obj, jint width, jint height)
+{
+   if(bInitialized)
+      return;
+
+   Application::Name = GE_APP_NAME;
+   Application::ID = GE_APP_ID;
+   Application::VersionString = GE_VERSION_STRING;
+   Application::VersionNumber = GE_VERSION_NUMBER;
+
+   Application::startUp();
+
+   // screen size
+   Device::ScreenWidth = width;
+   Device::ScreenHeight = height;
+
+   // device orientation
+#ifdef GE_ORIENTATION_PORTRAIT
+   Device::Orientation = DeviceOrientation::Portrait;
+#else
+   Device::Orientation = DeviceOrientation::Landscape;
+#endif
+
+   // IDs for touch management
+   for(int i = 0; i < GE_MAX_FINGERS; i++)
+      iFingerID[i] = -1;
+
+   cPixelToScreenX = new Scaler(0.0f, Device::ScreenWidth, -1.0f, 1.0f);
+   cPixelToScreenY = new Scaler(0.0f, Device::ScreenHeight, Device::getAspectRatio(), -Device::getAspectRatio());
+   
+    // initialize rendering system
+   cRender = new RenderSystemES20();
+   
+   // initialize audio system
+   cAudio = new AudioSystemOpenSL();
+   cAudio->init();
+   
+   // create and register the states
+   registerStates(cStateManager);
+   
+   // start the timer
+   cTimer.start();
+   dTime = 0.0;
+   Time::reset();
+
+   // create task manager
+   cTaskManager = new TaskManager();
+
+   // set the initialized flag
+   bInitialized = true;
+}
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateFrame(JNIEnv* env, jobject obj)
+{
+   if(bPaused)
+      return;
+
+   double dCurrentTime = cTimer.getTime();
+   Time::setDelta((dCurrentTime - dTime) * 0.000001f);
+   dTime = dCurrentTime;
+
+   cTaskManager->update();
+   cTaskManager->render();
+}
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Pause(JNIEnv* env, jobject obj)
+{
+   bPaused = true;
+   cTimer.stop();
+   dTime = 0.0;
+   cStateManager.getActiveState()->pause();
+}
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Resume(JNIEnv* env, jobject obj)
+{
+   if(!bInitialized)
+      return;
+
+   bPaused = false;
+   cTimer.start();
+   cStateManager.getActiveState()->resume();
+}
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_SetAudioManagerValues(JNIEnv* env, jobject obj, jint sampleRate, jint framesPerBuffer)
+{
+   Device::AudioSystemSampleRate = sampleRate;
+   Device::AudioSystemFramesPerBuffer = framesPerBuffer;
+}
+
+GE::Vector2 pixelToScreen(const GE::Vector2& vPixelPosition)
+{
+   return GE::Vector2((float)cPixelToScreenX->y(vPixelPosition.X), (float)cPixelToScreenY->y(vPixelPosition.Y));
+}
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputTouchDown(JNIEnv* env, jclass clazz, jint index, jfloat x, jfloat y)
+{
+   for(int i = 0; i < GE_MAX_FINGERS; i++)
+   {
+      if(iFingerID[i] == -1)
+      {
+         iFingerID[i] = index;
+         vFingerPosition[i] = pixelToScreen(Vector2(x, y));
+         cStateManager.getActiveState()->inputTouchBegin(i, vFingerPosition[i]);
+         break;
+      }
+   }
+}
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputTouchMove(JNIEnv* env, jclass clazz, jint index, jfloat x, jfloat y)
+{
+   for(int i = 0; i < GE_MAX_FINGERS; i++)
+   {
+      if(iFingerID[i] == index)
+      {
+         Vector2 vPreviousPosition = vFingerPosition[i];
+         vFingerPosition[i] = pixelToScreen(Vector2(x, y));
+         cStateManager.getActiveState()->inputTouchMove(i, vPreviousPosition, vFingerPosition[i]);
+         break;
+      }
+   }
+}
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputTouchUp(JNIEnv* env, jclass clazz, jint index, jfloat x, jfloat y)
+{
+   for(int i = 0; i < GE_MAX_FINGERS; i++)
+   {
+      if(iFingerID[i] == index)
+      {
+         iFingerID[i] = -1;
+         vFingerPosition[i] = pixelToScreen(Vector2(x, y));
+         cStateManager.getActiveState()->inputTouchEnd(i, vFingerPosition[i]);
+         break;
+      }
+   }
+}
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputButtonDown(JNIEnv* env, jclass clazz, jint button)
+{
+   
+}
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputButtonUp(JNIEnv* env, jclass clazz, jint button)
+{
+   
+}
+
+const float AccelFactor = 0.01f;
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateAccelerometerStatus(JNIEnv* env, jclass clazz, jfloat x, jfloat y, jfloat z)
+{
+   if(bInitialized)
+      cStateManager.getActiveState()->updateAccelerometerStatus(Vector3(x * -AccelFactor, y * -AccelFactor, z * AccelFactor));
+}
+
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateDeviceRotationVector(JNIEnv* env, jclass clazz, jfloat x, jfloat y, jfloat z, jfloat w)
+{
+   if(bInitialized)
+   {
+      Device::Rotation.X = x;
+      Device::Rotation.Y = y;
+      Device::Rotation.Z = z;
+      Device::Rotation.W = w;
+   }
+}
+
+int Device::getNumberOfCPUCores()
+{
+   return android_getCpuCount();
+}

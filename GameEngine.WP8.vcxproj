@@ -1,0 +1,199 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1876456b-9639-48b8-97f4-b7d90cf5b25c}</ProjectGuid>
+    <RootNamespace>GameEngine_WP8</RootNamespace>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110_wp80</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110_wp80</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <PreprocessorDefinitions>_LIB;WIN32;_GE_DEBUG_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\Externals</AdditionalIncludeDirectories>
+      <CompileAsWinRT>true</CompileAsWinRT>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>$(SolutionDir)$(Configuration)\pugixml.WP8.lib;$(SolutionDir)$(Configuration)\stb.WP8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <PreprocessorDefinitions>_LIB;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\Externals</AdditionalIncludeDirectories>
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Audio\GEAudioSystem.h" />
+    <ClInclude Include="Audio\XAudio2\GEAudioSystemXAudio2.h" />
+    <ClInclude Include="Content\GEAudioData.h" />
+    <ClInclude Include="Content\GEContentData.h" />
+    <ClInclude Include="Content\GEImageData.h" />
+    <ClInclude Include="Core\GEAllocator.h" />
+    <ClInclude Include="Core\GEApplication.h" />
+    <ClInclude Include="Core\GEConstants.h" />
+    <ClInclude Include="Core\GEDevice.h" />
+    <ClInclude Include="Core\GEInterpolator.h" />
+    <ClInclude Include="Core\GEMath.h" />
+    <ClInclude Include="Core\GEObject.h" />
+    <ClInclude Include="Core\GEParser.h" />
+    <ClInclude Include="Core\GEPlatform.h" />
+    <ClInclude Include="Core\GERand.h" />
+    <ClInclude Include="Core\GESerializable.h" />
+    <ClInclude Include="Core\GESingleton.h" />
+    <ClInclude Include="Core\GEState.h" />
+    <ClInclude Include="Core\GEStateManager.h" />
+    <ClInclude Include="Core\GETaskManager.h" />
+    <ClInclude Include="Core\GEThreads.h" />
+    <ClInclude Include="Core\GETime.h" />
+    <ClInclude Include="Core\GETimer.h" />
+    <ClInclude Include="Core\GEUtils.h" />
+    <ClInclude Include="Core\GEValue.h" />
+    <ClInclude Include="Entities\GEComponent.h" />
+    <ClInclude Include="Entities\GEComponentCamera.h" />
+    <ClInclude Include="Entities\GEComponentGenericData.h" />
+    <ClInclude Include="Entities\GEComponentLight.h" />
+    <ClInclude Include="Entities\GEComponentMesh.h" />
+    <ClInclude Include="Entities\GEComponentRenderable.h" />
+    <ClInclude Include="Entities\GEComponentSkeletalAnimation.h" />
+    <ClInclude Include="Entities\GEComponentSprite.h" />
+    <ClInclude Include="Entities\GEComponentTransform.h" />
+    <ClInclude Include="Entities\GEComponentType.h" />
+    <ClInclude Include="Entities\GEComponentUIElement.h" />
+    <ClInclude Include="Entities\GEComponentUILabel.h" />
+    <ClInclude Include="Entities\GEEntity.h" />
+    <ClInclude Include="Entities\GEScene.h" />
+    <ClInclude Include="Rendering\DX11\GERenderingShadersDX11.h" />
+    <ClInclude Include="Rendering\DX11\GERenderSystemDX11.h" />
+    <ClInclude Include="Rendering\DX11\GERenderTextureDX11.h" />
+    <ClInclude Include="Rendering\GEFont.h" />
+    <ClInclude Include="Rendering\GEGraphicsDevice.h" />
+    <ClInclude Include="Rendering\GEMaterial.h" />
+    <ClInclude Include="Rendering\GEPrimitives.h" />
+    <ClInclude Include="Rendering\GERenderingObjects.h" />
+    <ClInclude Include="Rendering\GERenderSystem.h" />
+    <ClInclude Include="Rendering\GETexture.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="Types\GEBezierCurve.h" />
+    <ClInclude Include="Types\GEColor.h" />
+    <ClInclude Include="Types\GEMatrix.h" />
+    <ClInclude Include="Types\GEQuaternion.h" />
+    <ClInclude Include="Types\GERotation.h" />
+    <ClInclude Include="Types\GETypeDefinitions.h" />
+    <ClInclude Include="Types\GETypes.h" />
+    <ClInclude Include="Types\GEVector.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Audio\GEAudioSystem.cpp" />
+    <ClCompile Include="Audio\XAudio2\GEAudioSystemXAudio2.cpp" />
+    <ClCompile Include="Content\GEAudioData.cpp" />
+    <ClCompile Include="Content\GEContentData.cpp" />
+    <ClCompile Include="Content\GEImageData.cpp" />
+    <ClCompile Include="Core\GEAllocator.cpp" />
+    <ClCompile Include="Core\GEApplication.cpp" />
+    <ClCompile Include="Core\GEMath.cpp" />
+    <ClCompile Include="Core\GEObject.cpp" />
+    <ClCompile Include="Core\GEParser.cpp" />
+    <ClCompile Include="Core\GERand.cpp" />
+    <ClCompile Include="Core\GESerializable.cpp" />
+    <ClCompile Include="Core\GEState.cpp" />
+    <ClCompile Include="Core\GEStateManager.cpp" />
+    <ClCompile Include="Core\GETaskManager.cpp" />
+    <ClCompile Include="Core\GETime.cpp" />
+    <ClCompile Include="Core\GETimer.cpp" />
+    <ClCompile Include="Core\GEUtils.cpp" />
+    <ClCompile Include="Core\GEValue.cpp" />
+    <ClCompile Include="Core\WP8\GEDevice.cpp" />
+    <ClCompile Include="Entities\GEComponent.cpp" />
+    <ClCompile Include="Entities\GEComponentCamera.cpp" />
+    <ClCompile Include="Entities\GEComponentGenericData.cpp" />
+    <ClCompile Include="Entities\GEComponentLight.cpp" />
+    <ClCompile Include="Entities\GEComponentMesh.cpp" />
+    <ClCompile Include="Entities\GEComponentRenderable.cpp" />
+    <ClCompile Include="Entities\GEComponentSkeletalAnimation.cpp" />
+    <ClCompile Include="Entities\GEComponentSprite.cpp" />
+    <ClCompile Include="Entities\GEComponentTransform.cpp" />
+    <ClCompile Include="Entities\GEComponentUIElement.cpp" />
+    <ClCompile Include="Entities\GEComponentUILabel.cpp" />
+    <ClCompile Include="Entities\GEEntity.cpp" />
+    <ClCompile Include="Entities\GEScene.cpp" />
+    <ClCompile Include="Rendering\DX11\GEFontDX11.cpp" />
+    <ClCompile Include="Rendering\DX11\GERenderingShadersDX11.cpp" />
+    <ClCompile Include="Rendering\DX11\GERenderSystemDX11.cpp" />
+    <ClCompile Include="Rendering\DX11\GERenderTextureDX11.cpp" />
+    <ClCompile Include="Rendering\GEFont.cpp" />
+    <ClCompile Include="Rendering\GEGraphicsDevice.cpp" />
+    <ClCompile Include="Rendering\GEMaterial.cpp" />
+    <ClCompile Include="Rendering\GEPrimitives.cpp" />
+    <ClCompile Include="Rendering\GERenderSystem.cpp" />
+    <ClCompile Include="Rendering\GETexture.cpp" />
+    <ClCompile Include="Types\GEBezierCurve.cpp" />
+    <ClCompile Include="Types\GEEnumStrings.cpp" />
+    <ClCompile Include="Types\GERotation.cpp" />
+    <ClCompile Include="Types\GEVector.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Windows">
+      <IsWinMDFile>true</IsWinMDFile>
+    </Reference>
+    <Reference Include="platform.winmd">
+      <IsWinMDFile>true</IsWinMDFile>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v$(TargetPlatformVersion)\Microsoft.Cpp.WindowsPhone.$(TargetPlatformVersion).targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

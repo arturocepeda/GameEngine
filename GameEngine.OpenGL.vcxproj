@@ -1,0 +1,314 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Audio\FMOD\GEAudioSystemFMOD.cpp" />
+    <ClCompile Include="Audio\GEAudioSystem.cpp" />
+    <ClCompile Include="Content\GEAnimation.cpp" />
+    <ClCompile Include="Content\GEAudioData.cpp" />
+    <ClCompile Include="Content\GEContentData.cpp" />
+    <ClCompile Include="Content\GEContentManager.cpp" />
+    <ClCompile Include="Content\GEImageData.cpp" />
+    <ClCompile Include="Content\GELocalizedString.cpp" />
+    <ClCompile Include="Content\GEManagedContent.cpp" />
+    <ClCompile Include="Content\GEMesh.cpp" />
+    <ClCompile Include="Content\GESkeleton.cpp" />
+    <ClCompile Include="Core\GEAllocator.cpp" />
+    <ClCompile Include="Core\GEApplication.cpp" />
+    <ClCompile Include="Core\GEGeometry.cpp" />
+    <ClCompile Include="Core\GEMath.cpp" />
+    <ClCompile Include="Core\GEObject.cpp" />
+    <ClCompile Include="Core\GEParser.cpp" />
+    <ClCompile Include="Core\GEPhysics.cpp" />
+    <ClCompile Include="Core\GERand.cpp" />
+    <ClCompile Include="Core\GEScript.cpp" />
+    <ClCompile Include="Core\GESerializable.cpp" />
+    <ClCompile Include="Core\GEState.cpp" />
+    <ClCompile Include="Core\GEStateManager.cpp" />
+    <ClCompile Include="Core\GETaskManager.cpp" />
+    <ClCompile Include="Core\GEThreadPool.cpp" />
+    <ClCompile Include="Core\GETime.cpp" />
+    <ClCompile Include="Core\GETimer.cpp" />
+    <ClCompile Include="Core\GEUtils.cpp" />
+    <ClCompile Include="Core\GEValue.cpp" />
+    <ClCompile Include="Core\Windows\GEDevice.cpp" />
+    <ClCompile Include="Entities\GEComponent.cpp" />
+    <ClCompile Include="Entities\GEComponentCamera.cpp" />
+    <ClCompile Include="Entities\GEComponentCollider.cpp" />
+    <ClCompile Include="Entities\GEComponentGenericData.cpp" />
+    <ClCompile Include="Entities\GEComponentLight.cpp" />
+    <ClCompile Include="Entities\GEComponentMesh.cpp" />
+    <ClCompile Include="Entities\GEComponentParticleSystem.cpp" />
+    <ClCompile Include="Entities\GEComponentRenderable.cpp" />
+    <ClCompile Include="Entities\GEComponentScript.cpp" />
+    <ClCompile Include="Entities\GEComponentSkeleton.cpp" />
+    <ClCompile Include="Entities\GEComponentSprite.cpp" />
+    <ClCompile Include="Entities\GEComponentTransform.cpp" />
+    <ClCompile Include="Entities\GEComponentLabel.cpp" />
+    <ClCompile Include="Entities\GEComponentUIElement.cpp" />
+    <ClCompile Include="Entities\GEEntity.cpp" />
+    <ClCompile Include="Entities\GEScene.cpp" />
+    <ClCompile Include="Rendering\GEFont.cpp" />
+    <ClCompile Include="Rendering\GEGraphicsDevice.cpp" />
+    <ClCompile Include="Rendering\GEMaterial.cpp" />
+    <ClCompile Include="Rendering\GEPrimitives.cpp" />
+    <ClCompile Include="Rendering\GERenderSystem.cpp" />
+    <ClCompile Include="Rendering\GEShaderProgram.cpp" />
+    <ClCompile Include="Rendering\GETexture.cpp" />
+    <ClCompile Include="Rendering\OpenGL\GEFontES20.cpp" />
+    <ClCompile Include="Rendering\OpenGL\GERenderingShadersES20.cpp" />
+    <ClCompile Include="Rendering\OpenGL\GERenderSystemES20.cpp" />
+    <ClCompile Include="Types\GEBezierCurve.cpp" />
+    <ClCompile Include="Types\GEEnumStrings.cpp" />
+    <ClCompile Include="Types\GERotation.cpp" />
+    <ClCompile Include="Types\GEVector.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Audio\FMOD\GEAudioSystemFMOD.h" />
+    <ClInclude Include="Audio\GEAudioSystem.h" />
+    <ClInclude Include="Content\GEAnimation.h" />
+    <ClInclude Include="Content\GEAudioData.h" />
+    <ClInclude Include="Content\GEContentData.h" />
+    <ClInclude Include="Content\GEContentManager.h" />
+    <ClInclude Include="Content\GEGeometryData.h" />
+    <ClInclude Include="Content\GEImageData.h" />
+    <ClInclude Include="Content\GELocalizedString.h" />
+    <ClInclude Include="Content\GEManagedContent.h" />
+    <ClInclude Include="Content\GEMesh.h" />
+    <ClInclude Include="Content\GESkeleton.h" />
+    <ClInclude Include="Core\GEAllocator.h" />
+    <ClInclude Include="Core\GEApplication.h" />
+    <ClInclude Include="Core\GEConstants.h" />
+    <ClInclude Include="Core\GEDevice.h" />
+    <ClInclude Include="Core\GEGeometry.h" />
+    <ClInclude Include="Core\GEInterpolator.h" />
+    <ClInclude Include="Core\GEMath.h" />
+    <ClInclude Include="Core\GEObject.h" />
+    <ClInclude Include="Core\GEObjectManager.h" />
+    <ClInclude Include="Core\GEParser.h" />
+    <ClInclude Include="Core\GEPhysics.h" />
+    <ClInclude Include="Core\GEPlatform.h" />
+    <ClInclude Include="Core\GEProfiler.h" />
+    <ClInclude Include="Core\GERand.h" />
+    <ClInclude Include="Core\GEScript.h" />
+    <ClInclude Include="Core\GESerializable.h" />
+    <ClInclude Include="Core\GESingleton.h" />
+    <ClInclude Include="Core\GEState.h" />
+    <ClInclude Include="Core\GEStateManager.h" />
+    <ClInclude Include="Core\GETaskManager.h" />
+    <ClInclude Include="Core\GEThreadPool.h" />
+    <ClInclude Include="Core\GEThreads.h" />
+    <ClInclude Include="Core\GETime.h" />
+    <ClInclude Include="Core\GETimer.h" />
+    <ClInclude Include="Core\GEUtils.h" />
+    <ClInclude Include="Core\GEValue.h" />
+    <ClInclude Include="Entities\GEComponent.h" />
+    <ClInclude Include="Entities\GEComponentCamera.h" />
+    <ClInclude Include="Entities\GEComponentCollider.h" />
+    <ClInclude Include="Entities\GEComponentGenericData.h" />
+    <ClInclude Include="Entities\GEComponentLight.h" />
+    <ClInclude Include="Entities\GEComponentMesh.h" />
+    <ClInclude Include="Entities\GEComponentParticleSystem.h" />
+    <ClInclude Include="Entities\GEComponentRenderable.h" />
+    <ClInclude Include="Entities\GEComponentScript.h" />
+    <ClInclude Include="Entities\GEComponentSkeleton.h" />
+    <ClInclude Include="Entities\GEComponentSprite.h" />
+    <ClInclude Include="Entities\GEComponentTransform.h" />
+    <ClInclude Include="Entities\GEComponentType.h" />
+    <ClInclude Include="Entities\GEComponentLabel.h" />
+    <ClInclude Include="Entities\GEComponentUIElement.h" />
+    <ClInclude Include="Entities\GEEntity.h" />
+    <ClInclude Include="Entities\GEScene.h" />
+    <ClInclude Include="Rendering\GEFont.h" />
+    <ClInclude Include="Rendering\GEGraphicsDevice.h" />
+    <ClInclude Include="Rendering\GEMaterial.h" />
+    <ClInclude Include="Rendering\GEPrimitives.h" />
+    <ClInclude Include="Rendering\GERenderingObjects.h" />
+    <ClInclude Include="Rendering\GERenderSystem.h" />
+    <ClInclude Include="Rendering\GEShaderProgram.h" />
+    <ClInclude Include="Rendering\GETexture.h" />
+    <ClInclude Include="Rendering\OpenGL\GEOpenGLES20.h" />
+    <ClInclude Include="Rendering\OpenGL\GERenderingShadersES20.h" />
+    <ClInclude Include="Rendering\OpenGL\GERenderSystemES20.h" />
+    <ClInclude Include="Types\GEBezierCurve.h" />
+    <ClInclude Include="Types\GEColor.h" />
+    <ClInclude Include="Types\GEMatrix.h" />
+    <ClInclude Include="Types\GEQuaternion.h" />
+    <ClInclude Include="Types\GERotation.h" />
+    <ClInclude Include="Types\GESTLTypes.h" />
+    <ClInclude Include="Types\GETypeDefinitions.h" />
+    <ClInclude Include="Types\GETypes.h" />
+    <ClInclude Include="Types\GEVector.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EC00B5D4-B72A-4CD4-921D-827EB0DBEAFA}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>GameEngineDX11</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile />
+      <PrecompiledHeaderOutputFile />
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <MinimalRebuild>true</MinimalRebuild>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile />
+      <PrecompiledHeaderOutputFile />
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <MinimalRebuild>true</MinimalRebuild>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

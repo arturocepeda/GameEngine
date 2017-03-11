@@ -1,0 +1,91 @@
+
+//////////////////////////////////////////////////////////////////
+//
+//  Arturo Cepeda Pérez
+//  Game Engine
+//
+//  Entities
+//
+//  --- GEComponentSprite.h ---
+//
+//////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include "GEComponentRenderable.h"
+
+namespace GE { namespace Entities
+{
+   enum class SpriteLayer
+   {
+      GUI,
+      Pre3D
+   };
+
+
+   GESerializableEnum(UVMode)
+   {
+      Normal,
+      FlipU,
+      FlipV,
+      FlipUV,
+
+      Count
+   };
+
+
+   GESerializableEnum(FullScreenSizeMode)
+   {
+      None,
+      Stretch,
+      MatchWidth,
+      MatchHeight,
+      
+      Count
+   };
+
+   
+   class ComponentSprite : public ComponentRenderable
+   {
+   private:
+      Vector2 vCenter;
+      Vector2 vSize;
+      uint iTextureAtlasIndex;
+      SpriteLayer iLayer;
+      UVMode eUVMode;
+      FullScreenSizeMode eFullScreenSizeMode;
+      bool bVertexDataDirty;
+
+      void updateVertexData();
+
+   public:
+      ComponentSprite(Entity* Owner);
+      ~ComponentSprite();
+
+      void update();
+
+      const Vector2& getCenter() const;
+      const Vector2& getSize() const;
+      uint getTextureAtlasIndex() const;
+      SpriteLayer getLayer() const;
+      UVMode getUVMode() const;
+      FullScreenSizeMode getFullScreenSizeMode() const;
+      const Core::ObjectName& getTextureAtlasName() const;
+
+      void setCenter(const Vector2& Center);
+      void setSize(const Vector2& Size);
+      void setTextureAtlasIndex(uint TextureAtlasIndex);
+      void setLayer(SpriteLayer Layer);
+      void setUVMode(UVMode Mode);
+      void setFullScreenSizeMode(FullScreenSizeMode Mode);
+      void setTextureAtlasName(const Core::ObjectName& AtlasName);
+
+      bool isOver(const Vector2& ScreenPosition) const;
+
+      GEProperty(Vector2, Center)
+      GEProperty(Vector2, Size)
+      GEPropertyEnum(UVMode, UVMode)
+      GEPropertyEnum(FullScreenSizeMode, FullScreenSizeMode)
+      GEProperty(ObjectName, TextureAtlasName)
+   };
+}}

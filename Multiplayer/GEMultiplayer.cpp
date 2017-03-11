@@ -1,0 +1,30 @@
+
+//////////////////////////////////////////////////////////////////
+//
+//  Arturo Cepeda Pérez
+//  Game Engine
+//
+//  Multiplayer
+//
+//  --- GEMultiplayer.cpp ---
+//
+//////////////////////////////////////////////////////////////////
+
+#include "GEMultiplayer.h"
+
+using namespace GE::Multiplayer;
+
+//
+//  Client
+//
+Client::~Client()
+{
+}
+
+
+//
+//  Server
+//
+Server::~Server()
+{
+}

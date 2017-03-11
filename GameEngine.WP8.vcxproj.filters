@@ -1,0 +1,350 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{8398351e-7476-4f06-aafd-15e3601fc6f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering.DX11">
+      <UniqueIdentifier>{63ef6fda-a123-4e74-98e5-c662fb8b21d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{166a8f4a-2a22-4dd0-b3c0-c5ad3bc16db4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Content">
+      <UniqueIdentifier>{5b16f82d-8624-4ddd-93c0-1980eeb49568}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{0edacfdc-48db-43a7-ac45-59f2e90e62ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio.XAudio2">
+      <UniqueIdentifier>{9af8d146-46d7-4729-b6d8-31a87ed7d735}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Types">
+      <UniqueIdentifier>{9c107f29-07a7-4bb8-89d4-502aa4377389}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Entities">
+      <UniqueIdentifier>{33bd3f6c-afa9-4f2f-a747-953bfbb98561}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Rendering\DX11\GERenderingShadersDX11.cpp">
+      <Filter>Rendering.DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\DX11\GERenderSystemDX11.cpp">
+      <Filter>Rendering.DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEObject.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GERand.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GETimer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEUtils.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\WP8\GEDevice.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\GEAudioData.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\GEContentData.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\GEImageData.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\GEAudioSystem.cpp">
+      <Filter>Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\XAudio2\GEAudioSystemXAudio2.cpp">
+      <Filter>Audio.XAudio2</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GETime.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEValue.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEState.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Types\GERotation.cpp">
+      <Filter>Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Types\GEVector.cpp">
+      <Filter>Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponent.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentCamera.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentLight.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentMesh.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentRenderable.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentSprite.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentTransform.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentUILabel.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEEntity.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEScene.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\DX11\GEFontDX11.cpp">
+      <Filter>Rendering.DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\GEFont.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\GEGraphicsDevice.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\GEPrimitives.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\GERenderSystem.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\GETexture.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEParser.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEStateManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GETaskManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\GEMaterial.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentUIElement.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEAllocator.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEApplication.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEMath.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\DX11\GERenderTextureDX11.cpp">
+      <Filter>Rendering.DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentGenericData.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentSkeletalAnimation.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GESerializable.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Types\GEBezierCurve.cpp">
+      <Filter>Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Types\GEEnumStrings.cpp">
+      <Filter>Types</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="Rendering\DX11\GERenderingShadersDX11.h">
+      <Filter>Rendering.DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\DX11\GERenderSystemDX11.h">
+      <Filter>Rendering.DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEConstants.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEDevice.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEObject.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GERand.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEThreads.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GETimer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEUtils.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\GEAudioData.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\GEContentData.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\GEImageData.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\GEAudioSystem.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\XAudio2\GEAudioSystemXAudio2.h">
+      <Filter>Audio.XAudio2</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GESingleton.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEPlatform.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GESerializable.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GETime.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEValue.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEState.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GEColor.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GEMatrix.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GEQuaternion.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GERotation.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GETypeDefinitions.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GETypes.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GEVector.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponent.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentCamera.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentLight.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentMesh.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentRenderable.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentSprite.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentTransform.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentType.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentUILabel.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEEntity.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEScene.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\GEFont.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\GEGraphicsDevice.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\GEMaterial.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\GEPrimitives.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\GERenderingObjects.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\GERenderSystem.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\GETexture.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEParser.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEStateManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GETaskManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentUIElement.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEAllocator.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEApplication.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEInterpolator.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEMath.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\DX11\GERenderTextureDX11.h">
+      <Filter>Rendering.DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentGenericData.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentSkeletalAnimation.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GEBezierCurve.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

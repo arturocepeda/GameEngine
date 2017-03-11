@@ -1,0 +1,263 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="NsightTegraProject">
+    <NsightTegraProjectRevisionNumber>11</NsightTegraProjectRevisionNumber>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Tegra-Android">
+      <Configuration>Debug</Configuration>
+      <Platform>Tegra-Android</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Tegra-Android">
+      <Configuration>Release</Configuration>
+      <Platform>Tegra-Android</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|Tegra-Android">
+      <Configuration>Profile</Configuration>
+      <Platform>Tegra-Android</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{91C557FA-07C8-4BCD-BAF8-DA4B7CF97FBC}</ProjectGuid>
+    <RootNamespace>GameEngineAndroid</RootNamespace>
+    <ProjectName>GameEngineAndroid</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Tegra-Android'">
+    <AndroidStlType>gnustl_static</AndroidStlType>
+    <AndroidTargetAPI>android-24</AndroidTargetAPI>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <AndroidNativeAPI>UseTarget</AndroidNativeAPI>
+    <AndroidMinAPI>android-15</AndroidMinAPI>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Tegra-Android'">
+    <AndroidStlType>gnustl_static</AndroidStlType>
+    <AndroidTargetAPI>android-24</AndroidTargetAPI>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <NdkToolchainVersion>Default</NdkToolchainVersion>
+    <AndroidNativeAPI>UseTarget</AndroidNativeAPI>
+    <AndroidMinAPI>android-15</AndroidMinAPI>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Profile|Tegra-Android'">
+    <AndroidStlType>gnustl_static</AndroidStlType>
+    <AndroidTargetAPI>android-24</AndroidTargetAPI>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <NdkToolchainVersion>Default</NdkToolchainVersion>
+    <AndroidNativeAPI>UseTarget</AndroidNativeAPI>
+    <AndroidMinAPI>android-15</AndroidMinAPI>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Platform)'=='Tegra-Android'">
+    <TargetName>lib$(ProjectName)</TargetName>
+    <OutDir>$(SolutionDir)lib\$(Configuration)\</OutDir>
+    <NdkToolchainVersion Condition="'$(Configuration)|$(Platform)'=='Debug|Tegra-Android'">Default</NdkToolchainVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Tegra-Android'">
+    <ClCompile>
+      <PreprocessorDefinitions>DISABLE_IMPORTGL;_GE_DEBUG_;_DEBUG</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\Externals</AdditionalIncludeDirectories>
+      <AdditionalOptions>-std=c++14 %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <GccExceptionHandling>true</GccExceptionHandling>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OmitFramePointer>false</OmitFramePointer>
+      <CppLanguageStandard>
+      </CppLanguageStandard>
+      <CLanguageStandard>
+      </CLanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>-lGLESv1_CM %(AdditionalOptions)</AdditionalOptions>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+    <AntBuild>
+      <AntBuildPath>$(ProjectDir)\</AntBuildPath>
+    </AntBuild>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Tegra-Android'">
+    <ClCompile>
+      <PreprocessorDefinitions>DISABLE_IMPORTGL</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\Externals</AdditionalIncludeDirectories>
+      <AdditionalOptions>-std=c++14</AdditionalOptions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <GccExceptionHandling>true</GccExceptionHandling>
+      <OptimizationLevel>O3</OptimizationLevel>
+      <ThumbMode>false</ThumbMode>
+      <StrictAliasing>false</StrictAliasing>
+      <CppLanguageStandard>
+      </CppLanguageStandard>
+      <CLanguageStandard>
+      </CLanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>-lGLESv1_CM %(AdditionalOptions)</AdditionalOptions>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+    <AntBuild>
+      <AntBuildPath>$(ProjectDir)\</AntBuildPath>
+    </AntBuild>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Tegra-Android'">
+    <ClCompile>
+      <PreprocessorDefinitions>DISABLE_IMPORTGL</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\Core\Android</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <CppLanguageStandard>
+      </CppLanguageStandard>
+      <CLanguageStandard>
+      </CLanguageStandard>
+      <GccExceptionHandling>true</GccExceptionHandling>
+      <AdditionalOptions>-std=c++14 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>-lGLESv1_CM %(AdditionalOptions)</AdditionalOptions>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Link>
+    <AntBuild>
+      <AntBuildPath>$(ProjectDir)\</AntBuildPath>
+    </AntBuild>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Audio\OpenSL\GEAudioSystemOpenSL.h" />
+    <ClInclude Include="Audio\GEAudioSystem.h" />
+    <ClInclude Include="Content\GEAnimation.h" />
+    <ClInclude Include="Content\GEAudioData.h" />
+    <ClInclude Include="Content\GEContentData.h" />
+    <ClInclude Include="Content\GEContentManager.h" />
+    <ClInclude Include="Content\GEGeometryData.h" />
+    <ClInclude Include="Content\GEImageData.h" />
+    <ClInclude Include="Content\GELocalizedString.h" />
+    <ClInclude Include="Content\GEManagedContent.h" />
+    <ClInclude Include="Content\GEMesh.h" />
+    <ClInclude Include="Content\GESkeleton.h" />
+    <ClInclude Include="Core\GEAllocator.h" />
+    <ClInclude Include="Core\GEApplication.h" />
+    <ClInclude Include="Core\GEConstants.h" />
+    <ClInclude Include="Core\GEDevice.h" />
+    <ClInclude Include="Core\GEGeometry.h" />
+    <ClInclude Include="Core\GEInterpolator.h" />
+    <ClInclude Include="Core\GEMath.h" />
+    <ClInclude Include="Core\GEObject.h" />
+    <ClInclude Include="Core\GEObjectManager.h" />
+    <ClInclude Include="Core\GEParser.h" />
+    <ClInclude Include="Core\GEPhysics.h" />
+    <ClInclude Include="Core\GEPlatform.h" />
+    <ClInclude Include="Core\GERand.h" />
+    <ClInclude Include="Core\GEScript.h" />
+    <ClInclude Include="Core\GESerializable.h" />
+    <ClInclude Include="Core\GESingleton.h" />
+    <ClInclude Include="Core\GEState.h" />
+    <ClInclude Include="Core\GEStateManager.h" />
+    <ClInclude Include="Core\GETaskManager.h" />
+    <ClInclude Include="Core\GEThreadPool.h" />
+    <ClInclude Include="Core\GEThreads.h" />
+    <ClInclude Include="Core\GETime.h" />
+    <ClInclude Include="Core\GETimer.h" />
+    <ClInclude Include="Core\GEUtils.h" />
+    <ClInclude Include="Core\GEValue.h" />
+    <ClInclude Include="Entities\GEComponent.h" />
+    <ClInclude Include="Entities\GEComponentCamera.h" />
+    <ClInclude Include="Entities\GEComponentCollider.h" />
+    <ClInclude Include="Entities\GEComponentGenericData.h" />
+    <ClInclude Include="Entities\GEComponentLabel.h" />
+    <ClInclude Include="Entities\GEComponentLight.h" />
+    <ClInclude Include="Entities\GEComponentMesh.h" />
+    <ClInclude Include="Entities\GEComponentParticleSystem.h" />
+    <ClInclude Include="Entities\GEComponentRenderable.h" />
+    <ClInclude Include="Entities\GEComponentScript.h" />
+    <ClInclude Include="Entities\GEComponentSkeleton.h" />
+    <ClInclude Include="Entities\GEComponentSprite.h" />
+    <ClInclude Include="Entities\GEComponentTransform.h" />
+    <ClInclude Include="Entities\GEComponentType.h" />
+    <ClInclude Include="Entities\GEComponentUIElement.h" />
+    <ClInclude Include="Entities\GEEntity.h" />
+    <ClInclude Include="Entities\GEScene.h" />
+    <ClInclude Include="Rendering\GEFont.h" />
+    <ClInclude Include="Rendering\GEGraphicsDevice.h" />
+    <ClInclude Include="Rendering\GEMaterial.h" />
+    <ClInclude Include="Rendering\GEPrimitives.h" />
+    <ClInclude Include="Rendering\GERenderSystem.h" />
+    <ClInclude Include="Rendering\GERenderingObjects.h" />
+    <ClInclude Include="Rendering\GEShaderProgram.h" />
+    <ClInclude Include="Rendering\GETexture.h" />
+    <ClInclude Include="Rendering\OpenGL\GERenderSystemES20.h" />
+    <ClInclude Include="Rendering\OpenGL\GERenderingShadersES20.h" />
+    <ClInclude Include="Types\GEBezierCurve.h" />
+    <ClInclude Include="Types\GEColor.h" />
+    <ClInclude Include="Types\GEMatrix.h" />
+    <ClInclude Include="Types\GEQuaternion.h" />
+    <ClInclude Include="Types\GERotation.h" />
+    <ClInclude Include="Types\GESTLTypes.h" />
+    <ClInclude Include="Types\GETypeDefinitions.h" />
+    <ClInclude Include="Types\GETypes.h" />
+    <ClInclude Include="Types\GEVector.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Audio\OpenSL\GEAudioSystemOpenSL.cpp" />
+    <ClCompile Include="Audio\GEAudioSystem.cpp" />
+    <ClCompile Include="Content\GEAnimation.cpp" />
+    <ClCompile Include="Content\GEAudioData.cpp" />
+    <ClCompile Include="Content\GEContentData.cpp" />
+    <ClCompile Include="Content\GEContentManager.cpp" />
+    <ClCompile Include="Content\GEImageData.cpp" />
+    <ClCompile Include="Content\GELocalizedString.cpp" />
+    <ClCompile Include="Content\GEManagedContent.cpp" />
+    <ClCompile Include="Content\GEMesh.cpp" />
+    <ClCompile Include="Content\GESkeleton.cpp" />
+    <ClCompile Include="Core\GEAllocator.cpp" />
+    <ClCompile Include="Core\GEApplication.cpp" />
+    <ClCompile Include="Core\GEGeometry.cpp" />
+    <ClCompile Include="Core\GEMath.cpp" />
+    <ClCompile Include="Core\GEObject.cpp" />
+    <ClCompile Include="Core\GEParser.cpp" />
+    <ClCompile Include="Core\GEPhysics.cpp" />
+    <ClCompile Include="Core\GERand.cpp" />
+    <ClCompile Include="Core\GEScript.cpp" />
+    <ClCompile Include="Core\GESerializable.cpp" />
+    <ClCompile Include="Core\GEState.cpp" />
+    <ClCompile Include="Core\GEStateManager.cpp" />
+    <ClCompile Include="Core\GETaskManager.cpp" />
+    <ClCompile Include="Core\GEThreadPool.cpp" />
+    <ClCompile Include="Core\GETime.cpp" />
+    <ClCompile Include="Core\GETimer.cpp" />
+    <ClCompile Include="Core\GEUtils.cpp" />
+    <ClCompile Include="Core\Android\GEDevice.cpp" />
+    <ClCompile Include="Core\GEValue.cpp" />
+    <ClCompile Include="Entities\GEComponent.cpp" />
+    <ClCompile Include="Entities\GEComponentCamera.cpp" />
+    <ClCompile Include="Entities\GEComponentCollider.cpp" />
+    <ClCompile Include="Entities\GEComponentGenericData.cpp" />
+    <ClCompile Include="Entities\GEComponentLabel.cpp" />
+    <ClCompile Include="Entities\GEComponentLight.cpp" />
+    <ClCompile Include="Entities\GEComponentMesh.cpp" />
+    <ClCompile Include="Entities\GEComponentParticleSystem.cpp" />
+    <ClCompile Include="Entities\GEComponentRenderable.cpp" />
+    <ClCompile Include="Entities\GEComponentScript.cpp" />
+    <ClCompile Include="Entities\GEComponentSkeleton.cpp" />
+    <ClCompile Include="Entities\GEComponentSprite.cpp" />
+    <ClCompile Include="Entities\GEComponentTransform.cpp" />
+    <ClCompile Include="Entities\GEComponentUIElement.cpp" />
+    <ClCompile Include="Entities\GEEntity.cpp" />
+    <ClCompile Include="Entities\GEScene.cpp" />
+    <ClCompile Include="Rendering\GEFont.cpp" />
+    <ClCompile Include="Rendering\GEGraphicsDevice.cpp" />
+    <ClCompile Include="Rendering\GEMaterial.cpp" />
+    <ClCompile Include="Rendering\GEPrimitives.cpp" />
+    <ClCompile Include="Rendering\GERenderSystem.cpp" />
+    <ClCompile Include="Rendering\GEShaderProgram.cpp" />
+    <ClCompile Include="Rendering\GETexture.cpp" />
+    <ClCompile Include="Rendering\OpenGL\GEFontES20.cpp" />
+    <ClCompile Include="Rendering\OpenGL\GERenderSystemES20.cpp" />
+    <ClCompile Include="Rendering\OpenGL\GERenderingShadersES20.cpp" />
+    <ClCompile Include="Types\GEBezierCurve.cpp" />
+    <ClCompile Include="Types\GEEnumStrings.cpp" />
+    <ClCompile Include="Types\GERotation.cpp" />
+    <ClCompile Include="Types\GEVector.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,20 @@
+
+////////////////////////////////////////////////////////////////////////
+//
+//  Arturo Cepeda Pérez
+//  Game Engine
+//
+//  Pathfinding
+//
+//  --- GEDijkstra.cpp ---
+//
+////////////////////////////////////////////////////////////////////////
+
+#include "GEDijkstra.h"
+
+using namespace GE::Pathfinding;
+
+int Dijkstra::estimateDistance(int nodeFrom, int nodeTo)
+{
+   return 0;
+}

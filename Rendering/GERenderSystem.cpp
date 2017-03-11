@@ -1,0 +1,1050 @@
+
+//////////////////////////////////////////////////////////////////
+//
+//  Arturo Cepeda Pérez
+//  Game Engine
+//
+//  Rendering
+//
+//  --- GERenderSystem.cpp ---
+//
+//////////////////////////////////////////////////////////////////
+
+#include "GERenderSystem.h"
+#include "Core/GEDevice.h"
+#include "Core/GETime.h"
+#include "Core/GEParser.h"
+#include "Core/GEAllocator.h"
+#include "Core/GEApplication.h"
+#include "Core/GEProfiler.h"
+#include "Entities/GEEntity.h"
+#include "pugixml/pugixml.hpp"
+
+#include <stdio.h>
+#include <algorithm>
+
+using namespace GE;
+using namespace GE::Content;
+using namespace GE::Core;
+using namespace GE::Entities;
+using namespace GE::Rendering;
+
+const uint RenderBatchVertexDataFloatsCount = 1024 * 1024;
+const uint RenderBatchIndicesCount = 1024 * 256;
+
+const ObjectName RenderSystem::ShadowMapProgram = ObjectName("ShadowMap");
+
+RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint ScreenHeight)
+   : pWindow(Window)
+   , bWindowed(Windowed)
+   , iScreenWidth(ScreenWidth)
+   , iScreenHeight(ScreenHeight)
+   , cBackgroundColor(Color(0.0f, 0.0f, 0.0f))
+   , cAmbientLightColor(Color(1.0f, 1.0f, 1.0f))
+   , bShaderReloadPending(false)
+   , iActiveProgram(-1)
+   , iCurrentVertexStride(0)
+   , pBoundTexture(0)
+   , eBlendingMode(BlendingMode::None)
+   , eDepthBufferMode(DepthBufferMode::NoDepth)
+   , cActiveCamera(0)
+   , fFrameTime(Time::getElapsed())
+   , fFramesPerSecond(0.0f)
+   , iDrawCalls(0)
+{
+   ObjectManagers::getInstance()->registerObjectManager<Texture>("Texture", &mTextures);
+   ObjectManagers::getInstance()->registerObjectManager<Material>("Material", &mMaterials);
+   ObjectManagers::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mShaderPrograms);
+   ObjectManagers::getInstance()->registerObjectManager<Font>("Font", &mFonts);
+
+   // Position (3) + UV (2)
+   sGPUBufferPairs[GeometryGroup::_2DStatic].VertexStride = (3 + 2) * sizeof(float);
+   sGPUBufferPairs[GeometryGroup::_2DDynamic].VertexStride = sGPUBufferPairs[GeometryGroup::_2DStatic].VertexStride;
+   // Position (3) + Normal (3) + UV (2)
+   sGPUBufferPairs[GeometryGroup::MeshStatic].VertexStride = (3 + 3 + 2) * sizeof(float);
+   sGPUBufferPairs[GeometryGroup::MeshDynamic].VertexStride = sGPUBufferPairs[GeometryGroup::MeshStatic].VertexStride;
+   // Position (3) + Color (4) + UV (2)
+   sGPUBufferPairs[GeometryGroup::Particles].VertexStride = (3 + 4 + 2) * sizeof(float);
+
+   // Batch buffers --> + WorldViewProjection (16)
+   sGPUBufferPairs[GeometryGroup::_2DBatch].VertexStride = sGPUBufferPairs[GeometryGroup::_2DStatic].VertexStride + (16 * sizeof(float));
+   sGPUBufferPairs[GeometryGroup::MeshBatch].VertexStride = sGPUBufferPairs[GeometryGroup::MeshStatic].VertexStride + (16 * sizeof(float));
+
+   GEMutexInit(mTextureLoadMutex);
+   calculate2DViewProjectionMatrix();
+}
+
+RenderSystem::~RenderSystem()
+{
+   mTextures.clear();
+   mFonts.clear();
+   mMaterials.clear();
+   GEMutexDestroy(mTextureLoadMutex);
+}
+
+const void* RenderSystem::getWindowHandler() const
+{
+   return pWindow;
+}
+
+bool RenderSystem::getWindowedMode() const
+{
+   return bWindowed;
+}
+
+float RenderSystem::getFPS() const
+{
+   return fFramesPerSecond;
+}
+
+uint RenderSystem::getDrawCalls() const
+{
+   return iDrawCalls;
+}
+
+void RenderSystem::setBackgroundColor(const Color& Color)
+{
+   cBackgroundColor = Color;
+}
+
+void RenderSystem::loadDefaultRenderingResources()
+{
+   preloadTextures("default");
+   loadAllPreloadedTextures();
+   loadMaterials("default");
+   loadFonts("default");
+}
+
+void RenderSystem::useMaterial(Material* cMaterial)
+{
+   setBlendingMode(cMaterial->getBlendingMode());
+   useShaderProgram(cMaterial->getShaderProgram());
+}
+
+void RenderSystem::calculate2DViewProjectionMatrix()
+{
+   Matrix4 matProjection;
+   Matrix4 matView;
+
+#if defined GE_RENDERING_API_DIRECTX
+   float fAspectRatio = Device::Orientation == DeviceOrientation::Portrait
+      ? Device::getAspectRatio()
+      : 1.0f / Device::getAspectRatio();
+
+   Matrix4MakeOrtho(-1.0f, 1.0f, -fAspectRatio, fAspectRatio, 0.1f, 100.0f, &matProjection);
+   Matrix4MakeLookAt(Vector3::UnitZ, Vector3::Zero, Vector3::UnitY, &matView);
+
+   if(Device::Orientation == DeviceOrientation::Landscape)
+   {
+      Matrix4Scale(&matView, Vector3::One * fAspectRatio);
+      Matrix4RotateZ(&matView, GE_HALFPI);
+   }
+
+   Matrix4Transpose(&matProjection);
+   Matrix4Transpose(&matView);
+#else
+   Matrix4MakeOrtho(-1.0f, 1.0f, -Device::getAspectRatio(), Device::getAspectRatio(), 0.1f, 100.0f, &matProjection);
+   Matrix4MakeLookAt(Vector3::UnitZ, Vector3::Zero, Vector3::UnitY, &matView);
+#endif
+
+   Matrix4Multiply(matProjection, matView, &mat2DViewProjection);
+}
+
+void RenderSystem::calculate2DTransformMatrix(const Matrix4& matModel)
+{
+   Matrix4Multiply(mat2DViewProjection, matModel, &matModelViewProjection);
+}
+
+void RenderSystem::calculate3DTransformMatrix(const Matrix4& matModel)
+{
+   GEAssert(cActiveCamera);
+   const Matrix4& matViewProjection = cActiveCamera->getViewProjectionMatrix();
+   Matrix4Multiply(matViewProjection, matModel, &matModelViewProjection);
+}
+
+void RenderSystem::calculate3DInverseTransposeMatrix(const Matrix4& matModel)
+{
+   matModelInverseTranspose = matModel;
+   Matrix4Invert(&matModelInverseTranspose);
+   Matrix4Transpose(&matModelInverseTranspose);
+}
+
+void RenderSystem::calculateLightViewProjectionMatrix(ComponentLight* Light)
+{
+   const float Range = 8.0f;
+
+   Matrix4 matLightProjection;
+   Matrix4MakeOrtho(-Range, Range, -Range, Range, -Range, Range, &matLightProjection);
+
+   Matrix4 matLightView;
+   const Vector3& vLightPosition = Light->getTransform()->getPosition();
+   Vector3 vLightDirection = Light->getDirection();
+   Matrix4MakeLookAt(vLightPosition, vLightPosition + vLightDirection, Vector3::UnitY, &matLightView);
+
+   Matrix4Multiply(matLightProjection, matLightView, &matLightViewProjection);
+}
+
+void RenderSystem::loadMaterial(Material* cMaterial)
+{
+   mMaterials.add(cMaterial);
+
+   //if(cMaterial->getBatchRendering())
+   //{
+   //   const uint iMaterialID = cMaterial->getName().getID();
+   //   mBatches[iMaterialID] = RenderOperation();
+
+   //   GESTLMap(uint, RenderOperation)::iterator it = mBatches.find(iMaterialID);
+   //   RenderOperation& sRenderBatch = it->second;
+   //   sRenderBatch.RenderMaterial = cMaterial;
+
+   //   sRenderBatch.Data.VertexData = Allocator::alloc<float>(RenderBatchVertexDataFloatsCount);
+   //   sRenderBatch.Data.Indices = Allocator::alloc<ushort>(RenderBatchIndicesCount);
+   //}
+}
+
+void RenderSystem::unloadMaterial(const ObjectName& cMaterialName)
+{
+   Material* cMaterial = mMaterials.get(cMaterialName);
+   GEAssert(cMaterial);
+
+   if(cMaterial->getBatchRendering())
+   {
+      GESTLMap(uint, RenderOperation)::iterator it = mBatches.find(cMaterial->getName().getID());
+      RenderOperation& sRenderBatch = it->second;
+      Allocator::free(sRenderBatch.Data.VertexData);
+      Allocator::free(sRenderBatch.Data.Indices);
+      mBatches.erase(it);
+   }
+
+   mMaterials.remove(cMaterialName);
+}
+
+void RenderSystem::preloadTextures(const char* FileName)
+{
+   char sFileName[64];
+   sprintf(sFileName, "%s.textures", FileName);
+
+   ContentData cTexturesData;
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      Device::readContentFile(ContentType::GenericTextData, "Textures", sFileName, "xml", &cTexturesData);
+
+      pugi::xml_document xml;
+      xml.load_buffer(cTexturesData.getData(), cTexturesData.getDataSize());
+      const pugi::xml_node& xmlTextures = xml.child("Textures");
+
+      for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
+      {
+         const char* sTextureName = xmlTexture.attribute("name").value();
+         const char* sTextureFileName = xmlTexture.attribute("fileName").value();
+         const char* sTextureFormat = xmlTexture.attribute("format").value();
+         const bool sTextureAtlas = strcmp(xmlTexture.attribute("atlas").value(), "true") == 0;
+
+         PreloadedTexture sPreloadedTexture;
+         sPreloadedTexture.Data = Allocator::alloc<ImageData>();
+         GEInvokeCtor(ImageData, sPreloadedTexture.Data);
+
+         Device::readContentFile(ContentType::Texture, "Textures", sTextureFileName, sTextureFormat, sPreloadedTexture.Data);
+
+         sPreloadedTexture.Tex = Allocator::alloc<Texture>();
+         GEInvokeCtor(Texture, sPreloadedTexture.Tex)
+            (sTextureName, sPreloadedTexture.Data->getWidth(), sPreloadedTexture.Data->getHeight());
+
+         GEMutexLock(mTextureLoadMutex);
+
+         vPreloadedTextures.push_back(sPreloadedTexture);
+
+         if(sTextureAtlas)
+         {
+            float fWidth = (float)sPreloadedTexture.Tex->getWidth();
+            float fHeight = (float)sPreloadedTexture.Tex->getHeight();
+
+            ContentData cAtlasInfo;
+            Device::readContentFile(ContentType::TextureAtlasInfo, "Textures", sTextureFileName, "xml", &cAtlasInfo);
+
+            pugi::xml_document xml;
+            xml.load_buffer(cAtlasInfo.getData(), cAtlasInfo.getDataSize());
+            const pugi::xml_node& xmlChars = xml.child("TextureAtlas");
+
+            for(const pugi::xml_node& xmlChar : xmlChars.children("sprite"))
+            {
+               TextureCoordinates sAtlasUV;
+
+               sAtlasUV.U0 = Parser::parseFloat(xmlChar.attribute("x").value()) / fWidth;
+               sAtlasUV.U1 = sAtlasUV.U0 + (Parser::parseFloat(xmlChar.attribute("w").value()) / fWidth);
+               sAtlasUV.V0 = Parser::parseFloat(xmlChar.attribute("y").value()) / fHeight;
+               sAtlasUV.V1 = sAtlasUV.V0 + (Parser::parseFloat(xmlChar.attribute("h").value()) / fHeight);
+
+               TextureAtlasEntry sAtlasEntry;
+               sAtlasEntry.Name = ObjectName(xmlChar.attribute("n").value());
+               sAtlasEntry.UV = sAtlasUV;
+
+               sPreloadedTexture.Tex->AtlasUV.push_back(sAtlasEntry);
+            }
+         }
+
+         GEMutexUnlock(mTextureLoadMutex);
+      }
+   }
+   else
+   {
+      Device::readContentFile(ContentType::GenericBinaryData, "Textures", sFileName, "ge", &cTexturesData);
+      ContentDataMemoryBuffer sMemoryBuffer(cTexturesData);
+      std::istream sStream(&sMemoryBuffer);
+      
+      uint iTexturesCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+      for(uint i = 0; i < iTexturesCount; i++)
+         Value::fromStream(ValueType::ObjectName, sStream);
+
+      for(uint i = 0; i < iTexturesCount; i++)
+      {
+         ObjectName cTextureName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+         const char* sTextureFormat = Value::fromStream(ValueType::String, sStream).getAsString();
+         bool bTextureAtlas = Value::fromStream(ValueType::Bool, sStream).getAsBool();
+         uint iTextureDataSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
+
+         PreloadedTexture sPreloadedTexture;
+         sPreloadedTexture.Data = Allocator::alloc<ImageData>();
+         GEInvokeCtor(ImageData, sPreloadedTexture.Data);
+         sPreloadedTexture.Data->load(iTextureDataSize, sStream);
+
+         sPreloadedTexture.Tex = Allocator::alloc<Texture>();
+         GEInvokeCtor(Texture, sPreloadedTexture.Tex)
+            (cTextureName, sPreloadedTexture.Data->getWidth(), sPreloadedTexture.Data->getHeight());
+
+         GEMutexLock(mTextureLoadMutex);
+
+         vPreloadedTextures.push_back(sPreloadedTexture);
+
+         if(bTextureAtlas)
+         {
+            float fWidth = (float)sPreloadedTexture.Tex->getWidth();
+            float fHeight = (float)sPreloadedTexture.Tex->getHeight();
+
+            uint iAtlasEntriesCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+            for(uint j = 0; j < iAtlasEntriesCount; j++)
+            {
+               TextureAtlasEntry sAtlasEntry;
+               sAtlasEntry.Name = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+
+               float x = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
+               float y = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
+               float w = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
+               float h = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
+
+               sAtlasEntry.UV.U0 = x / fWidth;
+               sAtlasEntry.UV.U1 = sAtlasEntry.UV.U0 + (w / fWidth);
+               sAtlasEntry.UV.V0 = y / fHeight;
+               sAtlasEntry.UV.V1 = sAtlasEntry.UV.V0 + (h / fHeight);
+
+               sPreloadedTexture.Tex->AtlasUV.push_back(sAtlasEntry);
+            }
+         }
+
+         GEMutexUnlock(mTextureLoadMutex);
+      }
+   }
+}
+
+void RenderSystem::unloadTextures(const char* FileName)
+{
+   char sFileName[64];
+   sprintf(sFileName, "%s.textures", FileName);
+
+   ContentData cTexturesData;
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      Device::readContentFile(ContentType::GenericTextData, "Textures", sFileName, "xml", &cTexturesData);
+
+      pugi::xml_document xml;
+      xml.load_buffer(cTexturesData.getData(), cTexturesData.getDataSize());
+      const pugi::xml_node& xmlTextures = xml.child("Textures");
+
+      for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
+      {
+         ObjectName cTextureName = ObjectName(xmlTexture.attribute("name").value());
+         GEAssert(mTextures.get(cTextureName));
+         mTextures.remove(cTextureName);
+      }
+   }
+   else
+   {
+      Device::readContentFile(ContentType::GenericBinaryData, "Textures", sFileName, "ge", &cTexturesData);
+      ContentDataMemoryBuffer sMemoryBuffer(cTexturesData);
+      std::istream sStream(&sMemoryBuffer);
+
+      uint iTexturesCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+      for(uint i = 0; i < iTexturesCount; i++)
+      {
+         ObjectName cTextureName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+         GEAssert(mTextures.get(cTextureName));
+         mTextures.remove(cTextureName);
+      }
+   }
+}
+
+bool RenderSystem::loadNextPreloadedTexture()
+{
+   GEMutexLock(mTextureLoadMutex);
+
+   if(vPreloadedTextures.empty())
+   {
+      GEMutexUnlock(mTextureLoadMutex);
+      return false;
+   }
+
+   PreloadedTexture* cPreloadedTexture = &vPreloadedTextures.back();
+   loadTexture(cPreloadedTexture);
+   vPreloadedTextures.pop_back();
+
+   GEMutexUnlock(mTextureLoadMutex);
+
+   return true;
+}
+
+void RenderSystem::loadAllPreloadedTextures()
+{
+   while(loadNextPreloadedTexture())
+   {
+   }
+}
+
+bool RenderSystem::preloadedTexturesPending()
+{
+   GEMutexLock(mTextureLoadMutex);
+   bool bPending = !vPreloadedTextures.empty();
+   GEMutexUnlock(mTextureLoadMutex);
+   return bPending;
+}
+
+Texture* RenderSystem::getTexture(const Core::ObjectName& Name)
+{
+   return mTextures.get(Name);
+}
+
+ComponentCamera* RenderSystem::getActiveCamera()
+{
+   return cActiveCamera;
+}
+
+void RenderSystem::setActiveCamera(ComponentCamera* Camera)
+{
+   cActiveCamera = Camera;
+}
+
+const Color& RenderSystem::getAmbientLightColor() const
+{
+   return cAmbientLightColor;
+}
+
+void RenderSystem::setAmbientLightColor(const Color& Color)
+{
+   cAmbientLightColor = Color;
+}
+
+void RenderSystem::loadMaterials(const char* FileName)
+{
+   char sFileName[64];
+   sprintf(sFileName, "%s.materials", FileName);
+
+   ContentData cMaterialsData;
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      Device::readContentFile(ContentType::GenericTextData, "Materials", sFileName, "xml", &cMaterialsData);
+
+      pugi::xml_document xml;
+      xml.load_buffer(cMaterialsData.getData(), cMaterialsData.getDataSize());
+      const pugi::xml_node& xmlMaterials = xml.child("Materials");
+
+      for(const pugi::xml_node& xmlMaterial : xmlMaterials.children("Material"))
+      {
+         Material* cMaterial = Allocator::alloc<Material>();
+         GEInvokeCtor(Material, cMaterial)(xmlMaterial.attribute("name").value());
+         cMaterial->loadFromXml(xmlMaterial);
+         loadMaterial(cMaterial);
+      }
+   }
+   else
+   {
+      Device::readContentFile(ContentType::GenericBinaryData, "Materials", sFileName, "ge", &cMaterialsData);
+      ContentDataMemoryBuffer sMemoryBuffer(cMaterialsData);
+      std::istream sStream(&sMemoryBuffer);
+
+      uint iMaterialsCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+      for(uint i = 0; i < iMaterialsCount; i++)
+         Value::fromStream(ValueType::ObjectName, sStream);
+
+      for(uint i = 0; i < iMaterialsCount; i++)
+      {
+         ObjectName cMaterialName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+         Material* cMaterial = Allocator::alloc<Material>();
+         GEInvokeCtor(Material, cMaterial)(cMaterialName);
+         cMaterial->loadFromStream(sStream);
+         loadMaterial(cMaterial);
+      }
+   }
+}
+
+void RenderSystem::unloadMaterials(const char* FileName)
+{
+   char sFileName[64];
+   sprintf(sFileName, "%s.materials", FileName);
+
+   ContentData cMaterialsData;
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      Device::readContentFile(ContentType::GenericTextData, "Materials", sFileName, "xml", &cMaterialsData);
+
+      pugi::xml_document xml;
+      xml.load_buffer(cMaterialsData.getData(), cMaterialsData.getDataSize());
+      const pugi::xml_node& xmlMaterials = xml.child("Materials");
+
+      for(const pugi::xml_node& xmlMaterial : xmlMaterials.children("Material"))
+      {
+         ObjectName cMaterialName = ObjectName(xmlMaterial.attribute("name").value());
+         unloadMaterial(cMaterialName);
+      }
+   }
+   else
+   {
+      Device::readContentFile(ContentType::GenericBinaryData, "Materials", sFileName, "ge", &cMaterialsData);
+      ContentDataMemoryBuffer sMemoryBuffer(cMaterialsData);
+      std::istream sStream(&sMemoryBuffer);
+
+      uint iMaterialsCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+      for(uint i = 0; i < iMaterialsCount; i++)
+      {
+         ObjectName cMaterialName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+         unloadMaterial(cMaterialName);
+      }
+   }
+}
+
+Material* RenderSystem::getMaterial(const Core::ObjectName& Name)
+{
+   return mMaterials.get(Name);
+}
+
+ShaderProgram* RenderSystem::getShaderProgram(const Core::ObjectName& Name)
+{
+   return mShaderPrograms.get(Name);
+}
+
+void RenderSystem::requestShadersReload()
+{
+   bShaderReloadPending = true;
+}
+
+void RenderSystem::loadFonts(const char* FileName)
+{
+   char sFileName[64];
+   sprintf(sFileName, "%s.fonts", FileName);
+
+   ContentData cFontsData;
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      Device::readContentFile(ContentType::GenericTextData, "Fonts", sFileName, "xml", &cFontsData);
+
+      pugi::xml_document xml;
+      xml.load_buffer(cFontsData.getData(), cFontsData.getDataSize());
+      const pugi::xml_node& xmlFonts = xml.child("Fonts");
+
+      for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
+      {
+         const char* sFontName = xmlFont.attribute("name").value();
+         const char* sFileName = xmlFont.attribute("fileName").value();
+
+         Font* fFont = Allocator::alloc<Font>();
+         GEInvokeCtor(Font, fFont)(sFontName, sFileName, pDevice);
+         mFonts.add(fFont);
+         pBoundTexture = const_cast<Texture*>(fFont->getTexture());
+      }
+   }
+   else
+   {
+      Device::readContentFile(ContentType::GenericBinaryData, "Fonts", sFileName, "ge", &cFontsData);
+      ContentDataMemoryBuffer sMemoryBuffer(cFontsData);
+      std::istream sStream(&sMemoryBuffer);
+
+      uint iFontsCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+      for(uint i = 0; i < iFontsCount; i++)
+         Value::fromStream(ValueType::ObjectName, sStream);
+
+      for(uint i = 0; i < iFontsCount; i++)
+      {
+         ObjectName cFontName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+         Font* fFont = Allocator::alloc<Font>();
+         GEInvokeCtor(Font, fFont)(cFontName, sStream, pDevice);
+         mFonts.add(fFont);
+         pBoundTexture = const_cast<Texture*>(fFont->getTexture());
+      }
+   }
+}
+
+void RenderSystem::unloadFonts(const char* FileName)
+{
+   char sFileName[64];
+   sprintf(sFileName, "%s.fonts", FileName);
+
+   ContentData cFontsData;
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      Device::readContentFile(ContentType::GenericTextData, "Fonts", sFileName, "xml", &cFontsData);
+
+      pugi::xml_document xml;
+      xml.load_buffer(cFontsData.getData(), cFontsData.getDataSize());
+      const pugi::xml_node& xmlFonts = xml.child("Fonts");
+
+      for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
+      {
+         ObjectName cFontName = ObjectName(xmlFont.attribute("name").value());
+         GEAssert(mFonts.get(cFontName));
+         mFonts.remove(cFontName);
+      }
+   }
+   else
+   {
+      Device::readContentFile(ContentType::GenericBinaryData, "Fonts", sFileName, "ge", &cFontsData);
+      ContentDataMemoryBuffer sMemoryBuffer(cFontsData);
+      std::istream sStream(&sMemoryBuffer);
+
+      uint iFontsCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+      for(uint i = 0; i < iFontsCount; i++)
+      {
+         ObjectName cFontName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+         GEAssert(mFonts.get(cFontName));
+         mFonts.remove(cFontName);
+      }
+   }
+}
+
+Font* RenderSystem::getFont(const ObjectName& Name)
+{
+   return mFonts.get(Name);
+}
+
+void RenderSystem::queueForRendering(ComponentRenderable* Renderable)
+{
+   GEProfilerMarker("RenderSystem::queueForRendering()");
+
+   if(!Renderable->getVisible() ||
+      !Renderable->getOwner()->isActiveInHierarchy() ||
+      Renderable->getMaterialPassCount() == 0)
+   {
+      return;
+   }
+
+   for(uint i = 0; i < Renderable->getMaterialPassCount(); i++)
+   {
+      MaterialPass* cMaterialPass = Renderable->getMaterialPass(i);
+
+      if(!cMaterialPass->getMaterial() || !cMaterialPass->getActive())
+         continue;
+
+      if(cMaterialPass->getMaterial()->getBatchRendering())
+      {
+         GEMutexLock(mTextureLoadMutex);
+
+         const uint iMaterialID = cMaterialPass->getMaterial()->getName().getID();
+         RenderOperation& sBatch = mBatches.find(iMaterialID)->second;
+         sBatch.Renderable = Renderable;
+         sBatch.RenderMaterialPass = cMaterialPass;
+
+         switch(Renderable->getRenderableType())
+         {
+         case RenderableType::Mesh:
+            sBatch.Group = GeometryGroup::MeshBatch;
+            break;
+         case RenderableType::Sprite:
+         case RenderableType::Label:
+            sBatch.Group = GeometryGroup::_2DBatch;
+            break;
+         }
+
+         queueForRenderingBatch(sBatch);
+
+         GEMutexUnlock(mTextureLoadMutex);
+      }
+      else
+      {
+         RenderOperation sRenderOperation;
+         sRenderOperation.Renderable = Renderable;
+         sRenderOperation.RenderMaterialPass = cMaterialPass;
+
+         switch(Renderable->getRenderableType())
+         {
+         case RenderableType::Mesh:
+            sRenderOperation.Group = Renderable->getGeometryType() == GeometryType::Static ? GeometryGroup::MeshStatic : GeometryGroup::MeshDynamic;
+            break;
+         case RenderableType::Sprite:
+         case RenderableType::Label:
+            sRenderOperation.Group = Renderable->getGeometryType() == GeometryType::Static ? GeometryGroup::_2DStatic : GeometryGroup::_2DDynamic;
+            break;
+         case RenderableType::ParticleSystem:
+            sRenderOperation.Group = GeometryGroup::Particles;
+            break;
+         }
+
+         GEMutexLock(mTextureLoadMutex);
+
+         queueForRenderingSingle(sRenderOperation);
+
+         GEMutexUnlock(mTextureLoadMutex);
+      }
+   }
+}
+
+void RenderSystem::queueForRendering(ComponentLight* Light)
+{
+   if(Light->getOwner()->isActiveInHierarchy())
+      vLightsToRender.push_back(Light);
+}
+
+void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
+{
+   GEProfilerMarker("RenderSystem::queueForRenderingSingle()");
+
+   ComponentRenderable* cRenderable = sRenderOperation.Renderable;
+
+   memcpy(&sRenderOperation.Data, &cRenderable->getGeometryData(), sizeof(GeometryData));
+   uint iRenderableID = cRenderable->getOwner()->getFullName().getID();
+
+   switch(cRenderable->getRenderableType())
+   {
+   case RenderableType::Mesh:
+   {
+      ComponentMesh* cMesh = static_cast<ComponentMesh*>(cRenderable);
+      MaterialPass* cMaterialPass = sRenderOperation.RenderMaterialPass;
+
+      if(cMesh->getDynamicShadows())
+         vShadowedMeshesToRender.push_back(sRenderOperation);
+
+      if(cMaterialPass->getMaterial()->getAlpha() < 0.99f)
+      {
+         vTransparentMeshesToRender.push_back(sRenderOperation);
+      }
+      else
+      {
+         vOpaqueMeshesToRender.push_back(sRenderOperation);
+      }
+
+      if(cMesh->getGeometryType() == GeometryType::Static)
+      {
+         GESTLMap(uint, GeometryRenderInfo)::const_iterator it = mStaticGeometryToRender.find(iRenderableID);
+
+         if(it == mStaticGeometryToRender.end())
+         {
+            GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::MeshStatic];
+            mStaticGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+            loadRenderingData(cRenderable->getGeometryData(), sBuffers, 4);
+         }
+      }
+      else
+      {
+         GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::MeshDynamic];
+         mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+         loadRenderingData(cRenderable->getGeometryData(), sBuffers, 4);
+      }
+   }
+   break;
+
+   case RenderableType::Sprite:
+   {
+      ComponentSprite* cSprite = static_cast<ComponentSprite*>(cRenderable);
+
+      if(cSprite->getLayer() == SpriteLayer::GUI)
+         vGUISpritesToRender.push_back(sRenderOperation);
+      else
+         vPre3DSpritesToRender.push_back(sRenderOperation);
+
+      if(cSprite->getGeometryType() == GeometryType::Static)
+      {
+         GESTLMap(uint, GeometryRenderInfo)::const_iterator it = mStaticGeometryToRender.find(iRenderableID);
+
+         if(it == mStaticGeometryToRender.end())
+         {
+            GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::_2DStatic];
+            mStaticGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+            loadRenderingData(cRenderable->getGeometryData(), sBuffers);
+         }
+      }
+      else
+      {
+         GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::_2DDynamic];
+         mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+         loadRenderingData(cRenderable->getGeometryData(), sBuffers);
+      }
+   }
+   break;
+
+   case RenderableType::Label:
+   {
+      if(cRenderable->getRenderingMode() == RenderingMode::_2D)
+         vUILabelsToRender.push_back(sRenderOperation);
+      else
+         v3DLabelsToRender.push_back(sRenderOperation);
+
+      GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::_2DDynamic];
+      mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+      loadRenderingData(cRenderable->getGeometryData(), sBuffers);
+   }
+   break;
+
+   case RenderableType::ParticleSystem:
+   {
+      if(cRenderable->getGeometryData().NumIndices > 0)
+      {
+         vTransparentMeshesToRender.push_back(sRenderOperation);
+
+         GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::Particles];
+         mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+         loadRenderingData(cRenderable->getGeometryData(), sBuffers, 4);
+      }
+   }
+   break;
+   }
+}
+
+void RenderSystem::queueForRenderingBatch(RenderOperation& sBatch)
+{
+   GEProfilerMarker("RenderSystem::queueForRenderingBatch()");
+
+   ComponentRenderable* cRenderable = sBatch.Renderable;
+   cRenderable->setGeometryType(GeometryType::Dynamic);
+
+   ComponentTransform* cTransform = cRenderable->getTransform();
+   const Matrix4& matModel = cTransform->getGlobalWorldMatrix();
+
+   if(cRenderable->getRenderingMode() == RenderingMode::_2D)
+      calculate2DTransformMatrix(matModel);
+   else
+      calculate3DTransformMatrix(matModel);
+   
+   const uint iRenderableNumVertices = cRenderable->getGeometryData().NumVertices;
+   const uint iRenderableVertexStride = cRenderable->getGeometryData().VertexStride;
+   const uint iBatchNumVertices = sBatch.Data.NumVertices;
+
+   sBatch.Data.VertexStride = iRenderableVertexStride + sizeof(Matrix4);
+
+   GE::byte* pRenderableVertexData = reinterpret_cast<GE::byte*>(cRenderable->getGeometryData().VertexData);
+   GE::byte* pBatchVertexData = reinterpret_cast<GE::byte*>(sBatch.Data.VertexData);
+   pBatchVertexData += iBatchNumVertices * sBatch.Data.VertexStride;
+
+   for(uint i = 0; i < iRenderableNumVertices; i++)
+   {
+      memcpy(pBatchVertexData, &matModelViewProjection.m[0], sizeof(Matrix4));
+      pBatchVertexData += sizeof(Matrix4);
+
+      memcpy(pBatchVertexData, pRenderableVertexData, iRenderableVertexStride);
+      pRenderableVertexData += iRenderableVertexStride;
+      pBatchVertexData += iRenderableVertexStride;
+   }
+
+   const uint iRenderableNumIndices = cRenderable->getGeometryData().NumIndices;
+   const uint iBatchNumIndices = sBatch.Data.NumIndices;
+
+   GE::ushort* pRenderableIndices = cRenderable->getGeometryData().Indices;
+   GE::ushort* pBatchIndices = sBatch.Data.Indices + iBatchNumIndices;
+
+   GE::ushort iBatchNumVerticesUShort = (GE::ushort)iBatchNumVertices;
+
+   for(uint i = 0; i < iRenderableNumIndices; i++)
+   {
+      *pBatchIndices = *pRenderableIndices + iBatchNumVerticesUShort;
+
+      pRenderableIndices++;
+      pBatchIndices++;
+   }
+
+   sBatch.Data.NumVertices += iRenderableNumVertices;
+   sBatch.Data.NumIndices += iRenderableNumIndices;
+}
+
+void RenderSystem::prepareBatchForRendering(const RenderOperation& sBatch)
+{
+   GEProfilerMarker("RenderSystem::prepareBatchForRendering()");
+
+   ComponentRenderable* cRenderable = sBatch.Renderable;
+   GPUBufferPair& sBuffers = sGPUBufferPairs[sBatch.Group];
+
+   const uint iRenderableID = cRenderable->getOwner()->getFullName().getID();
+   mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+
+   loadRenderingData(sBatch.Data, sBuffers, cRenderable->getRenderableType() == RenderableType::Mesh ? 4 : 2);
+
+   switch(cRenderable->getRenderableType())
+   {
+   case RenderableType::Sprite:
+      vGUISpritesToRender.push_back(sBatch);
+      break;
+   case RenderableType::Mesh:
+      vOpaqueMeshesToRender.push_back(sBatch);
+      break;
+   }
+}
+
+void RenderSystem::clearRenderingQueues()
+{
+   vGUISpritesToRender.clear();
+   vPre3DSpritesToRender.clear();
+   vUILabelsToRender.clear();
+   v3DLabelsToRender.clear();
+   vShadowedMeshesToRender.clear();
+   vOpaqueMeshesToRender.clear();
+   vTransparentMeshesToRender.clear();
+   vLightsToRender.clear();
+
+   for(GESTLMap(uint, RenderOperation)::iterator it = mBatches.begin(); it != mBatches.end(); it++)
+   {
+      RenderOperation& sBatch = (*it).second;
+      sBatch.Data.NumVertices = 0;
+      sBatch.Data.NumIndices = 0;
+   }
+
+   sGPUBufferPairs[GeometryGroup::_2DDynamic].clear();
+   sGPUBufferPairs[GeometryGroup::_2DBatch].clear();
+   sGPUBufferPairs[GeometryGroup::MeshDynamic].clear();
+   sGPUBufferPairs[GeometryGroup::MeshBatch].clear();
+   sGPUBufferPairs[GeometryGroup::Particles].clear();
+}
+
+void RenderSystem::clearGeometryRenderInfoEntries()
+{
+   mStaticGeometryToRender.clear();
+   mDynamicGeometryToRender.clear();
+   mBatches.clear();
+
+   for(uint i = 0; i < GeometryGroup::Count; i++)
+      sGPUBufferPairs[i].clear();
+}
+
+void RenderSystem::renderFrame()
+{
+   if(bShaderReloadPending)
+   {
+      loadShaders();
+      bShaderReloadPending = false;
+   }
+
+   if(!mBatches.empty())
+   {
+      GESTLMap(uint, RenderOperation)::const_iterator it = mBatches.begin();
+
+      for(; it != mBatches.end(); it++)
+      {
+         const RenderOperation& sBatch = it->second;
+
+         if(sBatch.Data.NumVertices > 0)
+            prepareBatchForRendering(sBatch);
+      }
+   }
+
+   if(!vPre3DSpritesToRender.empty())
+   {
+      GESTLVector(RenderOperation)::const_iterator it = vPre3DSpritesToRender.begin();
+
+      for(; it != vPre3DSpritesToRender.end(); it++)
+      {
+         const RenderOperation& sRenderOperation = *it;
+         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+         render(sRenderOperation);
+      }
+   }
+
+   if(!vOpaqueMeshesToRender.empty() ||
+      !v3DLabelsToRender.empty() ||
+      !vTransparentMeshesToRender.empty())
+   {
+      if(!vShadowedMeshesToRender.empty())
+         renderShadowMap();
+
+      if(!vOpaqueMeshesToRender.empty())
+      {
+         GESTLVector(RenderOperation)::const_iterator it = vOpaqueMeshesToRender.begin();
+
+         for(; it != vOpaqueMeshesToRender.end(); it++)
+         {
+            const RenderOperation& sRenderOperation = *it;
+            useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+            render(sRenderOperation);
+         }
+      }
+
+      if(!v3DLabelsToRender.empty())
+      {
+         GESTLVector(RenderOperation)::const_iterator it = v3DLabelsToRender.begin();
+
+         for(; it != v3DLabelsToRender.end(); it++)
+         {
+            const RenderOperation& sRenderOperation = *it;
+            useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+            render(sRenderOperation);
+         }
+      }
+
+      if(!vTransparentMeshesToRender.empty())
+      {
+         std::sort(vTransparentMeshesToRender.begin(), vTransparentMeshesToRender.end(),
+         [](const RenderOperation& sRO1, const RenderOperation& sRO2) -> bool
+         {
+            const Vector3& vCameraWorldPosition =
+               RenderSystem::getInstance()->getActiveCamera()->getTransform()->getWorldPosition();
+
+            Vector3 vP1ToCamera = vCameraWorldPosition - sRO1.Renderable->getTransform()->getWorldPosition();
+            Vector3 vP2ToCamera = vCameraWorldPosition - sRO2.Renderable->getTransform()->getWorldPosition();
+
+            return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
+         });
+
+         GESTLVector(RenderOperation)::const_iterator it = vTransparentMeshesToRender.begin();
+
+         for(; it != vTransparentMeshesToRender.end(); it++)
+         {
+            const RenderOperation& sRenderOperation = *it;
+            useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+            render(sRenderOperation);
+         }
+      }
+   }
+
+   if(!vGUISpritesToRender.empty())
+   {
+      GESTLVector(RenderOperation)::const_iterator it = vGUISpritesToRender.begin();
+
+      for(; it != vGUISpritesToRender.end(); it++)
+      {
+         const RenderOperation& sRenderOperation = *it;
+         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+         render(sRenderOperation);
+      }
+   }
+
+   if(!vUILabelsToRender.empty())
+   {
+      GESTLVector(RenderOperation)::const_iterator it = vUILabelsToRender.begin();
+
+      for(; it != vUILabelsToRender.end(); it++)
+      {
+         const RenderOperation& sRenderOperation = *it;
+         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+         render(sRenderOperation);
+      }
+   }
+
+   float fCurrentTime = Time::getElapsed();
+   fFramesPerSecond = 1.0f / (fCurrentTime - fFrameTime);
+   fFrameTime = fCurrentTime;
+}
