@@ -45,6 +45,7 @@ const ObjectName Name = ObjectName("Name");
 const ObjectName BackgroundEntityName = ObjectName("Background");
 
 const ObjectName Scene::EventActiveSceneSet = ObjectName("EventActiveSceneSet");
+const ObjectName Scene::EventEntityAdded = ObjectName("EventEntityAdded");
 const ObjectName Scene::EventEntityRenamed = ObjectName("EventEntityRenamed");
 const ObjectName Scene::EventEntityRemoved = ObjectName("EventEntityRemoved");
 const ObjectName Scene::EventEntityParentChanged = ObjectName("EventEntityParentChanged");
@@ -156,6 +157,11 @@ Entity* Scene::addEntity(const ObjectName& Name, Entity* cParent)
 
    GEAssert(!getEntity(cEntity->getFullName()));
    registerEntity(cEntity);
+
+   EventArgs sEventArgs;
+   sEventArgs.Sender = this;
+   sEventArgs.Args = cEntity;
+   triggerEvent(EventEntityAdded, &sEventArgs);
 
    return cEntity;
 }

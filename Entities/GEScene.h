@@ -63,6 +63,7 @@ namespace GE { namespace Entities
 
    public:
       static const Core::ObjectName EventActiveSceneSet;
+      static const Core::ObjectName EventEntityAdded;
       static const Core::ObjectName EventEntityRenamed;
       static const Core::ObjectName EventEntityRemoved;
       static const Core::ObjectName EventEntityParentChanged;
