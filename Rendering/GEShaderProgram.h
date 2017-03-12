@@ -39,14 +39,13 @@ namespace GE { namespace Rendering
    protected:
       DepthBufferMode eDepthBufferMode;
 
-      ShaderProgram(const Core::ObjectName& Name);
-
       void parseParameters(const pugi::xml_node& xmlShader, const char* sTag, ParameterList* vParameterList);
 
    public:
       ParameterList VertexParameters;
       ParameterList FragmentParameters;
 
+      ShaderProgram(const Core::ObjectName& Name);
       virtual ~ShaderProgram();
 
       const DepthBufferMode getDepthBufferMode() const;

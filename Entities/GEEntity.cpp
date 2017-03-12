@@ -42,7 +42,7 @@ Entity::Entity(const ObjectName& Name, Entity* Parent, Scene* Owner)
    GERegisterProperty(Entity, Bool, Active);
    GERegisterProperty(Entity, UInt, ClockIndex);
    GERegisterPropertyEnum(Entity, EntitySaveBehavior, SaveBehavior);
-   GERegisterPropertyReadonly(Entity, ObjectName, PrefabName);
+   GERegisterProperty(Entity, ObjectName, PrefabName);
 }
 
 Entity::~Entity()

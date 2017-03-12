@@ -56,9 +56,10 @@ namespace GE { namespace Entities
 
       Entity* addEntity(const pugi::xml_node& xmlEntity, Entity* cParent);
       void setupEntity(const pugi::xml_node& xmlEntity, Entity* cEntity);
-
-      Entity* addPrefab(const pugi::xml_node& xmlModule, Entity* cParent);
       void addMesh(const pugi::xml_node& xmlMesh, Entity* cParent);
+
+      Entity* addEntity(std::istream& Stream, Entity* cParent);
+      void setupEntity(std::istream& Stream, Entity* cEntity);
 
    public:
       static const Core::ObjectName EventActiveSceneSet;

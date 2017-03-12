@@ -479,9 +479,6 @@ void RenderSystem::loadMaterials(const char* FileName)
       uint iMaterialsCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
 
       for(uint i = 0; i < iMaterialsCount; i++)
-         Value::fromStream(ValueType::ObjectName, sStream);
-
-      for(uint i = 0; i < iMaterialsCount; i++)
       {
          ObjectName cMaterialName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
          Material* cMaterial = Allocator::alloc<Material>();

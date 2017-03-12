@@ -6,12 +6,18 @@
 
 #include "main.h"
 
+#include "Core/GEPlatform.h"
 #include "Core/GEApplication.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEValue.h"
 #include "Core/GEParser.h"
 #include "Core/GEObject.h"
+#include "Rendering/DX11/GERenderSystemDX11.h"
 #include "Rendering/GEMaterial.h"
+#include "Rendering/GEFont.h"
+#include "Entities/GEEntity.h"
+#include "Entities/GEComponent.h"
+
 #include "Externals/pugixml/pugixml.hpp"
 
 #include <iostream>
@@ -30,22 +36,27 @@
 using namespace GE;
 using namespace GE::Core;
 using namespace GE::Rendering;
+using namespace GE::Entities;
 using namespace pugi;
 
 const char ContentXmlDirName[] = "content";
 const char ContentBinDirName[] = "contentBin";
+
+ObjectManager<ShaderProgram> mManagerShaderPrograms;
+ObjectManager<Material> mManagerMaterials;
+ObjectManager<Texture> mManagerTextures;
+ObjectManager<Font> mManagerFonts;
+
+Scene cDummyScene = Scene(ObjectName("Dummy"));
 
 int main(int argc, char* argv[])
 {
    std::cout << "\n Game Engine\n Arturo Cepeda\n Tools\n";
 
    Application::startUp();
-
-   ObjectManager<ShaderProgram> mDummyManagerShaderPrograms;
-   ObjectManager<Texture> mDummyManagerTextures;
-
-   ObjectManagers::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mDummyManagerShaderPrograms);
-   ObjectManagers::getInstance()->registerObjectManager<Texture>("Texture", &mDummyManagerTextures);
+   
+   registerObjectManagers();
+   loadShaders();
 
    packTextures();
    packMaterials();
@@ -54,10 +65,38 @@ int main(int argc, char* argv[])
    packMeshes();
    packSkeletons();
    packAnimations();
+   packPrefabs();
+   packScenes();
+   compileScripts();
 
    Application::shutDown();
 
    return 0;
+}
+
+void registerObjectManagers()
+{
+   ObjectManagers::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mManagerShaderPrograms);
+   ObjectManagers::getInstance()->registerObjectManager<Material>("Material", &mManagerMaterials);
+   ObjectManagers::getInstance()->registerObjectManager<Texture>("Texture", &mManagerTextures);
+   ObjectManagers::getInstance()->registerObjectManager<Font>("Font", &mManagerFonts);
+}
+
+void loadShaders()
+{
+   pugi::xml_document xml;
+   xml.load_file(L"Content\\Shaders\\Shaders.xml");
+   const pugi::xml_node& xmlShaders = xml.child("Shaders");
+
+   for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
+   {
+      const char* sShaderProgramName = xmlShader.attribute("name").value();
+      ShaderProgram* cShaderProgram = new ShaderProgram(sShaderProgramName);
+      mManagerShaderPrograms.add(cShaderProgram);
+
+      cShaderProgram->parseParameters(xmlShader);
+      cShaderProgram->loadFromXml(xmlShader);
+   }
 }
 
 void packTextures()
@@ -95,8 +134,8 @@ void packTextureFile(const char* XmlFileName)
    CreateDirectory(sOutputPath, NULL);
    sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
 
-   std::ofstream sOuputFile(sOutputPath, std::ios::out | std::ios::binary);
-   GEAssert(sOuputFile.is_open());
+   std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
+   GEAssert(sOutputFile.is_open());
 
    char sInputPath[MAX_PATH];
    sprintf(sInputPath, "%s\\Textures\\%s", ContentXmlDirName, XmlFileName);
@@ -109,12 +148,12 @@ void packTextureFile(const char* XmlFileName)
    for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
       iTexturesCount++;
 
-   Value(iTexturesCount).writeToStream(sOuputFile);
+   Value(iTexturesCount).writeToStream(sOutputFile);
 
    for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
    {
       const char* sTextureName = xmlTexture.attribute("name").value();
-      Value(sTextureName).writeToStream(sOuputFile);
+      Value(sTextureName).writeToStream(sOutputFile);
    }
 
    for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
@@ -124,9 +163,9 @@ void packTextureFile(const char* XmlFileName)
       const char* sTextureFormat = xmlTexture.attribute("format").value();
       const bool bTextureAtlas = Parser::parseBool(xmlTexture.attribute("atlas").value());
 
-      Value(sTextureName).writeToStream(sOuputFile);
-      Value(sTextureFormat).writeToStream(sOuputFile);
-      Value(bTextureAtlas).writeToStream(sOuputFile);
+      Value(sTextureName).writeToStream(sOutputFile);
+      Value(sTextureFormat).writeToStream(sOutputFile);
+      Value(bTextureAtlas).writeToStream(sOutputFile);
 
       std::string sTextureFilePath;
       sTextureFilePath.append(ContentXmlDirName);
@@ -141,8 +180,8 @@ void packTextureFile(const char* XmlFileName)
       uint iTextureFileSize = (uint)sTextureFile.tellg();
       sTextureFile.seekg(0, std::ios::beg);
 
-      Value(iTextureFileSize).writeToStream(sOuputFile);
-      std::copy_n(std::istreambuf_iterator<char>(sTextureFile), iTextureFileSize, std::ostreambuf_iterator<char>(sOuputFile));
+      Value(iTextureFileSize).writeToStream(sOutputFile);
+      std::copy_n(std::istreambuf_iterator<char>(sTextureFile), iTextureFileSize, std::ostreambuf_iterator<char>(sOutputFile));
 
       if(bTextureAtlas)
       {
@@ -161,22 +200,22 @@ void packTextureFile(const char* XmlFileName)
          for(const pugi::xml_node& xmlChar : xmlChars.children("sprite"))
             iAtlasEntriesCount++;
 
-         Value(iAtlasEntriesCount).writeToStream(sOuputFile);
+         Value(iAtlasEntriesCount).writeToStream(sOutputFile);
 
          for(const pugi::xml_node& xmlChar : xmlChars.children("sprite"))
          {
-            Value(ObjectName(xmlChar.attribute("n").value())).writeToStream(sOuputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("x").value())).writeToStream(sOuputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("y").value())).writeToStream(sOuputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("w").value())).writeToStream(sOuputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("h").value())).writeToStream(sOuputFile);
+            Value(ObjectName(xmlChar.attribute("n").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("x").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("y").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("w").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("h").value())).writeToStream(sOutputFile);
          }
       }
 
       sTextureFile.close();
    }
 
-   sOuputFile.close();
+   sOutputFile.close();
 }
 
 void packMaterials()
@@ -207,8 +246,8 @@ void packMaterials()
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
 
-      std::ofstream sOuputFile(sOutputPath, std::ios::out | std::ios::binary);
-      GEAssert(sOuputFile.is_open());
+      std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
+      GEAssert(sOutputFile.is_open());
 
       char sInputPath[MAX_PATH];
       sprintf(sInputPath, "%s\\Materials\\%s", ContentXmlDirName, sXmlFileName);
@@ -221,24 +260,20 @@ void packMaterials()
       for(const pugi::xml_node& xmlMaterial : xmlMaterials.children("Material"))
          iMaterialsCount++;
 
-      Value(iMaterialsCount).writeToStream(sOuputFile);
+      Value(iMaterialsCount).writeToStream(sOutputFile);
 
       for(const pugi::xml_node& xmlMaterial : xmlMaterials.children("Material"))
       {
          const char* sMaterialName = xmlMaterial.attribute("name").value();
-         Value(sMaterialName).writeToStream(sOuputFile);
+         Value(sMaterialName).writeToStream(sOutputFile);
+
+         Material* cMaterial = new Material(sMaterialName);
+         mManagerMaterials.add(cMaterial);
+         cMaterial->loadFromXml(xmlMaterial);
+         cMaterial->xmlToStream(xmlMaterial, sOutputFile);
       }
 
-      for(const pugi::xml_node& xmlMaterial : xmlMaterials.children("Material"))
-      {
-         const char* sMaterialName = xmlMaterial.attribute("name").value();
-         Value(sMaterialName).writeToStream(sOuputFile);
-
-         Material cMaterial(sMaterialName);
-         cMaterial.xmlToStream(xmlMaterial, sOuputFile);
-      }
-
-      sOuputFile.close();
+      sOutputFile.close();
    }
    while(FindNextFile(hFile, &sFileData));
 
@@ -280,8 +315,8 @@ void packFontFile(const char* XmlFileName)
    CreateDirectory(sOutputPath, NULL);
    sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
 
-   std::ofstream sOuputFile(sOutputPath, std::ios::out | std::ios::binary);
-   GEAssert(sOuputFile.is_open());
+   std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
+   GEAssert(sOutputFile.is_open());
 
    char sInputPath[MAX_PATH];
    sprintf(sInputPath, "%s\\Fonts\\%s", ContentXmlDirName, XmlFileName);
@@ -294,12 +329,12 @@ void packFontFile(const char* XmlFileName)
    for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
       iFontsCount++;
 
-   Value(iFontsCount).writeToStream(sOuputFile);
+   Value(iFontsCount).writeToStream(sOutputFile);
 
    for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
    {
       const char* sFontName = xmlFont.attribute("name").value();
-      Value(sFontName).writeToStream(sOuputFile);
+      Value(sFontName).writeToStream(sOutputFile);
    }
 
    for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
@@ -307,7 +342,7 @@ void packFontFile(const char* XmlFileName)
       const char* sFontName = xmlFont.attribute("name").value();
       const char* sFontFileName = xmlFont.attribute("fileName").value();
 
-      Value(sFontName).writeToStream(sOuputFile);
+      Value(sFontName).writeToStream(sOutputFile);
 
       std::string sFontFilePath;
       sFontFilePath.append(ContentXmlDirName);
@@ -320,28 +355,28 @@ void packFontFile(const char* XmlFileName)
       const pugi::xml_node& xmlFontDescRoot = xmlFontDesc.child("font");
 
       const pugi::xml_node& xmlCommon = xmlFontDescRoot.child("common");
-      Value((short)Parser::parseInt(xmlCommon.attribute("scaleW").value())).writeToStream(sOuputFile);
-      Value((short)Parser::parseInt(xmlCommon.attribute("scaleH").value())).writeToStream(sOuputFile);
+      Value((short)Parser::parseInt(xmlCommon.attribute("scaleW").value())).writeToStream(sOutputFile);
+      Value((short)Parser::parseInt(xmlCommon.attribute("scaleH").value())).writeToStream(sOutputFile);
 
       const pugi::xml_node& xmlChars = xmlFontDescRoot.child("chars");
       short iFontCharsCount = (short)Parser::parseUInt(xmlChars.attribute("count").value());
-      Value(iFontCharsCount).writeToStream(sOuputFile);
+      Value(iFontCharsCount).writeToStream(sOutputFile);
 
       for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
       {
-         Value((GE::byte)Parser::parseInt(xmlChar.attribute("id").value())).writeToStream(sOuputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("x").value())).writeToStream(sOuputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("y").value())).writeToStream(sOuputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("width").value())).writeToStream(sOuputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("height").value())).writeToStream(sOuputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("xoffset").value())).writeToStream(sOuputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("yoffset").value())).writeToStream(sOuputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("xadvance").value())).writeToStream(sOuputFile);
+         Value((GE::byte)Parser::parseInt(xmlChar.attribute("id").value())).writeToStream(sOutputFile);
+         Value((short)Parser::parseInt(xmlChar.attribute("x").value())).writeToStream(sOutputFile);
+         Value((short)Parser::parseInt(xmlChar.attribute("y").value())).writeToStream(sOutputFile);
+         Value((short)Parser::parseInt(xmlChar.attribute("width").value())).writeToStream(sOutputFile);
+         Value((short)Parser::parseInt(xmlChar.attribute("height").value())).writeToStream(sOutputFile);
+         Value((short)Parser::parseInt(xmlChar.attribute("xoffset").value())).writeToStream(sOutputFile);
+         Value((short)Parser::parseInt(xmlChar.attribute("yoffset").value())).writeToStream(sOutputFile);
+         Value((short)Parser::parseInt(xmlChar.attribute("xadvance").value())).writeToStream(sOutputFile);
       }
 
       const pugi::xml_node& xmlKernings = xmlFontDescRoot.child("kernings");
       short iFontKerningsCount = (short)Parser::parseUInt(xmlKernings.attribute("count").value());
-      Value(iFontKerningsCount).writeToStream(sOuputFile);
+      Value(iFontKerningsCount).writeToStream(sOutputFile);
 
       for(const pugi::xml_node& xmlKerning : xmlKernings.children("kerning"))
       {
@@ -349,9 +384,9 @@ void packFontFile(const char* XmlFileName)
          GE::byte iKerningSecondCharId = (GE::byte)Parser::parseUInt(xmlKerning.attribute("second").value());
          int iKerningAmount = Parser::parseInt(xmlKerning.attribute("amount").value());
 
-         Value(iKerningFirstCharId).writeToStream(sOuputFile);
-         Value(iKerningSecondCharId).writeToStream(sOuputFile);
-         Value((short)iKerningAmount).writeToStream(sOuputFile);
+         Value(iKerningFirstCharId).writeToStream(sOutputFile);
+         Value(iKerningSecondCharId).writeToStream(sOutputFile);
+         Value((short)iKerningAmount).writeToStream(sOutputFile);
       }
 
       sFontFilePath[sFontFilePath.length() - 3] = 'p';
@@ -364,13 +399,13 @@ void packFontFile(const char* XmlFileName)
       uint iFontFileSize = (uint)sFontTextureFile.tellg();
       sFontTextureFile.seekg(0, std::ios::beg);
 
-      Value(iFontFileSize).writeToStream(sOuputFile);
-      std::copy_n(std::istreambuf_iterator<char>(sFontTextureFile), iFontFileSize, std::ostreambuf_iterator<char>(sOuputFile));
+      Value(iFontFileSize).writeToStream(sOutputFile);
+      std::copy_n(std::istreambuf_iterator<char>(sFontTextureFile), iFontFileSize, std::ostreambuf_iterator<char>(sOutputFile));
 
       sFontTextureFile.close();
    }
 
-   sOuputFile.close();
+   sOutputFile.close();
 }
 
 void packStrings()
@@ -401,8 +436,8 @@ void packStrings()
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
 
-      std::ofstream sOuputFile(sOutputPath, std::ios::out | std::ios::binary);
-      GEAssert(sOuputFile.is_open());
+      std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
+      GEAssert(sOutputFile.is_open());
 
       char sInputPath[MAX_PATH];
       sprintf(sInputPath, "%s\\Strings\\%s", ContentXmlDirName, sXmlFileName);
@@ -415,17 +450,17 @@ void packStrings()
       for(const pugi::xml_node& xmlString : xmlStrings.children("String"))
          iStringsCount++;
 
-      Value(iStringsCount).writeToStream(sOuputFile);
+      Value(iStringsCount).writeToStream(sOutputFile);
 
       for(const pugi::xml_node& xmlString : xmlStrings.children("String"))
       {
          const char* sStringID = xmlString.attribute("id").value();
-         Value(sStringID).writeToStream(sOuputFile);
+         Value(sStringID).writeToStream(sOutputFile);
          const char* sStringText = xmlString.attribute("text").value();
-         Value(sStringText).writeToStream(sOuputFile);
+         Value(sStringText).writeToStream(sOutputFile);
       }
 
-      sOuputFile.close();
+      sOutputFile.close();
    }
    while(FindNextFile(hFile, &sFileData));
 
@@ -495,8 +530,8 @@ void packSkeletons()
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
 
-      std::ofstream sOuputFile(sOutputPath, std::ios::out | std::ios::binary);
-      GEAssert(sOuputFile.is_open());
+      std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
+      GEAssert(sOutputFile.is_open());
 
       char sInputPath[MAX_PATH];
       sprintf(sInputPath, "%s\\Models\\%s", ContentXmlDirName, sXmlFileName);
@@ -506,25 +541,25 @@ void packSkeletons()
       const pugi::xml_node& xmlSkeleton = xml.child("Skeleton");
 
       uint iBonesCount = Parser::parseUInt(xmlSkeleton.attribute("bonesCount").value());
-      Value((GE::byte)iBonesCount).writeToStream(sOuputFile);
+      Value((GE::byte)iBonesCount).writeToStream(sOutputFile);
 
       for(pugi::xml_node_iterator it = xmlSkeleton.begin(); it != xmlSkeleton.end(); it++)
       {
          const pugi::xml_node& xmlBone = *it;
          
          ObjectName cBoneName = ObjectName(xmlBone.attribute("name").value());
-         Value(cBoneName).writeToStream(sOuputFile);
+         Value(cBoneName).writeToStream(sOutputFile);
 
          pugi::xml_attribute xmlBoneParentIndex = xmlBone.attribute("parentIndex");
          uint iBoneParentIndex = !xmlBoneParentIndex.empty()
             ? Parser::parseInt(xmlBoneParentIndex.value())
             : 0;
-         Value((GE::byte)iBoneParentIndex).writeToStream(sOuputFile);
+         Value((GE::byte)iBoneParentIndex).writeToStream(sOutputFile);
 
-         Value(Parser::parseVector3(xmlBone.attribute("bindT").value())).writeToStream(sOuputFile);
-         Value(Parser::parseVector3(xmlBone.attribute("bindR").value())).writeToStream(sOuputFile);
-         Value(Parser::parseVector3(xmlBone.attribute("bindS").value())).writeToStream(sOuputFile);
-         Value(Parser::parseFloat(xmlBone.attribute("size").value())).writeToStream(sOuputFile);
+         Value(Parser::parseVector3(xmlBone.attribute("bindT").value())).writeToStream(sOutputFile);
+         Value(Parser::parseVector3(xmlBone.attribute("bindR").value())).writeToStream(sOutputFile);
+         Value(Parser::parseVector3(xmlBone.attribute("bindS").value())).writeToStream(sOutputFile);
+         Value(Parser::parseFloat(xmlBone.attribute("size").value())).writeToStream(sOutputFile);
 
          const pugi::xml_node& xmlBoneChildren = xmlBone.child("Children");
          uint iBoneChildrenCount = 0;
@@ -532,16 +567,16 @@ void packSkeletons()
          for(pugi::xml_node_iterator it2 = xmlBoneChildren.begin(); it2 != xmlBoneChildren.end(); it2++)
             iBoneChildrenCount++;
 
-         Value((GE::byte)iBoneChildrenCount).writeToStream(sOuputFile);
+         Value((GE::byte)iBoneChildrenCount).writeToStream(sOutputFile);
 
          for(pugi::xml_node_iterator it2 = xmlBoneChildren.begin(); it2 != xmlBoneChildren.end(); it2++)
          {
             const pugi::xml_node& xmlBoneChild = *it2;
-            Value((GE::byte)Parser::parseInt(xmlBoneChild.attribute("index").value())).writeToStream(sOuputFile);
+            Value((GE::byte)Parser::parseInt(xmlBoneChild.attribute("index").value())).writeToStream(sOutputFile);
          }
       }
 
-      sOuputFile.close();
+      sOutputFile.close();
    }
    while(FindNextFile(hFile, &sFileData));
 
@@ -576,8 +611,8 @@ void packAnimations()
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
 
-      std::ofstream sOuputFile(sOutputPath, std::ios::out | std::ios::binary);
-      GEAssert(sOuputFile.is_open());
+      std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
+      GEAssert(sOutputFile.is_open());
 
       char sInputPath[MAX_PATH];
       sprintf(sInputPath, "%s\\Animations\\%s", ContentXmlDirName, sXmlFileName);
@@ -590,27 +625,27 @@ void packAnimations()
       for(const pugi::xml_node& xmlAnimation : xmlAnimationSet.children("Animation"))
          iAnimationsCount++;
 
-      Value(iAnimationsCount).writeToStream(sOuputFile);
+      Value(iAnimationsCount).writeToStream(sOutputFile);
 
       for(const pugi::xml_node& xmlAnimation : xmlAnimationSet.children("Animation"))
       {
-         Value(xmlAnimation.attribute("name").value()).writeToStream(sOuputFile);
-         Value(xmlAnimation.attribute("fileName").value()).writeToStream(sOuputFile);
+         Value(xmlAnimation.attribute("name").value()).writeToStream(sOutputFile);
+         Value(xmlAnimation.attribute("fileName").value()).writeToStream(sOutputFile);
 
          pugi::xml_attribute xmlApplyRootMotion = xmlAnimation.attribute("applyRootMotionX");
          bool bApplyRootMotion = xmlApplyRootMotion.empty() || Parser::parseBool(xmlApplyRootMotion.value());
-         Value(bApplyRootMotion).writeToStream(sOuputFile);
+         Value(bApplyRootMotion).writeToStream(sOutputFile);
 
          xmlApplyRootMotion = xmlAnimation.attribute("applyRootMotionY");
          bApplyRootMotion = xmlApplyRootMotion.empty() || Parser::parseBool(xmlApplyRootMotion.value());
-         Value(bApplyRootMotion).writeToStream(sOuputFile);
+         Value(bApplyRootMotion).writeToStream(sOutputFile);
 
          xmlApplyRootMotion = xmlAnimation.attribute("applyRootMotionZ");
          bApplyRootMotion = xmlApplyRootMotion.empty() || Parser::parseBool(xmlApplyRootMotion.value());
-         Value(bApplyRootMotion).writeToStream(sOuputFile);
+         Value(bApplyRootMotion).writeToStream(sOutputFile);
       }
 
-      sOuputFile.close();
+      sOutputFile.close();
    }
    while(FindNextFile(hFile, &sFileData));
 
@@ -638,6 +673,206 @@ void packAnimations()
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
 
       CopyFile(sInputPath, sOutputPath, false);
+   }
+   while(FindNextFile(hFile, &sFileData));
+
+   FindClose(hFile);
+}
+
+void packEntity(const ObjectName& cName, const pugi::xml_node& xmlNode, std::ofstream& sOutputFile, Entity* cParent)
+{
+   Value(cName).writeToStream(sOutputFile);
+
+   Entity* cEntity = cDummyScene.addEntity(cName, cParent);
+   cEntity->xmlToStream(xmlNode, sOutputFile);
+
+   xml_object_range<xml_named_node_iterator> xmlComponents = xmlNode.children("Component");
+   GE::byte iComponentsCount = 0;
+
+   for(const pugi::xml_node& xmlComponent : xmlComponents)
+      iComponentsCount++;
+
+   Value(iComponentsCount).writeToStream(sOutputFile);
+
+   for(const pugi::xml_node& xmlComponent : xmlComponents)
+   {
+      const char* sComponentType = xmlComponent.attribute("type").value();
+      ObjectName cComponentTypeName = ObjectName(sComponentType);
+
+      Value(cComponentTypeName.getID()).writeToStream(sOutputFile);
+
+      Component* cComponent = cEntity->addComponent(cComponentTypeName);
+      cComponent->xmlToStream(xmlComponent, sOutputFile);
+   }
+
+   xml_object_range<xml_named_node_iterator> xmlChildren = xmlNode.children("Entity");
+   GE::byte iChildrenCount = 0;
+
+   for(const pugi::xml_node& xmlChild : xmlChildren)
+      iChildrenCount++;
+
+   Value(iChildrenCount).writeToStream(sOutputFile);
+
+   for(const pugi::xml_node& xmlChild : xmlChildren)
+   {
+      ObjectName cChildName = ObjectName(xmlChild.attribute("name").value());
+      packEntity(cChildName, xmlChild, sOutputFile, cEntity);
+   }
+
+   cDummyScene.removeEntity(cName);
+   cDummyScene.update();
+}
+
+void packPrefabs()
+{
+   std::cout << "\n Packing prefabs...";
+
+   char sFindString[MAX_PATH];
+   sprintf(sFindString, "%s\\Prefabs\\*.prefab.xml", ContentXmlDirName);
+
+   WIN32_FIND_DATA sFileData;
+   HANDLE hFile = FindFirstFile(sFindString, &sFileData);
+
+   if(hFile == INVALID_HANDLE_VALUE)
+      return;
+
+   do
+   {
+      const char* sXmlFileName = sFileData.cFileName;
+
+      char sBinFileName[MAX_PATH];
+      getBinFileName(sXmlFileName, sBinFileName);
+
+      char sOutputPath[MAX_PATH];
+      GetCurrentDirectory(MAX_PATH, sOutputPath);
+      sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\Prefabs", sOutputPath);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+
+      std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
+      GEAssert(sOutputFile.is_open());
+
+      char sInputPath[MAX_PATH];
+      sprintf(sInputPath, "%s\\Prefabs\\%s", ContentXmlDirName, sXmlFileName);
+
+      pugi::xml_document xml;
+      xml.load_file(sInputPath);
+      const pugi::xml_node& xmlPrefab = xml.child("Prefab");
+      packEntity(ObjectName::Empty, xmlPrefab, sOutputFile, 0);
+
+      sOutputFile.close();
+   }
+   while(FindNextFile(hFile, &sFileData));
+
+   FindClose(hFile);
+}
+
+void packScenes()
+{
+   std::cout << "\n Packing scenes...";
+
+   char sFindString[MAX_PATH];
+   sprintf(sFindString, "%s\\Scenes\\*.scene.xml", ContentXmlDirName);
+
+   WIN32_FIND_DATA sFileData;
+   HANDLE hFile = FindFirstFile(sFindString, &sFileData);
+
+   if(hFile == INVALID_HANDLE_VALUE)
+      return;
+
+   do
+   {
+      const char* sXmlFileName = sFileData.cFileName;
+
+      char sBinFileName[MAX_PATH];
+      getBinFileName(sXmlFileName, sBinFileName);
+
+      char sOutputPath[MAX_PATH];
+      GetCurrentDirectory(MAX_PATH, sOutputPath);
+      sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\Scenes", sOutputPath);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+
+      std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
+      GEAssert(sOutputFile.is_open());
+
+      char sInputPath[MAX_PATH];
+      sprintf(sInputPath, "%s\\Scenes\\%s", ContentXmlDirName, sXmlFileName);
+
+      pugi::xml_document xml;
+      xml.load_file(sInputPath);
+      pugi::xml_node xmlScene = xml.child("Scene");
+      cDummyScene.xmlToStream(xmlScene, sOutputFile);
+      
+      xml_object_range<xml_named_node_iterator> xmlRootEntities = xmlScene.children("Entity");
+      GE::byte iRootEntitiesCount = 0;
+
+      for(const pugi::xml_node& xmlRootEntity : xmlRootEntities)
+         iRootEntitiesCount++;
+
+      Value(iRootEntitiesCount).writeToStream(sOutputFile);
+
+      for(const pugi::xml_node& xmlRootEntity : xmlRootEntities)
+      {
+         ObjectName cEntityName = ObjectName(xmlRootEntity.attribute("name").value());
+         packEntity(cEntityName, xmlRootEntity, sOutputFile, 0);
+      }
+
+      sOutputFile.close();
+   }
+   while(FindNextFile(hFile, &sFileData));
+
+   FindClose(hFile);
+}
+
+void compileScripts()
+{
+   std::cout << "\n Compiling scripts...";
+
+   char sFindString[MAX_PATH];
+   sprintf(sFindString, "%s\\Scripts\\*.lua", ContentXmlDirName);
+
+   WIN32_FIND_DATA sFileData;
+   HANDLE hFile = FindFirstFile(sFindString, &sFileData);
+
+   if(hFile == INVALID_HANDLE_VALUE)
+      return;
+
+   do
+   {
+      const char* sScriptFileName = sFileData.cFileName;
+
+      char sCurrentDirectory[MAX_PATH];
+      GetCurrentDirectory(MAX_PATH, sCurrentDirectory);
+
+      char sInputPath[MAX_PATH];
+      sprintf(sInputPath, "%s\\%s\\Scripts\\%s", sCurrentDirectory, ContentXmlDirName, sScriptFileName);
+
+      char sOutputPath[MAX_PATH];
+      sprintf(sOutputPath, "%s\\%s", sCurrentDirectory, ContentBinDirName);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\Scripts", sOutputPath);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\%sbc", sOutputPath, sScriptFileName);
+
+      char sParameters[1024];
+      sprintf(sParameters, "-o %s -s %s", sOutputPath, sInputPath);
+
+      SHELLEXECUTEINFO sShellExecuteInfo;
+      sShellExecuteInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+      sShellExecuteInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+      sShellExecuteInfo.hwnd = GetActiveWindow();
+      sShellExecuteInfo.lpVerb = "open";
+      sShellExecuteInfo.lpFile = "..\\..\\GameEngine\\Tools\\Externals\\lua53\\luac53.exe";
+      sShellExecuteInfo.lpParameters = sParameters;
+      sShellExecuteInfo.lpDirectory = sCurrentDirectory;
+      sShellExecuteInfo.nShow = SW_HIDE;
+      sShellExecuteInfo.hInstApp = NULL;
+      ShellExecuteEx(&sShellExecuteInfo);
    }
    while(FindNextFile(hFile, &sFileData));
 

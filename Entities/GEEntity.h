@@ -191,6 +191,6 @@ namespace GE { namespace Entities
       GEProperty(Bool, Active);
       GEProperty(UInt, ClockIndex);
       GEPropertyEnum(EntitySaveBehavior, SaveBehavior);
-      GEPropertyReadonly(ObjectName, PrefabName);
+      GEProperty(ObjectName, PrefabName);
    };
 }}

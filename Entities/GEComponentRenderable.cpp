@@ -197,3 +197,38 @@ void ComponentRenderable::saveToXml(pugi::xml_node& XmlNode) const
 
    Serializable::saveToXml(XmlNode);
 }
+
+void ComponentRenderable::loadFromStream(std::istream& Stream)
+{
+   uint iMaterialPassCount = (uint)Value::fromStream(ValueType::Byte, Stream).getAsByte();
+
+   for(uint i = 0; i < iMaterialPassCount; i++)
+   {
+      MaterialPass* cMaterialPass = addMaterialPass();
+      cMaterialPass->loadFromStream(Stream);
+   }
+
+   Serializable::loadFromStream(Stream);
+}
+
+void ComponentRenderable::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream)
+{
+   pugi::xml_object_range<pugi::xml_named_node_iterator> xmlMaterialPasses = XmlNode.children("MaterialPass");
+   GE::byte iMaterialPassCount = 0;
+    
+   for(const pugi::xml_node& xmlMaterialPass : xmlMaterialPasses)
+   {
+      iMaterialPassCount++;
+   }
+
+   Value(iMaterialPassCount).writeToStream(Stream);
+
+   for(const pugi::xml_node& xmlMaterialPass : xmlMaterialPasses)
+   {
+      MaterialPass cMaterialPass;
+      cMaterialPass.loadFromXml(xmlMaterialPass);
+      cMaterialPass.xmlToStream(xmlMaterialPass, Stream);
+   }
+
+   Serializable::xmlToStream(XmlNode, Stream);
+}

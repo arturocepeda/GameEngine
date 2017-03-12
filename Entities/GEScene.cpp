@@ -27,6 +27,8 @@
 #include "Core/GEGeometry.h"
 #include "Core/GEProfiler.h"
 #include "Core/GEPlatform.h"
+#include "Core/GEApplication.h"
+
 #include <algorithm>
 
 #if !defined (GE_PLATFORM_ANDROID)
@@ -186,6 +188,11 @@ bool Scene::removeEntity(const ObjectName& FullName)
    }
 
    vEntitiesToRemove.push_back(it->second);
+
+   EventArgs sEventArgs;
+   sEventArgs.Sender = this;
+   sEventArgs.Args = it->second;
+   triggerEvent(EventEntityRemoved, &sEventArgs);
 
    GEMutexUnlock(mSceneMutex);
 
@@ -375,15 +382,25 @@ Entity* Scene::addPrefab(const char* PrefabName, const ObjectName& EntityName, E
 {
    char sFilename[64];
    sprintf(sFilename, "%s.prefab", PrefabName);
-
    ContentData cContent;
-   Device::readContentFile(ContentType::GenericTextData, "Prefabs", sFilename, "xml", &cContent);
-   pugi::xml_document xml;
-   xml.load_buffer(cContent.getData(), cContent.getDataSize());
-
-   const pugi::xml_node& xmlRoot = xml.child("Prefab");
    Entity* cEntity = addEntity(EntityName, cParent);
-   setupEntity(xmlRoot, cEntity);
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      Device::readContentFile(ContentType::GenericTextData, "Prefabs", sFilename, "xml", &cContent);
+      pugi::xml_document xml;
+      xml.load_buffer(cContent.getData(), cContent.getDataSize());
+      pugi::xml_node xmlRoot = xml.child("Prefab");
+      setupEntity(xmlRoot, cEntity);
+   }
+   else
+   {
+      Device::readContentFile(ContentType::GenericBinaryData, "Prefabs", sFilename, "ge", &cContent);
+      ContentDataMemoryBuffer sMemoryBuffer(cContent);
+      std::istream sStream(&sMemoryBuffer);
+      Value::fromStream(ValueType::ObjectName, sStream);
+      setupEntity(sStream, cEntity);
+   }
 
    cEntity->setPrefabName(ObjectName(PrefabName));
    cEntity->init();
@@ -545,7 +562,6 @@ void Scene::update()
          removeEntity(vEntitiesToRemove[i]);
 
       vEntitiesToRemove.clear();
-      triggerEvent(EventEntityRemoved);
    }
 
    if(cBackgroundEntity && RenderSystem::getInstance()->getActiveCamera())
@@ -642,25 +658,38 @@ void Scene::load(const char* Name)
 {
    char sFilename[64];
    sprintf(sFilename, "%s.scene", Name);
-
    ContentData cContent;
-   Device::readContentFile(ContentType::GenericTextData, "Scenes", sFilename, "xml", &cContent);
-   pugi::xml_document xml;
-   xml.load_buffer(cContent.getData(), cContent.getDataSize());
 
-   const pugi::xml_node& xmlRoot = xml.child("Scene");
-   loadFromXml(xmlRoot);
-
-   for(const pugi::xml_node& xmlEntity : xmlRoot.children("Entity"))
+   if(Application::ContentType == ApplicationContentType::Xml)
    {
-      Entity* cEntity = addEntity(xmlEntity, 0);
-      cEntity->init();
+      Device::readContentFile(ContentType::GenericTextData, "Scenes", sFilename, "xml", &cContent);
+      pugi::xml_document xml;
+      xml.load_buffer(cContent.getData(), cContent.getDataSize());
+
+      const pugi::xml_node& xmlRoot = xml.child("Scene");
+      loadFromXml(xmlRoot);
+
+      for(const pugi::xml_node& xmlEntity : xmlRoot.children("Entity"))
+      {
+         Entity* cEntity = addEntity(xmlEntity, 0);
+         cEntity->init();
+      }
    }
-
-   for(const pugi::xml_node& xmlModule : xmlRoot.children("Prefab"))
+   else
    {
-      Entity* cEntity = addPrefab(xmlModule, 0);
-      cEntity->init();
+      Device::readContentFile(ContentType::GenericBinaryData, "Scenes", sFilename, "ge", &cContent);
+      ContentDataMemoryBuffer sMemoryBuffer(cContent);
+      std::istream sStream(&sMemoryBuffer);
+
+      loadFromStream(sStream);
+
+      uint iRootEntitiesCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+      for(uint i = 0; i < iRootEntitiesCount; i++)
+      {
+         Entity* cEntity = addEntity(sStream, 0);
+         cEntity->init();
+      }
    }
 }
 
@@ -688,6 +717,8 @@ Entity* Scene::addEntity(const pugi::xml_node& xmlEntity, Entity* cParent)
 
 void Scene::setupEntity(const pugi::xml_node& xmlEntity, Entity* cEntity)
 {
+   cEntity->loadFromXml(xmlEntity);
+
    for(const pugi::xml_node& xmlNode : xmlEntity.children())
    {
       const char* sNodeType = xmlNode.name();
@@ -706,17 +737,6 @@ void Scene::setupEntity(const pugi::xml_node& xmlEntity, Entity* cEntity)
       {
          addEntity(xmlNode, cEntity);
       }
-      // child prefab
-      else if(strcmp(sNodeType, "Prefab") == 0)
-      {
-         const char* sPrefabEntityName = xmlNode.attribute("entityName").value();
-         addPrefab(xmlNode, cEntity);
-      }
-      // mesh
-      else if(strcmp(sNodeType, "Mesh") == 0)
-      {
-         addMesh(xmlNode, cEntity);
-      }
       // model (TODO: remove, use prefabs instead!)
       else if(strcmp(sNodeType, "Model") == 0)
       {
@@ -724,29 +744,6 @@ void Scene::setupEntity(const pugi::xml_node& xmlEntity, Entity* cEntity)
          loadModel(cEntity, sModelName);
       }
    }
-}
-
-Entity* Scene::addPrefab(const pugi::xml_node& xmlModule, Entity* cParent)
-{
-   const char* sModuleName = xmlModule.attribute("name").value();
-   const char* sEntityName = xmlModule.attribute("entityName").value();
-
-   char sFilename[64];
-   sprintf(sFilename, "%s.prefab", sModuleName);
-
-   ContentData cContent;
-   Device::readContentFile(ContentType::GenericTextData, "Prefabs", sFilename, "xml", &cContent);
-   pugi::xml_document xml;
-   xml.load_buffer(cContent.getData(), cContent.getDataSize());
-
-   const pugi::xml_node& xmlRoot = xml.child("Prefab");
-   Entity* cEntity = addEntity(sEntityName, cParent);
-   cEntity->setPrefabName(ObjectName(sModuleName));
-
-   setupEntity(xmlRoot, cEntity);
-   setupEntity(xmlModule, cEntity);
-
-   return cEntity;
 }
 
 void Scene::loadModel(Entity* cEntity, const char* FileName)
@@ -804,5 +801,48 @@ void Scene::addMesh(const pugi::xml_node& xmlMesh, Entity* cEntity)
    {
       const pugi::xml_node& xmlMeshChild = *it;
       addMesh(xmlMeshChild, cEntity);
+   }
+}
+
+Entity* Scene::addEntity(std::istream& Stream, Entity* cParent)
+{
+   ObjectName cEntityName = Value::fromStream(ValueType::ObjectName, Stream).getAsObjectName();
+   Entity* cEntity = 0;
+
+   if(cParent)
+   {
+      cEntity = cParent->getChildByName(cEntityName);
+   }
+
+   if(!cEntity)
+   {
+      cEntity = addEntity(cEntityName, cParent);
+   }
+
+   setupEntity(Stream, cEntity);
+
+   cEntity->getComponent<ComponentTransform>()->updateWorldMatrix();
+
+   return cEntity;
+}
+
+void Scene::setupEntity(std::istream& Stream, Entity* cEntity)
+{
+   cEntity->loadFromStream(Stream);
+
+   uint iComponentsCount = (uint)Value::fromStream(ValueType::Byte, Stream).getAsByte();
+
+   for(uint i = 0; i < iComponentsCount; i++)
+   {
+      ObjectName cComponentTypeName = ObjectName(Value::fromStream(ValueType::UInt, Stream).getAsUInt());
+      Component* cComponent = cEntity->getOrAddComponent(cComponentTypeName);
+      cComponent->loadFromStream(Stream);
+   }
+
+   uint iChildrenCount = (uint)Value::fromStream(ValueType::Byte, Stream).getAsByte();
+
+   for(uint i = 0; i < iChildrenCount; i++)
+   {
+      addEntity(Stream, cEntity);
    }
 }

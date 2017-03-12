@@ -131,6 +131,9 @@ void Material::setBatchRendering(bool Value)
 //
 //  MaterialPass
 //
+const ObjectName ShadersObjectRegistryName = ObjectName("ShaderProgram");
+const ObjectName MaterialObjectRegistryName = ObjectName("Material");
+
 const ObjectName MaterialPass::EventMaterialSet = ObjectName("EventMaterialSet");
 
 MaterialPass::MaterialPass()
@@ -169,7 +172,8 @@ void MaterialPass::setMaterial(Material* M)
 
    releaseConstantBufferData();
 
-   ShaderProgram* cShaderProgram = RenderSystem::getInstance()->getShaderProgram(cMaterial->getShaderProgram());
+   const ObjectRegistry* cShadersObjectRegistry = ObjectManagers::getInstance()->getObjectRegistry(ShadersObjectRegistryName);
+   ShaderProgram* cShaderProgram = static_cast<ShaderProgram*>(cShadersObjectRegistry->find(cMaterial->getShaderProgram().getID())->second);
    GEAssert(cShaderProgram);
 
    if(cShaderProgram->VertexParameters.size() > 0)
@@ -239,7 +243,8 @@ void MaterialPass::setMaterialName(const Core::ObjectName& Name)
    if(cMaterial && Name == cMaterial->getName())
       return;
 
-   setMaterial(RenderSystem::getInstance()->getMaterial(Name));
+   const ObjectRegistry* cMaterialObjectRegistry = ObjectManagers::getInstance()->getObjectRegistry(MaterialObjectRegistryName);
+   setMaterial(static_cast<Material*>(cMaterialObjectRegistry->find(Name.getID())->second));
 }
 
 void MaterialPass::setActive(bool Active)
