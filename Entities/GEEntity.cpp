@@ -217,6 +217,9 @@ Scene* Entity::getOwner() const
 
 void Entity::setName(const Core::ObjectName& Name)
 {
+   if(Name == cName)
+      return;
+
    cOwner->renameEntity(this, Name);
 }
 

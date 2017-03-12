@@ -12,7 +12,6 @@
 #include "Core/GEValue.h"
 #include "Core/GEParser.h"
 #include "Core/GEObject.h"
-#include "Rendering/DX11/GERenderSystemDX11.h"
 #include "Rendering/GEMaterial.h"
 #include "Rendering/GEFont.h"
 #include "Entities/GEEntity.h"
@@ -149,12 +148,6 @@ void packTextureFile(const char* XmlFileName)
       iTexturesCount++;
 
    Value(iTexturesCount).writeToStream(sOutputFile);
-
-   for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
-   {
-      const char* sTextureName = xmlTexture.attribute("name").value();
-      Value(sTextureName).writeToStream(sOutputFile);
-   }
 
    for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
    {

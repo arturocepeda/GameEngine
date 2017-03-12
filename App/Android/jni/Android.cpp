@@ -76,6 +76,10 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
    Application::VersionString = GE_VERSION_STRING;
    Application::VersionNumber = GE_VERSION_NUMBER;
 
+#if defined (GE_BINARY_CONTENT)
+   Application::ContentType = ApplicationContentType::Bin;
+#endif
+
    Application::startUp();
 
    // screen size

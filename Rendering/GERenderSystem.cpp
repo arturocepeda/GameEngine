@@ -296,9 +296,6 @@ void RenderSystem::preloadTextures(const char* FileName)
       uint iTexturesCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
 
       for(uint i = 0; i < iTexturesCount; i++)
-         Value::fromStream(ValueType::ObjectName, sStream);
-
-      for(uint i = 0; i < iTexturesCount; i++)
       {
          ObjectName cTextureName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
          const char* sTextureFormat = Value::fromStream(ValueType::String, sStream).getAsString();
