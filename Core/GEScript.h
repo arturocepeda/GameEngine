@@ -15,6 +15,10 @@
 #include "Core/GESingleton.h"
 #include "Entities/GEEntity.h"
 
+#if !defined (SOL_USING_CXX_LUA)
+# define SOL_USING_CXX_LUA
+#endif
+
 #include "Externals/sol2/sol.hpp"
 
 namespace GE { namespace Core

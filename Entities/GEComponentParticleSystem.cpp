@@ -199,8 +199,6 @@ void ComponentParticleSystem::emitParticle()
 
    case ParticleEmitterType::Line:
       {
-         const Vector3 vEmitterWorldPosition = cTransform->getWorldPosition();
-
          Vector3 vEmitterWorldPointA = vEmitterPointA;
          Vector3 vEmitterWorldPointB = vEmitterPointB;
          Matrix4Transform(cTransform->getGlobalWorldMatrix(), &vEmitterWorldPointA);

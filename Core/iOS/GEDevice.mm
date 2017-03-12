@@ -130,6 +130,18 @@ namespace GE { namespace Core
          }
       }
    }
+   
+   bool Device::contentFileExists(const char* SubDir, const char* Name, const char* Extension)
+   {
+      char sResourceName[256];
+      sprintf(sResourceName, "content/%s/%s.%s", SubDir, Name, Extension);
+      
+      NSString* nsResourceName = [NSString stringWithUTF8String:sResourceName];
+      NSString* nsFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:nsResourceName];
+      const char* sFilePath = [nsFilePath UTF8String];
+      
+      return getFileLength(sFilePath) > 0;
+   }
 
    void Device::readContentFile(ContentType Type, const char* SubDir, const char* Name, const char* Extension, ContentData* ContentData)
    {

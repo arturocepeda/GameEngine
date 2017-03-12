@@ -123,7 +123,6 @@ void ComponentMesh::updateSkinning()
    uint iFloatsPerVertex = sGeometryData.VertexStride / sizeof(float);
 
    const Matrix4* sBoneMatrices = cSkeleton->getBoneMatrices();
-   uint iVertexBoneAttachmentIndex = 0;
    VertexBoneAttachment* cAttachment = cMesh->getVertexBoneAttachment(0);
 
    for(uint iVertexIndex = 0; iVertexIndex < sGeometryData.NumVertices; iVertexIndex++)
