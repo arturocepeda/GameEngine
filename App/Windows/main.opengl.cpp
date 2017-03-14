@@ -29,6 +29,7 @@
 
 #include "Rendering/OpenGL/GERenderSystemES20.h"
 #include "Audio/FMOD/GEAudioSystemFMOD.h"
+#include "Input/GEInputSystem.h"
 
 #pragma comment(lib, "GameEngine.OpenGL.lib")
 #pragma comment(lib, "pugixml.Windows.lib")
@@ -50,6 +51,7 @@
 using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Audio;
+using namespace GE::Input;
 
 int iFullscreenWidth;
 int iFullscreenHeight;
@@ -215,10 +217,7 @@ void render()
 
       Time::setDelta(fTimeDelta);
 
-      State* cCurrentState = StateManager::getInstance()->getActiveState();
-
-      if(cCurrentState)
-         cCurrentState->inputMouse(pMouse.x, pMouse.y);
+      InputSystem::getInstance()->inputMouse(pMouse.x, pMouse.y);
 
       TaskManager::getInstance()->update();
       TaskManager::getInstance()->render();
@@ -234,20 +233,16 @@ GE::Vector2 getMouseScreenPosition()
 
 void keyboardDown(unsigned char key, int x, int y)
 {
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-   cCurrentState->inputKeyPress((char)key);
+   InputSystem::getInstance()->inputKeyPress((char)key);
 }
 
 void keyboardUp(unsigned char key, int x, int y)
 {
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-   cCurrentState->inputKeyRelease((char)key);
+   InputSystem::getInstance()->inputKeyRelease((char)key);
 }
 
 void mouseButton(int button, int state, int x, int y)
 {
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-
    // left button
    if(button == GLUT_LEFT_BUTTON)
    {
@@ -255,31 +250,33 @@ void mouseButton(int button, int state, int x, int y)
       {
          bMouseLeftButton = true;
          vMouseLastPosition = getMouseScreenPosition();
-         cCurrentState->inputMouseLeftButton();
-         cCurrentState->inputTouchBegin(0, vMouseLastPosition);
+         InputSystem::getInstance()->inputMouseLeftButton();
+         InputSystem::getInstance()->inputTouchBegin(0, vMouseLastPosition);
       }
       else
       {
          bMouseLeftButton = false;
          vMouseLastPosition = getMouseScreenPosition();
-         cCurrentState->inputTouchEnd(0, vMouseLastPosition);
+         InputSystem::getInstance()->inputTouchEnd(0, vMouseLastPosition);
       }
    }
    // right button
    else if(button == GLUT_RIGHT_BUTTON)
    {
       if(state == GLUT_DOWN)
-         cCurrentState->inputMouseRightButton();
+      {
+         InputSystem::getInstance()->inputMouseRightButton();
+      }
    }
    // mouse wheel forward
    else if(button == 3)
    {
-      cCurrentState->inputMouseWheel(+1);
+      InputSystem::getInstance()->inputMouseWheel(+1);
    }
    // mouse wheel backward
    else if(button == 4)
    {
-      cCurrentState->inputMouseWheel(-1);
+      InputSystem::getInstance()->inputMouseWheel(-1);
    }
 }
 
@@ -288,8 +285,7 @@ void mouseMove(int x, int y)
    pMouse.x = x;
    pMouse.y = y;
 
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-   cCurrentState->inputMouse(x, y);
+   InputSystem::getInstance()->inputMouse(x, y);
 
    if(bMouseLeftButton)
    {
@@ -302,7 +298,7 @@ void mouseMove(int x, int y)
 #endif
       {
          GE::Vector2 vMouseCurrentPosition = getMouseScreenPosition();
-         cCurrentState->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
+         InputSystem::getInstance()->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
          vMouseLastPosition = vMouseCurrentPosition;      
       }
    }

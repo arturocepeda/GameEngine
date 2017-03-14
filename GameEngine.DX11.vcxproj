@@ -65,6 +65,7 @@
     <ClCompile Include="Entities\GEComponentUIElement.cpp" />
     <ClCompile Include="Entities\GEEntity.cpp" />
     <ClCompile Include="Entities\GEScene.cpp" />
+    <ClCompile Include="Input\GEInputSystem.cpp" />
     <ClCompile Include="Rendering\DX11\GEFontDX11.cpp" />
     <ClCompile Include="Rendering\DX11\GERenderingShadersDX11.cpp" />
     <ClCompile Include="Rendering\DX11\GERenderSystemDX11.cpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="Entities\GEComponentUIElement.h" />
     <ClInclude Include="Entities\GEEntity.h" />
     <ClInclude Include="Entities\GEScene.h" />
+    <ClInclude Include="Input\GEInputSystem.h" />
     <ClInclude Include="Rendering\DX11\GERenderingShadersDX11.h" />
     <ClInclude Include="Rendering\DX11\GERenderSystemDX11.h" />
     <ClInclude Include="Rendering\DX11\GERenderTextureDX11.h" />

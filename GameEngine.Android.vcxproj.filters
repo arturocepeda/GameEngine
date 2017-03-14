@@ -181,6 +181,9 @@
     <ClCompile Include="Rendering\GEShaderProgram.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Input\GEInputSystem.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\GETimer.h">
@@ -402,6 +405,9 @@
     <ClInclude Include="Rendering\GEShaderProgram.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Input\GEInputSystem.h">
+      <Filter>Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">
@@ -427,6 +433,9 @@
     </Filter>
     <Filter Include="Entities">
       <UniqueIdentifier>{9afa4c75-3b1a-4d11-a946-cf1bbf8df3f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{ed515d6f-eaaf-488f-97b0-0eb0475151cd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

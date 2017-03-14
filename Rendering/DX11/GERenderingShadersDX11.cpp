@@ -50,10 +50,14 @@ VertexShader::VertexShader(const char* Filename, uint VertexElements, ID3D11Devi
       ID3DBlob* dxErrorBlob = 0;
       HRESULT hr = D3DCompileFromFile(wsBuffer, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", 0, 0, &dxCodeBlob, &dxErrorBlob);
 
-      if(FAILED(hr) && dxErrorBlob)
+      if(FAILED(hr))
       {
-         OutputDebugStringA((char*)dxErrorBlob->GetBufferPointer());
-         dxErrorBlob->Release();
+         if(dxErrorBlob)
+         {
+            OutputDebugStringA((char*)dxErrorBlob->GetBufferPointer());
+            dxErrorBlob->Release();
+         }
+
          GEAssert(false);
       }
 

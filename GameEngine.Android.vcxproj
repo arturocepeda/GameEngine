@@ -175,6 +175,7 @@
     <ClInclude Include="Entities\GEComponentUIElement.h" />
     <ClInclude Include="Entities\GEEntity.h" />
     <ClInclude Include="Entities\GEScene.h" />
+    <ClInclude Include="Input\GEInputSystem.h" />
     <ClInclude Include="Rendering\GEFont.h" />
     <ClInclude Include="Rendering\GEGraphicsDevice.h" />
     <ClInclude Include="Rendering\GEMaterial.h" />
@@ -242,6 +243,7 @@
     <ClCompile Include="Entities\GEComponentUIElement.cpp" />
     <ClCompile Include="Entities\GEEntity.cpp" />
     <ClCompile Include="Entities\GEScene.cpp" />
+    <ClCompile Include="Input\GEInputSystem.cpp" />
     <ClCompile Include="Rendering\GEFont.cpp" />
     <ClCompile Include="Rendering\GEGraphicsDevice.cpp" />
     <ClCompile Include="Rendering\GEMaterial.cpp" />

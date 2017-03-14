@@ -14,6 +14,8 @@
 #include "GEAllocator.h"
 #include "GETaskManager.h"
 
+#include "Input/GEInputSystem.h"
+
 #include "Content/GEContentManager.h"
 #include "Content/GELocalizedString.h"
 
@@ -32,6 +34,7 @@
 
 using namespace GE;
 using namespace GE::Core;
+using namespace GE::Input;
 using namespace GE::Content;
 using namespace GE::Entities;
 
@@ -49,6 +52,9 @@ ApplicationContentType Application::ContentType = ApplicationContentType::Xml;
 void Application::startUp()
 {
    Allocator::init();
+
+   InputSystem* cInputSystem = Allocator::alloc<InputSystem>();
+   GEInvokeCtor(InputSystem, cInputSystem);
 
    ObjectManagers* cObjectManagers = Allocator::alloc<ObjectManagers>();
    GEInvokeCtor(ObjectManagers, cObjectManagers);
@@ -72,6 +78,9 @@ void Application::shutDown()
 
    GEInvokeDtor(ObjectManagers, ObjectManagers::getInstance());
    Allocator::free(ObjectManagers::getInstance());
+
+   GEInvokeDtor(InputSystem, InputSystem::getInstance());
+   Allocator::free(InputSystem::getInstance());
 
    Allocator::release();
 }

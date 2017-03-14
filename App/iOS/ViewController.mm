@@ -15,6 +15,7 @@
 
 #import "GERenderSystemES20.h"
 #import "GEAudioSystemOpenAL.h"
+#import "GEInputSystem.h"
 #import "GEStateManager.h"
 #import "GETaskManager.h"
 #import "GETimer.h"
@@ -29,6 +30,7 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Audio;
+using namespace GE::Input;
 
 
 @interface ViewController () <UIAccelerometerDelegate>
@@ -225,7 +227,7 @@ using namespace GE::Audio;
 
 -(void) accelerometer:(UIAccelerometer*)accelerometer didAccelerate:(UIAcceleration*)acceleration
 {
-   cStateManager.getActiveState()->updateAccelerometerStatus(Vector3(acceleration.x, acceleration.y, acceleration.z));
+   InputSystem::getInstance()->updateAccelerometerStatus(Vector3(acceleration.x, acceleration.y, acceleration.z));
 }
 
 -(void) update
@@ -264,7 +266,7 @@ using namespace GE::Audio;
             CGPoint cgPoint = [uiTouch locationInView: self.view];
             
             iFingerID[i] = uiTouch;
-            cStateManager.getActiveState()->inputTouchBegin(i, [self pixelToScreen: Vector2(cgPoint.x, cgPoint.y)]);
+            InputSystem::getInstance()->inputTouchBegin(i, [self pixelToScreen: Vector2(cgPoint.x, cgPoint.y)]);
             
             break;
          }
@@ -285,7 +287,7 @@ using namespace GE::Audio;
             CGPoint cgPreviousPoint = [uiTouch previousLocationInView: self.view];
             CGPoint cgCurrentPoint = [uiTouch locationInView: self.view];
             
-            cStateManager.getActiveState()->inputTouchMove(i,
+            InputSystem::getInstance()->inputTouchMove(i,
                                                    [self pixelToScreen: Vector2(cgPreviousPoint.x, cgPreviousPoint.y)],
                                                    [self pixelToScreen: Vector2(cgCurrentPoint.x, cgCurrentPoint.y)]);
             break;
@@ -307,7 +309,7 @@ using namespace GE::Audio;
             CGPoint cgPoint = [uiTouch locationInView: self.view];
             
             iFingerID[i] = 0;
-            cStateManager.getActiveState()->inputTouchEnd(i, [self pixelToScreen: Vector2(cgPoint.x, cgPoint.y)]);
+            InputSystem::getInstance()->inputTouchEnd(i, [self pixelToScreen: Vector2(cgPoint.x, cgPoint.y)]);
             
             break;
          }

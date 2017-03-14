@@ -29,6 +29,9 @@
     <Filter Include="Entities">
       <UniqueIdentifier>{e6acddd2-9d2c-4791-ab21-ce79e53f7112}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{33e5d4a8-66d1-43f2-9bdb-63c2a4f830e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
@@ -213,6 +216,9 @@
     </ClCompile>
     <ClCompile Include="Rendering\GEShaderProgram.cpp">
       <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\GEInputSystem.cpp">
+      <Filter>Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -440,6 +446,9 @@
     </ClInclude>
     <ClInclude Include="Rendering\GEShaderProgram.h">
       <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\GEInputSystem.h">
+      <Filter>Input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

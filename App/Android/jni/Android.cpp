@@ -19,8 +19,11 @@
 #include "cpu-features.h"
 
 #include "config.h"
+
 #include "Rendering/OpenGL/GERenderSystemES20.h"
 #include "Audio/OpenSL/GEAudioSystemOpenSL.h"
+#include "Input/GEInputSystem.h"
+
 #include "Core/GEDevice.h"
 #include "Core/GEStateManager.h"
 #include "Core/GETaskManager.h"
@@ -32,6 +35,7 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Audio;
+using namespace GE::Input;
 
 RenderSystem* cRender;
 AudioSystem* cAudio;
@@ -172,7 +176,7 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputTouchDown(JNI
       {
          iFingerID[i] = index;
          vFingerPosition[i] = pixelToScreen(Vector2(x, y));
-         cStateManager.getActiveState()->inputTouchBegin(i, vFingerPosition[i]);
+         InputSystem::getInstance()->inputTouchBegin(i, vFingerPosition[i]);
          break;
       }
    }
@@ -186,7 +190,7 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputTouchMove(JNI
       {
          Vector2 vPreviousPosition = vFingerPosition[i];
          vFingerPosition[i] = pixelToScreen(Vector2(x, y));
-         cStateManager.getActiveState()->inputTouchMove(i, vPreviousPosition, vFingerPosition[i]);
+         InputSystem::getInstance()->inputTouchMove(i, vPreviousPosition, vFingerPosition[i]);
          break;
       }
    }
@@ -200,7 +204,7 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InputTouchUp(JNIEn
       {
          iFingerID[i] = -1;
          vFingerPosition[i] = pixelToScreen(Vector2(x, y));
-         cStateManager.getActiveState()->inputTouchEnd(i, vFingerPosition[i]);
+         InputSystem::getInstance()->inputTouchEnd(i, vFingerPosition[i]);
          break;
       }
    }
@@ -221,7 +225,9 @@ const float AccelFactor = 0.01f;
 JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateAccelerometerStatus(JNIEnv* env, jclass clazz, jfloat x, jfloat y, jfloat z)
 {
    if(bInitialized)
-      cStateManager.getActiveState()->updateAccelerometerStatus(Vector3(x * -AccelFactor, y * -AccelFactor, z * AccelFactor));
+   {
+      InputSystem::getInstance()->updateAccelerometerStatus(Vector3(x * -AccelFactor, y * -AccelFactor, z * AccelFactor));
+   }
 }
 
 JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateDeviceRotationVector(JNIEnv* env, jclass clazz, jfloat x, jfloat y, jfloat z, jfloat w)

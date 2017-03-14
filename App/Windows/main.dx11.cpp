@@ -27,6 +27,7 @@
 
 #include "Rendering/DX11/GERenderSystemDX11.h"
 #include "Audio/FMOD/GEAudioSystemFMOD.h"
+#include "Input/GEInputSystem.h"
 
 #pragma comment(lib, "GameEngine.DX11.lib")
 #pragma comment(lib, "pugixml.Windows.lib")
@@ -50,6 +51,7 @@
 using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Audio;
+using namespace GE::Input;
 
 // window
 HWND hWnd;
@@ -236,10 +238,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
         if(bMousePositionSet)
         {
             SetCursorPos(pMouse.x, pMouse.y);
-            State* cCurrentState = cStateManager.getActiveState();
-
-            if(cCurrentState)
-               cCurrentState->inputMouse(pMouse.x, pMouse.y);
+            InputSystem::getInstance()->inputMouse(pMouse.x, pMouse.y);
         }
 #endif
 
@@ -250,11 +249,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
            if(fabs(vMouseCurrentPosition.X - vMouseLastPosition.X) > GE_EPSILON ||
               fabs(vMouseCurrentPosition.Y - vMouseLastPosition.Y) > GE_EPSILON)
            {
-              State* cCurrentState = cStateManager.getActiveState();
-
-              if(cCurrentState)
-                 cCurrentState->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
-
+              InputSystem::getInstance()->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
               vMouseLastPosition = vMouseCurrentPosition;
            }
         }
@@ -276,7 +271,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
 
             Time::setDelta(fTimeDelta);
 
-            cStateManager.getActiveState()->inputMouse(pMouse.x, pMouse.y);
+            InputSystem::getInstance()->inputMouse(pMouse.x, pMouse.y);
 
             TaskManager::getInstance()->update();
             TaskManager::getInstance()->render();
@@ -319,63 +314,58 @@ GE::Vector2 GetMouseScreenPosition()
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-
-   if(cCurrentState)
+   switch(iMsg)
    {
-      switch(iMsg)
+   case WM_CLOSE:
+      bEnd = true;
+      return 0;
+
+   case WM_KEYDOWN:
+      InputSystem::getInstance()->inputKeyPress((char)wParam);
+      return 0;
+
+   case WM_KEYUP:
+      InputSystem::getInstance()->inputKeyRelease((char)wParam);
+      return 0;
+
+   case WM_LBUTTONDOWN:
+      bMouseLeftButton = true;
+      vMouseLastPosition = GetMouseScreenPosition();
+      InputSystem::getInstance()->inputMouseLeftButton();
+      InputSystem::getInstance()->inputTouchBegin(0, vMouseLastPosition);
+#if !defined (GE_FULLSCREEN_MODE)
+      SetCapture(hWnd);
+#endif
+      return 0;
+
+   case WM_LBUTTONUP:
+      bMouseLeftButton = false;
+      vMouseLastPosition = GetMouseScreenPosition();
+      InputSystem::getInstance()->inputTouchEnd(0, vMouseLastPosition);
+#if !defined (GE_FULLSCREEN_MODE)
+      ReleaseCapture();
+#endif
+      return 0;
+
+   case WM_RBUTTONDOWN:
+      InputSystem::getInstance()->inputMouseRightButton();
+      return 0;
+
+   case WM_MOUSEWHEEL:
+      InputSystem::getInstance()->inputMouseWheel(GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA);
+      return 0;
+
+#if !defined (GE_FULLSCREEN_MODE)
+   case WM_MOUSEMOVE:
       {
-      case WM_CLOSE:
-         bEnd = true;
-         return 0;
+         RECT rWindow;
+         GetWindowRect(hWnd, &rWindow);
 
-      case WM_KEYDOWN:
-         cCurrentState->inputKeyPress((char)wParam);
-         return 0;
-
-      case WM_KEYUP:
-         cCurrentState->inputKeyRelease((char)wParam);
-         return 0;
-
-      case WM_LBUTTONDOWN:
-         bMouseLeftButton = true;
-         vMouseLastPosition = GetMouseScreenPosition();
-         cCurrentState->inputMouseLeftButton();
-         cCurrentState->inputTouchBegin(0, vMouseLastPosition);
-#if !defined (GE_FULLSCREEN_MODE)
-         SetCapture(hWnd);
-#endif
-         return 0;
-
-      case WM_LBUTTONUP:
-         bMouseLeftButton = false;
-         vMouseLastPosition = GetMouseScreenPosition();
-         cCurrentState->inputTouchEnd(0, vMouseLastPosition);
-#if !defined (GE_FULLSCREEN_MODE)
-         ReleaseCapture();
-#endif
-         return 0;
-
-      case WM_RBUTTONDOWN:
-         cCurrentState->inputMouseRightButton();
-         return 0;
-
-      case WM_MOUSEWHEEL:
-         cCurrentState->inputMouseWheel(GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA);
-         return 0;
-
-#if !defined (GE_FULLSCREEN_MODE)
-      case WM_MOUSEMOVE:
-         {
-            RECT rWindow;
-            GetWindowRect(hWnd, &rWindow);
-
-            if(!PtInRect(&rWindow, pMouse))
-               PostMessage(hWnd, WM_LBUTTONUP, 0, 0);
-         }
-         return 0;
-#endif
+         if(!PtInRect(&rWindow, pMouse))
+            PostMessage(hWnd, WM_LBUTTONUP, 0, 0);
       }
+      return 0;
+#endif
    }
     
    return DefWindowProc(hWnd, iMsg, wParam, lParam);
