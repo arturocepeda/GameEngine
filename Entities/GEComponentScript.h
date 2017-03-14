@@ -22,9 +22,7 @@ namespace GE { namespace Entities
    {
    private:
       Core::Script* cScript;
-
-      GESTLString sScriptInit;
-      GESTLString sScriptUpdate;
+      GESTLString sScriptName;
 
       bool bInitialized;
 
@@ -36,13 +34,9 @@ namespace GE { namespace Entities
 
       void update();
 
-      void setScriptInit(const char* FileName);
-      const char* getScriptInit() const;
+      void setScriptName(const char* FileName);
+      const char* getScriptName() const;
 
-      void setScriptUpdate(const char* FileName);
-      const char* getScriptUpdate() const;
-
-      GEProperty(String, ScriptInit);
-      GEProperty(String, ScriptUpdate);
+      GEProperty(String, ScriptName);
    };
 }}

@@ -30,8 +30,7 @@ ComponentScript::ComponentScript(Entity* Owner)
    cScript = Allocator::alloc<Script>();
    GEInvokeCtor(Script, cScript);
 
-   GERegisterProperty(ComponentScript, String, ScriptInit);
-   GERegisterProperty(ComponentScript, String, ScriptUpdate);
+   GERegisterProperty(ComponentScript, String, ScriptName);
 }
 
 ComponentScript::~ComponentScript()
@@ -42,49 +41,41 @@ ComponentScript::~ComponentScript()
 
 void ComponentScript::update()
 {
+   if(sScriptName.empty())
+      return;
+
    if(!bInitialized)
    {
       cScript->setVariableObject<Entity>("entity", cOwner);
 
-      if(!sScriptInit.empty())
+      if(cScript->isFunctionDefined("init"))
+      {
          cScript->runFunction("init");
+      }
 
       bInitialized = true;
    }
 
-   if(sScriptUpdate.empty())
-      return;
-
    cScript->setVariableObject<Scene>("scene", Scene::getActiveScene());
    cScript->setVariableFloat("deltaTime", Time::getClock(0).getDelta());
    
-   cScript->runFunction("update");
+   if(cScript->isFunctionDefined("update"))
+   {
+      cScript->runFunction("update");
+   }
 }
 
-void ComponentScript::setScriptInit(const char* FileName)
+void ComponentScript::setScriptName(const char* FileName)
 {
    if(!FileName || strlen(FileName) == 0)
       return;
 
-   sScriptInit = FileName;
+   sScriptName = FileName;
    cScript->loadFromFile(FileName);
+   bInitialized = false;
 }
 
-const char* ComponentScript::getScriptInit() const
+const char* ComponentScript::getScriptName() const
 {
-   return sScriptInit.c_str();
-}
-
-void ComponentScript::setScriptUpdate(const char* FileName)
-{
-   if(!FileName || strlen(FileName) == 0)
-      return;
-
-   sScriptUpdate = FileName;
-   cScript->loadFromFile(FileName);
-}
-
-const char* ComponentScript::getScriptUpdate() const
-{
-   return sScriptUpdate.c_str();
+   return sScriptName.c_str();
 }

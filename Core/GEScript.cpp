@@ -100,13 +100,8 @@ void Script::setVariableFloat(const char* VariableName, float Value)
 
 bool Script::isFunctionDefined(const char* FunctionName) const
 {
-   lua_pushstring(lua, FunctionName);
-   lua_pushglobaltable(lua);
-
-   bool bIsFunctionDefined = lua_isfunction(lua, -1);
-   lua_pop(lua, 1);
-
-   return bIsFunctionDefined;
+   lua_getglobal(lua, FunctionName);
+   return lua_isfunction(lua, lua_gettop(lua));
 }
 
 void Script::runFunction(const char* FunctionName)
