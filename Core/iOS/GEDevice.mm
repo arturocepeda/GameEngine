@@ -318,6 +318,6 @@ namespace GE { namespace Core
    
    int Device::getNumberOfCPUCores()
    {
-      return [[NSProcessInfo processInfo] processorCount];
+      return (int)[[NSProcessInfo processInfo] processorCount];
    }
 }}
