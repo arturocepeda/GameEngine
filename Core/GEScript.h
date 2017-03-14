@@ -13,10 +13,13 @@
 #pragma once
 
 #include "Core/GESingleton.h"
+#include "Core/GEPlatform.h"
 #include "Entities/GEEntity.h"
 
-#if !defined (SOL_USING_CXX_LUA)
-# define SOL_USING_CXX_LUA
+#if defined (GE_PLATFORM_IOS)
+# if !defined (SOL_USING_CXX_LUA)
+#  define SOL_USING_CXX_LUA
+# endif
 #endif
 
 #include "Externals/sol2/sol.hpp"
