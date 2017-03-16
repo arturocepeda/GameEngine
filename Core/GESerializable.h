@@ -60,6 +60,8 @@ namespace GE { namespace Core
       void removeProperty(uint PropertyIndex);
 
    public:
+      static const ObjectName EventPropertiesUpdated;
+
       const ObjectName& getClassName() const;
 
       uint getPropertiesCount() const;

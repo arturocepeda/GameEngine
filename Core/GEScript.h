@@ -15,6 +15,7 @@
 #include "Core/GESingleton.h"
 #include "Core/GEPlatform.h"
 #include "Entities/GEEntity.h"
+#include "Types/GESTLTypes.h"
 
 #if defined (GE_PLATFORM_IOS)
 # if !defined (SOL_USING_CXX_LUA)
@@ -31,6 +32,12 @@ namespace GE { namespace Core
    private:
       sol::state lua;
 
+      GESTLVector(ObjectName) vGlobalVariableNames;
+      GESTLVector(ObjectName) vGlobalFunctionNames;
+
+      static GESTLSet(uint) sDefaultGlobalNames;
+
+      void collectGlobalSymbols();
       void registerTypes();
 
    public:
@@ -40,11 +47,21 @@ namespace GE { namespace Core
       void loadFromCode(const GESTLString& Code);
       void loadFromFile(const char* FileName);
 
-      void setVariableInt(const char* VariableName, int Value);
-      void setVariableFloat(const char* VariableName, float Value);
-
       template<typename T>
-      void setVariableObject(const char* VariableName, T* Ptr) { lua[VariableName] = Ptr; }
+      void setVariable(const char* VariableName, T Value)
+      {
+         lua[VariableName] = Value;
+      }
+      template<typename T>
+      T getVariable(const char* VariableName)
+      {
+         return lua.get<T>(VariableName);
+      }
+
+      ValueType getVariableType(const char* VariableName) const;
+
+      const GESTLVector(ObjectName)& getGlobalVariableNames() const { return vGlobalVariableNames; }
+      const GESTLVector(ObjectName)& getGlobalFunctionNames() const { return vGlobalFunctionNames; }
 
       bool isFunctionDefined(const char* FunctionName) const;
       void runFunction(const char* FunctionName);

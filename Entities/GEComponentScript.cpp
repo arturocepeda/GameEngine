@@ -31,6 +31,8 @@ ComponentScript::ComponentScript(Entity* Owner)
    GEInvokeCtor(Script, cScript);
 
    GERegisterProperty(ComponentScript, String, ScriptName);
+
+   iBasePropertiesCount = getPropertiesCount();
 }
 
 ComponentScript::~ComponentScript()
@@ -46,7 +48,7 @@ void ComponentScript::update()
 
    if(!bInitialized)
    {
-      cScript->setVariableObject<Entity>("entity", cOwner);
+      cScript->setVariable<Entity*>("entity", cOwner);
 
       if(cScript->isFunctionDefined("init"))
       {
@@ -56,8 +58,8 @@ void ComponentScript::update()
       bInitialized = true;
    }
 
-   cScript->setVariableObject<Scene>("scene", Scene::getActiveScene());
-   cScript->setVariableFloat("deltaTime", Time::getClock(0).getDelta());
+   cScript->setVariable<Scene*>("scene", Scene::getActiveScene());
+   cScript->setVariable<float>("deltaTime", Time::getClock(0).getDelta());
    
    if(cScript->isFunctionDefined("update"))
    {
@@ -73,9 +75,49 @@ void ComponentScript::setScriptName(const char* FileName)
    sScriptName = FileName;
    cScript->loadFromFile(FileName);
    bInitialized = false;
+
+   while(getPropertiesCount() > iBasePropertiesCount)
+      removeProperty(getPropertiesCount() - 1);
+
+   registerScriptProperties();
 }
 
 const char* ComponentScript::getScriptName() const
 {
    return sScriptName.c_str();
+}
+
+void ComponentScript::registerScriptProperties()
+{
+   const GESTLVector(ObjectName)& vGlobalVariableNames = cScript->getGlobalVariableNames();
+
+   for(uint i = 0; i < vGlobalVariableNames.size(); i++)
+   {
+      const ObjectName& vGlobalVariableName = vGlobalVariableNames[i];
+      const char* sGlobalVariableName = vGlobalVariableName.getString().c_str();
+      ValueType ePropertyValue = cScript->getVariableType(sGlobalVariableName);
+
+      PropertySetter setter = [this, sGlobalVariableName](Value& cValue)
+      {
+         switch(cValue.getType())
+         {
+         case ValueType::Float:
+            cScript->setVariable<float>(sGlobalVariableName, cValue.getAsFloat());
+            break;
+         case ValueType::String:
+            cScript->setVariable<const char*>(sGlobalVariableName, cValue.getAsString());
+            break;
+         }
+      };
+      PropertyGetter getter = [this, sGlobalVariableName, ePropertyValue]() -> Value
+      {
+         return Value(ePropertyValue, cScript->getVariable<const char*>(sGlobalVariableName));
+      };
+
+      registerProperty(vGlobalVariableName, ePropertyValue, setter, getter);
+   }
+
+   EventArgs sEventArgs;
+   sEventArgs.Sender = cOwner;
+   cOwner->triggerEvent(EventPropertiesUpdated, &sEventArgs);
 }

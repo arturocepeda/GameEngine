@@ -866,6 +866,15 @@ void compileScripts()
       sShellExecuteInfo.nShow = SW_HIDE;
       sShellExecuteInfo.hInstApp = NULL;
       ShellExecuteEx(&sShellExecuteInfo);
+
+      sprintf(sOutputPath, "%s\\%s", sCurrentDirectory, ContentBinDirName);
+      sprintf(sOutputPath, "%s\\Scripts", sOutputPath);
+      sprintf(sOutputPath, "%s\\x64_%sbc", sOutputPath, sScriptFileName);
+
+      sprintf(sParameters, "-o %s -s %s", sOutputPath, sInputPath);
+
+      sShellExecuteInfo.lpFile = "..\\..\\GameEngine\\Tools\\Externals\\lua53\\luac53_x64.exe";
+      ShellExecuteEx(&sShellExecuteInfo);
    }
    while(FindNextFile(hFile, &sFileData));
 

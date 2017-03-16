@@ -24,7 +24,10 @@ namespace GE { namespace Entities
       Core::Script* cScript;
       GESTLString sScriptName;
 
+      uint iBasePropertiesCount;
       bool bInitialized;
+
+      void registerScriptProperties();
 
    public:
       static ComponentType getType() { return ComponentType::Script; }

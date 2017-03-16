@@ -42,7 +42,16 @@ using namespace GE::Entities;
 
 
 //
-//  (Extensions for lua types)
+//  (Global functions for Lua)
+//
+void luaLog(const char* sMessage)
+{
+   Device::log(sMessage);
+}
+
+
+//
+//  (Extensions for Lua types)
 //
 class luaEntity : public Entity
 {
@@ -55,10 +64,30 @@ public:
 //
 //  Script
 //
+GESTLSet(uint) Script::sDefaultGlobalNames;
+
 Script::Script()
 {
    lua.open_libraries();
    registerTypes();
+
+   if(sDefaultGlobalNames.empty())
+   {
+      lua_State* luaState = lua.lua_state();
+
+      lua_pushglobaltable(luaState);
+      lua_pushnil(luaState);
+
+      while(lua_next(luaState, -2) != 0)
+      {
+         const char* sVariableName = lua_tostring(luaState, -2);
+         ObjectName cVariableName = ObjectName(sVariableName);
+         sDefaultGlobalNames.insert(cVariableName.getID());
+         lua_pop(luaState, 1);
+      }
+
+      lua_pop(luaState, 1);
+   }
 }
 
 Script::~Script()
@@ -68,6 +97,7 @@ Script::~Script()
 void Script::loadFromCode(const GESTLString& Code)
 {
    lua.script(Code.c_str());
+   collectGlobalSymbols();
 }
 
 void Script::loadFromFile(const char* FileName)
@@ -81,37 +111,117 @@ void Script::loadFromFile(const char* FileName)
    }
    else
    {
+#if defined (GE_64_BIT)
+      char sFileNamex64[64];
+      sprintf(sFileNamex64, "x64_%s", FileName);
+      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sFileNamex64, "luabc", &cContentData);
+#else
       Device::readContentFile(ContentType::GenericBinaryData, "Scripts", FileName, "luabc", &cContentData);
+#endif
       lua_State* luaState = lua.lua_state();
       luaL_loadbuffer(luaState, cContentData.getData(), cContentData.getDataSize(), 0);
       lua_pcall(luaState, 0, LUA_MULTRET, 0);
    }
+
+   collectGlobalSymbols();
 }
 
-void Script::setVariableInt(const char* VariableName, int Value)
+ValueType Script::getVariableType(const char* VariableName) const
 {
-   lua[VariableName] = Value;
-}
+   lua_State* luaState = lua.lua_state();
+   lua_getglobal(luaState, VariableName);
 
-void Script::setVariableFloat(const char* VariableName, float Value)
-{
-   lua[VariableName] = Value;
+   int iIndex = lua_gettop(luaState);
+
+   if(lua_isnumber(luaState, iIndex))
+      return ValueType::Float;
+
+   if(lua_isuserdata(luaState, iIndex))
+      return ValueType::Count;
+   
+   return ValueType::String;
 }
 
 bool Script::isFunctionDefined(const char* FunctionName) const
 {
-   lua_getglobal(lua, FunctionName);
-   return lua_isfunction(lua, lua_gettop(lua));
+   ObjectName cFuncionName = ObjectName(FunctionName);
+
+   for(uint i = 0; i < vGlobalFunctionNames.size(); i++)
+   {
+      if(vGlobalFunctionNames[i] == cFuncionName)
+      {
+         return true;
+      }
+   }
+
+   return false;
 }
 
 void Script::runFunction(const char* FunctionName)
 {
    std::function<void()> luaFunction = (std::function<void()>)lua[FunctionName];
-   luaFunction();
+
+   try
+   {
+      luaFunction();
+   }
+   catch(...)
+   {
+      Device::log("Lua error ('%s' function)", FunctionName);
+   }
+}
+
+void Script::collectGlobalSymbols()
+{
+   // collect all global user symbols
+   GESTLVector(ObjectName) vGlobalUserSymbols;
+
+   lua_State* luaState = lua.lua_state();
+
+   lua_pushglobaltable(luaState);
+   lua_pushnil(luaState);
+
+   while(lua_next(luaState, -2) != 0)
+   {
+      const char* sVariableName = lua_tostring(luaState, -2);
+      ObjectName cVariableName = ObjectName(sVariableName);
+
+      if(sDefaultGlobalNames.find(cVariableName.getID()) == sDefaultGlobalNames.end())
+      {
+         vGlobalUserSymbols.push_back(cVariableName);
+      }
+
+      lua_pop(luaState, 1);
+   }
+
+   lua_pop(luaState, 1);
+
+   // fill the lists of variables and functions
+   vGlobalVariableNames.clear();
+   vGlobalFunctionNames.clear();
+
+   for(uint i = 0; i < vGlobalUserSymbols.size(); i++)
+   {
+      lua_getglobal(luaState, vGlobalUserSymbols[i].getString().c_str());
+      
+      if(lua_isfunction(luaState, lua_gettop(luaState)))
+      {
+         vGlobalFunctionNames.push_back(vGlobalUserSymbols[i]);
+      }
+      else
+      {
+         vGlobalVariableNames.push_back(vGlobalUserSymbols[i]);
+      }
+   }
 }
 
 void Script::registerTypes()
 {
+   //
+   //  Global functions
+   //
+   lua["log"] = luaLog;
+
    //
    //  GE
    //
