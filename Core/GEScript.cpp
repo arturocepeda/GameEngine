@@ -87,6 +87,11 @@ Script::Script()
       }
 
       lua_pop(luaState, 1);
+
+      // add GE variable names
+      sDefaultGlobalNames.insert(ObjectName("deltaTime").getID());
+      sDefaultGlobalNames.insert(ObjectName("scene").getID());
+      sDefaultGlobalNames.insert(ObjectName("entity").getID());
    }
 }
 
@@ -133,13 +138,16 @@ ValueType Script::getVariableType(const char* VariableName) const
 
    int iIndex = lua_gettop(luaState);
 
+   if(lua_isinteger(luaState, iIndex))
+      return ValueType::Int;
+
    if(lua_isnumber(luaState, iIndex))
       return ValueType::Float;
 
-   if(lua_isuserdata(luaState, iIndex))
-      return ValueType::Count;
+   if(lua_isstring(luaState, iIndex))
+      return ValueType::String;
    
-   return ValueType::String;
+   return ValueType::Count;
 }
 
 bool Script::isFunctionDefined(const char* FunctionName) const

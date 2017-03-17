@@ -97,6 +97,9 @@ void ComponentScript::registerScriptProperties()
       const char* sGlobalVariableName = vGlobalVariableName.getString().c_str();
       ValueType ePropertyValue = cScript->getVariableType(sGlobalVariableName);
 
+      if(ePropertyValue == ValueType::Count)
+         continue;
+
       PropertySetter setter = [this, sGlobalVariableName](Value& cValue)
       {
          switch(cValue.getType())
