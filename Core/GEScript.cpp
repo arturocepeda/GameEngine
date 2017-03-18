@@ -52,7 +52,7 @@ using namespace GE::Rendering;
 //
 void luaLog(const char* sMessage)
 {
-   Device::log(sMessage);
+   Device::log("[Lua] %s", sMessage);
 }
 
 
@@ -281,6 +281,7 @@ void Script::registerTypes()
       , "X", &Vector3::X
       , "Y", &Vector3::Y
       , "Z", &Vector3::Z
+      , "getDistanceTo", &Vector3::getDistanceTo
    );
    lua.new_usertype<Rotation>
    (
@@ -295,6 +296,21 @@ void Script::registerTypes()
    (
       "ObjectName"
       , sol::constructors<sol::types<const char*>>()
+   );
+   lua.new_usertype<Value>
+   (
+      "Value"
+      , sol::constructors<sol::types<bool>, sol::types<int>, sol::types<float>, sol::types<const char*>>()
+      , "getAsBool", &Value::getAsBool
+      , "getAsInt", &Value::getAsInt
+      , "getAsFloat", &Value::getAsFloat
+      , "getAsString", &Value::getAsString
+   );
+   lua.new_usertype<Serializable>
+   (
+      "Serializable"
+      , "get", &Serializable::get
+      , "set", &Serializable::set
    );
    lua.new_usertype<Physics::Ray>
    (
@@ -314,6 +330,12 @@ void Script::registerTypes()
    //
    //  GE::Entities
    //
+   lua.new_usertype<Component>
+   (
+      "Component"
+      , "getOwner", &Component::getOwner
+      , sol::base_classes, sol::bases<Serializable>()
+   );
    lua.new_usertype<ComponentTransform>
    (
       "ComponentTransform"
@@ -331,6 +353,7 @@ void Script::registerTypes()
       , "setRotation", &ComponentTransform::setRotation
       , "setOrientation", &ComponentTransform::setOrientation
       , "setScale", (void (ComponentTransform::*)(const Vector3&))&ComponentTransform::setScale
+      , sol::base_classes, sol::bases<Component>()
    );
    lua.new_usertype<ComponentRenderable>
    (
@@ -339,6 +362,7 @@ void Script::registerTypes()
       , "getMaterialPass", &ComponentRenderable::getMaterialPass
       , "addMaterialPass", &ComponentRenderable::addMaterialPass
       , "removeMaterialPass", &ComponentRenderable::removeMaterialPass
+      , sol::base_classes, sol::bases<Component>()
    );
    lua.new_usertype<ComponentSprite>
    (
@@ -350,11 +374,13 @@ void Script::registerTypes()
    (
       "ComponentCamera"
       , "getScreenRay", &ComponentCamera::getScreenRay
+      , sol::base_classes, sol::bases<Component>()
    );
    lua.new_usertype<ComponentCollider>
    (
       "ComponentCollider"
       , "checkCollision", &ComponentCollider::checkCollision
+      , sol::base_classes, sol::bases<Component>()
    );
    lua.new_usertype<Entity>
    (
@@ -389,5 +415,6 @@ void Script::registerTypes()
       , "getActive", &MaterialPass::getActive
       , "setActive", &MaterialPass::setActive
       , "getMaterialName", &MaterialPass::getMaterialName
+      , sol::base_classes, sol::bases<Serializable>()
    );
 }
