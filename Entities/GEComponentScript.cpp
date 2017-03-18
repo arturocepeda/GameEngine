@@ -20,6 +20,9 @@ using namespace GE::Core;
 using namespace GE::Entities;
 using namespace GE::Content;
 
+const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
+const ObjectName cInputTouchMoveFunctionName = ObjectName("inputTouchMove");
+const ObjectName cInputTouchEndFunctionName = ObjectName("inputTouchEnd");
 
 ComponentScript::ComponentScript(Entity* Owner)
    : Component(Owner)
@@ -39,32 +42,6 @@ ComponentScript::~ComponentScript()
 {
    GEInvokeDtor(Script, cScript);
    Allocator::free(cScript);
-}
-
-void ComponentScript::update()
-{
-   if(sScriptName.empty())
-      return;
-
-   if(!bInitialized)
-   {
-      cScript->setVariable<Entity*>("entity", cOwner);
-
-      if(cScript->isFunctionDefined("init"))
-      {
-         cScript->runFunction("init");
-      }
-
-      bInitialized = true;
-   }
-
-   cScript->setVariable<Scene*>("scene", Scene::getActiveScene());
-   cScript->setVariable<float>("deltaTime", Time::getClock(0).getDelta());
-   
-   if(cScript->isFunctionDefined("update"))
-   {
-      cScript->runFunction("update");
-   }
 }
 
 void ComponentScript::setScriptName(const char* FileName)
@@ -104,6 +81,12 @@ void ComponentScript::registerScriptProperties()
       {
          switch(cValue.getType())
          {
+         case ValueType::Bool:
+            cScript->setVariable<bool>(sGlobalVariableName, cValue.getAsBool());
+            break;
+         case ValueType::Int:
+            cScript->setVariable<int>(sGlobalVariableName, cValue.getAsInt());
+            break;
          case ValueType::Float:
             cScript->setVariable<float>(sGlobalVariableName, cValue.getAsFloat());
             break;
@@ -114,7 +97,13 @@ void ComponentScript::registerScriptProperties()
       };
       PropertyGetter getter = [this, sGlobalVariableName, ePropertyValue]() -> Value
       {
-         return Value(ePropertyValue, cScript->getVariable<const char*>(sGlobalVariableName));
+         switch(ePropertyValue)
+         {
+         case ValueType::Bool:
+            return Value(cScript->getVariable<bool>(sGlobalVariableName));
+         default:
+            return Value(ePropertyValue, cScript->getVariable<const char*>(sGlobalVariableName));
+         }
       };
 
       registerProperty(vGlobalVariableName, ePropertyValue, setter, getter);
@@ -123,4 +112,102 @@ void ComponentScript::registerScriptProperties()
    EventArgs sEventArgs;
    sEventArgs.Sender = cOwner;
    cOwner->triggerEvent(EventPropertiesUpdated, &sEventArgs);
+}
+
+void ComponentScript::update()
+{
+   if(sScriptName.empty())
+      return;
+
+   if(!bInitialized)
+   {
+      cScript->setVariable<Entity*>("entity", cOwner);
+
+      if(cScript->isFunctionDefined("init"))
+      {
+         cScript->runFunction("init");
+      }
+
+      bInitialized = true;
+   }
+
+   cScript->setVariable<Scene*>("scene", Scene::getActiveScene());
+   cScript->setVariable<float>("deltaTime", Time::getClock(0).getDelta());
+
+   if(cScript->isFunctionDefined("update"))
+   {
+      cScript->runFunction("update");
+   }
+}
+
+void ComponentScript::inputTouchBegin(int ID, const Vector2& Point)
+{
+   if(sScriptName.empty())
+      return;
+
+   if(!cScript->isFunctionDefined(cInputTouchBeginFunctionName))
+      return;
+
+   std::function<void(int, const Vector2&)> function =
+      cScript->getFunction<void(int, const Vector2&)>(cInputTouchBeginFunctionName.getString().c_str());
+
+   if(function)
+   {
+      try
+      {
+         function(ID, Point);
+      }
+      catch(...)
+      {
+         Script::handleFunctionError(cInputTouchBeginFunctionName.getString().c_str());
+      }
+   }
+}
+
+void ComponentScript::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
+{
+   if(sScriptName.empty())
+      return;
+
+   if(!cScript->isFunctionDefined(cInputTouchMoveFunctionName))
+      return;
+
+   std::function<void(int, const Vector2&, const Vector2&)> function =
+      cScript->getFunction<void(int, const Vector2&, const Vector2&)>(cInputTouchMoveFunctionName.getString().c_str());
+
+   if(function)
+   {
+      try
+      {
+         function(ID, PreviousPoint, CurrentPoint);
+      }
+      catch(...)
+      {
+         Script::handleFunctionError(cInputTouchMoveFunctionName.getString().c_str());
+      }
+   }
+}
+
+void ComponentScript::inputTouchEnd(int ID, const Vector2& Point)
+{
+   if(sScriptName.empty())
+      return;
+
+   if(!cScript->isFunctionDefined(cInputTouchEndFunctionName))
+      return;
+
+   std::function<void(int, const Vector2&)> function =
+      cScript->getFunction<void(int, const Vector2&)>(cInputTouchEndFunctionName.getString().c_str());
+
+   if(function)
+   {
+      try
+      {
+         function(ID, Point);
+      }
+      catch(...)
+      {
+         Script::handleFunctionError(cInputTouchEndFunctionName.getString().c_str());
+      }
+   }
 }

@@ -35,10 +35,14 @@ namespace GE { namespace Entities
       ComponentScript(Entity* Owner);
       ~ComponentScript();
 
-      void update();
-
       void setScriptName(const char* FileName);
       const char* getScriptName() const;
+
+      void update();
+
+      void inputTouchBegin(int ID, const Vector2& Point);
+      void inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
+      void inputTouchEnd(int ID, const Vector2& Point);
 
       GEProperty(String, ScriptName);
    };

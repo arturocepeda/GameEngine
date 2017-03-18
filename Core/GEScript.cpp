@@ -14,10 +14,15 @@
 #include "Core/GEPlatform.h"
 #include "Core/GEApplication.h"
 #include "Core/GEDevice.h"
+#include "Core/GEPhysics.h"
 #include "Content/GEContentData.h"
 #include "Entities/GEScene.h"
 #include "Entities/GEComponentTransform.h"
 #include "Entities/GEComponentSprite.h"
+#include "Entities/GEComponentCamera.h"
+#include "Entities/GEComponentCollider.h"
+#include "Rendering/GERenderSystem.h"
+#include "Rendering/GEMaterial.h"
 
 #if defined (GE_PLATFORM_WINDOWS)
 # if defined (GE_64_BIT)
@@ -39,6 +44,7 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Content;
 using namespace GE::Entities;
+using namespace GE::Rendering;
 
 
 //
@@ -57,7 +63,10 @@ class luaEntity : public Entity
 {
 public:
    ComponentTransform* getComponentTransform() { return getComponent<ComponentTransform>(); }
+   ComponentRenderable* getComponentRenderable() { return getComponent<ComponentRenderable>(); }
    ComponentSprite* getComponentSprite() { return getComponent<ComponentSprite>(); }
+   ComponentCamera* getComponentCamera() { return getComponent<ComponentCamera>(); }
+   ComponentCollider* getComponentCollider() { return getComponent<ComponentCollider>(); }
 };
 
 
@@ -99,36 +108,60 @@ Script::~Script()
 {
 }
 
+void Script::handleScriptError(const char* ScriptName)
+{
+   Device::log("Lua error (the '%s' script could not be loaded)", ScriptName);
+}
+
+void Script::handleFunctionError(const char* FunctionName)
+{
+   Device::log("Lua error ('%s' function)", FunctionName);
+}
+
 void Script::loadFromCode(const GESTLString& Code)
 {
-   lua.script(Code.c_str());
-   collectGlobalSymbols();
+   try
+   {
+      lua.script(Code.c_str());
+      collectGlobalSymbols();
+   }
+   catch(...)
+   {
+      handleScriptError("<code>");
+   }
 }
 
 void Script::loadFromFile(const char* FileName)
 {
-   ContentData cContentData;
+   try
+   {
+      ContentData cContentData;
 
-   if(Application::ContentType == ApplicationContentType::Xml)
-   {
-      Device::readContentFile(ContentType::GenericTextData, "Scripts", FileName, "lua", &cContentData);
-      lua.script(cContentData.getData());
-   }
-   else
-   {
+      if(Application::ContentType == ApplicationContentType::Xml)
+      {
+         Device::readContentFile(ContentType::GenericTextData, "Scripts", FileName, "lua", &cContentData);
+         lua.script(cContentData.getData());
+      }
+      else
+      {
 #if defined (GE_64_BIT)
-      char sFileNamex64[64];
-      sprintf(sFileNamex64, "x64_%s", FileName);
-      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sFileNamex64, "luabc", &cContentData);
+         char sFileNamex64[64];
+         sprintf(sFileNamex64, "x64_%s", FileName);
+         Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sFileNamex64, "luabc", &cContentData);
 #else
-      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", FileName, "luabc", &cContentData);
+         Device::readContentFile(ContentType::GenericBinaryData, "Scripts", FileName, "luabc", &cContentData);
 #endif
-      lua_State* luaState = lua.lua_state();
-      luaL_loadbuffer(luaState, cContentData.getData(), cContentData.getDataSize(), 0);
-      lua_pcall(luaState, 0, LUA_MULTRET, 0);
-   }
+         lua_State* luaState = lua.lua_state();
+         luaL_loadbuffer(luaState, cContentData.getData(), cContentData.getDataSize(), 0);
+         lua_pcall(luaState, 0, LUA_MULTRET, 0);
+      }
 
-   collectGlobalSymbols();
+      collectGlobalSymbols();
+   }
+   catch(...)
+   {
+      handleScriptError(FileName);
+   }
 }
 
 ValueType Script::getVariableType(const char* VariableName) const
@@ -137,6 +170,9 @@ ValueType Script::getVariableType(const char* VariableName) const
    lua_getglobal(luaState, VariableName);
 
    int iIndex = lua_gettop(luaState);
+
+   if(lua_isboolean(luaState, iIndex))
+      return ValueType::Bool;
 
    if(lua_isinteger(luaState, iIndex))
       return ValueType::Int;
@@ -150,13 +186,11 @@ ValueType Script::getVariableType(const char* VariableName) const
    return ValueType::Count;
 }
 
-bool Script::isFunctionDefined(const char* FunctionName) const
+bool Script::isFunctionDefined(const ObjectName& FunctionName) const
 {
-   ObjectName cFuncionName = ObjectName(FunctionName);
-
    for(uint i = 0; i < vGlobalFunctionNames.size(); i++)
    {
-      if(vGlobalFunctionNames[i] == cFuncionName)
+      if(vGlobalFunctionNames[i] == FunctionName)
       {
          return true;
       }
@@ -175,7 +209,7 @@ void Script::runFunction(const char* FunctionName)
    }
    catch(...)
    {
-      Device::log("Lua error ('%s' function)", FunctionName);
+      handleFunctionError(FunctionName);
    }
 }
 
@@ -262,6 +296,20 @@ void Script::registerTypes()
       "ObjectName"
       , sol::constructors<sol::types<const char*>>()
    );
+   lua.new_usertype<Physics::Ray>
+   (
+      "Ray"
+      , sol::constructors<sol::types<const Vector3&, const Vector3&>>()
+   );
+   lua.new_usertype<Physics::HitInfo>
+   (
+      "HitInfo"
+      , sol::constructors<sol::types<>>()
+      , "Collider", &Physics::HitInfo::Collider
+      , "Position", &Physics::HitInfo::Position
+      , "Normal", &Physics::HitInfo::Normal
+      , "Distance", &Physics::HitInfo::Distance
+   );
 
    //
    //  GE::Entities
@@ -284,17 +332,38 @@ void Script::registerTypes()
       , "setOrientation", &ComponentTransform::setOrientation
       , "setScale", (void (ComponentTransform::*)(const Vector3&))&ComponentTransform::setScale
    );
+   lua.new_usertype<ComponentRenderable>
+   (
+      "ComponentRenderable"
+      , "getMaterialPassCount", &ComponentRenderable::getMaterialPassCount
+      , "getMaterialPass", &ComponentRenderable::getMaterialPass
+      , "addMaterialPass", &ComponentRenderable::addMaterialPass
+      , "removeMaterialPass", &ComponentRenderable::removeMaterialPass
+   );
    lua.new_usertype<ComponentSprite>
    (
       "ComponentSprite"
       , "isOver", &ComponentSprite::isOver
       , sol::base_classes, sol::bases<ComponentRenderable>()
    );
+   lua.new_usertype<ComponentCamera>
+   (
+      "ComponentCamera"
+      , "getScreenRay", &ComponentCamera::getScreenRay
+   );
+   lua.new_usertype<ComponentCollider>
+   (
+      "ComponentCollider"
+      , "checkCollision", &ComponentCollider::checkCollision
+   );
    lua.new_usertype<Entity>
    (
       "Entity"
       , "getComponentTransform", &luaEntity::getComponentTransform
+      , "getComponentRenderable", &luaEntity::getComponentRenderable
       , "getComponentSprite", &luaEntity::getComponentSprite
+      , "getComponentCamera", &luaEntity::getComponentCamera
+      , "getComponentCollider", &luaEntity::getComponentCollider
    );
    lua.new_usertype<Scene>
    (
@@ -303,5 +372,22 @@ void Script::registerTypes()
       , "getEntity", &Scene::getEntity
       , "addEntity", (Entity* (Scene::*)(const ObjectName&, Entity*))&Scene::addEntity
       , "addPrefab", (Entity* (Scene::*)(const char*, const ObjectName&, Entity*))&Scene::addPrefab
+   );
+
+   //
+   //  GE::Rendering
+   //
+   lua.new_usertype<RenderSystem>
+   (
+      "RenderSystem"
+      , "getInstance", &RenderSystem::getInstance
+      , "getActiveCamera", &RenderSystem::getActiveCamera
+   );
+   lua.new_usertype<MaterialPass>
+   (
+      "MaterialPass"
+      , "getActive", &MaterialPass::getActive
+      , "setActive", &MaterialPass::setActive
+      , "getMaterialName", &MaterialPass::getMaterialName
    );
 }

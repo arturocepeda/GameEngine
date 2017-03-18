@@ -149,7 +149,7 @@ void ComponentCamera::orbit(const Vector3& ReferencePoint, float Distance, float
    lookAt(ReferencePoint);
 }
 
-void ComponentCamera::worldToScreen(const Vector3& PositionWorld, Vector2* OutPositionScreen)
+void ComponentCamera::worldToScreen(const Vector3& PositionWorld, Vector2* OutPositionScreen) const
 {
    Vector3 vPositionScreen;
    Matrix4Transform(matViewProjection, PositionWorld, &vPositionScreen);
@@ -158,7 +158,7 @@ void ComponentCamera::worldToScreen(const Vector3& PositionWorld, Vector2* OutPo
    OutPositionScreen->Y = vPositionScreen.Y * Device::getAspectRatio();
 }
 
-void ComponentCamera::screenToWorld(const Vector2& PositionScreen, Vector3* OutWorldPointNear, Vector3* OutWorldPointFar)
+void ComponentCamera::screenToWorld(const Vector2& PositionScreen, Vector3* OutWorldPointNear, Vector3* OutWorldPointFar) const
 {
    Matrix4 matInverseViewProjection = matViewProjection;
    Matrix4Invert(&matInverseViewProjection);
@@ -167,4 +167,15 @@ void ComponentCamera::screenToWorld(const Vector2& PositionScreen, Vector3* OutW
    Matrix4Transform(matInverseViewProjection, vPositionScreen, OutWorldPointNear);
    vPositionScreen.Z = 1.0f;
    Matrix4Transform(matInverseViewProjection, vPositionScreen, OutWorldPointFar);
+}
+
+Physics::Ray ComponentCamera::getScreenRay(const Vector2& PositionScreen) const
+{
+   Vector3 vWorldPositionNearPlane;
+   Vector3 vWorldPositionFarPlane;
+   screenToWorld(PositionScreen, &vWorldPositionNearPlane, &vWorldPositionFarPlane);
+
+   Vector3 vDir = vWorldPositionFarPlane - vWorldPositionNearPlane;
+   vDir.normalize();
+   return Physics::Ray(vWorldPositionNearPlane, vDir);
 }

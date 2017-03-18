@@ -187,7 +187,8 @@ void ComponentColliderMesh::setMeshName(const ObjectName& MeshName)
 
 bool ComponentColliderMesh::checkCollision(const Physics::Ray& R, Physics::HitInfo* OutHitInfo) const
 {
-   GEAssert(cMesh);
+   if(!cMesh)
+      return false;
 
    ushort* iIndices = cMesh->getGeometryData().Indices;
    const uint iTrianglesCount = cMesh->getGeometryData().NumIndices / 3;

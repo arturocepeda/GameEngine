@@ -12,10 +12,13 @@
 
 #include "GEInputSystem.h"
 #include "Core/GEStateManager.h"
+#include "Entities/GEScene.h"
+#include "Entities/GEComponentScript.h"
 
 using namespace GE;
 using namespace GE::Input;
 using namespace GE::Core;
+using namespace GE::Entities;
 
 InputSystem::InputSystem()
 {
@@ -93,6 +96,18 @@ void InputSystem::inputTouchBegin(int ID, const Vector2& Point)
    {
       cCurrentState->inputTouchBegin(ID, Point);
    }
+
+   Scene* cActiveScene = Scene::getActiveScene();
+
+   if(cActiveScene)
+   {
+      GESTLVector(Component*) cComponents = cActiveScene->getComponents<ComponentScript>();
+
+      for(uint i = 0; i < cComponents.size(); i++)
+      {
+         static_cast<ComponentScript*>(cComponents[i])->inputTouchBegin(ID, Point);
+      }
+   }
 }
 
 void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
@@ -103,6 +118,18 @@ void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vec
    {
       cCurrentState->inputTouchMove(ID, PreviousPoint, CurrentPoint);
    }
+
+   Scene* cActiveScene = Scene::getActiveScene();
+
+   if(cActiveScene)
+   {
+      GESTLVector(Component*) cComponents = cActiveScene->getComponents<ComponentScript>();
+
+      for(uint i = 0; i < cComponents.size(); i++)
+      {
+         static_cast<ComponentScript*>(cComponents[i])->inputTouchMove(ID, PreviousPoint, CurrentPoint);
+      }
+   }
 }
 
 void InputSystem::inputTouchEnd(int ID, const Vector2& Point)
@@ -112,6 +139,18 @@ void InputSystem::inputTouchEnd(int ID, const Vector2& Point)
    if(cCurrentState)
    {
       cCurrentState->inputTouchEnd(ID, Point);
+   }
+
+   Scene* cActiveScene = Scene::getActiveScene();
+
+   if(cActiveScene)
+   {
+      GESTLVector(Component*) cComponents = cActiveScene->getComponents<ComponentScript>();
+
+      for(uint i = 0; i < cComponents.size(); i++)
+      {
+         static_cast<ComponentScript*>(cComponents[i])->inputTouchEnd(ID, Point);
+      }
    }
 }
 

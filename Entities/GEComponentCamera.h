@@ -13,6 +13,7 @@
 #pragma once
 
 #include "GEComponentTransform.h"
+#include "Core/GEPhysics.h"
 
 namespace GE { namespace Entities
 {
@@ -62,8 +63,10 @@ namespace GE { namespace Entities
       void lookAt(const Vector3& LookAt);
       void orbit(const Vector3& ReferencePoint, float Distance, float Theta, float Phi);
 
-      void worldToScreen(const Vector3& PositionWorld, Vector2* OutPositionScreen);
-      void screenToWorld(const Vector2& PositionScreen, Vector3* OutWorldPointNear, Vector3* OutWorldPointFar);
+      void worldToScreen(const Vector3& PositionWorld, Vector2* OutPositionScreen) const;
+      void screenToWorld(const Vector2& PositionScreen, Vector3* OutWorldPointNear, Vector3* OutWorldPointFar) const;
+
+      Core::Physics::Ray getScreenRay(const Vector2& PositionScreen) const;
 
       GEProperty(Float, FOV);
       GEProperty(Float, NearZ);

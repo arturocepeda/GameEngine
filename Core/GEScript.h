@@ -44,6 +44,9 @@ namespace GE { namespace Core
       Script();
       ~Script();
 
+      static void handleScriptError(const char* ScriptName);
+      static void handleFunctionError(const char* FunctionName);
+
       void loadFromCode(const GESTLString& Code);
       void loadFromFile(const char* FileName);
 
@@ -63,7 +66,13 @@ namespace GE { namespace Core
       const GESTLVector(ObjectName)& getGlobalVariableNames() const { return vGlobalVariableNames; }
       const GESTLVector(ObjectName)& getGlobalFunctionNames() const { return vGlobalFunctionNames; }
 
-      bool isFunctionDefined(const char* FunctionName) const;
+      bool isFunctionDefined(const ObjectName& FunctionName) const;
       void runFunction(const char* FunctionName);
+
+      template<typename T>
+      std::function<T> getFunction(const char* FunctionName)
+      {
+         return (std::function<T>)lua[FunctionName];
+      }
    };
 }}
