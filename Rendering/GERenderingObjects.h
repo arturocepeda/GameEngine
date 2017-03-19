@@ -150,4 +150,13 @@ namespace GE { namespace Rendering
       {
       }
    };
+
+
+   GESerializableEnum(DynamicShadowsBitMask)
+   {
+      Cast     = 1 << 0,
+      Receive  = 1 << 1,
+
+      Count = 2
+   };
 }}

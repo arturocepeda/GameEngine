@@ -723,7 +723,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       ComponentMesh* cMesh = static_cast<ComponentMesh*>(cRenderable);
       MaterialPass* cMaterialPass = sRenderOperation.RenderMaterialPass;
 
-      if(cMesh->getDynamicShadows())
+      if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Cast))
          vShadowedMeshesToRender.push_back(sRenderOperation);
 
       if(cMaterialPass->getMaterial()->getAlpha() < 0.99f)

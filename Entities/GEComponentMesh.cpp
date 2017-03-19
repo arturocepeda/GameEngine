@@ -30,7 +30,7 @@ using namespace GE::Rendering;
 ComponentMesh::ComponentMesh(Entity* Owner)
    : ComponentRenderable(Owner, RenderableType::Mesh, GeometryType::Static)
    , cMesh(0)
-   , bDynamicShadows(false)
+   , eDynamicShadows(0)
    , cSkeleton(0)
 {
    cClassName = ObjectName("Mesh");
@@ -38,7 +38,7 @@ ComponentMesh::ComponentMesh(Entity* Owner)
    eRenderingMode = RenderingMode::_3D;
 
    GERegisterPropertyObjectManager(ComponentMesh, ObjectName, MeshName, Mesh);
-   GERegisterProperty(ComponentMesh, Bool, DynamicShadows);
+   GERegisterPropertyBitMask(ComponentMesh, DynamicShadowsBitMask, DynamicShadows);
 }
 
 ComponentMesh::~ComponentMesh()
@@ -61,14 +61,14 @@ void ComponentMesh::setMeshName(const ObjectName& MeshName)
    loadMesh(cMesh);
 }
 
-bool ComponentMesh::getDynamicShadows() const
+uint8_t ComponentMesh::getDynamicShadows() const
 {
-   return bDynamicShadows;
+   return eDynamicShadows;
 }
 
-void ComponentMesh::setDynamicShadows(bool DynamicShadows)
+void ComponentMesh::setDynamicShadows(uint8_t BitMask)
 {
-   bDynamicShadows = DynamicShadows;
+   eDynamicShadows = BitMask;
 }
 
 void ComponentMesh::loadMesh(Mesh* M)

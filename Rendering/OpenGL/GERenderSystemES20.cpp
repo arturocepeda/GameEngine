@@ -572,7 +572,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
          glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::InverseTransposeWorldMatrix), 1, 0, matModelInverseTranspose.m);
 
-         if(cMesh->getDynamicShadows())
+         if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
          {
             Matrix4 matLightWVP;
             Matrix4Multiply(matLightViewProjection, matModel, &matLightWVP);
@@ -630,7 +630,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), 0);
    }
 
-   if(cMesh && cMesh->getDynamicShadows())
+   if(cMesh && GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
    {
       glActiveTexture(GL_TEXTURE1);
       glBindTexture(GL_TEXTURE_2D, iDepthTexture);

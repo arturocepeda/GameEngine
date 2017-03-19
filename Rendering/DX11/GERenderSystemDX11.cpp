@@ -794,8 +794,10 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
             sShaderConstantsTransform.InverseTransposeWorldMatrix = matModelInverseTranspose;
 
-            if(cMesh->getDynamicShadows())
+            if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
+            {
                Matrix4Multiply(matLightViewProjection, matModel, &sShaderConstantsTransform.LightWorldViewProjection);
+            }
          }
 
          sShaderConstantsTransform.WorldMatrix = matModel;
@@ -831,7 +833,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    if(cMesh)
    {
       // if the renderable is a shadowed 3D mesh, bind shadow map
-      if(cMesh->getDynamicShadows())
+      if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
       {
          ID3D11ShaderResourceView* dxShaderResourceView = cShadowMap->getShaderResourceView();
          dxContext->PSSetShaderResources(1, 1, &dxShaderResourceView);

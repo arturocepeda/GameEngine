@@ -75,6 +75,8 @@ int main(int argc, char* argv[])
 
    Application::shutDown();
 
+   std::cout << "\n\n";
+
    return 0;
 }
 

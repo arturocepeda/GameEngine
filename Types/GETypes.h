@@ -23,7 +23,7 @@
 
 #define GEAssert(Expr)  assert(Expr)
 
-#define GEHasFlag(Value, Flag)  ((Value & Flag) > 0)
+#define GEHasFlag(Value, Flag)  ((Value & (int)Flag) > 0)
 #define GESetFlag(Value, Flag)  (Value |= Flag)
 #define GEResetFlag(Value, Flag)  (Value &= ~Flag)
 

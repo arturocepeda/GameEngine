@@ -131,4 +131,10 @@ namespace GE { namespace Rendering
       "TestOnly",
       "TestAndWrite"
    };
+
+   const char* strDynamicShadowsBitMask[] =
+   {
+      "Cast",
+      "Receive"
+   };
 }}

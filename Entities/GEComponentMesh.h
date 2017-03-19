@@ -24,7 +24,7 @@ namespace GE { namespace Entities
    {
    private:
       Content::Mesh* cMesh;
-      bool bDynamicShadows;
+      uint8_t eDynamicShadows;
       ComponentSkeleton* cSkeleton;
 
    public:
@@ -34,8 +34,8 @@ namespace GE { namespace Entities
       const Core::ObjectName& getMeshName() const;
       void setMeshName(const Core::ObjectName& MeshName);
 
-      bool getDynamicShadows() const;
-      void setDynamicShadows(bool DynamicShadows);
+      uint8_t getDynamicShadows() const;
+      void setDynamicShadows(uint8_t BitMask);
 
       void loadMesh(Content::Mesh* M);
       void unload();
@@ -45,6 +45,6 @@ namespace GE { namespace Entities
       void updateSkinning();
 
       GEProperty(ObjectName, MeshName)
-      GEProperty(Bool, DynamicShadows)
+      GEPropertyBitMask(DynamicShadowsBitMask, DynamicShadows)
    };
 }}
