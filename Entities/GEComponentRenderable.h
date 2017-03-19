@@ -27,7 +27,9 @@ namespace GE { namespace Entities
       Mesh,
       Sprite,
       Label,
-      ParticleSystem
+      ParticleSystem,
+
+      Count
    };
 
 

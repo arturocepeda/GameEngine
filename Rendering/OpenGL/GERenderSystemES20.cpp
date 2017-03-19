@@ -28,6 +28,14 @@ using namespace GE::Content;
 using namespace GE::Entities;
 using namespace GE::Rendering;
 
+const GLenum glIndexTypes[(uint)RenderableType::Count] =
+{
+   GL_UNSIGNED_INT,     // Mesh
+   GL_UNSIGNED_SHORT,   // Sprite
+   GL_UNSIGNED_SHORT,   // Label
+   GL_UNSIGNED_INT,     // ParticleSystem
+};
+
 // buffers
 void* iCurrentVertexBuffer = 0;
 void* iCurrentIndexBuffer = 0;
@@ -649,13 +657,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    static_cast<RenderSystemES20*>(this)->setVertexDeclaration(sRenderOperation);
 
    // draw
-   GLenum glIndexType;
-
-   if(cRenderable->getRenderableType() == RenderableType::Mesh || cRenderable->getRenderableType() == RenderableType::ParticleSystem)
-      glIndexType = GL_UNSIGNED_INT;
-   else
-      glIndexType = GL_UNSIGNED_SHORT;
-
+   GLenum glIndexType = glIndexTypes[(uint)cRenderable->getRenderableType()];
    glDrawElements(GL_TRIANGLES, sRenderOperation.Data.NumIndices, glIndexType, pOffset);
    iDrawCalls++;
 }
