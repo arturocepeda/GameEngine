@@ -3,9 +3,15 @@
 
 #include "Types/GETypes.h"
 
-void registerObjectManagers();
-void loadShaders();
+enum class RenderingAPI
+{
+   DirectX,
+   OpenGL
+};
 
+void registerObjectManagers();
+
+void packShaders(RenderingAPI eRenderingAPI);
 void packTextures();
 void packTextureFile(const char* XmlFileName);
 void packMaterials();

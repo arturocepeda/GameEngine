@@ -14,6 +14,7 @@
 #include "Core/GEDevice.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEProfiler.h"
+#include "Core/GEApplication.h"
 #include "Content/GEImageData.h"
 #include "Entities/GEEntity.h"
 #include "Entities/GEComponentUIElement.h"
@@ -505,60 +506,85 @@ void RenderSystemDX11Helper::updateForWindowSizeChange()
 void RenderSystem::loadShaders()
 {
    ContentData cShadersData;
-   Device::readContentFile(ContentType::GenericTextData, "Shaders", "shaders", "xml", &cShadersData);
 
-   pugi::xml_document xml;
-   xml.load_buffer(cShadersData.getData(), cShadersData.getDataSize());
-   const pugi::xml_node& xmlShaders = xml.child("Shaders");
-
-   for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
+   if(Application::ContentType == ApplicationContentType::Xml)
    {
-      const char* sShaderProgramName = xmlShader.attribute("name").value();
-      ShaderProgramDX11* cShaderProgram = static_cast<ShaderProgramDX11*>(mShaderPrograms.get(sShaderProgramName));
-      bool bReload = cShaderProgram != 0;
+      Device::readContentFile(ContentType::GenericTextData, "Shaders", "shaders", "xml", &cShadersData);
 
-      if(bReload)
+      pugi::xml_document xml;
+      xml.load_buffer(cShadersData.getData(), cShadersData.getDataSize());
+      const pugi::xml_node& xmlShaders = xml.child("Shaders");
+
+      for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
       {
-         GEInvokeDtor(ShaderProgramDX11, cShaderProgram);
+         const char* sShaderProgramName = xmlShader.attribute("name").value();
+         ShaderProgramDX11* cShaderProgram = static_cast<ShaderProgramDX11*>(mShaderPrograms.get(sShaderProgramName));
+         bool bReload = cShaderProgram != 0;
+
+         if(bReload)
+         {
+            GEInvokeDtor(ShaderProgramDX11, cShaderProgram);
+         }
+         else
+         {
+            cShaderProgram = Allocator::alloc<ShaderProgramDX11>();
+         }
+
+         GEInvokeCtor(ShaderProgramDX11, cShaderProgram)(sShaderProgramName);
+
+         const char* sVertexSource = xmlShader.attribute("vertexSource").value();
+         const char* sFragmentSource = xmlShader.attribute("fragmentSource").value();
+         uint iVertexElementsMask = cShaderProgram->getVertexElementsMask(xmlShader);
+
+         cShaderProgram->VS = Allocator::alloc<VertexShader>();
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sVertexSource, iVertexElementsMask, dxDevice.Get());
+         cShaderProgram->PS = Allocator::alloc<PixelShader>();
+         GEInvokeCtor(PixelShader, cShaderProgram->PS)(sFragmentSource, dxDevice.Get());
+
+         cShaderProgram->parseParameters(xmlShader);
+         cShaderProgram->loadFromXml(xmlShader);
+
+         if(!bReload)
+         {
+            mShaderPrograms.add(cShaderProgram);
+         }
       }
-      else
+   }
+   else
+   {
+      Device::readContentFile(ContentType::GenericBinaryData, "Shaders", "Shaders.hlsl", "ge", &cShadersData);
+      ContentDataMemoryBuffer sMemoryBuffer(cShadersData);
+      std::istream sStream(&sMemoryBuffer);
+
+      uint iShadersCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      GESTLVector(char) vShaderByteCode;
+
+      for(uint i = 0; i < iShadersCount; i++)
       {
-         cShaderProgram = Allocator::alloc<ShaderProgramDX11>();
-      }
+         ObjectName cShaderProgramName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
 
-      GEInvokeCtor(ShaderProgramDX11, cShaderProgram)(sShaderProgramName);
+         ShaderProgramDX11* cShaderProgram = Allocator::alloc<ShaderProgramDX11>();
+         GEInvokeCtor(ShaderProgramDX11, cShaderProgram)(cShaderProgramName);
 
-      const char* sVertexSource = xmlShader.attribute("vertexSource").value();
-      const char* sFragmentSource = xmlShader.attribute("fragmentSource").value();
+         cShaderProgram->parseParameters(sStream);
+         cShaderProgram->loadFromStream(sStream);
 
-      uint iVertexElements = 0;
+         uint iVertexElementsMask = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
 
-      for(const pugi::xml_node& xmlVertexElement : xmlShader.children("VertexElement"))
-      {
-         const char* sVertexElement = xmlVertexElement.attribute("name").value();
+         uint iShaderByteCodeSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
+         vShaderByteCode.resize(iShaderByteCodeSize);
+         sStream.read(&vShaderByteCode[0], iShaderByteCodeSize);
 
-         if(strcmp(sVertexElement, "Position") == 0)
-            iVertexElements |= VE_Position;
-         else if(strcmp(sVertexElement, "Color") == 0)
-            iVertexElements |= VE_Color;
-         else if(strcmp(sVertexElement, "Normal") == 0)
-            iVertexElements |= VE_Normal;
-         else if(strcmp(sVertexElement, "TexCoord") == 0)
-            iVertexElements |= VE_TexCoord;
-         else if(strcmp(sVertexElement, "WorldViewProjection") == 0)
-            iVertexElements |= VE_WVP;
-      }
+         cShaderProgram->VS = Allocator::alloc<VertexShader>();
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(&vShaderByteCode[0], iShaderByteCodeSize, iVertexElementsMask, dxDevice.Get());
 
-      cShaderProgram->VS = Allocator::alloc<VertexShader>();
-      GEInvokeCtor(VertexShader, cShaderProgram->VS)(sVertexSource, iVertexElements, dxDevice.Get());
-      cShaderProgram->PS = Allocator::alloc<PixelShader>();
-      GEInvokeCtor(PixelShader, cShaderProgram->PS)(sFragmentSource, dxDevice.Get());
+         iShaderByteCodeSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
+         vShaderByteCode.resize(iShaderByteCodeSize);
+         sStream.read(&vShaderByteCode[0], iShaderByteCodeSize);
 
-      cShaderProgram->parseParameters(xmlShader);
-      cShaderProgram->loadFromXml(xmlShader);
+         cShaderProgram->PS = Allocator::alloc<PixelShader>();
+         GEInvokeCtor(PixelShader, cShaderProgram->PS)(&vShaderByteCode[0], iShaderByteCodeSize, dxDevice.Get());
 
-      if(!bReload)
-      {
          mShaderPrograms.add(cShaderProgram);
       }
    }

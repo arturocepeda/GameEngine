@@ -40,6 +40,7 @@ namespace GE { namespace Rendering
       DepthBufferMode eDepthBufferMode;
 
       void parseParameters(const pugi::xml_node& xmlShader, const char* sTag, ParameterList* vParameterList);
+      void parseParameters(std::istream& sStream, ParameterList* vParameterList);
 
    public:
       ParameterList VertexParameters;
@@ -51,7 +52,9 @@ namespace GE { namespace Rendering
       const DepthBufferMode getDepthBufferMode() const;
       void setDepthBufferMode(DepthBufferMode Mode);
 
+      uint getVertexElementsMask(const pugi::xml_node& xmlShader);
       void parseParameters(const pugi::xml_node& xmlShader);
+      void parseParameters(std::istream& sStream);
 
       GEPropertyEnum(DepthBufferMode, DepthBufferMode)
    };

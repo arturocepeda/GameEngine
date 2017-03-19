@@ -89,6 +89,18 @@ void Shader::load(const char* sFilename, const char* sExt)
    }
 }
 
+void Shader::load(const char* sData, int iDataSize)
+{
+   const char* sShaderSourceArray[1];
+   sShaderSourceArray[0] = sData;
+   const char** sShaderSourceAsDoublePtr = reinterpret_cast<const char**>(sShaderSourceArray);
+   glShaderSource(iID, 1, sShaderSourceAsDoublePtr, 0);
+
+   // compile shader
+   glCompileShader(iID);
+   glGetShaderiv(iID, GL_COMPILE_STATUS, &iStatus);
+}
+
 uint Shader::getID()
 {
    return iID;
@@ -114,6 +126,17 @@ VertexShader::VertexShader(const char* Filename, int VertexElements)
    load(Filename, "vsh");
 }
 
+VertexShader::VertexShader(const char* Data, int DataSize, int VertexElements)
+   : iVertexElements(VertexElements)
+{
+   // get shader ID
+   iID = glCreateShader(GL_VERTEX_SHADER);
+   iStatus = 0;
+
+   // load shader
+   load(Data, DataSize);
+}
+
 int VertexShader::getVertexElements() const
 {
    return iVertexElements;
@@ -131,6 +154,16 @@ FragmentShader::FragmentShader(const char* Filename)
    
    // load shader
    load(Filename, "fsh");
+}
+
+FragmentShader::FragmentShader(const char* Data, int DataSize)
+{
+   // get shader ID
+   iID = glCreateShader(GL_FRAGMENT_SHADER);
+   iStatus = 0;
+
+   // load shader
+   load(Data, DataSize);
 }
 
 

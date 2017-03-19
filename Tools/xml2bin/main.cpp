@@ -18,6 +18,7 @@
 #include "Entities/GEComponent.h"
 
 #include "Externals/pugixml/pugixml.hpp"
+#include <D3DCompiler.h>
 
 #include <iostream>
 #include <fstream>
@@ -25,6 +26,8 @@
 #pragma comment(lib, "./../GameEngine.DX11.lib")
 #pragma comment(lib, "./../pugixml.Windows.lib")
 #pragma comment(lib, "./../stb.Windows.lib")
+
+#pragma comment(lib, "D3DCompiler.lib")
 
 #if defined (_M_X64)
 # pragma comment(lib, "./../../Externals/Brofiler/ProfilerCore64.lib")
@@ -55,8 +58,9 @@ int main(int argc, char* argv[])
    Application::startUp();
    
    registerObjectManagers();
-   loadShaders();
 
+   packShaders(RenderingAPI::DirectX);
+   packShaders(RenderingAPI::OpenGL);
    packTextures();
    packMaterials();
    packFonts();
@@ -81,21 +85,169 @@ void registerObjectManagers()
    ObjectManagers::getInstance()->registerObjectManager<Font>("Font", &mManagerFonts);
 }
 
-void loadShaders()
+void packShaders(RenderingAPI eRenderingAPI)
 {
+   std::cout << "\n Packing shaders " << (eRenderingAPI == RenderingAPI::DirectX ? "(DirectX)" : "(OpenGL)") << "...";
+
    pugi::xml_document xml;
    xml.load_file(L"Content\\Shaders\\Shaders.xml");
    const pugi::xml_node& xmlShaders = xml.child("Shaders");
+   uint iShadersCount = 0;
+
+   for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
+      iShadersCount++;
+
+   char sOutputPath[MAX_PATH];
+   GetCurrentDirectory(MAX_PATH, sOutputPath);
+   sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+   CreateDirectory(sOutputPath, NULL);
+   sprintf(sOutputPath, "%s\\Shaders", sOutputPath);
+   CreateDirectory(sOutputPath, NULL);
+   sprintf(sOutputPath, "%s\\Shaders.%s.ge", sOutputPath, (eRenderingAPI == RenderingAPI::DirectX ? "hlsl" : "glsl"));
+
+   std::string sShaderSource;
+   std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
+   GEAssert(sOutputFile.is_open());
+
+   Value((GE::byte)iShadersCount).writeToStream(sOutputFile);
 
    for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
    {
       const char* sShaderProgramName = xmlShader.attribute("name").value();
-      ShaderProgram* cShaderProgram = new ShaderProgram(sShaderProgramName);
-      mManagerShaderPrograms.add(cShaderProgram);
+      ObjectName cShaderProgramName = ObjectName(sShaderProgramName);
 
-      cShaderProgram->parseParameters(xmlShader);
-      cShaderProgram->loadFromXml(xmlShader);
+      const char* sShaderName[2];
+      sShaderName[0] = xmlShader.attribute("vertexSource").value();
+      sShaderName[1] = xmlShader.attribute("fragmentSource").value();
+
+      Value(cShaderProgramName).writeToStream(sOutputFile);
+
+      ShaderProgram* cShaderProgram = mManagerShaderPrograms.get(cShaderProgramName);
+
+      if(!cShaderProgram)
+      {
+         cShaderProgram = new ShaderProgram(cShaderProgramName);
+         mManagerShaderPrograms.add(cShaderProgram);
+
+         cShaderProgram->parseParameters(xmlShader);
+         cShaderProgram->loadFromXml(xmlShader);
+      }
+
+      Value((GE::byte)cShaderProgram->VertexParameters.size()).writeToStream(sOutputFile);
+
+      for(uint i = 0; i < cShaderProgram->VertexParameters.size(); i++)
+      {
+         const ShaderProgramParameter& sParameter = cShaderProgram->VertexParameters[i];
+         Value(sParameter.Name).writeToStream(sOutputFile);
+         Value((GE::byte)sParameter.Type).writeToStream(sOutputFile);
+         Value((GE::byte)sParameter.Offset).writeToStream(sOutputFile);
+      }
+
+      Value((GE::byte)cShaderProgram->FragmentParameters.size()).writeToStream(sOutputFile);
+
+      for(uint i = 0; i < cShaderProgram->FragmentParameters.size(); i++)
+      {
+         const ShaderProgramParameter& sParameter = cShaderProgram->FragmentParameters[i];
+         Value(sParameter.Name).writeToStream(sOutputFile);
+         Value((GE::byte)sParameter.Type).writeToStream(sOutputFile);
+         Value((GE::byte)sParameter.Offset).writeToStream(sOutputFile);
+      }
+
+      cShaderProgram->xmlToStream(xmlShader, sOutputFile);
+
+      uint iVertexElementsMask = cShaderProgram->getVertexElementsMask(xmlShader);
+      Value((GE::byte)iVertexElementsMask).writeToStream(sOutputFile);
+
+      for(uint i = 0; i < 2; i++)
+      {
+         char* pShaderByteCodeData = 0;
+         uint iShaderByteCodeSize = 0;
+
+         if(eRenderingAPI == RenderingAPI::DirectX)
+         {
+            //
+            //  HLSL
+            //
+            const char* sShaderType[2] = { "vsh", "psh" };
+            const char* sShaderTarget[2] = { "vs_5_0", "ps_5_0" };
+
+            char sInputPath[MAX_PATH];
+            sprintf(sInputPath, "%s\\Shaders\\hlsl\\%s.%s.hlsl", ContentXmlDirName, sShaderName[i], sShaderType[i]);
+
+            wchar_t wsInputPath[MAX_PATH];
+            mbstowcs(wsInputPath, sInputPath, strlen(sInputPath) + 1);
+
+            ID3DBlob* dxCodeBlob = 0;
+            ID3DBlob* dxErrorBlob = 0;
+            HRESULT hr = D3DCompileFromFile(wsInputPath, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", sShaderTarget[i], 0, 0, &dxCodeBlob, &dxErrorBlob);
+
+            if(FAILED(hr))
+            {
+               if(dxErrorBlob)
+               {
+                  OutputDebugStringA((char*)dxErrorBlob->GetBufferPointer());
+                  dxErrorBlob->Release();
+               }
+
+               GEAssert(false);
+            }
+
+            pShaderByteCodeData = (char*)dxCodeBlob->GetBufferPointer();
+            iShaderByteCodeSize = (uint)dxCodeBlob->GetBufferSize();
+         }
+         else
+         {
+            //
+            //  GLSL
+            //
+            const char* sShaderType[2] = { "vsh", "fsh" };
+
+            char sInputPath[MAX_PATH];
+            sprintf(sInputPath, "%s\\Shaders\\glsl\\%s.%s", ContentXmlDirName, sShaderName[i], sShaderType[i]);
+
+            std::ifstream sShaderFile(sInputPath);
+            sShaderSource = std::string((std::istreambuf_iterator<char>(sShaderFile)), std::istreambuf_iterator<char>());
+            sShaderFile.close();
+
+            // process include directives
+            const char* IncludeStr = "#include \"";
+            const size_t IncludeStrLength = strlen(IncludeStr);
+
+            size_t iIncludePosition = sShaderSource.find(IncludeStr);
+
+            while(iIncludePosition != std::string::npos)
+            {
+               size_t iIncludedFileNamePositionStart = iIncludePosition + IncludeStrLength;
+               size_t iIncludedFileNamePositionEnd = sShaderSource.find('"', iIncludedFileNamePositionStart);
+               size_t iIncludedFileNameLength = iIncludedFileNamePositionEnd - iIncludedFileNamePositionStart;
+
+               std::string sIncludedFileName = sShaderSource.substr(iIncludedFileNamePositionStart, iIncludedFileNameLength);
+               std::string sIncludedFileNameWithoutExtension = sIncludedFileName.substr(0, sIncludedFileName.find('.'));
+
+               char sIncludeFilePath[MAX_PATH];
+               sprintf(sIncludeFilePath, "%s\\Shaders\\glsl\\%s.%s", ContentXmlDirName, sIncludedFileNameWithoutExtension.c_str(), sShaderType[i]);
+
+               std::ifstream sIncludedShaderFile(sIncludeFilePath);
+               std::string sIncludedShaderSource((std::istreambuf_iterator<char>(sIncludedShaderFile)), std::istreambuf_iterator<char>());
+               sIncludedShaderFile.close();
+
+               sShaderSource.replace(iIncludePosition, IncludeStrLength + iIncludedFileNameLength + 2, sIncludedShaderSource.c_str());
+
+               iIncludePosition = sShaderSource.find(IncludeStr);
+            }
+
+            iShaderByteCodeSize = sShaderSource.size();
+            pShaderByteCodeData = &sShaderSource[0];
+         }
+
+         GEAssert(iShaderByteCodeSize > 0);
+
+         Value(iShaderByteCodeSize).writeToStream(sOutputFile);
+         sOutputFile.write(pShaderByteCodeData, iShaderByteCodeSize);
+      }
    }
+
+   sOutputFile.close();
 }
 
 void packTextures()

@@ -12,6 +12,7 @@
 
 #include "GEShaderProgram.h"
 
+using namespace GE;
 using namespace GE::Rendering;
 using namespace GE::Core;
 
@@ -59,8 +60,51 @@ void ShaderProgram::parseParameters(const pugi::xml_node& xmlShader, const char*
    }
 }
 
+void ShaderProgram::parseParameters(std::istream& sStream, ParameterList* vParameterList)
+{
+   uint iParameterCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+   for(uint i = 0; i < iParameterCount; i++)
+   {
+      ShaderProgramParameter sParameter;
+      sParameter.Name = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+      sParameter.Type = (ValueType)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      sParameter.Offset = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      vParameterList->push_back(sParameter);
+   }
+}
+
 void ShaderProgram::parseParameters(const pugi::xml_node& xmlShader)
 {
    parseParameters(xmlShader, "VertexParameter", &VertexParameters);
    parseParameters(xmlShader, "FragmentParameter", &FragmentParameters);
+}
+
+void ShaderProgram::parseParameters(std::istream& sStream)
+{
+   parseParameters(sStream, &VertexParameters);
+   parseParameters(sStream, &FragmentParameters);
+}
+
+uint ShaderProgram::getVertexElementsMask(const pugi::xml_node& xmlShader)
+{
+   uint iVertexElements = 0;
+
+   for(const pugi::xml_node& xmlVertexElement : xmlShader.children("VertexElement"))
+   {
+      const char* sVertexElement = xmlVertexElement.attribute("name").value();
+
+      if(strcmp(sVertexElement, "Position") == 0)
+         iVertexElements |= VE_Position;
+      else if(strcmp(sVertexElement, "Color") == 0)
+         iVertexElements |= VE_Color;
+      else if(strcmp(sVertexElement, "Normal") == 0)
+         iVertexElements |= VE_Normal;
+      else if(strcmp(sVertexElement, "TexCoord") == 0)
+         iVertexElements |= VE_TexCoord;
+      else if(strcmp(sVertexElement, "WorldViewProjection") == 0)
+         iVertexElements |= VE_WVP;
+   }
+
+   return iVertexElements;
 }

@@ -15,6 +15,7 @@
 #include "Core/GEDevice.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEProfiler.h"
+#include "Core/GEApplication.h"
 #include "Content/GEImageData.h"
 #include "Entities/GEEntity.h"
 #include "Entities/GEComponentUIElement.h"
@@ -221,52 +222,84 @@ void RenderSystem::loadRenderingData(const GeometryData& sData, GPUBufferPair& s
 void RenderSystem::loadShaders()
 {
    ContentData cShadersData;
-   Device::readContentFile(ContentType::GenericTextData, "Shaders", "Shaders", "xml", &cShadersData);
 
-   pugi::xml_document xml;
-   xml.load_buffer(cShadersData.getData(), cShadersData.getDataSize());
-   const pugi::xml_node& xmlShaders = xml.child("Shaders");
-
-   for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
+   if(Application::ContentType == ApplicationContentType::Xml)
    {
-      const char* sShaderName = xmlShader.attribute("name").value();
-      const char* sShaderVertexSource = xmlShader.attribute("vertexSource").value();
-      const char* sShaderFragmentSource = xmlShader.attribute("fragmentSource").value();
+      Device::readContentFile(ContentType::GenericTextData, "Shaders", "Shaders", "xml", &cShadersData);
 
-      ShaderProgramES20* cShaderProgram = Allocator::alloc<ShaderProgramES20>();
-      GEInvokeCtor(ShaderProgramES20, cShaderProgram)(sShaderName);
+      pugi::xml_document xml;
+      xml.load_buffer(cShadersData.getData(), cShadersData.getDataSize());
+      const pugi::xml_node& xmlShaders = xml.child("Shaders");
 
-      uint iVertexElements = 0;
-
-      for(const pugi::xml_node& xmlVertexElement : xmlShader.children("VertexElement"))
+      for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
       {
-         const char* sVertexElement = xmlVertexElement.attribute("name").value();
+         const char* sShaderName = xmlShader.attribute("name").value();
+         const char* sShaderVertexSource = xmlShader.attribute("vertexSource").value();
+         const char* sShaderFragmentSource = xmlShader.attribute("fragmentSource").value();
 
-         if(strcmp(sVertexElement, "Position") == 0)
-            iVertexElements |= VE_Position;
-         else if(strcmp(sVertexElement, "Color") == 0)
-            iVertexElements |= VE_Color;
-         else if(strcmp(sVertexElement, "Normal") == 0)
-            iVertexElements |= VE_Normal;
-         else if(strcmp(sVertexElement, "TexCoord") == 0)
-            iVertexElements |= VE_TexCoord;
-         else if(strcmp(sVertexElement, "WorldViewProjection") == 0)
-            iVertexElements |= VE_WVP;
+         ShaderProgramES20* cShaderProgram = Allocator::alloc<ShaderProgramES20>();
+         GEInvokeCtor(ShaderProgramES20, cShaderProgram)(sShaderName);
+
+         uint iVertexElementsMask = cShaderProgram->getVertexElementsMask(xmlShader);
+
+         cShaderProgram->ID = glCreateProgram();
+         cShaderProgram->Status = 0;
+         cShaderProgram->VS = Allocator::alloc<VertexShader>();
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sShaderVertexSource, iVertexElementsMask);
+         cShaderProgram->FS = Allocator::alloc<FragmentShader>();
+         GEInvokeCtor(FragmentShader, cShaderProgram->FS)(sShaderFragmentSource);
+
+         static_cast<RenderSystemES20*>(this)->attachShaders(cShaderProgram);
+
+         cShaderProgram->parseParameters(xmlShader);
+         cShaderProgram->loadFromXml(xmlShader);
+
+         mShaderPrograms.add(cShaderProgram);
       }
-      
-      cShaderProgram->ID = glCreateProgram();
-      cShaderProgram->Status = 0;
-      cShaderProgram->VS = Allocator::alloc<VertexShader>();
-      GEInvokeCtor(VertexShader, cShaderProgram->VS)(sShaderVertexSource, iVertexElements);
-      cShaderProgram->FS = Allocator::alloc<FragmentShader>();
-      GEInvokeCtor(FragmentShader, cShaderProgram->FS)(sShaderFragmentSource);
+   }
+   else
+   {
+      Device::readContentFile(ContentType::GenericBinaryData, "Shaders", "Shaders.glsl", "ge", &cShadersData);
+      ContentDataMemoryBuffer sMemoryBuffer(cShadersData);
+      std::istream sStream(&sMemoryBuffer);
 
-      static_cast<RenderSystemES20*>(this)->attachShaders(cShaderProgram);
+      uint iShadersCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      GESTLVector(char) vShaderCode;
 
-      cShaderProgram->parseParameters(xmlShader);
-      cShaderProgram->loadFromXml(xmlShader);
+      for(uint i = 0; i < iShadersCount; i++)
+      {
+         ObjectName cShaderName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
 
-      mShaderPrograms.add(cShaderProgram);
+         ShaderProgramES20* cShaderProgram = Allocator::alloc<ShaderProgramES20>();
+         GEInvokeCtor(ShaderProgramES20, cShaderProgram)(cShaderName);
+
+         cShaderProgram->parseParameters(sStream);
+         cShaderProgram->loadFromStream(sStream);
+
+         uint iVertexElementsMask = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+         uint iShaderDataSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
+         vShaderCode.resize(iShaderDataSize + 1);
+         sStream.read(&vShaderCode[0], iShaderDataSize);
+         vShaderCode[iShaderDataSize] = '\0';
+
+         cShaderProgram->ID = glCreateProgram();
+         cShaderProgram->Status = 0;
+         cShaderProgram->VS = Allocator::alloc<VertexShader>();
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(&vShaderCode[0], iShaderDataSize, iVertexElementsMask);
+
+         iShaderDataSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
+         vShaderCode.resize(iShaderDataSize + 1);
+         sStream.read(&vShaderCode[0], iShaderDataSize);
+         vShaderCode[iShaderDataSize] = '\0';
+
+         cShaderProgram->FS = Allocator::alloc<FragmentShader>();
+         GEInvokeCtor(FragmentShader, cShaderProgram->FS)(&vShaderCode[0], iShaderDataSize);
+
+         static_cast<RenderSystemES20*>(this)->attachShaders(cShaderProgram);
+
+         mShaderPrograms.add(cShaderProgram);
+      }
    }
 }
 

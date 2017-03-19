@@ -76,6 +76,7 @@ namespace GE { namespace Rendering
       int iStatus;
    
       void load(const char* sFilename, const char* sExt);
+      void load(const char* sData, int iDataSize);
    
    public:
       ~Shader();
@@ -92,6 +93,7 @@ namespace GE { namespace Rendering
 
    public:
       VertexShader(const char* Filename, int VertexElements);
+      VertexShader(const char* Data, int DataSize, int VertexElements);
 
       int getVertexElements() const;
    };
@@ -101,6 +103,7 @@ namespace GE { namespace Rendering
    {
    public:
       FragmentShader(const char* Filename);
+      FragmentShader(const char* Data, int DataSize);
    };
 
 
