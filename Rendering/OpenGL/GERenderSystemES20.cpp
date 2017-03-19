@@ -283,6 +283,9 @@ void RenderSystem::loadShaders()
          sStream.read(&vShaderCode[0], iShaderDataSize);
          vShaderCode[iShaderDataSize] = '\0';
 
+         for(uint j = 0; j < iShaderDataSize; j++)
+            vShaderCode[j] += 128;
+
          cShaderProgram->ID = glCreateProgram();
          cShaderProgram->Status = 0;
          cShaderProgram->VS = Allocator::alloc<VertexShader>();
@@ -292,6 +295,9 @@ void RenderSystem::loadShaders()
          vShaderCode.resize(iShaderDataSize + 1);
          sStream.read(&vShaderCode[0], iShaderDataSize);
          vShaderCode[iShaderDataSize] = '\0';
+
+         for(uint j = 0; j < iShaderDataSize; j++)
+            vShaderCode[j] += 128;
 
          cShaderProgram->FS = Allocator::alloc<FragmentShader>();
          GEInvokeCtor(FragmentShader, cShaderProgram->FS)(&vShaderCode[0], iShaderDataSize);

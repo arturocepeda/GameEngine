@@ -237,11 +237,36 @@ void packShaders(RenderingAPI eRenderingAPI)
                iIncludePosition = sShaderSource.find(IncludeStr);
             }
 
+            // clean comments and empty lines
+            const char* CommentStr = "//";
+            const size_t CommentStrLength = strlen(CommentStr);
+
+            size_t iCommentPosition = sShaderSource.find(CommentStr);
+
+            while(iCommentPosition != std::string::npos)
+            {
+               size_t iEndLinePosition = sShaderSource.find('\n', iCommentPosition);
+               sShaderSource.replace(iCommentPosition, iEndLinePosition - iCommentPosition, "");
+               iCommentPosition = sShaderSource.find(CommentStr, iCommentPosition);
+            }
+
+            for(uint i = 0; i < sShaderSource.size() - 1; i++)
+            {
+               if(sShaderSource[i] == '\n' && sShaderSource[i + 1] == '\n')
+               {
+                  sShaderSource.erase(sShaderSource.begin() + i);
+                  i--;
+               }
+            }
+
             iShaderByteCodeSize = sShaderSource.size();
             pShaderByteCodeData = &sShaderSource[0];
          }
 
          GEAssert(iShaderByteCodeSize > 0);
+
+         for(uint i = 0; i < sShaderSource.size(); i++)
+            sShaderSource[i] += 128;
 
          Value(iShaderByteCodeSize).writeToStream(sOutputFile);
          sOutputFile.write(pShaderByteCodeData, iShaderByteCodeSize);
