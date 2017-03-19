@@ -205,6 +205,8 @@ void Serializable::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stre
       }
 
       if(!bPropertySet)
+      {
          Stream.write(reinterpret_cast<const char*>(&bPropertySet), 1);
+      }
    }
 }
