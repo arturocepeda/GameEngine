@@ -68,6 +68,7 @@ int main(int argc, char* argv[])
    packMeshes();
    packSkeletons();
    packAnimations();
+   packSounds();
    packPrefabs();
    packScenes();
    compileScripts();
@@ -814,6 +815,41 @@ void packAnimations()
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\Animations", sOutputPath);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
+
+      CopyFile(sInputPath, sOutputPath, false);
+   }
+   while(FindNextFile(hFile, &sFileData));
+
+   FindClose(hFile);
+}
+
+void packSounds()
+{
+   std::cout << "\n Packing sounds...";
+
+   char sFindString[MAX_PATH];
+   sprintf(sFindString, "%s\\Sounds\\*.*", ContentXmlDirName);
+
+   WIN32_FIND_DATA sFileData;
+   HANDLE hFile = FindFirstFile(sFindString, &sFileData);
+
+   if(hFile == INVALID_HANDLE_VALUE)
+      return;
+
+   do
+   {
+      const char* sFileName = sFileData.cFileName;
+
+      char sInputPath[MAX_PATH];
+      sprintf(sInputPath, "%s\\Sounds\\%s", ContentXmlDirName, sFileName);
+
+      char sOutputPath[MAX_PATH];
+      GetCurrentDirectory(MAX_PATH, sOutputPath);
+      sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\Sounds", sOutputPath);
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
 

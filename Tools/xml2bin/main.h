@@ -21,6 +21,7 @@ void packStrings();
 void packMeshes();
 void packSkeletons();
 void packAnimations();
+void packSounds();
 void packPrefabs();
 void packScenes();
 
