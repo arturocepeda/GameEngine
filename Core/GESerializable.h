@@ -29,6 +29,13 @@ namespace GE { namespace Core
    typedef std::function<Value()> PropertyGetter;
    typedef std::function<void(Value&)> PropertySetter;
 
+   enum class PropertyEditor
+   {
+      Default,
+      Enum,
+      BitMask
+   };
+
    struct Property
    {
       ObjectName Name;
@@ -38,6 +45,7 @@ namespace GE { namespace Core
 
 #if defined (GE_EDITOR_SUPPORT)
       ObjectName Class;
+      PropertyEditor Editor;
       void* DataPtr;
       uint DataUInt;
 #endif
@@ -54,8 +62,9 @@ namespace GE { namespace Core
 
       Serializable(const ObjectName& ClassName);
 
-      void registerProperty(const ObjectName& PropertyName, ValueType Type,
+      Property& registerProperty(const ObjectName& PropertyName, ValueType Type,
          const PropertySetter& Setter, const PropertyGetter& Getter,
+         PropertyEditor Editor = PropertyEditor::Default,
          void* PropertyDataPtr = 0, uint PropertyDataUInt = 0);
       void removeProperty(uint PropertyIndex);
 
@@ -155,7 +164,7 @@ namespace GE { namespace Core
          { \
             sBuffer[iBufferPosition++] = sBitMask[i]; \
             if(sBitMask[i] != '|' && sBitMask[i] != '\0') continue; \
-            sBuffer[iBufferPosition] = '\0'; \
+            sBuffer[iBufferPosition - 1] = '\0'; \
             for(GE::uint j = 0; j < (GE::uint)EnumType::Count; j++) \
             { \
                if(strcmp(sBuffer, str##EnumType[j]) == 0) \
@@ -193,6 +202,7 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
       std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
       std::bind(&ClassName::P_get##PropertyName, this), \
+      PropertyEditor::Default, \
       (void*)GE::Core::ObjectManagers::getInstance()->getObjectRegistry(#ObjectType))
 
 
@@ -203,21 +213,27 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::String, \
       std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
       std::bind(&ClassName::P_get##PropertyName, this), \
-      (void*)str##EnumType, (uint)EnumType::Count)
+      PropertyEditor::Enum, (void*)str##EnumType, (uint)EnumType::Count)
 
 #define GERegisterPropertyEnumReadonly(ClassName, EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::String, \
       nullptr, \
       std::bind(&ClassName::P_get##PropertyName, this), \
-      (void*)str##EnumType, (uint)EnumType::Count)
+      PropertyEditor::Enum, (void*)str##EnumType, (uint)EnumType::Count)
 
 
 //
 //  Register bit mask properties
 //
 #define GERegisterPropertyBitMask(ClassName, EnumType, PropertyName) \
-   GERegisterPropertyEnum(ClassName, EnumType, PropertyName)
+   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::String, \
+      std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
+      std::bind(&ClassName::P_get##PropertyName, this), \
+      PropertyEditor::BitMask, (void*)str##EnumType, (uint)EnumType::Count)
 
 #define GERegisterPropertyBitMaskReadonly(ClassName, EnumType, PropertyName) \
-   GERegisterPropertyEnumReadonly(ClassName, EnumType, PropertyName)
+   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::String, \
+      nullptr, \
+      std::bind(&ClassName::P_get##PropertyName, this), \
+      PropertyEditor::BitMask, (void*)str##EnumType, (uint)EnumType::Count)
 

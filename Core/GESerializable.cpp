@@ -22,9 +22,9 @@ Serializable::Serializable(const ObjectName& ClassName)
 {
 }
 
-void Serializable::registerProperty(const ObjectName& PropertyName, ValueType Type,
+Property& Serializable::registerProperty(const ObjectName& PropertyName, ValueType Type,
    const PropertySetter& Setter, const PropertyGetter& Getter,
-   void* PropertyDataPtr, uint PropertyDataUInt)
+   PropertyEditor Editor, void* PropertyDataPtr, uint PropertyDataUInt)
 {
    Property sProperty;
    sProperty.Name = PropertyName;
@@ -33,10 +33,12 @@ void Serializable::registerProperty(const ObjectName& PropertyName, ValueType Ty
    sProperty.Getter = Getter;
 #if defined (GE_EDITOR_SUPPORT)
    sProperty.Class = cClassName;
+   sProperty.Editor = Editor;
    sProperty.DataPtr = PropertyDataPtr;
    sProperty.DataUInt = PropertyDataUInt;
 #endif
    vProperties.push_back(sProperty);
+   return vProperties.back();
 }
 
 void Serializable::removeProperty(uint PropertyIndex)
