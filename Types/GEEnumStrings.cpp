@@ -132,6 +132,12 @@ namespace GE { namespace Rendering
       "TestAndWrite"
    };
 
+   const char* strCullingMode[] =
+   {
+      "Back",
+      "Front"
+   };
+
    const char* strDynamicShadowsBitMask[] =
    {
       "Cast",

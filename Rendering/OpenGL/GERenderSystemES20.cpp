@@ -465,7 +465,9 @@ void RenderSystem::useShaderProgram(const Core::ObjectName& cName)
    glUseProgram(cShaderProgram->ID);
    iActiveProgram = cName.getID();
    cActiveProgram = const_cast<ShaderProgramES20*>(cShaderProgram);
+
    setDepthBufferMode(cShaderProgram->getDepthBufferMode());
+   setCullingMode(cShaderProgram->getCullingMode());
 }
 
 void RenderSystem::renderShadowMap()
@@ -478,7 +480,6 @@ void RenderSystem::renderShadowMap()
    if(cLight->getLightType() != LightType::Directional)
       return;
 
-   glCullFace(GL_FRONT);
    glBindFramebuffer(GL_FRAMEBUFFER, iFrameBuffer);
    glViewport(0, 0, ShadowMapSize, ShadowMapSize);
 
@@ -703,19 +704,41 @@ void RenderSystem::setDepthBufferMode(DepthBufferMode Mode)
 
    switch(Mode)
    {
-   case GE::Rendering::DepthBufferMode::NoDepth:
+   case DepthBufferMode::NoDepth:
       glDisable(GL_DEPTH_TEST);
       glDepthMask(GL_TRUE);
       break;
 
-   case GE::Rendering::DepthBufferMode::TestOnly:
+   case DepthBufferMode::TestOnly:
       glEnable(GL_DEPTH_TEST);
       glDepthMask(GL_FALSE);
       break;
 
-   case GE::Rendering::DepthBufferMode::TestAndWrite:
+   case DepthBufferMode::TestAndWrite:
       glEnable(GL_DEPTH_TEST);
       glDepthMask(GL_TRUE);
+      break;
+
+   default:
+      break;
+   }
+}
+
+void RenderSystem::setCullingMode(CullingMode Mode)
+{
+   if(eCullingMode == Mode)
+      return;
+
+   eCullingMode = Mode;
+
+   switch(Mode)
+   {
+   case CullingMode::Back:
+      glCullFace(GL_BACK);
+      break;
+
+   case CullingMode::Front:
+      glCullFace(GL_FRONT);
       break;
 
    default:

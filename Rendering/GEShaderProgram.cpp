@@ -20,8 +20,10 @@ ShaderProgram::ShaderProgram(const ObjectName& Name)
    : Object(Name)
    , Serializable("ShaderProgram")
    , eDepthBufferMode(DepthBufferMode::NoDepth)
+   , eCullingMode(CullingMode::Back)
 {
    GERegisterPropertyEnum(ShaderProgram, DepthBufferMode, DepthBufferMode);
+   GERegisterPropertyEnum(ShaderProgram, CullingMode, CullingMode);
 }
 
 ShaderProgram::~ShaderProgram()
@@ -36,6 +38,16 @@ const DepthBufferMode ShaderProgram::getDepthBufferMode() const
 void ShaderProgram::setDepthBufferMode(DepthBufferMode Mode)
 {
    eDepthBufferMode = Mode;
+}
+
+const CullingMode ShaderProgram::getCullingMode() const
+{
+   return eCullingMode;
+}
+
+void ShaderProgram::setCullingMode(CullingMode Mode)
+{
+   eCullingMode = Mode;
 }
 
 void ShaderProgram::parseParameters(const pugi::xml_node& xmlShader, const char* sTag, ParameterList* vParameterList)

@@ -47,6 +47,7 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    , pBoundTexture(0)
    , eBlendingMode(BlendingMode::None)
    , eDepthBufferMode(DepthBufferMode::NoDepth)
+   , eCullingMode(CullingMode::Back)
    , cActiveCamera(0)
    , fFrameTime(Time::getElapsed())
    , fFramesPerSecond(0.0f)

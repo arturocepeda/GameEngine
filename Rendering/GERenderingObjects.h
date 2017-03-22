@@ -139,6 +139,15 @@ namespace GE { namespace Rendering
    };
 
 
+   GESerializableEnum(CullingMode)
+   {
+      Back,
+      Front,
+
+      Count
+   };
+
+
    struct PreloadedTexture
    {
       Texture* Tex;

@@ -48,7 +48,8 @@ ID3D11SamplerState* dxSamplerStateWrap = 0;
 ID3D11DepthStencilState* dxDepthStencilStateNoDepth = 0;
 ID3D11DepthStencilState* dxDepthStencilStateTestOnly = 0;
 ID3D11DepthStencilState* dxDepthStencilStateTestAndWrite = 0;
-ID3D11RasterizerState* dxRasterizerStateSolid = 0;
+ID3D11RasterizerState* dxRasterizerStateSolidCullBack = 0;
+ID3D11RasterizerState* dxRasterizerStateSolidCullFront = 0;
 ID3D11RasterizerState* dxRasterizerStateWireFrame = 0;
 
 // buffers
@@ -404,14 +405,17 @@ void RenderSystemDX11::createStates()
    dxRasterizerDesc.MultisampleEnable = false;
    dxRasterizerDesc.ScissorEnable = false;
    dxRasterizerDesc.SlopeScaledDepthBias = 0.0f;
-   dxDevice->CreateRasterizerState(&dxRasterizerDesc, &dxRasterizerStateSolid);
+   dxDevice->CreateRasterizerState(&dxRasterizerDesc, &dxRasterizerStateSolidCullBack);
+
+   dxRasterizerDesc.CullMode = D3D11_CULL_FRONT;
+   dxDevice->CreateRasterizerState(&dxRasterizerDesc, &dxRasterizerStateSolidCullFront);
 
    ZeroMemory(&dxRasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
    dxRasterizerDesc.CullMode = D3D11_CULL_NONE;
    dxRasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
    dxDevice->CreateRasterizerState(&dxRasterizerDesc, &dxRasterizerStateWireFrame);
 
-   dxContext->RSSetState(dxRasterizerStateSolid);
+   dxContext->RSSetState(dxRasterizerStateSolidCullBack);
 }
 
 #if defined(GE_PLATFORM_WP8)
@@ -603,7 +607,8 @@ void RenderSystemDX11::releaseStates()
    dxDepthStencilStateTestOnly->Release();
    dxDepthStencilStateTestAndWrite->Release();
    dxBlendStateAlpha->Release();
-   dxRasterizerStateSolid->Release();
+   dxRasterizerStateSolidCullBack->Release();
+   dxRasterizerStateSolidCullFront->Release();
    dxRasterizerStateWireFrame->Release();
    dxSamplerStateClamp->Release();
 }
@@ -683,6 +688,7 @@ void RenderSystem::useShaderProgram(const ObjectName& cName)
    dxContext->PSSetConstantBuffers(0, 3, sPixelShaderConstantBuffers);
 
    setDepthBufferMode(cShaderProgram->getDepthBufferMode());
+   setCullingMode(cShaderProgram->getCullingMode());
 }
 
 void RenderSystem::renderShadowMap()
@@ -694,6 +700,9 @@ void RenderSystem::renderShadowMap()
 
    if(cLight->getLightType() != LightType::Directional)
       return;
+
+   CD3D11_VIEWPORT dxViewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)ShadowMapSize, (float)ShadowMapSize);
+   dxContext->RSSetViewports(1, &dxViewport);
 
    cShadowMap->setAsRenderTarget();
    cShadowMap->clear(Color(1.0f, 1.0f, 1.0f));
@@ -738,7 +747,7 @@ void RenderSystem::renderShadowMap()
 
    dxContext->OMSetRenderTargets(1, dxRenderTargetView.GetAddressOf(), dxDepthStencilView.Get());
 
-   CD3D11_VIEWPORT dxViewport(0.0f, 0.0f, (float)Device::ScreenWidth, (float)Device::ScreenHeight);
+   dxViewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)Device::ScreenWidth, (float)Device::ScreenHeight);
    dxContext->RSSetViewports(1, &dxViewport);
 
    dxContext->PSSetSamplers(1, 1, &dxSamplerStateWrap);
@@ -937,16 +946,38 @@ void RenderSystem::setDepthBufferMode(DepthBufferMode Mode)
 
    switch(Mode)
    {
-   case GE::Rendering::DepthBufferMode::NoDepth:
+   case DepthBufferMode::NoDepth:
       dxContext->OMSetDepthStencilState(dxDepthStencilStateNoDepth, 0);
       break;
 
-   case GE::Rendering::DepthBufferMode::TestOnly:
+   case DepthBufferMode::TestOnly:
       dxContext->OMSetDepthStencilState(dxDepthStencilStateTestOnly, 0);
       break;
 
-   case GE::Rendering::DepthBufferMode::TestAndWrite:
+   case DepthBufferMode::TestAndWrite:
       dxContext->OMSetDepthStencilState(dxDepthStencilStateTestAndWrite, 0);
+      break;
+
+   default:
+      break;
+   }
+}
+
+void RenderSystem::setCullingMode(CullingMode Mode)
+{
+   if(eCullingMode == Mode)
+      return;
+
+   eCullingMode = Mode;
+
+   switch(Mode)
+   {
+   case CullingMode::Back:
+      dxContext->RSSetState(dxRasterizerStateSolidCullBack);
+      break;
+
+   case CullingMode::Front:
+      dxContext->RSSetState(dxRasterizerStateSolidCullFront);
       break;
 
    default:

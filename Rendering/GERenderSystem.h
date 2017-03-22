@@ -96,6 +96,7 @@ namespace GE { namespace Rendering
       Texture* pBoundTexture;
       BlendingMode eBlendingMode;
       DepthBufferMode eDepthBufferMode;
+      CullingMode eCullingMode;
       Entities::ComponentCamera* cActiveCamera;
 
       GESTLVector(RenderOperation) vGUISpritesToRender;
@@ -200,6 +201,9 @@ namespace GE { namespace Rendering
 
        // depth buffer mode
        void setDepthBufferMode(DepthBufferMode Mode);
+
+       // culling mode
+       void setCullingMode(CullingMode Mode);
 
        // components to render
        void queueForRendering(Entities::ComponentRenderable* Renderable);
