@@ -528,7 +528,6 @@ void RenderSystem::renderShadowMap()
       glDrawElements(GL_TRIANGLES, cMesh->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
    }
 
-   glCullFace(GL_BACK);
    glBindFramebuffer(GL_FRAMEBUFFER, 0);
    glViewport(0, 0, Device::getScreenWidth(), Device::getScreenHeight());
 }
