@@ -60,12 +60,14 @@ Scene::Scene(const ObjectName& Name)
    , Serializable("Scene")
    , eBackgroundMode(SceneBackgroundMode::SolidColor)
    , cBackgroundEntity(0)
+   , fShadowsMaxDistance(20.0f)
 {
    GEMutexInit(mSceneMutex);
 
    GERegisterPropertyEnum(Scene, SceneBackgroundMode, BackgroundMode);
    GERegisterProperty(Scene, String, BackgroundMaterialName);
    GERegisterProperty(Scene, Color, AmbientLightColor);
+   GERegisterProperty(Scene, Float, ShadowsMaxDistance);
 }
 
 Scene::~Scene()
@@ -429,6 +431,11 @@ const Color& Scene::getAmbientLightColor() const
    return RenderSystem::getInstance()->getAmbientLightColor();
 }
 
+float Scene::getShadowsMaxDistance() const
+{
+   return fShadowsMaxDistance;
+}
+
 void Scene::setBackgroundMode(SceneBackgroundMode BackgroundMode)
 {
    eBackgroundMode = BackgroundMode;
@@ -444,6 +451,11 @@ void Scene::setBackgroundMaterialName(const char* MaterialName)
 void Scene::setAmbientLightColor(const Color& AmbientLightColor)
 {
    RenderSystem::getInstance()->setAmbientLightColor(AmbientLightColor);
+}
+
+void Scene::setShadowsMaxDistance(float Distance)
+{
+   fShadowsMaxDistance = Distance;
 }
 
 void Scene::setupBackground()

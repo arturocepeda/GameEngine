@@ -281,6 +281,9 @@ void Script::registerTypes()
       , "X", &Vector3::X
       , "Y", &Vector3::Y
       , "Z", &Vector3::Z
+      , "normalize", &Vector3::normalize
+      , "getSquaredLength", &Vector3::getSquaredLength
+      , "getLength", &Vector3::getLength
       , "getDistanceTo", &Vector3::getDistanceTo
    );
    lua.new_usertype<Rotation>
@@ -398,6 +401,7 @@ void Script::registerTypes()
       , "getEntity", &Scene::getEntity
       , "addEntity", (Entity* (Scene::*)(const ObjectName&, Entity*))&Scene::addEntity
       , "addPrefab", (Entity* (Scene::*)(const char*, const ObjectName&, Entity*))&Scene::addPrefab
+      , sol::base_classes, sol::bases<Serializable>()
    );
 
    //

@@ -48,6 +48,8 @@ namespace GE { namespace Entities
       Core::ObjectName cBackgroundMaterialName;
       Entity* cBackgroundEntity;
 
+      float fShadowsMaxDistance;
+
       GEMutex mSceneMutex;
 
       void registerEntity(Entity* cEntity);
@@ -108,10 +110,12 @@ namespace GE { namespace Entities
       SceneBackgroundMode getBackgroundMode() const;
       const char* getBackgroundMaterialName() const;
       const Color& getAmbientLightColor() const;
+      float getShadowsMaxDistance() const;
 
       void setBackgroundMode(SceneBackgroundMode BackgroundMode);
       void setBackgroundMaterialName(const char* MaterialName);
       void setAmbientLightColor(const Color& AmbientLightColor);
+      void setShadowsMaxDistance(float Distance);
 
       void setupBackground();
       void setupSkyBox(const char* MaterialName);
@@ -125,5 +129,6 @@ namespace GE { namespace Entities
       GEPropertyEnum(SceneBackgroundMode, BackgroundMode);
       GEProperty(String, BackgroundMaterialName);
       GEProperty(Color, AmbientLightColor);
+      GEProperty(Float, ShadowsMaxDistance);
    };
 }}

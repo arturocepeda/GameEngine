@@ -172,15 +172,22 @@ void RenderSystem::calculate3DInverseTransposeMatrix(const Matrix4& matModel)
 
 void RenderSystem::calculateLightViewProjectionMatrix(ComponentLight* Light)
 {
-   const float Range = 8.0f;
+   Scene* cActiveScene = Scene::getActiveScene();
 
-   Matrix4 matLightProjection;
-   Matrix4MakeOrtho(-Range, Range, -Range, Range, -Range, Range, &matLightProjection);
+   if(!cActiveScene || !cActiveCamera)
+      return;   
+
+   float fShadowsDistance = cActiveScene->getShadowsMaxDistance();
+
+   Vector3 vLightDirection = Light->getDirection();
+   Vector3 vLightPosition = -(vLightDirection * fShadowsDistance * 0.5f);
+   Light->getTransform()->setPosition(vLightPosition);
 
    Matrix4 matLightView;
-   const Vector3& vLightPosition = Light->getTransform()->getPosition();
-   Vector3 vLightDirection = Light->getDirection();
    Matrix4MakeLookAt(vLightPosition, vLightPosition + vLightDirection, Vector3::UnitY, &matLightView);
+
+   Matrix4 matLightProjection;
+   Matrix4MakeOrtho(-fShadowsDistance, fShadowsDistance, -fShadowsDistance, fShadowsDistance, -fShadowsDistance, fShadowsDistance, &matLightProjection);
 
    Matrix4Multiply(matLightProjection, matLightView, &matLightViewProjection);
 }
