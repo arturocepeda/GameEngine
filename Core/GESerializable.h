@@ -32,6 +32,7 @@ namespace GE { namespace Core
    enum class PropertyEditor
    {
       Default,
+      Rotation,
       Enum,
       BitMask
    };
@@ -204,6 +205,12 @@ namespace GE { namespace Core
       std::bind(&ClassName::P_get##PropertyName, this), \
       PropertyEditor::Default, \
       (void*)GE::Core::ObjectManagers::getInstance()->getObjectRegistry(#ObjectType))
+
+#define GERegisterPropertySpecialEditor(ClassName, PropertyType, PropertyName, Editor) \
+   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
+      std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
+      std::bind(&ClassName::P_get##PropertyName, this), \
+      Editor)
 
 
 //
