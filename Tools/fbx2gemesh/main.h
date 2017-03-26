@@ -49,6 +49,8 @@ public:
    }
 };
 
+void registerObjectManagers();
+
 void importMeshData(FbxNode* fbxNode);
 void importSkeletonData(FbxNode* fbxNode);
 void importAnimations(FbxScene* fbxScene, FbxNode* fbxNode);

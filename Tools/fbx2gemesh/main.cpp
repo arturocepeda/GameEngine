@@ -2,6 +2,7 @@
 #include "main.h"
 #include "Core/GEUtils.h"
 #include "Core/GEObjectManager.h"
+#include "Core/GEApplication.h"
 #include "Rendering/GEMaterial.h"
 
 #include <map>
@@ -42,6 +43,10 @@ bool bSplitPoints = false;
 std::map<uint, SubMesh> mSubMeshes;
 ObjectManager<ImportBone> cSkeletonBones;
 ObjectManager<Animation> cAnimations;
+
+ObjectManager<ShaderProgram> mManagerShaderPrograms;
+ObjectManager<Material> mManagerMaterials;
+ObjectManager<Texture> mManagerTextures;
 
 const char Zero = 0;
 
@@ -110,7 +115,9 @@ int main(int argc, char* argv[])
       exit(1);
    }
 
-   Allocator::init();
+   Application::startUp();
+
+   registerObjectManagers();
 
    // set axis system
    std::cout << " Setting axis system...\n";
@@ -247,9 +254,16 @@ int main(int argc, char* argv[])
       xmlSkeleton.save_file(sDestinyFileName, "  ");
    }
 
-   Allocator::release();
+   Application::shutDown();
 
    return 0;
+}
+
+void registerObjectManagers()
+{
+   ObjectManagers::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mManagerShaderPrograms);
+   ObjectManagers::getInstance()->registerObjectManager<Material>("Material", &mManagerMaterials);
+   ObjectManagers::getInstance()->registerObjectManager<Texture>("Texture", &mManagerTextures);
 }
 
 void importMeshData(FbxNode* fbxNode)
