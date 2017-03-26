@@ -18,6 +18,7 @@
 #include "Core/GEApplication.h"
 #include "Core/GEProfiler.h"
 #include "Entities/GEEntity.h"
+#include "Entities/GEComponentParticleSystem.h"
 #include "pugixml/pugixml.hpp"
 
 #include <stdio.h>
@@ -809,6 +810,11 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
    {
       if(cRenderable->getGeometryData().NumIndices > 0)
       {
+         ComponentParticleSystem* cParticleSystem = static_cast<ComponentParticleSystem*>(cRenderable);
+
+         if(cParticleSystem->getDynamicShadows())
+            vShadowedParticlesToRender.push_back(sRenderOperation);
+
          vTransparentMeshesToRender.push_back(sRenderOperation);
 
          GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::Particles];
@@ -905,6 +911,7 @@ void RenderSystem::clearRenderingQueues()
    vUILabelsToRender.clear();
    v3DLabelsToRender.clear();
    vShadowedMeshesToRender.clear();
+   vShadowedParticlesToRender.clear();
    vOpaqueMeshesToRender.clear();
    vTransparentMeshesToRender.clear();
    vLightsToRender.clear();
@@ -935,12 +942,6 @@ void RenderSystem::clearGeometryRenderInfoEntries()
 
 void RenderSystem::renderFrame()
 {
-   if(bShaderReloadPending)
-   {
-      loadShaders();
-      bShaderReloadPending = false;
-   }
-
    if(!mBatches.empty())
    {
       GESTLMap(uint, RenderOperation)::const_iterator it = mBatches.begin();
@@ -1049,4 +1050,27 @@ void RenderSystem::renderFrame()
    float fCurrentTime = Time::getElapsed();
    fFramesPerSecond = 1.0f / (fCurrentTime - fFrameTime);
    fFrameTime = fCurrentTime;
+
+   if(bShaderReloadPending)
+   {
+      loadShaders();
+
+      if(Scene::getActiveScene())
+      {
+         const GESTLVector(Component*)& cRenderables = Scene::getActiveScene()->getComponents<ComponentRenderable>();
+
+         for(uint i = 0; i < cRenderables.size(); i++)
+         {
+            ComponentRenderable* cRenderable = static_cast<ComponentRenderable*>(cRenderables[i]);
+
+            for(uint j = 0; j < cRenderable->getMaterialPassCount(); j++)
+            {
+               MaterialPass* cMaterialPass = cRenderable->getMaterialPass(j);
+               cMaterialPass->reload();
+            }
+         }
+      }
+
+      bShaderReloadPending = false;
+   }
 }

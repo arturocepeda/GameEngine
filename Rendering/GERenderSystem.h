@@ -104,6 +104,7 @@ namespace GE { namespace Rendering
       GESTLVector(RenderOperation) vUILabelsToRender;
       GESTLVector(RenderOperation) v3DLabelsToRender;
       GESTLVector(RenderOperation) vShadowedMeshesToRender;
+      GESTLVector(RenderOperation) vShadowedParticlesToRender;
       GESTLVector(RenderOperation) vOpaqueMeshesToRender;
       GESTLVector(RenderOperation) vTransparentMeshesToRender;
       GESTLVector(Entities::ComponentLight*) vLightsToRender;

@@ -65,6 +65,7 @@ namespace GE { namespace Entities
       Entity* cEmitterMeshEntity;
 
       bool bEmitterActive;
+      bool bDynamicShadows;
       float fEmissionRate;
       uint iEmissionBurstCount;
 
@@ -122,6 +123,7 @@ namespace GE { namespace Entities
 
       ParticleEmitterType getEmitterType() const { return eEmitterType; }
       bool getEmitterActive() const { return bEmitterActive; }
+      bool getDynamicShadows() const { return bDynamicShadows; }
       float getEmissionRate() const { return fEmissionRate; }
       uint getEmissionBurstCount() const { return iEmissionBurstCount; }
 
@@ -150,6 +152,7 @@ namespace GE { namespace Entities
 
       void setEmitterType(ParticleEmitterType EmitterType) { eEmitterType = EmitterType; }
       void setEmitterActive(bool Active) { bEmitterActive = Active; }
+      void setDynamicShadows(bool Active) { bDynamicShadows = Active; }
       void setEmissionRate(float Rate) { fEmissionRate = Rate; }
       void setEmissionBurstCount(uint Value) { iEmissionBurstCount = Value; }
 
@@ -188,6 +191,7 @@ namespace GE { namespace Entities
       GEProperty(ObjectName, EmitterMeshEntity)
 
       GEProperty(Bool, EmitterActive)
+      GEProperty(Bool, DynamicShadows)
       GEProperty(Float, EmissionRate)
       GEProperty(UInt, EmissionBurstCount)
 

@@ -271,3 +271,33 @@ const char* MaterialPass::getConstantBufferDataFragment() const
 {
    return sConstantBufferDataFragment;
 }
+
+void MaterialPass::reload()
+{
+   if(!cMaterial)
+      return;
+
+   if(getPropertiesCount() == iBasePropertiesCount)
+      return;
+
+   while(getPropertiesCount() > iBasePropertiesCount)
+      removeProperty(getPropertiesCount() - 1);
+
+   const ObjectRegistry* cShadersObjectRegistry = ObjectManagers::getInstance()->getObjectRegistry(ShadersObjectRegistryName);
+   ShaderProgram* cShaderProgram = static_cast<ShaderProgram*>(cShadersObjectRegistry->find(cMaterial->getShaderProgram().getID())->second);
+   GEAssert(cShaderProgram);
+
+   if(cShaderProgram->VertexParameters.size() > 0)
+   {
+      registerShaderProperties(sConstantBufferDataVertex, cShaderProgram->VertexParameters);
+   }
+
+   if(cShaderProgram->FragmentParameters.size() > 0)
+   {
+      registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->FragmentParameters);
+   }
+
+   EventArgs sEventArgs;
+   sEventArgs.Sender = this;
+   triggerEvent(EventMaterialSet, &sEventArgs);
+}

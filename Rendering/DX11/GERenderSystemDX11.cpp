@@ -715,17 +715,17 @@ void RenderSystem::renderShadowMap()
    for(; it != vShadowedMeshesToRender.end(); it++)
    {
       const RenderOperation& sRenderOperation = *it;
-      ComponentMesh* cMesh = static_cast<ComponentMesh*>(sRenderOperation.Renderable);
+      Entity* cEntity = sRenderOperation.Renderable->getOwner();
 
       // set uniform
-      const Matrix4& matModel = cMesh->getTransform()->getGlobalWorldMatrix();
+      const Matrix4& matModel = cEntity->getComponent<ComponentTransform>()->getGlobalWorldMatrix();
       Matrix4Multiply(matLightViewProjection, matModel, &sShaderConstantsTransform.WorldViewProjectionMatrix);
       dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
 
       // draw
       GESTLMap(uint, GeometryRenderInfo)* mGeometryRegistry = 0;
       
-      if(cMesh->getGeometryType() == GeometryType::Static)
+      if(sRenderOperation.Renderable->getGeometryType() == GeometryType::Static)
       {
          mGeometryRegistry = &mStaticGeometryToRender;
          bindBuffers(sGPUBufferPairs[GeometryGroup::MeshStatic]);
@@ -736,13 +736,36 @@ void RenderSystem::renderShadowMap()
          bindBuffers(sGPUBufferPairs[GeometryGroup::MeshDynamic]);
       }
 
-      GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mGeometryRegistry->find(cMesh->getOwner()->getFullName().getID());
+      GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mGeometryRegistry->find(cEntity->getFullName().getID());
       const GeometryRenderInfo& sGeometryInfo = itInfo->second;
       UINT iStartIndexLocation = sGeometryInfo.IndexBufferOffset / sizeof(ushort);
-      INT iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / cMesh->getGeometryData().VertexStride;
+      INT iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / sRenderOperation.Renderable->getGeometryData().VertexStride;
 
       dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-      dxContext->DrawIndexed(cMesh->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
+      dxContext->DrawIndexed(sRenderOperation.Renderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
+   }
+
+   it = vShadowedParticlesToRender.begin();
+
+   for(; it != vShadowedParticlesToRender.end(); it++)
+   {
+      const RenderOperation& sRenderOperation = *it;
+      Entity* cEntity = sRenderOperation.Renderable->getOwner();
+
+      // set uniform
+      memcpy(&sShaderConstantsTransform.WorldViewProjectionMatrix, &matLightViewProjection, sizeof(Matrix4));
+      dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
+
+      // draw
+      bindBuffers(sGPUBufferPairs[GeometryGroup::Particles]);
+
+      GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
+      const GeometryRenderInfo& sGeometryInfo = itInfo->second;
+      UINT iStartIndexLocation = sGeometryInfo.IndexBufferOffset / sizeof(ushort);
+      INT iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / sRenderOperation.Renderable->getGeometryData().VertexStride;
+
+      dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+      dxContext->DrawIndexed(sRenderOperation.Renderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
    }
 
    dxContext->OMSetRenderTargets(1, dxRenderTargetView.GetAddressOf(), dxDepthStencilView.Get());

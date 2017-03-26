@@ -99,6 +99,8 @@ namespace GE { namespace Rendering
       const char* getConstantBufferDataVertex() const;
       const char* getConstantBufferDataFragment() const;
 
+      void reload();
+
       GEProperty(ObjectName, MaterialName);
       GEProperty(Bool, Active);
    };

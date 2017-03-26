@@ -495,22 +495,22 @@ void RenderSystem::renderShadowMap()
    for(; it != vShadowedMeshesToRender.end(); it++)
    {
       const RenderOperation& sRenderOperation = *it;
-      ComponentMesh* cMesh = static_cast<ComponentMesh*>(sRenderOperation.Renderable);
+      Entity* cEntity = sRenderOperation.Renderable->getOwner();
 
       // set uniform
-      const Matrix4& matModel = cMesh->getTransform()->getGlobalWorldMatrix();
+      const Matrix4& matModel = cEntity->getComponent<ComponentTransform>()->getGlobalWorldMatrix();
       Matrix4 matLightWVP;
       Matrix4Multiply(matLightViewProjection, matModel, &matLightWVP);
       glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
 
       // set vertex declaration
-      const int iVertexStride = cMesh->getGeometryData().VertexStride;
+      const int iVertexStride = sRenderOperation.Renderable->getGeometryData().VertexStride;
       glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, 0);
 
       // draw
       GESTLMap(uint, GeometryRenderInfo)* cGeometryRegistry = 0;
 
-      if(cMesh->getGeometryType() == GeometryType::Static)
+      if(sRenderOperation.Renderable->getGeometryType() == GeometryType::Static)
       {
          cGeometryRegistry = &mStaticGeometryToRender;
          bindBuffers(sGPUBufferPairs[GeometryGroup::MeshStatic]);
@@ -521,11 +521,35 @@ void RenderSystem::renderShadowMap()
          bindBuffers(sGPUBufferPairs[GeometryGroup::MeshDynamic]);
       }
 
-      std::map<uint, GeometryRenderInfo>::const_iterator itInfo = cGeometryRegistry->find(cMesh->getOwner()->getFullName().getID());
+      std::map<uint, GeometryRenderInfo>::const_iterator itInfo = cGeometryRegistry->find(cEntity->getFullName().getID());
       const GeometryRenderInfo& sGeometryInfo = itInfo->second;
       char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
 
-      glDrawElements(GL_TRIANGLES, cMesh->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
+      glDrawElements(GL_TRIANGLES, sRenderOperation.Renderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
+   }
+
+   it = vShadowedParticlesToRender.begin();
+
+   for(; it != vShadowedParticlesToRender.end(); it++)
+   {
+      const RenderOperation& sRenderOperation = *it;
+      Entity* cEntity = sRenderOperation.Renderable->getOwner();
+
+      // set uniform
+      glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightViewProjection.m);
+
+      // set vertex declaration
+      const int iVertexStride = sRenderOperation.Renderable->getGeometryData().VertexStride;
+      glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, 0);
+
+      // draw
+      bindBuffers(sGPUBufferPairs[GeometryGroup::Particles]);
+
+      std::map<uint, GeometryRenderInfo>::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
+      const GeometryRenderInfo& sGeometryInfo = itInfo->second;
+      char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
+
+      glDrawElements(GL_TRIANGLES, sRenderOperation.Renderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
    }
 
    glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -43,6 +43,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , cEmitterMesh(0)
    , cEmitterMeshEntity(0)
    , bEmitterActive(false)
+   , bDynamicShadows(false)
    , fEmissionRate(0.0f)
    , iEmissionBurstCount(1)
    , fParticleLifeTimeMin(0.0f)
@@ -91,6 +92,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(ComponentParticleSystem, ObjectName, EmitterMeshEntity);
 
    GERegisterProperty(ComponentParticleSystem, Bool, EmitterActive);
+   GERegisterProperty(ComponentParticleSystem, Bool, DynamicShadows);
    GERegisterProperty(ComponentParticleSystem, Float, EmissionRate);
    GERegisterProperty(ComponentParticleSystem, UInt, EmissionBurstCount);
 
