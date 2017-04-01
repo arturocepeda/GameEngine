@@ -143,6 +143,10 @@ void Serializable::saveToXml(pugi::xml_node& XmlNode) const
    for(uint i = 0; i < vProperties.size(); i++)
    {
       const Property& sProperty = vProperties[i];
+
+      if(!sProperty.Setter)
+         continue;
+
       char sValueBuffer[Value::BufferSize];
 
       sProperty.Getter().toString(sValueBuffer);

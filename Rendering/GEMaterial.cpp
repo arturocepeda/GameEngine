@@ -244,6 +244,7 @@ void MaterialPass::setMaterialName(const Core::ObjectName& Name)
       return;
 
    const ObjectRegistry* cMaterialObjectRegistry = ObjectManagers::getInstance()->getObjectRegistry(MaterialObjectRegistryName);
+   GEAssert(cMaterialObjectRegistry->find(Name.getID()) != cMaterialObjectRegistry->end());
    setMaterial(static_cast<Material*>(cMaterialObjectRegistry->find(Name.getID())->second));
 }
 

@@ -171,9 +171,11 @@ int main(int argc, char* argv[])
       xml_node xmlSubMeshEntityMesh = xmlSubMeshEntity.append_child("Component");
       xmlSubMeshEntityMesh.append_attribute("type").set_value("Mesh");
       xml_node xmlSubMeshEntityMeshProperty = xmlSubMeshEntityMesh.append_child("Property");
-      xmlSubMeshEntityMeshProperty.append_attribute("name").set_value("Mesh");
+      xmlSubMeshEntityMeshProperty.append_attribute("name").set_value("MeshName");
       xmlSubMeshEntityMeshProperty.append_attribute("value").set_value(sSubMeshName);
-      xmlSubMeshEntityMeshProperty = xmlSubMeshEntityMesh.append_child("Property");
+
+      xml_node xmlSubMeshEntityMeshMaterialPass = xmlSubMeshEntityMesh.append_child("MaterialPass");
+      xmlSubMeshEntityMeshProperty = xmlSubMeshEntityMeshMaterialPass.append_child("Property");
       xmlSubMeshEntityMeshProperty.append_attribute("name").set_value("MaterialName");
       xmlSubMeshEntityMeshProperty.append_attribute("value").set_value(sSubMesh.MaterialName);
 
