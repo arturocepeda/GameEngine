@@ -66,7 +66,8 @@ namespace GE { namespace Rendering
       static const GE::uint IndexBufferSize = 1024 * 1024 * 8;
       static const GE::uint ShadowMapSize = 1024;
 
-      static const Core::ObjectName ShadowMapProgram;
+      static const Core::ObjectName ShadowMapSolidProgram;
+      static const Core::ObjectName ShadowMapAlphaProgram;
 
       void* pDevice;
       void* pWindow;

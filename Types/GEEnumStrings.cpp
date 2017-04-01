@@ -135,7 +135,8 @@ namespace GE { namespace Rendering
    const char* strCullingMode[] =
    {
       "Back",
-      "Front"
+      "Front",
+      "None"
    };
 
    const char* strDynamicShadowsBitMask[] =

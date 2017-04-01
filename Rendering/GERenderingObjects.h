@@ -143,6 +143,7 @@ namespace GE { namespace Rendering
    {
       Back,
       Front,
+      None,
 
       Count
    };

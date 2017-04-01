@@ -50,6 +50,7 @@ ID3D11DepthStencilState* dxDepthStencilStateTestOnly = 0;
 ID3D11DepthStencilState* dxDepthStencilStateTestAndWrite = 0;
 ID3D11RasterizerState* dxRasterizerStateSolidCullBack = 0;
 ID3D11RasterizerState* dxRasterizerStateSolidCullFront = 0;
+ID3D11RasterizerState* dxRasterizerStateSolidNoCull = 0;
 ID3D11RasterizerState* dxRasterizerStateWireFrame = 0;
 
 // buffers
@@ -410,6 +411,9 @@ void RenderSystemDX11::createStates()
    dxRasterizerDesc.CullMode = D3D11_CULL_FRONT;
    dxDevice->CreateRasterizerState(&dxRasterizerDesc, &dxRasterizerStateSolidCullFront);
 
+   dxRasterizerDesc.CullMode = D3D11_CULL_NONE;
+   dxDevice->CreateRasterizerState(&dxRasterizerDesc, &dxRasterizerStateSolidNoCull);
+
    ZeroMemory(&dxRasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
    dxRasterizerDesc.CullMode = D3D11_CULL_NONE;
    dxRasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
@@ -609,6 +613,7 @@ void RenderSystemDX11::releaseStates()
    dxBlendStateAlpha->Release();
    dxRasterizerStateSolidCullBack->Release();
    dxRasterizerStateSolidCullFront->Release();
+   dxRasterizerStateSolidNoCull->Release();
    dxRasterizerStateWireFrame->Release();
    dxSamplerStateClamp->Release();
 }
@@ -707,65 +712,77 @@ void RenderSystem::renderShadowMap()
    cShadowMap->setAsRenderTarget();
    cShadowMap->clear(Color(1.0f, 1.0f, 1.0f));
 
-   useShaderProgram(ShadowMapProgram);
    calculateLightViewProjectionMatrix(cLight);
 
-   GESTLVector(RenderOperation)::const_iterator it = vShadowedMeshesToRender.begin();
-
-   for(; it != vShadowedMeshesToRender.end(); it++)
+   if(!vShadowedMeshesToRender.empty())
    {
-      const RenderOperation& sRenderOperation = *it;
-      Entity* cEntity = sRenderOperation.Renderable->getOwner();
+      useShaderProgram(ShadowMapSolidProgram);
 
-      // set uniform
-      const Matrix4& matModel = cEntity->getComponent<ComponentTransform>()->getGlobalWorldMatrix();
-      Matrix4Multiply(matLightViewProjection, matModel, &sShaderConstantsTransform.WorldViewProjectionMatrix);
-      dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
+      GESTLVector(RenderOperation)::const_iterator it = vShadowedMeshesToRender.begin();
 
-      // draw
-      GESTLMap(uint, GeometryRenderInfo)* mGeometryRegistry = 0;
-      
-      if(sRenderOperation.Renderable->getGeometryType() == GeometryType::Static)
+      for(; it != vShadowedMeshesToRender.end(); it++)
       {
-         mGeometryRegistry = &mStaticGeometryToRender;
-         bindBuffers(sGPUBufferPairs[GeometryGroup::MeshStatic]);
-      }
-      else
-      {
-         mGeometryRegistry = &mDynamicGeometryToRender;
-         bindBuffers(sGPUBufferPairs[GeometryGroup::MeshDynamic]);
-      }
+         const RenderOperation& sRenderOperation = *it;
+         Entity* cEntity = sRenderOperation.Renderable->getOwner();
 
-      GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mGeometryRegistry->find(cEntity->getFullName().getID());
-      const GeometryRenderInfo& sGeometryInfo = itInfo->second;
-      UINT iStartIndexLocation = sGeometryInfo.IndexBufferOffset / sizeof(ushort);
-      INT iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / sRenderOperation.Renderable->getGeometryData().VertexStride;
+         // set uniform
+         const Matrix4& matModel = cEntity->getComponent<ComponentTransform>()->getGlobalWorldMatrix();
+         Matrix4Multiply(matLightViewProjection, matModel, &sShaderConstantsTransform.WorldViewProjectionMatrix);
+         dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
 
-      dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-      dxContext->DrawIndexed(sRenderOperation.Renderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
+         // draw
+         GESTLMap(uint, GeometryRenderInfo)* mGeometryRegistry = 0;
+
+         if(sRenderOperation.Renderable->getGeometryType() == GeometryType::Static)
+         {
+            mGeometryRegistry = &mStaticGeometryToRender;
+            bindBuffers(sGPUBufferPairs[GeometryGroup::MeshStatic]);
+         }
+         else
+         {
+            mGeometryRegistry = &mDynamicGeometryToRender;
+            bindBuffers(sGPUBufferPairs[GeometryGroup::MeshDynamic]);
+         }
+
+         GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mGeometryRegistry->find(cEntity->getFullName().getID());
+         const GeometryRenderInfo& sGeometryInfo = itInfo->second;
+         UINT iStartIndexLocation = sGeometryInfo.IndexBufferOffset / sizeof(ushort);
+         INT iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / sRenderOperation.Renderable->getGeometryData().VertexStride;
+
+         dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+         dxContext->DrawIndexed(sRenderOperation.Renderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
+      }
    }
 
-   it = vShadowedParticlesToRender.begin();
-
-   for(; it != vShadowedParticlesToRender.end(); it++)
+   if(!vShadowedParticlesToRender.empty())
    {
-      const RenderOperation& sRenderOperation = *it;
-      Entity* cEntity = sRenderOperation.Renderable->getOwner();
+      useShaderProgram(ShadowMapAlphaProgram);
 
-      // set uniform
-      memcpy(&sShaderConstantsTransform.WorldViewProjectionMatrix, &matLightViewProjection, sizeof(Matrix4));
-      dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
+      GESTLVector(RenderOperation)::const_iterator it = vShadowedParticlesToRender.begin();
 
-      // draw
-      bindBuffers(sGPUBufferPairs[GeometryGroup::Particles]);
+      for(; it != vShadowedParticlesToRender.end(); it++)
+      {
+         const RenderOperation& sRenderOperation = *it;
+         Entity* cEntity = sRenderOperation.Renderable->getOwner();
 
-      GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
-      const GeometryRenderInfo& sGeometryInfo = itInfo->second;
-      UINT iStartIndexLocation = sGeometryInfo.IndexBufferOffset / sizeof(ushort);
-      INT iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / sRenderOperation.Renderable->getGeometryData().VertexStride;
+         // set uniform
+         memcpy(&sShaderConstantsTransform.WorldViewProjectionMatrix, &matLightViewProjection, sizeof(Matrix4));
+         dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
 
-      dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-      dxContext->DrawIndexed(sRenderOperation.Renderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
+         if(sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture())
+            bindTexture(sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture());
+
+         // draw
+         bindBuffers(sGPUBufferPairs[GeometryGroup::Particles]);
+
+         GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
+         const GeometryRenderInfo& sGeometryInfo = itInfo->second;
+         UINT iStartIndexLocation = sGeometryInfo.IndexBufferOffset / sizeof(ushort);
+         INT iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / sRenderOperation.Renderable->getGeometryData().VertexStride;
+
+         dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+         dxContext->DrawIndexed(sRenderOperation.Renderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
+      }
    }
 
    dxContext->OMSetRenderTargets(1, dxRenderTargetView.GetAddressOf(), dxDepthStencilView.Get());
@@ -1001,6 +1018,10 @@ void RenderSystem::setCullingMode(CullingMode Mode)
 
    case CullingMode::Front:
       dxContext->RSSetState(dxRasterizerStateSolidCullFront);
+      break;
+
+   case CullingMode::None:
+      dxContext->RSSetState(dxRasterizerStateSolidNoCull);
       break;
 
    default:

@@ -487,69 +487,85 @@ void RenderSystem::renderShadowMap()
    glClearDepthf(1.0f);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   useShaderProgram(ShadowMapProgram);
    calculateLightViewProjectionMatrix(cLight);
 
-   GESTLVector(RenderOperation)::const_iterator it = vShadowedMeshesToRender.begin();
-
-   for(; it != vShadowedMeshesToRender.end(); it++)
+   if(!vShadowedMeshesToRender.empty())
    {
-      const RenderOperation& sRenderOperation = *it;
-      Entity* cEntity = sRenderOperation.Renderable->getOwner();
+      useShaderProgram(ShadowMapSolidProgram);
 
-      // set uniform
-      const Matrix4& matModel = cEntity->getComponent<ComponentTransform>()->getGlobalWorldMatrix();
-      Matrix4 matLightWVP;
-      Matrix4Multiply(matLightViewProjection, matModel, &matLightWVP);
-      glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
+      GESTLVector(RenderOperation)::const_iterator it = vShadowedMeshesToRender.begin();
 
-      // set vertex declaration
-      const int iVertexStride = sRenderOperation.Renderable->getGeometryData().VertexStride;
-      glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, 0);
-
-      // draw
-      GESTLMap(uint, GeometryRenderInfo)* cGeometryRegistry = 0;
-
-      if(sRenderOperation.Renderable->getGeometryType() == GeometryType::Static)
+      for(; it != vShadowedMeshesToRender.end(); it++)
       {
-         cGeometryRegistry = &mStaticGeometryToRender;
-         bindBuffers(sGPUBufferPairs[GeometryGroup::MeshStatic]);
-      }
-      else
-      {
-         cGeometryRegistry = &mDynamicGeometryToRender;
-         bindBuffers(sGPUBufferPairs[GeometryGroup::MeshDynamic]);
-      }
+         const RenderOperation& sRenderOperation = *it;
+         Entity* cEntity = sRenderOperation.Renderable->getOwner();
 
-      std::map<uint, GeometryRenderInfo>::const_iterator itInfo = cGeometryRegistry->find(cEntity->getFullName().getID());
-      const GeometryRenderInfo& sGeometryInfo = itInfo->second;
-      char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
+         // set uniform
+         const Matrix4& matModel = cEntity->getComponent<ComponentTransform>()->getGlobalWorldMatrix();
+         Matrix4 matLightWVP;
+         Matrix4Multiply(matLightViewProjection, matModel, &matLightWVP);
+         glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
 
-      glDrawElements(GL_TRIANGLES, sRenderOperation.Renderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
+         // set vertex declaration
+         const int iVertexStride = sRenderOperation.Renderable->getGeometryData().VertexStride;
+         glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, 0);
+
+         // draw
+         GESTLMap(uint, GeometryRenderInfo)* cGeometryRegistry = 0;
+
+         if(sRenderOperation.Renderable->getGeometryType() == GeometryType::Static)
+         {
+            cGeometryRegistry = &mStaticGeometryToRender;
+            bindBuffers(sGPUBufferPairs[GeometryGroup::MeshStatic]);
+         }
+         else
+         {
+            cGeometryRegistry = &mDynamicGeometryToRender;
+            bindBuffers(sGPUBufferPairs[GeometryGroup::MeshDynamic]);
+         }
+
+         std::map<uint, GeometryRenderInfo>::const_iterator itInfo = cGeometryRegistry->find(cEntity->getFullName().getID());
+         const GeometryRenderInfo& sGeometryInfo = itInfo->second;
+         char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
+
+         glDrawElements(GL_TRIANGLES, sRenderOperation.Renderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
+      }
    }
 
-   it = vShadowedParticlesToRender.begin();
-
-   for(; it != vShadowedParticlesToRender.end(); it++)
+   if(!vShadowedParticlesToRender.empty())
    {
-      const RenderOperation& sRenderOperation = *it;
-      Entity* cEntity = sRenderOperation.Renderable->getOwner();
+      useShaderProgram(ShadowMapAlphaProgram);
 
-      // set uniform
-      glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightViewProjection.m);
+      GESTLVector(RenderOperation)::const_iterator it = vShadowedParticlesToRender.begin();
 
-      // set vertex declaration
-      const int iVertexStride = sRenderOperation.Renderable->getGeometryData().VertexStride;
-      glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, 0);
+      for(; it != vShadowedParticlesToRender.end(); it++)
+      {
+         const RenderOperation& sRenderOperation = *it;
+         Entity* cEntity = sRenderOperation.Renderable->getOwner();
 
-      // draw
-      bindBuffers(sGPUBufferPairs[GeometryGroup::Particles]);
+         // set uniform
+         glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightViewProjection.m);
 
-      std::map<uint, GeometryRenderInfo>::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
-      const GeometryRenderInfo& sGeometryInfo = itInfo->second;
-      char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
+         // bind diffuse texture
+         if(sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture())
+         {
+            glActiveTexture(GL_TEXTURE0);
+            bindTexture(sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture());
+            glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), 0);
+         }
 
-      glDrawElements(GL_TRIANGLES, sRenderOperation.Renderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
+         // set vertex declaration
+         static_cast<RenderSystemES20*>(this)->setVertexDeclaration(sRenderOperation);
+
+         // draw
+         bindBuffers(sGPUBufferPairs[GeometryGroup::Particles]);
+
+         std::map<uint, GeometryRenderInfo>::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
+         const GeometryRenderInfo& sGeometryInfo = itInfo->second;
+         char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
+
+         glDrawElements(GL_TRIANGLES, sRenderOperation.Renderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
+      }
    }
 
    glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -757,11 +773,17 @@ void RenderSystem::setCullingMode(CullingMode Mode)
    switch(Mode)
    {
    case CullingMode::Back:
+      glEnable(GL_CULL_FACE);
       glCullFace(GL_BACK);
       break;
 
    case CullingMode::Front:
+      glEnable(GL_CULL_FACE);
       glCullFace(GL_FRONT);
+      break;
+
+   case CullingMode::None:
+      glDisable(GL_CULL_FACE);
       break;
 
    default:

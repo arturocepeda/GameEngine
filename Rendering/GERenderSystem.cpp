@@ -33,7 +33,8 @@ using namespace GE::Rendering;
 const uint RenderBatchVertexDataFloatsCount = 1024 * 1024;
 const uint RenderBatchIndicesCount = 1024 * 256;
 
-const ObjectName RenderSystem::ShadowMapProgram = ObjectName("ShadowMap");
+const ObjectName RenderSystem::ShadowMapSolidProgram = ObjectName("ShadowMapSolid");
+const ObjectName RenderSystem::ShadowMapAlphaProgram = ObjectName("ShadowMapAlpha");
 
 RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint ScreenHeight)
    : pWindow(Window)
@@ -971,7 +972,7 @@ void RenderSystem::renderFrame()
       !v3DLabelsToRender.empty() ||
       !vTransparentMeshesToRender.empty())
    {
-      if(!vShadowedMeshesToRender.empty())
+      if(!vShadowedMeshesToRender.empty() || !vShadowedParticlesToRender.empty())
          renderShadowMap();
 
       if(!vOpaqueMeshesToRender.empty())
