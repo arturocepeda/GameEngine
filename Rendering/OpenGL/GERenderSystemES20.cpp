@@ -397,6 +397,7 @@ void RenderSystemES20::getUniformsLocation(ShaderProgramES20* cProgram)
    cProgram->setUniformLocation((uint)Uniforms::Attenuation, glGetUniformLocation(cProgram->ID, "uAttenuation"));
    cProgram->setUniformLocation((uint)Uniforms::LightDirection, glGetUniformLocation(cProgram->ID, "uLightDirection"));
    cProgram->setUniformLocation((uint)Uniforms::SpotAngle, glGetUniformLocation(cProgram->ID, "uSpotAngle"));
+   cProgram->setUniformLocation((uint)Uniforms::ShadowIntensity, glGetUniformLocation(cProgram->ID, "uShadowIntensity"));
 
    // custom parameters
    cProgram->setUniformLocation((uint)Uniforms::VertexParameters, glGetUniformLocation(cProgram->ID, "uVertexParameters"));
@@ -592,6 +593,8 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       matModelViewProjection = cRenderable->getRenderingMode() == RenderingMode::_3D
          ? cActiveCamera->getViewProjectionMatrix()
          : mat2DViewProjection;
+
+      glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::AmbientLightColor), 1, &cAmbientLightColor.Red);
    }
    else
    {
@@ -654,6 +657,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
          glUniform3fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightPosition), 1, &cLight->getTransform()->getPosition().X);
          glUniform3fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightDirection), 1, &vLightDirection.X);
          glUniform1f(cActiveProgram->getUniformLocation((uint)Uniforms::Attenuation), cLight->getLinearAttenuation());
+         glUniform1f(cActiveProgram->getUniformLocation((uint)Uniforms::ShadowIntensity), cLight->getShadowIntensity());
       }
    }
 

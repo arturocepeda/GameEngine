@@ -53,6 +53,8 @@ namespace GE { namespace Rendering
       float Attenuation;               // 64 bytes
       GE::Vector3 LightDirection;
       float SpotAngle;                 // 80 bytes
+      GE::Vector3 Unused;
+      float ShadowIntensity;           // 96 bytes
    };
 
 

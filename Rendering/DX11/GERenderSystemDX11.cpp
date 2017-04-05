@@ -904,6 +904,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
          sShaderConstantsLighting.LightPosition = cLight->getTransform()->getPosition();
          sShaderConstantsLighting.LightDirection = cLight->getDirection();
          sShaderConstantsLighting.Attenuation = cLight->getLinearAttenuation();
+         sShaderConstantsLighting.ShadowIntensity = cLight->getShadowIntensity();
       }
 
       dxContext->UpdateSubresource(dxConstantBufferLighting, 0, NULL, &sShaderConstantsLighting, 0, 0);

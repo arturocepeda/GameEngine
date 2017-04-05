@@ -34,6 +34,7 @@ namespace GE { namespace Entities
       LightType eLightType;
       Color cColor;
       float fLinearAttenuation;
+      float fShadowIntensity;
 
    public:
       static ComponentType getType() { return ComponentType::Light; }
@@ -45,13 +46,16 @@ namespace GE { namespace Entities
       LightType getLightType() const;
       const Color& getColor() const;
       float getLinearAttenuation() const;
+      float getShadowIntensity() const;
       Vector3 getDirection() const;
 
       void setLightType(LightType eLightType);
       void setColor(const Color& cColor);
       void setLinearAttenuation(float LinearAttenuation);
+      void setShadowIntensity(float Intensity);
 
       GEPropertyEnum(LightType, LightType)
       GEProperty(Color, Color)
+      GEProperty(Float, ShadowIntensity)
    };
 }}

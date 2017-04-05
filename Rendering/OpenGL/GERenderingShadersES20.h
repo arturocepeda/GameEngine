@@ -57,6 +57,7 @@ namespace GE { namespace Rendering
       Attenuation,
       LightDirection,
       SpotAngle,
+      ShadowIntensity,
 
       // Custom Parameters
       VertexParameters,

@@ -25,6 +25,7 @@ ComponentLight::ComponentLight(Entity* Owner)
    , eLightType(LightType::Directional)
    , cColor(1.0f, 1.0f, 1.0f)
    , fLinearAttenuation(1.0f)
+   , fShadowIntensity(0.0f)
 {
    cClassName = ObjectName("Light");
 
@@ -32,6 +33,7 @@ ComponentLight::ComponentLight(Entity* Owner)
 
    GERegisterPropertyEnum(ComponentLight, LightType, LightType);
    GERegisterProperty(ComponentLight, Color, Color);
+   GERegisterProperty(ComponentLight, Float, ShadowIntensity);
 }
 
 ComponentLight::~ComponentLight()
@@ -58,6 +60,11 @@ float ComponentLight::getLinearAttenuation() const
    return fLinearAttenuation;
 }
 
+float ComponentLight::getShadowIntensity() const
+{
+   return fShadowIntensity;
+}
+
 Vector3 ComponentLight::getDirection() const
 {
    const Matrix4& mRotationMatrix = cTransform->getRotation().getRotationMatrix();
@@ -79,4 +86,9 @@ void ComponentLight::setColor(const Color& cColor)
 void ComponentLight::setLinearAttenuation(float LinearAttenuation)
 {
    fLinearAttenuation = LinearAttenuation;
+}
+
+void ComponentLight::setShadowIntensity(float Intensity)
+{
+   fShadowIntensity = Intensity;
 }
