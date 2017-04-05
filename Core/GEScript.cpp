@@ -108,14 +108,28 @@ Script::~Script()
 {
 }
 
-void Script::handleScriptError(const char* ScriptName)
+void Script::handleScriptError(const char* ScriptName, const char* Msg)
 {
-   Device::log("Lua error (the '%s' script could not be loaded)", ScriptName);
+   if(Msg)
+   {
+      Device::log("Lua error (the '%s' script could not be loaded): %s", ScriptName, Msg);
+   }
+   else
+   {
+      Device::log("Lua error (the '%s' script could not be loaded)", ScriptName);
+   }
 }
 
-void Script::handleFunctionError(const char* FunctionName)
+void Script::handleFunctionError(const char* FunctionName, const char* Msg)
 {
-   Device::log("Lua error ('%s' function)", FunctionName);
+   if(Msg)
+   {
+      Device::log("Lua error ('%s' function): %s", FunctionName, Msg);
+   }
+   else
+   {
+      Device::log("Lua error ('%s' function)", FunctionName);
+   }
 }
 
 void Script::loadFromCode(const GESTLString& Code)
@@ -140,7 +154,17 @@ void Script::loadFromFile(const char* FileName)
       if(Application::ContentType == ApplicationContentType::Xml)
       {
          Device::readContentFile(ContentType::GenericTextData, "Scripts", FileName, "lua", &cContentData);
+#if defined (GE_EDITOR_SUPPORT)
+         sol::protected_function_result luaResult = lua.do_string(cContentData.getData());
+
+         if(!luaResult.valid())
+         {
+            sol::error luaError = luaResult;
+            handleScriptError(FileName, luaError.what());
+         }
+#else
          lua.script(cContentData.getData());
+#endif
       }
       else
       {
@@ -201,6 +225,16 @@ bool Script::isFunctionDefined(const ObjectName& FunctionName) const
 
 void Script::runFunction(const char* FunctionName)
 {
+#if defined (GE_EDITOR_SUPPORT)
+   sol::protected_function luaFunction = lua[FunctionName];
+   sol::protected_function_result luaFunctionResult = luaFunction();
+
+   if(!luaFunctionResult.valid())
+   {
+      sol::error luaError = luaFunctionResult;
+      handleFunctionError(FunctionName, luaError.what());
+   }
+#else
    std::function<void()> luaFunction = (std::function<void()>)lua[FunctionName];
 
    try
@@ -211,6 +245,7 @@ void Script::runFunction(const char* FunctionName)
    {
       handleFunctionError(FunctionName);
    }
+#endif
 }
 
 void Script::collectGlobalSymbols()
