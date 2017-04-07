@@ -18,32 +18,53 @@ namespace GE { namespace Entities
 {
    class ComponentUIElement : public Component
    {
-   private:
+   protected:
       ComponentTransform* cTransform;
-
-      Alignment eAnchor;
-      Vector2 vOffset;
       float fAlpha;
 
-      void updateTransformPosition();
+      ComponentUIElement(Entity* Owner);
 
    public:
       static ComponentType getType() { return ComponentType::UIElement; }
 
-      ComponentUIElement(Entity* Owner);
       virtual ~ComponentUIElement();
 
-      Alignment getAnchor() const;
-      const Vector2& getOffset() const;
       float getAlpha() const;
       float getAlphaInHierarchy() const;
 
+      void setAlpha(float Alpha);
+
+      GEProperty(Float, Alpha)
+   };
+
+
+   class ComponentUI2DElement : public ComponentUIElement
+   {
+   private:
+      Alignment eAnchor;
+      Vector2 vOffset;
+
+      void updateTransformPosition();
+
+   public:
+      ComponentUI2DElement(Entity* Owner);
+      virtual ~ComponentUI2DElement();
+
+      Alignment getAnchor() const;
+      const Vector2& getOffset() const;
+
       void setAnchor(Alignment Anchor);
       void setOffset(const Vector2& Offset);
-      void setAlpha(float Alpha);
 
       GEPropertyEnum(Alignment, Anchor)
       GEProperty(Vector2, Offset)
-      GEProperty(Float, Alpha)
+   };
+
+
+   class ComponentUI3DElement : public ComponentUIElement
+   {
+   public:
+      ComponentUI3DElement(Entity* Owner);
+      virtual ~ComponentUI3DElement();
    };
 }}

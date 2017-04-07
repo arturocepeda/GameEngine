@@ -23,8 +23,6 @@ using namespace GE::Entities;
 //
 ComponentUIElement::ComponentUIElement(Entity* Owner)
    : Component(Owner)
-   , eAnchor(Alignment::MiddleCenter)
-   , vOffset(Vector2::Zero)
    , fAlpha(1.0f)
 {
    cClassName = ObjectName("UIElement");
@@ -32,8 +30,6 @@ ComponentUIElement::ComponentUIElement(Entity* Owner)
    cTransform = cOwner->getComponent<ComponentTransform>();
    GEAssert(cTransform);
 
-   GERegisterPropertyEnum(ComponentUIElement, Alignment, Anchor);
-   GERegisterProperty(ComponentUIElement, Vector2, Offset);
    GERegisterProperty(ComponentUIElement, Float, Alpha);
 }
 
@@ -41,7 +37,54 @@ ComponentUIElement::~ComponentUIElement()
 {
 }
 
-void ComponentUIElement::updateTransformPosition()
+float ComponentUIElement::getAlpha() const
+{
+   return fAlpha;
+}
+
+float ComponentUIElement::getAlphaInHierarchy() const
+{
+   float fAlphaInHierarchy = fAlpha;   
+   Entity* cParent = cOwner->getParent();
+
+   while(cParent)
+   {
+      ComponentUIElement* cUIElement = cParent->getComponent<ComponentUIElement>();
+
+      if(cUIElement)
+         fAlphaInHierarchy *= cUIElement->getAlpha();
+
+      cParent = cParent->getParent();
+   }
+
+   return fAlphaInHierarchy;
+}
+
+void ComponentUIElement::setAlpha(float Alpha)
+{
+   fAlpha = Alpha;
+}
+
+
+//
+//  ComponentUI2DElement
+//
+ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
+   : ComponentUIElement(Owner)
+   , eAnchor(Alignment::MiddleCenter)
+   , vOffset(Vector2::Zero)
+{
+   cClassName = ObjectName("UI2DElement");
+
+   GERegisterPropertyEnum(ComponentUI2DElement, Alignment, Anchor);
+   GERegisterProperty(ComponentUI2DElement, Vector2, Offset);
+}
+
+ComponentUI2DElement::~ComponentUI2DElement()
+{
+}
+
+void ComponentUI2DElement::updateTransformPosition()
 {
    Vector3 vNewPosition = Vector3(vOffset.X, vOffset.Y, 0.0f);
 
@@ -84,52 +127,38 @@ void ComponentUIElement::updateTransformPosition()
    cTransform->setPosition(vNewPosition);
 }
 
-Alignment ComponentUIElement::getAnchor() const
+Alignment ComponentUI2DElement::getAnchor() const
 {
    return eAnchor;
 }
 
-const Vector2& ComponentUIElement::getOffset() const
+const Vector2& ComponentUI2DElement::getOffset() const
 {
    return vOffset;
 }
 
-float ComponentUIElement::getAlpha() const
-{
-   return fAlpha;
-}
-
-float ComponentUIElement::getAlphaInHierarchy() const
-{
-   float fAlphaInHierarchy = fAlpha;   
-   Entity* cParent = cOwner->getParent();
-
-   while(cParent)
-   {
-      ComponentUIElement* cUIElement = cParent->getComponent<ComponentUIElement>();
-
-      if(cUIElement)
-         fAlphaInHierarchy *= cUIElement->getAlpha();
-
-      cParent = cParent->getParent();
-   }
-
-   return fAlphaInHierarchy;
-}
-
-void ComponentUIElement::setAnchor(Alignment Anchor)
+void ComponentUI2DElement::setAnchor(Alignment Anchor)
 {
    eAnchor = Anchor;
    updateTransformPosition();
 }
 
-void ComponentUIElement::setOffset(const Vector2& Offset)
+void ComponentUI2DElement::setOffset(const Vector2& Offset)
 {
    vOffset = Offset;
    updateTransformPosition();
 }
 
-void ComponentUIElement::setAlpha(float Alpha)
+
+//
+//  ComponentUI3DElement
+//
+ComponentUI3DElement::ComponentUI3DElement(Entity* Owner)
+   : ComponentUIElement(Owner)
 {
-   fAlpha = Alpha;
+   cClassName = ObjectName("UI3DElement");
+}
+
+ComponentUI3DElement::~ComponentUI3DElement()
+{
 }

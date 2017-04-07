@@ -90,7 +90,8 @@ void Application::registerComponentFactories()
    Entity::registerComponentFactory<ComponentTransform>("Transform", ComponentType::Transform);
    Entity::registerComponentFactory<ComponentCamera>("Camera", ComponentType::Camera);
    Entity::registerComponentFactory<ComponentLight>("Light", ComponentType::Light);
-   Entity::registerComponentFactory<ComponentUIElement>("UIElement", ComponentType::UIElement);
+   Entity::registerComponentFactory<ComponentUI2DElement>("UI2DElement", ComponentType::UIElement);
+   Entity::registerComponentFactory<ComponentUI3DElement>("UI3DElement", ComponentType::UIElement);
    Entity::registerComponentFactory<ComponentSprite>("Sprite", ComponentType::Renderable);
    Entity::registerComponentFactory<ComponentLabel>("Label", ComponentType::Renderable);
    Entity::registerComponentFactory<ComponentMesh>("Mesh", ComponentType::Renderable);
