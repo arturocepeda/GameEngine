@@ -30,7 +30,7 @@ ComponentUIElement::ComponentUIElement(Entity* Owner)
    cTransform = cOwner->getComponent<ComponentTransform>();
    GEAssert(cTransform);
 
-   GERegisterProperty(ComponentUIElement, Float, Alpha);
+   GERegisterPropertyMinMax(ComponentUIElement, Float, Alpha, 0.0f, 1.0f);
 }
 
 ComponentUIElement::~ComponentUIElement()

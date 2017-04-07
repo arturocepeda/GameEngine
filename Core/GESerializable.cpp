@@ -24,7 +24,8 @@ Serializable::Serializable(const ObjectName& ClassName)
 
 Property& Serializable::registerProperty(const ObjectName& PropertyName, ValueType Type,
    const PropertySetter& Setter, const PropertyGetter& Getter,
-   PropertyEditor Editor, void* PropertyDataPtr, uint PropertyDataUInt)
+   PropertyEditor Editor, void* PropertyDataPtr, uint PropertyDataUInt,
+   float MinValue, float MaxValue)
 {
    Property sProperty;
    sProperty.Name = PropertyName;
@@ -36,6 +37,8 @@ Property& Serializable::registerProperty(const ObjectName& PropertyName, ValueTy
    sProperty.Editor = Editor;
    sProperty.DataPtr = PropertyDataPtr;
    sProperty.DataUInt = PropertyDataUInt;
+   sProperty.MinValue = MinValue;
+   sProperty.MaxValue = MaxValue;
 #endif
    vProperties.push_back(sProperty);
    return vProperties.back();

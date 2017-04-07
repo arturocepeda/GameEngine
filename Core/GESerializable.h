@@ -49,6 +49,8 @@ namespace GE { namespace Core
       PropertyEditor Editor;
       void* DataPtr;
       uint DataUInt;
+      float MinValue;
+      float MaxValue;
 #endif
    };
 
@@ -66,7 +68,8 @@ namespace GE { namespace Core
       Property& registerProperty(const ObjectName& PropertyName, ValueType Type,
          const PropertySetter& Setter, const PropertyGetter& Getter,
          PropertyEditor Editor = PropertyEditor::Default,
-         void* PropertyDataPtr = 0, uint PropertyDataUInt = 0);
+         void* PropertyDataPtr = 0, uint PropertyDataUInt = 0,
+         float MinValue = 0.0f, float MaxValue = 0.0f);
       void removeProperty(uint PropertyIndex);
 
    public:
@@ -193,6 +196,13 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
       std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
       std::bind(&ClassName::P_get##PropertyName, this))
+
+#define GERegisterPropertyMinMax(ClassName, PropertyType, PropertyName, MinValue, MaxValue) \
+   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
+      std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
+      std::bind(&ClassName::P_get##PropertyName, this), \
+      PropertyEditor::Default, 0, 0, \
+      MinValue, MaxValue)
 
 #define GERegisterPropertyReadonly(ClassName, PropertyType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
