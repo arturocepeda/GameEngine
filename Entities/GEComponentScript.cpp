@@ -20,6 +20,8 @@ using namespace GE::Core;
 using namespace GE::Entities;
 using namespace GE::Content;
 
+const ObjectName cInitFunctionName = ObjectName("init");
+const ObjectName cUpdateFunctionName = ObjectName("update");
 const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
 const ObjectName cInputTouchMoveFunctionName = ObjectName("inputTouchMove");
 const ObjectName cInputTouchEndFunctionName = ObjectName("inputTouchEnd");
@@ -49,9 +51,12 @@ void ComponentScript::setScriptName(const char* FileName)
    if(!FileName || strlen(FileName) == 0)
       return;
 
-   sScriptName = FileName;
-   cScript->loadFromFile(FileName);
    bInitialized = false;
+
+   if(!cScript->loadFromFile(FileName))
+      return;
+
+   sScriptName = FileName;
 
    while(getPropertiesCount() > iBasePropertiesCount)
       removeProperty(getPropertiesCount() - 1);
@@ -68,7 +73,7 @@ void ComponentScript::registerScriptProperties()
 {
    const GESTLVector(ObjectName)& vGlobalVariableNames = cScript->getGlobalVariableNames();
 
-   for(uint i = 0; i < vGlobalVariableNames.size(); i++)
+   for(int i = (int)(vGlobalVariableNames.size() - 1); i >= 0; i--)
    {
       const ObjectName& vGlobalVariableName = vGlobalVariableNames[i];
       const char* sGlobalVariableName = vGlobalVariableName.getString().c_str();
@@ -123,7 +128,7 @@ void ComponentScript::update()
    {
       cScript->setVariable<Entity*>("entity", cOwner);
 
-      if(cScript->isFunctionDefined("init"))
+      if(cScript->isFunctionDefined(cInitFunctionName))
       {
          cScript->runFunction("init");
       }
@@ -134,7 +139,7 @@ void ComponentScript::update()
    cScript->setVariable<Scene*>("scene", Scene::getActiveScene());
    cScript->setVariable<float>("deltaTime", Time::getClock(0).getDelta());
 
-   if(cScript->isFunctionDefined("update"))
+   if(cScript->isFunctionDefined(cUpdateFunctionName))
    {
       cScript->runFunction("update");
    }

@@ -19,6 +19,7 @@
 #include "Core/GEProfiler.h"
 #include "Entities/GEEntity.h"
 #include "Entities/GEComponentParticleSystem.h"
+#include "Entities/GEComponentUIElement.h"
 #include "pugixml/pugixml.hpp"
 
 #include <stdio.h>
@@ -796,10 +797,15 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 
    case RenderableType::Label:
    {
-      if(cRenderable->getRenderingMode() == RenderingMode::_2D)
+      if(cRenderable->getRenderingMode() == RenderingMode::_2D ||
+         cRenderable->getOwner()->getComponent<ComponentUIElement>())
+      {
          vUILabelsToRender.push_back(sRenderOperation);
+      }
       else
+      {
          v3DLabelsToRender.push_back(sRenderOperation);
+      }
 
       GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::_2DDynamic];
       mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);

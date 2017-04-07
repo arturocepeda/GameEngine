@@ -21,6 +21,7 @@
 #include "Entities/GEComponentSprite.h"
 #include "Entities/GEComponentCamera.h"
 #include "Entities/GEComponentCollider.h"
+#include "Entities/GEComponentUIElement.h"
 #include "Rendering/GERenderSystem.h"
 #include "Rendering/GEMaterial.h"
 
@@ -67,6 +68,7 @@ public:
    ComponentSprite* getComponentSprite() { return getComponent<ComponentSprite>(); }
    ComponentCamera* getComponentCamera() { return getComponent<ComponentCamera>(); }
    ComponentCollider* getComponentCollider() { return getComponent<ComponentCollider>(); }
+   ComponentUIElement* getComponentUIElement() { return getComponent<ComponentUIElement>(); }
 };
 
 
@@ -145,7 +147,7 @@ void Script::loadFromCode(const GESTLString& Code)
    }
 }
 
-void Script::loadFromFile(const char* FileName)
+bool Script::loadFromFile(const char* FileName)
 {
    try
    {
@@ -153,6 +155,9 @@ void Script::loadFromFile(const char* FileName)
 
       if(Application::ContentType == ApplicationContentType::Xml)
       {
+         if(!Device::contentFileExists("Scripts", FileName, "lua"))
+            return false;
+
          Device::readContentFile(ContentType::GenericTextData, "Scripts", FileName, "lua", &cContentData);
 #if defined (GE_EDITOR_SUPPORT)
          sol::protected_function_result luaResult = lua.do_string(cContentData.getData());
@@ -171,8 +176,15 @@ void Script::loadFromFile(const char* FileName)
 #if defined (GE_64_BIT)
          char sFileNamex64[64];
          sprintf(sFileNamex64, "x64_%s", FileName);
+
+         if(!Device::contentFileExists("Scripts", sFileNamex64, "luabc"))
+            return false;
+
          Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sFileNamex64, "luabc", &cContentData);
 #else
+         if(!Device::contentFileExists("Scripts", FileName, "luabc"))
+            return false;
+
          Device::readContentFile(ContentType::GenericBinaryData, "Scripts", FileName, "luabc", &cContentData);
 #endif
          lua_State* luaState = lua.lua_state();
@@ -185,7 +197,10 @@ void Script::loadFromFile(const char* FileName)
    catch(...)
    {
       handleScriptError(FileName);
+      return false;
    }
+
+   return true;
 }
 
 ValueType Script::getVariableType(const char* VariableName) const
@@ -387,10 +402,14 @@ void Script::registerTypes()
       , "getWorldRotation", &ComponentTransform::getWorldRotation
       , "getScale", &ComponentTransform::getScale
       , "getWorldScale", &ComponentTransform::getWorldScale
+      , "getForwardVector", &ComponentTransform::getForwardVector
+      , "getRightVector", &ComponentTransform::getRightVector
+      , "getUpVector", &ComponentTransform::getUpVector
       , "setPosition", (void (ComponentTransform::*)(const Vector3&))&ComponentTransform::setPosition
       , "setRotation", &ComponentTransform::setRotation
       , "setOrientation", &ComponentTransform::setOrientation
       , "setScale", (void (ComponentTransform::*)(const Vector3&))&ComponentTransform::setScale
+      , "setForwardVector", &ComponentTransform::setForwardVector
       , sol::base_classes, sol::bases<Component>()
    );
    lua.new_usertype<ComponentRenderable>
@@ -420,6 +439,12 @@ void Script::registerTypes()
       , "checkCollision", &ComponentCollider::checkCollision
       , sol::base_classes, sol::bases<Component>()
    );
+   lua.new_usertype<ComponentUIElement>
+   (
+      "ComponentUIElement"
+      , "getAlpha", &ComponentUIElement::getAlpha
+      , sol::base_classes, sol::bases<Component>()
+   );
    lua.new_usertype<Entity>
    (
       "Entity"
@@ -428,6 +453,7 @@ void Script::registerTypes()
       , "getComponentSprite", &luaEntity::getComponentSprite
       , "getComponentCamera", &luaEntity::getComponentCamera
       , "getComponentCollider", &luaEntity::getComponentCollider
+      , "getComponentUIElement", &luaEntity::getComponentUIElement
    );
    lua.new_usertype<Scene>
    (

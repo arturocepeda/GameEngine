@@ -48,7 +48,7 @@ namespace GE { namespace Core
       static void handleFunctionError(const char* FunctionName, const char* Msg = 0);
 
       void loadFromCode(const GESTLString& Code);
-      void loadFromFile(const char* FileName);
+      bool loadFromFile(const char* FileName);
 
       template<typename T>
       void setVariable(const char* VariableName, T Value)
