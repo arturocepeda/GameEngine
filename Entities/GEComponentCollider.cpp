@@ -59,7 +59,7 @@ void ComponentCollider::setCollisionGroup(uint Group)
 //
 ComponentColliderSphere::ComponentColliderSphere(Entity* Owner)
    : ComponentCollider(Owner, ColliderType::Sphere)
-   , fRadius(0.0f)
+   , fRadius(1.0f)
 {
    cClassName = ObjectName("ColliderSphere");
 
@@ -95,8 +95,8 @@ bool ComponentColliderSphere::checkCollision(const Physics::Ray& R, Physics::Hit
       return false;
 
    float fScaledRadius = getScaledRadius();
-   float fDistanceToRayOrigin = vRayOriginToCollider.getLength();
-   float fIntersection = (fScaledRadius * fScaledRadius) - ((fDistanceToRayOrigin * fDistanceToRayOrigin) - (fDot * fDot));
+   float fSqDistanceToRayOrigin = vRayOriginToCollider.getSquaredLength();
+   float fIntersection = (fScaledRadius * fScaledRadius) - (fSqDistanceToRayOrigin - (fDot * fDot));
 
    if(fIntersection < 0.0f)
       return false;
