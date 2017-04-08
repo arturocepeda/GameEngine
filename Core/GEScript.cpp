@@ -79,8 +79,7 @@ GESTLSet(uint) Script::sDefaultGlobalNames;
 
 Script::Script()
 {
-   lua.open_libraries();
-   registerTypes();
+   reset();
 
    if(sDefaultGlobalNames.empty())
    {
@@ -132,6 +131,13 @@ void Script::handleFunctionError(const char* FunctionName, const char* Msg)
    {
       Device::log("Lua error ('%s' function)", FunctionName);
    }
+}
+
+void Script::reset()
+{
+   lua = sol::state();
+   lua.open_libraries();
+   registerTypes();
 }
 
 void Script::loadFromCode(const GESTLString& Code)
@@ -341,6 +347,15 @@ void Script::registerTypes()
       "Rotation"
       , sol::constructors<sol::types<>, sol::types<const Vector3&>, sol::types<const Vector3&, float>>()
    );
+   lua.new_usertype<Color>
+   (
+      "Color"
+      , sol::constructors<sol::types<>, sol::types<float, float, float, float>>()
+      , "Red", &Color::Red
+      , "Green", &Color::Green
+      , "Blue", &Color::Blue
+      , "Alpha", &Color::Alpha
+   );
 
    //
    //  GE::Core
@@ -348,7 +363,7 @@ void Script::registerTypes()
    lua.new_usertype<ObjectName>
    (
       "ObjectName"
-      , sol::constructors<sol::types<const char*>>()
+      , sol::constructors<sol::types<>, sol::types<const char*>>()
    );
    lua.new_usertype<Value>
    (
@@ -419,6 +434,10 @@ void Script::registerTypes()
       , "getMaterialPass", &ComponentRenderable::getMaterialPass
       , "addMaterialPass", &ComponentRenderable::addMaterialPass
       , "removeMaterialPass", &ComponentRenderable::removeMaterialPass
+      , "getVisible", &ComponentRenderable::getVisible
+      , "getColor", &ComponentRenderable::getColor
+      , "setVisible", &ComponentRenderable::setVisible
+      , "setColor", &ComponentRenderable::setColor
       , sol::base_classes, sol::bases<Component>()
    );
    lua.new_usertype<ComponentSprite>
@@ -454,6 +473,7 @@ void Script::registerTypes()
       , "getComponentCamera", &luaEntity::getComponentCamera
       , "getComponentCollider", &luaEntity::getComponentCollider
       , "getComponentUIElement", &luaEntity::getComponentUIElement
+      , sol::base_classes, sol::bases<Serializable>()
    );
    lua.new_usertype<Scene>
    (
@@ -478,8 +498,9 @@ void Script::registerTypes()
    (
       "MaterialPass"
       , "getActive", &MaterialPass::getActive
-      , "setActive", &MaterialPass::setActive
       , "getMaterialName", &MaterialPass::getMaterialName
+      , "setActive", &MaterialPass::setActive
+      , "setMaterialName", &MaterialPass::setMaterialName
       , sol::base_classes, sol::bases<Serializable>()
    );
 }

@@ -39,10 +39,10 @@ ComponentRenderable::ComponentRenderable(Entity* Owner, RenderableType RType, Ge
    cTransform = cOwner->getComponent<ComponentTransform>();
    GEAssert(cTransform);
 
+   GERegisterProperty(ComponentRenderable, Bool, Visible);
    GERegisterPropertyEnum(ComponentRenderable, GeometryType, GeometryType);
    GERegisterPropertyEnum(ComponentRenderable, RenderingMode, RenderingMode);
    GERegisterProperty(ComponentRenderable, Color, Color);
-   GERegisterProperty(ComponentRenderable, Bool, Visible);
 }
 
 ComponentRenderable::~ComponentRenderable()

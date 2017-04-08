@@ -47,6 +47,8 @@ namespace GE { namespace Core
       static void handleScriptError(const char* ScriptName, const char* Msg = 0);
       static void handleFunctionError(const char* FunctionName, const char* Msg = 0);
 
+      void reset();
+
       void loadFromCode(const GESTLString& Code);
       bool loadFromFile(const char* FileName);
 

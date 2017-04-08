@@ -88,9 +88,9 @@ namespace GE { namespace Entities
 
       virtual void xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream) override;
 
+      GEProperty(Bool, Visible)
       GEPropertyEnum(GeometryType, GeometryType)
       GEPropertyEnum(RenderingMode, RenderingMode)
       GEProperty(Color, Color)
-      GEProperty(Bool, Visible)
    };
 }}

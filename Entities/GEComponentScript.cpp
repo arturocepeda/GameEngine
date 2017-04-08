@@ -53,6 +53,8 @@ void ComponentScript::setScriptName(const char* FileName)
 
    bInitialized = false;
 
+   cScript->reset();
+
    if(!cScript->loadFromFile(FileName))
       return;
 

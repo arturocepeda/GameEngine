@@ -271,15 +271,68 @@ void ComponentSprite::setTextureAtlasName(const Core::ObjectName& AtlasName)
 
 bool ComponentSprite::isOver(const Vector2& ScreenPosition) const
 {
-   const Vector3& vPosition = cTransform->getWorldPosition();
-   const Vector3& vScale = cTransform->getWorldScale();
-   
-   const float fHalfSizeX = vSize.X * vScale.X * 0.5f;
-   const float fHalfSizeY = vSize.Y * vScale.Y * 0.5f;
+   if(eRenderingMode == RenderingMode::_2D)
+   {
+      Vector3 vPosition = cTransform->getWorldPosition();
+      Vector3 vScale = cTransform->getWorldScale();
 
-   return
-      ScreenPosition.X > (vPosition.X - fHalfSizeX) &&
-      ScreenPosition.X < (vPosition.X + fHalfSizeX) &&
-      ScreenPosition.Y > (vPosition.Y - fHalfSizeY) &&
-      ScreenPosition.Y < (vPosition.Y + fHalfSizeY);
+      const float fHalfSizeX = vSize.X * vScale.X * 0.5f;
+      const float fHalfSizeY = vSize.Y * vScale.Y * 0.5f;
+
+      return
+         ScreenPosition.X > (vPosition.X - fHalfSizeX) &&
+         ScreenPosition.X < (vPosition.X + fHalfSizeX) &&
+         ScreenPosition.Y > (vPosition.Y - fHalfSizeY) &&
+         ScreenPosition.Y < (vPosition.Y + fHalfSizeY);
+   }
+
+   ComponentCamera* cCamera = RenderSystem::getInstance()->getActiveCamera();
+
+   if(!cCamera)
+      return false;
+
+   Vector3 vVertices[4];
+   float* fVertexData = sGeometryData.VertexData;
+
+   memcpy(&vVertices[0], fVertexData + 0, sizeof(Vector3));
+   memcpy(&vVertices[1], fVertexData + 5, sizeof(Vector3));
+   memcpy(&vVertices[2], fVertexData + 10, sizeof(Vector3));
+   memcpy(&vVertices[3], fVertexData + 15, sizeof(Vector3));
+
+   ComponentTransform* cTransform = cOwner->getComponent<ComponentTransform>();
+   const Matrix4& mWorldMatrix = cTransform->getGlobalWorldMatrix();
+
+   Matrix4Transform(mWorldMatrix, &vVertices[0]);
+   Matrix4Transform(mWorldMatrix, &vVertices[1]);
+   Matrix4Transform(mWorldMatrix, &vVertices[2]);
+   Matrix4Transform(mWorldMatrix, &vVertices[3]);
+
+   Physics::Ray sRay = cCamera->getScreenRay(ScreenPosition);
+
+   for(uint i = 0; i < 2; i++)
+   {
+      Vector3 e1 = vVertices[i + 1] - vVertices[i];
+      Vector3 e2 = vVertices[i + 2] - vVertices[i];
+
+      Vector3 vPVec = sRay.Direction.crossProduct(e2);
+      float fDet = vPVec.dotProduct(e1);
+
+      if(fabsf(fDet) < GE_EPSILON)
+         continue;
+
+      float fInvDet = 1.0f / fDet;
+      Vector3 vTVec = sRay.Origin - vVertices[i];
+      float u = fInvDet * vTVec.dotProduct(vPVec);
+
+      if(u < 0.0f || u > 1.0f)
+         continue;
+
+      Vector3 vQVec = vTVec.crossProduct(e1);
+      float v = fInvDet * vQVec.dotProduct(sRay.Direction);
+
+      if(v >= 0.0f && (u + v) <= 1.0f)
+         return true;
+   }
+
+   return false;
 }
