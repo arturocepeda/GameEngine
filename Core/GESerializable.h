@@ -25,12 +25,12 @@
 namespace GE { namespace Core
 {
    class ObjectName;
-   class Serializable;
+   class SerializableArrayElement;
 
    typedef std::function<Value()> PropertyGetter;
    typedef std::function<void(Value&)> PropertySetter;
 
-   typedef GESTLVector(Serializable*) PropertyArrayEntries;
+   typedef GESTLVector(SerializableArrayElement*) PropertyArrayEntries;
    typedef std::function<void()> PropertyArrayAdd;
    typedef std::function<void(uint)> PropertyArrayRemove;
 
@@ -114,6 +114,20 @@ namespace GE { namespace Core
       virtual void loadFromStream(std::istream& Stream);
 
       virtual void xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream);
+   };
+
+
+   class SerializableArrayElement : public Serializable
+   {
+   protected:
+      Serializable* cOwner;
+
+      SerializableArrayElement(const ObjectName& ClassName);
+
+   public:
+      virtual ~SerializableArrayElement();
+
+      void setOwner(Serializable* Owner);
    };
 }}
 
@@ -222,6 +236,7 @@ namespace GE { namespace Core
    { \
       Class* cEntry = GE::Core::Allocator::alloc<Class>(); \
       GEInvokeCtor(Class, cEntry)(); \
+      cEntry->setOwner(this); \
       v##ClassName##List.push_back(cEntry); \
       return cEntry; \
    } \

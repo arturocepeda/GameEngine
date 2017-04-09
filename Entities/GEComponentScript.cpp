@@ -26,27 +26,28 @@ const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
 const ObjectName cInputTouchMoveFunctionName = ObjectName("inputTouchMove");
 const ObjectName cInputTouchEndFunctionName = ObjectName("inputTouchEnd");
 
-ComponentScript::ComponentScript(Entity* Owner)
-   : Component(Owner)
+//
+//  ScriptInstance
+//
+ScriptInstance::ScriptInstance()
+   : SerializableArrayElement("ScriptInstance")
    , bInitialized(false)
 {
-   cClassName = ObjectName("Script");
-
    cScript = Allocator::alloc<Script>();
    GEInvokeCtor(Script, cScript);
 
-   GERegisterProperty(ComponentScript, String, ScriptName);
+   GERegisterProperty(ScriptInstance, String, ScriptName);
 
    iBasePropertiesCount = getPropertiesCount();
 }
 
-ComponentScript::~ComponentScript()
+ScriptInstance::~ScriptInstance()
 {
    GEInvokeDtor(Script, cScript);
    Allocator::free(cScript);
 }
 
-void ComponentScript::setScriptName(const char* FileName)
+void ScriptInstance::setScriptName(const char* FileName)
 {
    if(!FileName || strlen(FileName) == 0)
       return;
@@ -66,12 +67,12 @@ void ComponentScript::setScriptName(const char* FileName)
    registerScriptProperties();
 }
 
-const char* ComponentScript::getScriptName() const
+const char* ScriptInstance::getScriptName() const
 {
    return sScriptName.c_str();
 }
 
-void ComponentScript::registerScriptProperties()
+void ScriptInstance::registerScriptProperties()
 {
    const GESTLVector(ObjectName)& vGlobalVariableNames = cScript->getGlobalVariableNames();
 
@@ -116,19 +117,21 @@ void ComponentScript::registerScriptProperties()
       registerProperty(vGlobalVariableName, ePropertyValue, setter, getter);
    }
 
+   Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
    EventArgs sEventArgs;
-   sEventArgs.Sender = cOwner;
-   cOwner->triggerEvent(EventPropertiesUpdated, &sEventArgs);
+   sEventArgs.Sender = cEntity;
+   cEntity->triggerEvent(EventPropertiesUpdated, &sEventArgs);
 }
 
-void ComponentScript::update()
+void ScriptInstance::update()
 {
    if(sScriptName.empty())
       return;
 
    if(!bInitialized)
    {
-      cScript->setVariable<Entity*>("entity", cOwner);
+      Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
+      cScript->setVariable<Entity*>("entity", cEntity);
 
       if(cScript->isFunctionDefined(cInitFunctionName))
       {
@@ -147,7 +150,7 @@ void ComponentScript::update()
    }
 }
 
-void ComponentScript::inputTouchBegin(int ID, const Vector2& Point)
+void ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 {
    if(sScriptName.empty())
       return;
@@ -171,7 +174,7 @@ void ComponentScript::inputTouchBegin(int ID, const Vector2& Point)
    }
 }
 
-void ComponentScript::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
+void ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
 {
    if(sScriptName.empty())
       return;
@@ -195,7 +198,7 @@ void ComponentScript::inputTouchMove(int ID, const Vector2& PreviousPoint, const
    }
 }
 
-void ComponentScript::inputTouchEnd(int ID, const Vector2& Point)
+void ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 {
    if(sScriptName.empty())
       return;
@@ -219,7 +222,7 @@ void ComponentScript::inputTouchEnd(int ID, const Vector2& Point)
    }
 }
 
-void ComponentScript::loadFromStream(std::istream& Stream)
+void ScriptInstance::loadFromStream(std::istream& Stream)
 {
    Serializable::loadFromStream(Stream);
 
@@ -236,7 +239,7 @@ void ComponentScript::loadFromStream(std::istream& Stream)
    }
 }
 
-void ComponentScript::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream)
+void ScriptInstance::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream)
 {
    Serializable::xmlToStream(XmlNode, Stream);
 
@@ -267,5 +270,54 @@ void ComponentScript::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& S
 
       const char* sPropertyValue = xmlProperty.attribute("value").value();
       Value(sPropertyValue).writeToStream(Stream);
+   }
+}
+
+
+//
+//  ComponentScript
+//
+ComponentScript::ComponentScript(Entity* Owner)
+   : Component(Owner)
+{
+   cClassName = ObjectName("Script");
+
+   GERegisterPropertyArray(ComponentScript, ScriptInstance);
+}
+
+ComponentScript::~ComponentScript()
+{
+   GEReleasePropertyArray(ComponentScript, ScriptInstance);
+}
+
+void ComponentScript::update()
+{
+   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   {
+      getScriptInstance(i)->update();
+   }
+}
+
+void ComponentScript::inputTouchBegin(int ID, const Vector2& Point)
+{
+   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   {
+      getScriptInstance(i)->inputTouchBegin(ID, Point);
+   }
+}
+
+void ComponentScript::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
+{
+   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   {
+      getScriptInstance(i)->inputTouchMove(ID, PreviousPoint, CurrentPoint);
+   }
+}
+
+void ComponentScript::inputTouchEnd(int ID, const Vector2& Point)
+{
+   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   {
+      getScriptInstance(i)->inputTouchEnd(ID, Point);
    }
 }

@@ -18,7 +18,7 @@
 
 namespace GE { namespace Entities
 {
-   class ComponentScript : public Component
+   class ScriptInstance : public Core::SerializableArrayElement
    {
    private:
       Core::Script* cScript;
@@ -30,10 +30,8 @@ namespace GE { namespace Entities
       void registerScriptProperties();
 
    public:
-      static ComponentType getType() { return ComponentType::Script; }
-
-      ComponentScript(Entity* Owner);
-      ~ComponentScript();
+      ScriptInstance();
+      ~ScriptInstance();
 
       void setScriptName(const char* FileName);
       const char* getScriptName() const;
@@ -48,5 +46,23 @@ namespace GE { namespace Entities
       virtual void xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream) override;
 
       GEProperty(String, ScriptName);
+   };
+
+
+   class ComponentScript : public Component
+   {
+   public:
+      static ComponentType getType() { return ComponentType::Script; }
+
+      ComponentScript(Entity* Owner);
+      ~ComponentScript();
+
+      void update();
+
+      void inputTouchBegin(int ID, const Vector2& Point);
+      void inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
+      void inputTouchEnd(int ID, const Vector2& Point);
+
+      GEPropertyArray(ScriptInstance, ScriptInstance)
    };
 }}

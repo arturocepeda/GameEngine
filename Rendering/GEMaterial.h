@@ -65,7 +65,7 @@ namespace GE { namespace Rendering
    };
 
 
-   class MaterialPass : public Core::EventHandlingObject, public Core::Serializable
+   class MaterialPass : public Core::EventHandlingObject, public Core::SerializableArrayElement
    {
    private:
       Material* cMaterial;

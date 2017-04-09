@@ -15,6 +15,10 @@
 using namespace GE;
 using namespace GE::Core;
 
+
+//
+//  Serializable
+//
 const ObjectName Serializable::EventPropertiesUpdated = ObjectName("EventPropertiesUpdated");
 
 Serializable::Serializable(const ObjectName& ClassName)
@@ -246,4 +250,24 @@ void Serializable::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stre
          Stream.write(reinterpret_cast<const char*>(&bPropertySet), 1);
       }
    }
+}
+
+
+//
+//  SerializableArrayElement
+//
+SerializableArrayElement::SerializableArrayElement(const ObjectName& ClassName)
+   : Serializable(ClassName)
+   , cOwner(0)
+{
+}
+
+SerializableArrayElement::~SerializableArrayElement()
+{
+}
+
+void SerializableArrayElement::setOwner(Serializable* Owner)
+{
+   GEAssert(Owner);
+   cOwner = Owner;
 }

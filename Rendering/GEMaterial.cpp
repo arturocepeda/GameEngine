@@ -138,7 +138,7 @@ const ObjectName MaterialPass::EventMaterialSet = ObjectName("EventMaterialSet")
 
 MaterialPass::MaterialPass()
    : EventHandlingObject("MaterialPass")
-   , Serializable("MaterialPass")
+   , SerializableArrayElement("MaterialPass")
    , cMaterial(0)
    , bActive(true)
    , sConstantBufferDataVertex(0)
