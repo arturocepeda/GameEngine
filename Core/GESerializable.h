@@ -25,9 +25,14 @@
 namespace GE { namespace Core
 {
    class ObjectName;
+   class Serializable;
 
    typedef std::function<Value()> PropertyGetter;
    typedef std::function<void(Value&)> PropertySetter;
+
+   typedef GESTLVector(Serializable*) PropertyArrayEntries;
+   typedef std::function<void()> PropertyArrayAdd;
+   typedef std::function<void(uint)> PropertyArrayRemove;
 
    enum class PropertyEditor
    {
@@ -54,16 +59,28 @@ namespace GE { namespace Core
 #endif
    };
 
+   struct PropertyArray
+   {
+      ObjectName Name;
+      PropertyArrayEntries* Entries;
+      PropertyArrayAdd Add;
+      PropertyArrayRemove Remove;
+   };
+
    class Serializable
    {
    private:
       typedef GESTLVector(Property) PropertiesList;
+      typedef GESTLVector(PropertyArray) PropertyArraysList;
+
       PropertiesList vProperties;
+      PropertyArraysList vPropertyArrays;
 
    protected:
       ObjectName cClassName;
 
       Serializable(const ObjectName& ClassName);
+      virtual ~Serializable();
 
       Property& registerProperty(const ObjectName& PropertyName, ValueType Type,
          const PropertySetter& Setter, const PropertyGetter& Getter,
@@ -71,6 +88,10 @@ namespace GE { namespace Core
          void* PropertyDataPtr = 0, uint PropertyDataUInt = 0,
          float MinValue = 0.0f, float MaxValue = 0.0f);
       void removeProperty(uint PropertyIndex);
+
+      PropertyArray& registerPropertyArray(const ObjectName& PropertyArrayName,
+         PropertyArrayEntries* PropertyArrayEntries,
+         const PropertyArrayAdd& Add, const PropertyArrayRemove& Remove);
 
    public:
       static const ObjectName EventPropertiesUpdated;
@@ -80,6 +101,9 @@ namespace GE { namespace Core
       uint getPropertiesCount() const;
       const Property& getProperty(uint PropertyIndex) const;
       const Property* getProperty(const ObjectName& PropertyName) const;
+
+      uint getPropertyArraysCount() const;
+      const PropertyArray& getPropertyArray(uint PropertyArrayIndex) const;
 
       Value get(const ObjectName& PropertyName);
       void set(const ObjectName& PropertyName, Value& PropertyValue);
@@ -190,6 +214,48 @@ namespace GE { namespace Core
 
 
 //
+//  Definition of property arrays
+//
+#define GEPropertyArray(Class, ClassName) \
+   GE::Core::PropertyArrayEntries v##ClassName##List; \
+   Class* add##ClassName() \
+   { \
+      Class* cEntry = GE::Core::Allocator::alloc<Class>(); \
+      GEInvokeCtor(Class, cEntry)(); \
+      v##ClassName##List.push_back(cEntry); \
+      return cEntry; \
+   } \
+   GE::uint get##ClassName##Count() const \
+   { \
+      return (GE::uint)v##ClassName##List.size(); \
+   } \
+   Class* get##ClassName(uint Index) \
+   { \
+      GEAssert(Index < v##ClassName##List.size()); \
+      return static_cast<Class*>(v##ClassName##List[Index]); \
+   } \
+   void remove##ClassName(uint Index) \
+   { \
+      GEAssert(Index < v##ClassName##List.size()); \
+      Class* cEntry = static_cast<Class*>(v##ClassName##List[Index]); \
+      GEInvokeDtor(Class, cEntry); \
+      GE::Core::Allocator::free(cEntry); \
+      v##ClassName##List.erase(v##ClassName##List.begin() + Index); \
+   } \
+   void clear##ClassName##List() \
+   { \
+      for(GE::uint i = 0; i < v##ClassName##List.size(); i++) \
+      { \
+         Class* cEntry = static_cast<Class*>(v##ClassName##List[i]); \
+         GEInvokeDtor(Class, cEntry); \
+         GE::Core::Allocator::free(cEntry); \
+      } \
+      v##ClassName##List.clear(); \
+   }
+
+
+
+//
 //  Register generic properties
 //
 #define GERegisterProperty(ClassName, PropertyType, PropertyName) \
@@ -254,3 +320,14 @@ namespace GE { namespace Core
       std::bind(&ClassName::P_get##PropertyName, this), \
       PropertyEditor::BitMask, (void*)str##EnumType, (uint)EnumType::Count)
 
+
+//
+//  Register property array
+//
+#define GERegisterPropertyArray(ClassName, ArrayElementName) \
+   registerPropertyArray(GE::Core::ObjectName(#ArrayElementName), &v##ArrayElementName##List, \
+      std::bind(&ClassName::add##ArrayElementName, this), \
+      std::bind(&ClassName::remove##ArrayElementName, this, std::placeholders::_1))
+
+#define GEReleasePropertyArray(ClassName, ArrayElementName) \
+   clear##ArrayElementName##List()

@@ -70,10 +70,10 @@ void ComponentSprite::updateVertexData()
 
    // texture coordinates
    GEAssert(!vMaterialPassList.empty());
-   GEAssert(vMaterialPassList[0]);
-   GEAssert(vMaterialPassList[0]->getMaterial());
+   GEAssert(getMaterialPass(0));
+   GEAssert(getMaterialPass(0)->getMaterial());
 
-   Material* cMaterial = vMaterialPassList[0]->getMaterial();
+   Material* cMaterial = getMaterialPass(0)->getMaterial();
    const TextureCoordinates& UV = cMaterial->getDiffuseTexture()->AtlasUV[iTextureAtlasIndex].UV;
 
    switch(eUVMode)
@@ -155,7 +155,7 @@ const Core::ObjectName& ComponentSprite::getTextureAtlasName() const
    if(vMaterialPassList.empty())
       return ObjectName::Empty;
 
-   Material* cMaterial = vMaterialPassList[0]->getMaterial();
+   Material* cMaterial = static_cast<MaterialPass*>(vMaterialPassList[0])->getMaterial();
 
    return cMaterial
       ? cMaterial->getDiffuseTexture()->AtlasUV[iTextureAtlasIndex].Name
@@ -211,7 +211,7 @@ void ComponentSprite::setFullScreenSizeMode(FullScreenSizeMode Mode)
          {
             if(!vMaterialPassList.empty())
             {
-               Material* cMaterial = vMaterialPassList[0]->getMaterial();
+               Material* cMaterial = getMaterialPass(0)->getMaterial();
 
                if(cMaterial && cMaterial->getDiffuseTexture())
                {
@@ -229,7 +229,7 @@ void ComponentSprite::setFullScreenSizeMode(FullScreenSizeMode Mode)
          {
             if(!vMaterialPassList.empty())
             {
-               Material* cMaterial = vMaterialPassList[0]->getMaterial();
+               Material* cMaterial = getMaterialPass(0)->getMaterial();
 
                if(cMaterial && cMaterial->getDiffuseTexture())
                {
@@ -252,7 +252,7 @@ void ComponentSprite::setTextureAtlasName(const Core::ObjectName& AtlasName)
 {
    GEAssert(!vMaterialPassList.empty());
 
-   Material* cMaterial = vMaterialPassList[0]->getMaterial();
+   Material* cMaterial = getMaterialPass(0)->getMaterial();
    GEAssert(cMaterial);
 
    const GESTLVector(TextureAtlasEntry)& vTextureAtlasArray = cMaterial->getDiffuseTexture()->AtlasUV;

@@ -22,6 +22,10 @@ Serializable::Serializable(const ObjectName& ClassName)
 {
 }
 
+Serializable::~Serializable()
+{
+}
+
 Property& Serializable::registerProperty(const ObjectName& PropertyName, ValueType Type,
    const PropertySetter& Setter, const PropertyGetter& Getter,
    PropertyEditor Editor, void* PropertyDataPtr, uint PropertyDataUInt,
@@ -50,6 +54,19 @@ void Serializable::removeProperty(uint PropertyIndex)
    vProperties.erase(vProperties.begin() + PropertyIndex);
 }
 
+PropertyArray& Serializable::registerPropertyArray(const ObjectName& PropertyArrayName,
+   PropertyArrayEntries* PropertyArrayEntries,
+   const PropertyArrayAdd& Add, const PropertyArrayRemove& Remove)
+{
+   PropertyArray sPropertyArray;
+   sPropertyArray.Name = PropertyArrayName;
+   sPropertyArray.Entries = PropertyArrayEntries;
+   sPropertyArray.Add = Add;
+   sPropertyArray.Remove = Remove;
+   vPropertyArrays.push_back(sPropertyArray);
+   return vPropertyArrays.back();
+}
+
 const ObjectName& Serializable::getClassName() const
 {
    return cClassName;
@@ -75,6 +92,17 @@ const Property* Serializable::getProperty(const ObjectName& PropertyName) const
    }
 
    return 0;
+}
+
+uint Serializable::getPropertyArraysCount() const
+{
+   return (uint)vPropertyArrays.size();
+}
+
+const PropertyArray& Serializable::getPropertyArray(uint PropertyArrayIndex) const
+{
+   GEAssert(PropertyArrayIndex < (uint)vPropertyArrays.size());
+   return vPropertyArrays[PropertyArrayIndex];
 }
 
 Value Serializable::get(const ObjectName& PropertyName)

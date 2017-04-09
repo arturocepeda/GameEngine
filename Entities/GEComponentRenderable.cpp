@@ -43,11 +43,12 @@ ComponentRenderable::ComponentRenderable(Entity* Owner, RenderableType RType, Ge
    GERegisterPropertyEnum(ComponentRenderable, GeometryType, GeometryType);
    GERegisterPropertyEnum(ComponentRenderable, RenderingMode, RenderingMode);
    GERegisterProperty(ComponentRenderable, Color, Color);
+   GERegisterPropertyArray(ComponentRenderable, MaterialPass);
 }
 
 ComponentRenderable::~ComponentRenderable()
 {
-   clearMaterialPasses();
+   GEReleasePropertyArray(ComponentRenderable, MaterialPass);
 }
 
 void ComponentRenderable::show()
@@ -78,48 +79,6 @@ RenderingMode ComponentRenderable::getRenderingMode() const
 ComponentTransform* ComponentRenderable::getTransform() const
 {
    return cTransform;
-}
-
-MaterialPass* ComponentRenderable::addMaterialPass()
-{
-   MaterialPass* cMaterialPass = Allocator::alloc<MaterialPass>();
-   GEInvokeCtor(MaterialPass, cMaterialPass)();
-
-   vMaterialPassList.push_back(cMaterialPass);
-
-   return cMaterialPass;
-}
-
-uint ComponentRenderable::getMaterialPassCount() const
-{
-   return (uint)vMaterialPassList.size();
-}
-
-MaterialPass* ComponentRenderable::getMaterialPass(uint Index)
-{
-   GEAssert(Index < vMaterialPassList.size());
-   return vMaterialPassList[Index];
-}
-
-void ComponentRenderable::removeMaterialPass(uint Index)
-{
-   GEAssert(Index < vMaterialPassList.size());
-   MaterialPass* cMaterialPass = vMaterialPassList[Index];
-   GEInvokeDtor(MaterialPass, cMaterialPass);
-   Allocator::free(cMaterialPass);
-   vMaterialPassList.erase(vMaterialPassList.begin() + Index);
-}
-
-void ComponentRenderable::clearMaterialPasses()
-{
-   for(uint i = 0; i < vMaterialPassList.size(); i++)
-   {
-      MaterialPass* cMaterialPass = vMaterialPassList[i];
-      GEInvokeDtor(MaterialPass, cMaterialPass);
-      Allocator::free(cMaterialPass);
-   }
-
-   vMaterialPassList.clear();
 }
 
 const Color& ComponentRenderable::getColor() const

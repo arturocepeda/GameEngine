@@ -42,7 +42,6 @@ namespace GE { namespace Entities
       GeometryType eGeometryType;
       RenderingMode eRenderingMode;
       ComponentTransform* cTransform;
-      GESTLVector(Rendering::MaterialPass*) vMaterialPassList;
       Color cColor;
     
       Content::GeometryData sGeometryData;
@@ -62,12 +61,6 @@ namespace GE { namespace Entities
       GeometryType getGeometryType() const;
       RenderingMode getRenderingMode() const;
       ComponentTransform* getTransform() const;
-
-      Rendering::MaterialPass* addMaterialPass();
-      uint getMaterialPassCount() const;
-      Rendering::MaterialPass* getMaterialPass(uint Index);
-      void removeMaterialPass(uint Index);
-      void clearMaterialPasses();
 
       const Color& getColor() const;
       bool getVisible() const;
@@ -92,5 +85,6 @@ namespace GE { namespace Entities
       GEPropertyEnum(GeometryType, GeometryType)
       GEPropertyEnum(RenderingMode, RenderingMode)
       GEProperty(Color, Color)
+      GEPropertyArray(MaterialPass, MaterialPass)
    };
 }}
