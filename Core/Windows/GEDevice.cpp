@@ -62,16 +62,10 @@ GESTLString getFullPath(const char* Filename)
 {
    const int BufferSize = 256;
    char sBuffer[BufferSize];
-   GetModuleFileName(0, sBuffer, BufferSize);
 
-   size_t iLastSlashIndex = strlen(sBuffer) - 1;
+   GetCurrentDirectory(BufferSize, sBuffer);
+   sprintf(sBuffer, "%s\\%s", sBuffer, Filename);
 
-   while(sBuffer[iLastSlashIndex] != '\\')
-      iLastSlashIndex--;
-
-   sBuffer[iLastSlashIndex + 1] = '\0';
-
-   sprintf(sBuffer, "%s%s", sBuffer, Filename);
    return GESTLString(sBuffer);
 }
 

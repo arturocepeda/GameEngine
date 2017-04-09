@@ -72,15 +72,6 @@ namespace GE { namespace Entities
       void setColor(const Color& C);
       void setVisible(bool Visible);
 
-      virtual void copy(Component* cSource) override;
-
-      virtual void loadFromXml(const pugi::xml_node& XmlNode) override;
-      virtual void saveToXml(pugi::xml_node& XmlNode) const override;
-
-      virtual void loadFromStream(std::istream& Stream) override;
-
-      virtual void xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream) override;
-
       GEProperty(Bool, Visible)
       GEPropertyEnum(GeometryType, GeometryType)
       GEPropertyEnum(RenderingMode, RenderingMode)

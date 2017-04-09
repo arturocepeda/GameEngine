@@ -33,6 +33,7 @@ namespace GE { namespace Core
    typedef GESTLVector(SerializableArrayElement*) PropertyArrayEntries;
    typedef std::function<void()> PropertyArrayAdd;
    typedef std::function<void(uint)> PropertyArrayRemove;
+   typedef std::function<void(const pugi::xml_node&, std::ostream&)> PropertyArrayXmlToStream;
 
    enum class PropertyEditor
    {
@@ -64,7 +65,11 @@ namespace GE { namespace Core
       ObjectName Name;
       PropertyArrayEntries* Entries;
       PropertyArrayAdd Add;
+
+#if defined (GE_EDITOR_SUPPORT)
       PropertyArrayRemove Remove;
+      PropertyArrayXmlToStream XmlToStream;
+#endif
    };
 
    class Serializable
@@ -91,7 +96,8 @@ namespace GE { namespace Core
 
       PropertyArray& registerPropertyArray(const ObjectName& PropertyArrayName,
          PropertyArrayEntries* PropertyArrayEntries,
-         const PropertyArrayAdd& Add, const PropertyArrayRemove& Remove);
+         const PropertyArrayAdd& Add, const PropertyArrayRemove& Remove,
+         const PropertyArrayXmlToStream& XmlToStream);
 
    public:
       static const ObjectName EventPropertiesUpdated;
@@ -107,6 +113,8 @@ namespace GE { namespace Core
 
       Value get(const ObjectName& PropertyName);
       void set(const ObjectName& PropertyName, Value& PropertyValue);
+
+      virtual void copy(Serializable* cSource);
 
       virtual void loadFromXml(const pugi::xml_node& XmlNode);
       virtual void saveToXml(pugi::xml_node& XmlNode) const;
@@ -266,6 +274,12 @@ namespace GE { namespace Core
          GE::Core::Allocator::free(cEntry); \
       } \
       v##ClassName##List.clear(); \
+   } \
+   void xmlToStream##ClassName(const pugi::xml_node& XmlNode, std::ostream& Stream) \
+   { \
+      Class cEntry; \
+      cEntry.loadFromXml(XmlNode); \
+      cEntry.xmlToStream(XmlNode, Stream); \
    }
 
 
@@ -342,7 +356,8 @@ namespace GE { namespace Core
 #define GERegisterPropertyArray(ClassName, ArrayElementName) \
    registerPropertyArray(GE::Core::ObjectName(#ArrayElementName), &v##ArrayElementName##List, \
       std::bind(&ClassName::add##ArrayElementName, this), \
-      std::bind(&ClassName::remove##ArrayElementName, this, std::placeholders::_1))
+      std::bind(&ClassName::remove##ArrayElementName, this, std::placeholders::_1), \
+      std::bind(&ClassName::xmlToStream##ArrayElementName, this, std::placeholders::_1, std::placeholders::_2))
 
 #define GEReleasePropertyArray(ClassName, ArrayElementName) \
    clear##ArrayElementName##List()

@@ -41,8 +41,8 @@ using namespace GE::Rendering;
 using namespace GE::Entities;
 using namespace pugi;
 
-const char ContentXmlDirName[] = "content";
-const char ContentBinDirName[] = "contentBin";
+const char ContentXmlDirName[] = ".";
+const char ContentBinDirName[] = "..\\contentBin";
 
 ObjectManager<ShaderProgram> mManagerShaderPrograms;
 ObjectManager<Material> mManagerMaterials;
@@ -93,7 +93,7 @@ void packShaders(RenderingAPI eRenderingAPI)
    std::cout << "\n Packing shaders " << (eRenderingAPI == RenderingAPI::DirectX ? "(DirectX)" : "(OpenGL)") << "...";
 
    pugi::xml_document xml;
-   xml.load_file(L"Content\\Shaders\\Shaders.xml");
+   xml.load_file(L"Shaders\\Shaders.xml");
    const pugi::xml_node& xmlShaders = xml.child("Shaders");
    uint iShadersCount = 0;
 
@@ -1075,7 +1075,7 @@ void compileScripts()
       sShellExecuteInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
       sShellExecuteInfo.hwnd = GetActiveWindow();
       sShellExecuteInfo.lpVerb = "open";
-      sShellExecuteInfo.lpFile = "..\\..\\GameEngine\\Tools\\Externals\\lua53\\luac53.exe";
+      sShellExecuteInfo.lpFile = "..\\..\\..\\GameEngine\\Tools\\Externals\\lua53\\luac53.exe";
       sShellExecuteInfo.lpParameters = sParameters;
       sShellExecuteInfo.lpDirectory = sCurrentDirectory;
       sShellExecuteInfo.nShow = SW_HIDE;
@@ -1088,7 +1088,7 @@ void compileScripts()
 
       sprintf(sParameters, "-o %s -s %s", sOutputPath, sInputPath);
 
-      sShellExecuteInfo.lpFile = "..\\..\\GameEngine\\Tools\\Externals\\lua53\\luac53_x64.exe";
+      sShellExecuteInfo.lpFile = "..\\..\\..\\GameEngine\\Tools\\Externals\\lua53\\luac53_x64.exe";
       ShellExecuteEx(&sShellExecuteInfo);
    }
    while(FindNextFile(hFile, &sFileData));

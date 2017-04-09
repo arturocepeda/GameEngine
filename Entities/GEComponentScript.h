@@ -42,9 +42,6 @@ namespace GE { namespace Entities
       void inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
       void inputTouchEnd(int ID, const Vector2& Point);
 
-      virtual void loadFromStream(std::istream& Stream) override;
-      virtual void xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream) override;
-
       GEProperty(String, ScriptName);
    };
 

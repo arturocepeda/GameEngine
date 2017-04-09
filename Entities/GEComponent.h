@@ -30,7 +30,5 @@ namespace GE { namespace Entities
       virtual ~Component();
 
       Entity* getOwner() const;
-
-      virtual void copy(Component* cSource);
    };
 }}

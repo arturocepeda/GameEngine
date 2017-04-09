@@ -117,10 +117,13 @@ void ScriptInstance::registerScriptProperties()
       registerProperty(vGlobalVariableName, ePropertyValue, setter, getter);
    }
 
-   Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
-   EventArgs sEventArgs;
-   sEventArgs.Sender = cEntity;
-   cEntity->triggerEvent(EventPropertiesUpdated, &sEventArgs);
+   if(cOwner)
+   {
+      Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
+      EventArgs sEventArgs;
+      sEventArgs.Sender = cEntity;
+      cEntity->triggerEvent(EventPropertiesUpdated, &sEventArgs);
+   }
 }
 
 void ScriptInstance::update()
@@ -219,57 +222,6 @@ void ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
       {
          Script::handleFunctionError(cInputTouchEndFunctionName.getString().c_str());
       }
-   }
-}
-
-void ScriptInstance::loadFromStream(std::istream& Stream)
-{
-   Serializable::loadFromStream(Stream);
-
-   uint iScriptPropertiesCount = getPropertiesCount() - iBasePropertiesCount;
-
-   for(uint i = 0; i < iScriptPropertiesCount; i++)
-   {
-      Value cStringValue = Value::fromStream(ValueType::String, Stream);
-      const char* sStringValue = cStringValue.getAsString();
-
-      const Property& sScriptProperty = getProperty(iBasePropertiesCount + i);
-      Value cPropertyValue = Value(sScriptProperty.Type, sStringValue);
-      sScriptProperty.Setter(cPropertyValue);
-   }
-}
-
-void ScriptInstance::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream)
-{
-   Serializable::xmlToStream(XmlNode, Stream);
-
-   pugi::xml_object_range<pugi::xml_named_node_iterator> xmlProperties = XmlNode.children("Property");
-   uint iScriptPropertiesCount = 0;
-
-   for(const pugi::xml_node& xmlProperty : xmlProperties)
-   {
-      iScriptPropertiesCount++;
-   }
-
-   iScriptPropertiesCount -= iBasePropertiesCount;
-
-   for(uint i = 0; i < iScriptPropertiesCount; i++)
-   {
-      bool bPropertySet = false;
-      Stream.write(reinterpret_cast<const char*>(&bPropertySet), 1);
-   }
-
-   int iCurrentPropertyIndex = -1;
-
-   for(const pugi::xml_node& xmlProperty : xmlProperties)
-   {
-      iCurrentPropertyIndex++;
-
-      if((uint)iCurrentPropertyIndex < iBasePropertiesCount)
-         continue;
-
-      const char* sPropertyValue = xmlProperty.attribute("value").value();
-      Value(sPropertyValue).writeToStream(Stream);
    }
 }
 

@@ -34,18 +34,3 @@ Entity* Component::getOwner() const
 {
    return cOwner;
 }
-
-void Component::copy(Component* cSource)
-{
-   for(uint i = 0; i < cSource->getPropertiesCount(); i++)
-   {
-      const Property& sSourceProperty = cSource->getProperty(i);
-
-      if(!sSourceProperty.Setter)
-         continue;
-
-      const Property& sTargetProperty = getProperty(i);
-      Value cSourcePropertyValue = sSourceProperty.Getter();
-      sTargetProperty.Setter(cSourcePropertyValue);
-   }
-}
