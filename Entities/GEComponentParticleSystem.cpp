@@ -56,6 +56,8 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , fParticleAngularVelocityMax(0.0f)
    , fParticleFinalSizeMin(0.0f)
    , fParticleFinalSizeMax(0.0f)
+   , iParticleTextureAtlasIndexMin(0)
+   , iParticleTextureAtlasIndexMax(0)
 {
    cClassName = ObjectName("ParticleSystem");
 
@@ -115,6 +117,9 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(ComponentParticleSystem, Float, ParticleFinalSizeMax);
    GERegisterProperty(ComponentParticleSystem, Color, ParticleFinalColorMin);
    GERegisterProperty(ComponentParticleSystem, Color, ParticleFinalColorMax);
+
+   GERegisterProperty(ComponentParticleSystem, UInt, ParticleTextureAtlasIndexMin);
+   GERegisterProperty(ComponentParticleSystem, UInt, ParticleTextureAtlasIndexMax);
 
    GERegisterProperty(ComponentParticleSystem, Vector3, ConstantForce);
    GERegisterProperty(ComponentParticleSystem, Vector3, ConstantAcceleration);
@@ -290,6 +295,16 @@ void ComponentParticleSystem::emitParticle()
    sParticle.DiffuseColor = getRandomColor(cParticleInitialColorMin, cParticleInitialColorMax);
    sParticle.Angle = getRandomFloat(fParticleInitialAngleMin * GE_DEG2RAD, fParticleInitialAngleMax * GE_DEG2RAD);
 
+   if(iParticleTextureAtlasIndexMin > 0 || iParticleTextureAtlasIndexMax > 0)
+   {
+      RandInt cRandInt(iParticleTextureAtlasIndexMin, iParticleTextureAtlasIndexMax);
+      sParticle.TextureAtlasIndex = cRandInt.generate();
+   }
+   else
+   {
+      sParticle.TextureAtlasIndex = 0;
+   }
+
    sParticle.LinearVelocity = getRandomVector3(vParticleLinearVelocityMin, vParticleLinearVelocityMax);
    sParticle.AngularVelocity = getRandomFloat(fParticleAngularVelocityMin, fParticleAngularVelocityMax);
 
@@ -390,6 +405,18 @@ void ComponentParticleSystem::composeVertexData()
       vCameraForward = Vector3::UnitZ;
    }
 
+   const Texture* cDiffuseTexture = 0;
+
+   if(!vMaterialPassList.empty())
+   {
+      Material* cMaterial = getMaterialPass(0)->getMaterial();
+
+      if(cMaterial)
+      {
+         cDiffuseTexture = cMaterial->getDiffuseTexture();
+      }
+   }
+
    float* pVertexData = sGeometryData.VertexData;
 
    for(ParticleList::iterator it = lParticles.begin(); it != lParticles.end(); it++)
@@ -424,21 +451,40 @@ void ComponentParticleSystem::composeVertexData()
       Matrix4Transform(mTransform, &vBottomLeftPosition);
       Matrix4Transform(mTransform, &vBottomRightPosition);
 
+      TextureCoordinates sTextureCoordinates;
+
+      if(sParticle.TextureAtlasIndex > 0 && cDiffuseTexture)
+      {
+         uint iTextureAtlasIndex = sParticle.TextureAtlasIndex;
+
+         if(iTextureAtlasIndex > (uint)(cDiffuseTexture->AtlasUV.size() - 1))
+            iTextureAtlasIndex = (uint)(cDiffuseTexture->AtlasUV.size() - 1);
+
+         sTextureCoordinates = cDiffuseTexture->AtlasUV[iTextureAtlasIndex].UV;
+      }
+      else
+      {
+         sTextureCoordinates.U0 = 0.0f;
+         sTextureCoordinates.V0 = 0.0f;
+         sTextureCoordinates.U1 = 1.0f;
+         sTextureCoordinates.V1 = 1.0f;
+      }
+
       *pVertexData++ = vTopLeftPosition.X; *pVertexData++ = vTopLeftPosition.Y; *pVertexData++ = vTopLeftPosition.Z;
       *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = 0.0f; *pVertexData++ = 0.0f;
+      *pVertexData++ = sTextureCoordinates.U0; *pVertexData++ = sTextureCoordinates.V0;
 
       *pVertexData++ = vBottomLeftPosition.X; *pVertexData++ = vBottomLeftPosition.Y; *pVertexData++ = vBottomLeftPosition.Z;
       *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = 0.0f; *pVertexData++ = 1.0f;
+      *pVertexData++ = sTextureCoordinates.U0; *pVertexData++ = sTextureCoordinates.V1;
 
       *pVertexData++ = vTopRightPosition.X; *pVertexData++ = vTopRightPosition.Y; *pVertexData++ = vTopRightPosition.Z;
       *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = 1.0f; *pVertexData++ = 0.0f;
+      *pVertexData++ = sTextureCoordinates.U1; *pVertexData++ = sTextureCoordinates.V0;
 
       *pVertexData++ = vBottomRightPosition.X; *pVertexData++ = vBottomRightPosition.Y; *pVertexData++ = vBottomRightPosition.Z;
       *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = 1.0f; *pVertexData++ = 1.0f;
+      *pVertexData++ = sTextureCoordinates.U1; *pVertexData++ = sTextureCoordinates.V1;
    }
 
    sGeometryData.NumVertices = (uint)lParticles.size() * 4;

@@ -37,6 +37,7 @@ namespace GE { namespace Entities
       float Size;
       float Angle;
       Color DiffuseColor;
+      uint TextureAtlasIndex;
 
       Vector3 LinearVelocity;
       float AngularVelocity;
@@ -88,6 +89,9 @@ namespace GE { namespace Entities
       float fParticleFinalSizeMax;
       Color cParticleFinalColorMin;
       Color cParticleFinalColorMax;
+
+      uint iParticleTextureAtlasIndexMin;
+      uint iParticleTextureAtlasIndexMax;
 
       Vector3 vConstantForce;
       Vector3 vConstantAcceleration;
@@ -147,6 +151,9 @@ namespace GE { namespace Entities
       const Color& getParticleFinalColorMin() const { return cParticleFinalColorMin; }
       const Color& getParticleFinalColorMax() const { return cParticleFinalColorMax; }
 
+      uint getParticleTextureAtlasIndexMin() const { return iParticleTextureAtlasIndexMin; }
+      uint getParticleTextureAtlasIndexMax() const { return iParticleTextureAtlasIndexMax; }
+
       const Vector3& getConstantForce() const { return vConstantForce; }
       const Vector3& getConstantAcceleration() const { return vConstantAcceleration; }
 
@@ -175,6 +182,9 @@ namespace GE { namespace Entities
       void setParticleFinalSizeMax(float Value) { fParticleFinalSizeMax = Value; }
       void setParticleFinalColorMin(const Color& Value) { cParticleFinalColorMin = Value; }
       void setParticleFinalColorMax(const Color& Value) { cParticleFinalColorMax = Value; }
+
+      void setParticleTextureAtlasIndexMin(uint Value) { iParticleTextureAtlasIndexMin = Value; }
+      void setParticleTextureAtlasIndexMax(uint Value) { iParticleTextureAtlasIndexMax = Value; }
 
       void setConstantForce(const Vector3& Value) { vConstantForce = Value; }
       void setConstantAcceleration(const Vector3& Value) { vConstantAcceleration = Value; }
@@ -214,6 +224,9 @@ namespace GE { namespace Entities
       GEProperty(Float, ParticleFinalSizeMax)
       GEProperty(Color, ParticleFinalColorMin)
       GEProperty(Color, ParticleFinalColorMax)
+
+      GEProperty(UInt, ParticleTextureAtlasIndexMin)
+      GEProperty(UInt, ParticleTextureAtlasIndexMax)
 
       GEProperty(Vector3, ConstantForce)
       GEProperty(Vector3, ConstantAcceleration)
