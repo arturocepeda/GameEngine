@@ -14,6 +14,7 @@
 #include "Rendering/GERenderSystem.h"
 #include "Core/GEAllocator.h"
 #include "Content/GELocalizedString.h"
+#include "Content/GEResourcesManager.h"
 
 using namespace GE;
 using namespace GE::Core;
@@ -41,14 +42,14 @@ ComponentLabel::ComponentLabel(Entity* Owner)
 
    sGeometryData.VertexStride = 20;
 
-   GERegisterPropertyObjectManager(ComponentLabel, ObjectName, FontName, Font);
+   GERegisterPropertyResource(ComponentLabel, ObjectName, FontName, Font);
    GERegisterProperty(ComponentLabel, Float, FontSize);
    GERegisterPropertyEnum(ComponentLabel, Alignment, Alignment);
    GERegisterProperty(ComponentLabel, Float, HorizontalSpacing);
    GERegisterProperty(ComponentLabel, Float, VerticalSpacing);
    GERegisterProperty(ComponentLabel, Float, LineWidth);
    GERegisterProperty(ComponentLabel, String, Text);
-   GERegisterPropertyObjectManager(ComponentLabel, ObjectName, StringID, LocalizedString);
+   GERegisterPropertyResource(ComponentLabel, ObjectName, StringID, LocalizedString);
 }
 
 ComponentLabel::~ComponentLabel()

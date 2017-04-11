@@ -13,16 +13,18 @@
 #include "GEMaterial.h"
 #include "GETexture.h"
 #include "GERenderSystem.h"
+#include "Content/GEResourcesManager.h"
 
 using namespace GE;
 using namespace GE::Core;
+using namespace GE::Content;
 using namespace GE::Rendering;
 
 //
 //  Material
 //
-Material::Material(const ObjectName& Name)
-   : Object(Name)
+Material::Material(const ObjectName& Name, const ObjectName& GroupName)
+   : Resource(Name, GroupName)
    , Serializable("Material")
    , cDiffuseColor(1.0f, 1.0f, 1.0f)
    , cSpecularColor(1.0f, 1.0f, 1.0f)
@@ -31,11 +33,16 @@ Material::Material(const ObjectName& Name)
    , bBatchRendering(false)
 {
    GERegisterPropertyReadonly(Material, ObjectName, Name);
-   GERegisterPropertyObjectManager(Material, ObjectName, ShaderProgram, ShaderProgram);
+   GERegisterPropertyResource(Material, ObjectName, ShaderProgram, ShaderProgram);
    GERegisterProperty(Material, Color, DiffuseColor);
-   GERegisterPropertyObjectManager(Material, ObjectName, DiffuseTextureName, Texture);
+   GERegisterPropertyResource(Material, ObjectName, DiffuseTextureName, Texture);
    GERegisterPropertyEnum(Material, BlendingMode, BlendingMode);
    GERegisterProperty(Material, Bool, BatchRendering);
+}
+
+uint Material::getSizeInBytes() const
+{
+   return sizeof(Material);
 }
 
 const ObjectName& Material::getShaderProgram() const
@@ -144,7 +151,7 @@ MaterialPass::MaterialPass()
    , sConstantBufferDataVertex(0)
    , sConstantBufferDataFragment(0)
 {
-   GERegisterPropertyObjectManager(MaterialPass, ObjectName, MaterialName, Material);
+   GERegisterPropertyResource(MaterialPass, ObjectName, MaterialName, Material);
    GERegisterProperty(MaterialPass, Bool, Active);
 
    iBasePropertiesCount = getPropertiesCount();
@@ -172,7 +179,7 @@ void MaterialPass::setMaterial(Material* M)
 
    releaseConstantBufferData();
 
-   const ObjectRegistry* cShadersObjectRegistry = ObjectManagers::getInstance()->getObjectRegistry(ShadersObjectRegistryName);
+   const ObjectRegistry* cShadersObjectRegistry = ResourcesManager::getInstance()->getObjectRegistry(ShadersObjectRegistryName);
    ShaderProgram* cShaderProgram = static_cast<ShaderProgram*>(cShadersObjectRegistry->find(cMaterial->getShaderProgram().getID())->second);
    GEAssert(cShaderProgram);
 
@@ -243,7 +250,7 @@ void MaterialPass::setMaterialName(const Core::ObjectName& Name)
    if(cMaterial && Name == cMaterial->getName())
       return;
 
-   const ObjectRegistry* cMaterialObjectRegistry = ObjectManagers::getInstance()->getObjectRegistry(MaterialObjectRegistryName);
+   const ObjectRegistry* cMaterialObjectRegistry = ResourcesManager::getInstance()->getObjectRegistry(MaterialObjectRegistryName);
    GEAssert(cMaterialObjectRegistry->find(Name.getID()) != cMaterialObjectRegistry->end());
    setMaterial(static_cast<Material*>(cMaterialObjectRegistry->find(Name.getID())->second));
 }
@@ -284,7 +291,7 @@ void MaterialPass::reload()
    while(getPropertiesCount() > iBasePropertiesCount)
       removeProperty(getPropertiesCount() - 1);
 
-   const ObjectRegistry* cShadersObjectRegistry = ObjectManagers::getInstance()->getObjectRegistry(ShadersObjectRegistryName);
+   const ObjectRegistry* cShadersObjectRegistry = ResourcesManager::getInstance()->getObjectRegistry(ShadersObjectRegistryName);
    ShaderProgram* cShaderProgram = static_cast<ShaderProgram*>(cShadersObjectRegistry->find(cMaterial->getShaderProgram().getID())->second);
    GEAssert(cShaderProgram);
 

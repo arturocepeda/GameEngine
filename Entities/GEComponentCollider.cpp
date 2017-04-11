@@ -13,7 +13,7 @@
 #include "GEComponentCollider.h"
 #include "GEComponentMesh.h"
 #include "GEEntity.h"
-#include "Content/GEContentManager.h"
+#include "Content/GEResourcesManager.h"
 
 using namespace GE;
 using namespace GE::Core;
@@ -165,7 +165,7 @@ ComponentColliderMesh::ComponentColliderMesh(Entity* Owner)
 {
    cClassName = ObjectName("ColliderMesh");
 
-   GERegisterPropertyObjectManager(ComponentColliderMesh, ObjectName, MeshName, Mesh);
+   GERegisterPropertyResource(ComponentColliderMesh, ObjectName, MeshName, Mesh);
 }
 
 ComponentColliderMesh::~ComponentColliderMesh()
@@ -179,10 +179,10 @@ const ObjectName& ComponentColliderMesh::getMeshName() const
 
 void ComponentColliderMesh::setMeshName(const ObjectName& MeshName)
 {
-   cMesh = ContentManager::getInstance()->get<Mesh>(MeshName);
+   cMesh = ResourcesManager::getInstance()->get<Mesh>(MeshName);
 
    if(!cMesh)
-      cMesh = ContentManager::getInstance()->load<Mesh>(MeshName.getString().c_str());
+      cMesh = ResourcesManager::getInstance()->load<Mesh>(MeshName.getString().c_str());
 }
 
 bool ComponentColliderMesh::checkCollision(const Physics::Ray& R, Physics::HitInfo* OutHitInfo) const

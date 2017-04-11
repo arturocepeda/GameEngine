@@ -178,9 +178,6 @@
     <ClCompile Include="Content\GEAnimation.cpp">
       <Filter>Content</Filter>
     </ClCompile>
-    <ClCompile Include="Content\GEContentManager.cpp">
-      <Filter>Content</Filter>
-    </ClCompile>
     <ClCompile Include="Entities\GEComponentParticleSystem.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
@@ -194,9 +191,6 @@
       <Filter>Entities</Filter>
     </ClCompile>
     <ClCompile Include="Content\GESkeleton.cpp">
-      <Filter>Content</Filter>
-    </ClCompile>
-    <ClCompile Include="Content\GEManagedContent.cpp">
       <Filter>Content</Filter>
     </ClCompile>
     <ClCompile Include="Core\GEThreadPool.cpp">
@@ -216,6 +210,12 @@
     </ClCompile>
     <ClCompile Include="Input\GEInputSystem.cpp">
       <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\GEResourcesManager.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="Content\GEResource.cpp">
+      <Filter>Content</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -399,9 +399,6 @@
     <ClInclude Include="Content\GEAnimation.h">
       <Filter>Content</Filter>
     </ClInclude>
-    <ClInclude Include="Content\GEContentManager.h">
-      <Filter>Content</Filter>
-    </ClInclude>
     <ClInclude Include="Entities\GEComponentParticleSystem.h">
       <Filter>Entities</Filter>
     </ClInclude>
@@ -418,9 +415,6 @@
       <Filter>Entities</Filter>
     </ClInclude>
     <ClInclude Include="Content\GESkeleton.h">
-      <Filter>Content</Filter>
-    </ClInclude>
-    <ClInclude Include="Content\GEManagedContent.h">
       <Filter>Content</Filter>
     </ClInclude>
     <ClInclude Include="Core\GEThreadPool.h">
@@ -446,6 +440,12 @@
     </ClInclude>
     <ClInclude Include="Input\GEInputSystem.h">
       <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\GEResourcesManager.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Content\GEResource.h">
+      <Filter>Content</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

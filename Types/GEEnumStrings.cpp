@@ -57,6 +57,20 @@ namespace GE { namespace Core
    };
 }}
 
+namespace GE { namespace Content
+{
+   const char* strResourceType[] =
+   {
+      "ShaderProgram",
+      "Texture",
+      "Material",
+      "Font",
+      "Mesh",
+      "Skeleton",
+      "AnimationSet",
+   };
+}}
+
 namespace GE { namespace Entities
 {
    const char* strEntitySaveBehavior[] =

@@ -304,12 +304,12 @@ namespace GE { namespace Core
       nullptr, \
       std::bind(&ClassName::P_get##PropertyName, this))
 
-#define GERegisterPropertyObjectManager(ClassName, PropertyType, PropertyName, ObjectType) \
+#define GERegisterPropertyResource(ClassName, PropertyType, PropertyName, ObjectType) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
       std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
       std::bind(&ClassName::P_get##PropertyName, this), \
       PropertyEditor::Default, \
-      (void*)GE::Core::ObjectManagers::getInstance()->getObjectRegistry(#ObjectType))
+      (void*)GE::Content::ResourcesManager::getInstance()->getObjectRegistry(#ObjectType))
 
 #define GERegisterPropertySpecialEditor(ClassName, PropertyType, PropertyName, Editor) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \

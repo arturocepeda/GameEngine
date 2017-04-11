@@ -14,6 +14,7 @@
 
 #include "Rendering/GETexture.h"
 #include "Content/GEImageData.h"
+#include "Content/GEResource.h"
 
 #include <map>
 
@@ -31,7 +32,7 @@ namespace GE { namespace Rendering
    };
 
 
-   class Font : public Core::Object
+   class Font : public Content::Resource
    {
    private:
       Texture* cTexture;
@@ -54,8 +55,8 @@ namespace GE { namespace Rendering
       void releaseFontTexture();
 
    public:
-      Font(const Core::ObjectName& Name, const char* FileName, void* RenderDevice = 0);
-      Font(const Core::ObjectName& Name, std::istream& Stream, void* RenderDevice = 0);
+      Font(const Core::ObjectName& Name, const Core::ObjectName& GroupName, const char* FileName, void* RenderDevice = 0);
+      Font(const Core::ObjectName& Name, const Core::ObjectName& GroupName, std::istream& Stream, void* RenderDevice = 0);
       ~Font();
 
       const Texture* getTexture();

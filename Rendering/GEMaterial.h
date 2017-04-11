@@ -14,6 +14,7 @@
 
 #include "Core/GEObject.h"
 #include "Core/GESerializable.h"
+#include "Content/GEResource.h"
 #include "GERenderingObjects.h"
 #include "GEShaderProgram.h"
 
@@ -21,7 +22,7 @@ namespace GE { namespace Rendering
 {
    class Texture;
    
-   class Material : public Core::Object, public Core::Serializable
+   class Material : public Content::Resource, public Core::Serializable
    {
    public:
       static const uint ConstantBufferSize = 64;
@@ -36,7 +37,9 @@ namespace GE { namespace Rendering
       bool bBatchRendering;
 
    public:
-      Material(const Core::ObjectName& Name);
+      Material(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
+
+      virtual uint getSizeInBytes() const override;
 
       const Core::ObjectName& getShaderProgram() const;
       const Color& getDiffuseColor() const;

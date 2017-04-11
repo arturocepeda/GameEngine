@@ -18,8 +18,8 @@
 #include "Core/GETime.h"
 #include "Core/GERand.h"
 #include "Core/GEProfiler.h"
+#include "Content/GEResourcesManager.h"
 #include "Rendering/GERenderSystem.h"
-#include "Content/GEContentManager.h"
 
 #include <algorithm>
 
@@ -88,7 +88,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(ComponentParticleSystem, Vector3, EmitterPointA);
    GERegisterProperty(ComponentParticleSystem, Vector3, EmitterPointB);
    GERegisterProperty(ComponentParticleSystem, Float, EmitterRadius);
-   GERegisterPropertyObjectManager(ComponentParticleSystem, ObjectName, EmitterMesh, Mesh);
+   GERegisterPropertyResource(ComponentParticleSystem, ObjectName, EmitterMesh, Mesh);
    GERegisterProperty(ComponentParticleSystem, ObjectName, EmitterMeshEntity);
 
    GERegisterProperty(ComponentParticleSystem, Bool, EmitterActive);
@@ -146,7 +146,7 @@ void ComponentParticleSystem::setEmitterMesh(const Core::ObjectName& MeshName)
    if(MeshName.isEmpty())
       return;
 
-   cEmitterMesh = ContentManager::getInstance()->get<Mesh>(MeshName);
+   cEmitterMesh = ResourcesManager::getInstance()->get<Mesh>(MeshName);
    GEAssert(cEmitterMesh);
 }
 

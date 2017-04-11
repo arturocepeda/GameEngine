@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "GEManagedContent.h"
+#include "GEResource.h"
 
 namespace GE { namespace Content
 {
@@ -50,13 +50,13 @@ namespace GE { namespace Content
    };
 
 
-   class Skeleton : public ManagedContent
+   class Skeleton : public Resource
    {
    private:
       GESTLVector(Bone*) vBones;
 
    public:
-      static const ManagedContentType ContentType;
+      static const ResourceType Type;
 
       Skeleton(const char* FileName);
       ~Skeleton();

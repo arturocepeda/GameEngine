@@ -13,7 +13,7 @@
 #pragma once
 
 #include "GEGeometryData.h"
-#include "GEManagedContent.h"
+#include "GEResource.h"
 #include "Core/GEObject.h"
 #include "Rendering/GEPrimitives.h"
 
@@ -32,7 +32,7 @@ namespace GE { namespace Content
    };
 
 
-   class Mesh : public ManagedContent
+   class Mesh : public Resource
    {
    private:
       GeometryData sGeometryData;
@@ -44,7 +44,7 @@ namespace GE { namespace Content
       void loadFromPrimivite(const Rendering::Primitive& P);
 
    public:
-      static const ManagedContentType ContentType;
+      static const ResourceType Type;
 
       static const uint BoneAttachmentsPerVertex = 4;
       static const uint FileFormatHeaderReservedBytes = 36;

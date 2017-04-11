@@ -15,16 +15,17 @@
 #include "Types/GETypes.h"
 #include "Core/GEObjectManager.h"
 #include "Core/GESingleton.h"
+#include "Content/GEResource.h"
 
 namespace GE { namespace Content
 {
-   class LocalizedString : public Core::Object
+   class LocalizedString : public Resource
    {
    private:
       GESTLString sString;
 
    public:
-      LocalizedString(const Core::ObjectName& Name, const GESTLString& Str);
+      LocalizedString(const Core::ObjectName& Name, const Core::ObjectName& GroupName, const GESTLString& Str);
       ~LocalizedString();
 
       const GESTLString& getString() const;

@@ -13,7 +13,7 @@
 #include "GEComponentSkeleton.h"
 #include "GEComponentTransform.h"
 #include "GEComponentMesh.h"
-#include "Content/GEContentManager.h"
+#include "Content/GEResourcesManager.h"
 #include "Core/GEGeometry.h"
 #include "Core/GETime.h"
 #include "Core/GEProfiler.h"
@@ -38,8 +38,8 @@ ComponentSkeleton::ComponentSkeleton(Entity* Owner)
 {
    cClassName = ObjectName("Skeleton");
 
-   GERegisterPropertyObjectManager(ComponentSkeleton, ObjectName, SkeletonName, Skeleton);
-   GERegisterPropertyObjectManager(ComponentSkeleton, ObjectName, AnimationSetName, AnimationSet);
+   GERegisterPropertyResource(ComponentSkeleton, ObjectName, SkeletonName, Skeleton);
+   GERegisterPropertyResource(ComponentSkeleton, ObjectName, AnimationSetName, AnimationSet);
    GERegisterProperty(ComponentSkeleton, ObjectName, DefaultAnimationName);
    GERegisterProperty(ComponentSkeleton, Float, AnimationSpeedFactor);
 }
@@ -61,10 +61,10 @@ void ComponentSkeleton::setSkeletonName(const ObjectName& SkeletonName)
 
    releaseSkeletonData();
 
-   cSkeleton = ContentManager::getInstance()->get<Skeleton>(SkeletonName);
+   cSkeleton = ResourcesManager::getInstance()->get<Skeleton>(SkeletonName);
 
    if(!cSkeleton)
-      cSkeleton = ContentManager::getInstance()->load<Skeleton>(SkeletonName.getString().c_str());
+      cSkeleton = ResourcesManager::getInstance()->load<Skeleton>(SkeletonName.getString().c_str());
 
    GEAssert(cSkeleton);
 
@@ -200,7 +200,7 @@ const ObjectName& ComponentSkeleton::getAnimationSetName() const
 
 void ComponentSkeleton::setAnimationSetName(const ObjectName& Name)
 {
-   setAnimationSet(ContentManager::getInstance()->get<AnimationSet>(Name));
+   setAnimationSet(ResourcesManager::getInstance()->get<AnimationSet>(Name));
 }
 
 const ObjectName& ComponentSkeleton::getDefaultAnimationName() const

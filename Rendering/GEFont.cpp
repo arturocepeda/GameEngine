@@ -21,8 +21,8 @@ using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Content;
 
-Font::Font(const ObjectName& Name, const char* FileName, void* RenderDevice)
-   : Object(Name)
+Font::Font(const ObjectName& Name, const ObjectName& GroupName, const char* FileName, void* RenderDevice)
+   : Resource(Name, GroupName)
    , pRenderDevice(RenderDevice)
    , cTexture(0)
 {
@@ -38,8 +38,8 @@ Font::Font(const ObjectName& Name, const char* FileName, void* RenderDevice)
    cImageData.unload();
 }
 
-Font::Font(const Core::ObjectName& Name, std::istream& Stream, void* RenderDevice)
-   : Object(Name)
+Font::Font(const ObjectName& Name, const ObjectName& GroupName, std::istream& Stream, void* RenderDevice)
+   : Resource(Name, GroupName)
    , pRenderDevice(RenderDevice)
    , cTexture(0)
    , fOffsetYMin(0.0f)

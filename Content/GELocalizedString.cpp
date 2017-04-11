@@ -15,6 +15,7 @@
 #include "Core/GEApplication.h"
 #include "Core/GEDevice.h"
 #include "Core/GEValue.h"
+#include "Content/GEResourcesManager.h"
 
 using namespace GE;
 using namespace GE::Content;
@@ -24,8 +25,8 @@ using namespace GE::Core;
 //
 //  LocalizedString
 //
-LocalizedString::LocalizedString(const Core::ObjectName& Name, const GESTLString& Str)
-    : Object(Name)
+LocalizedString::LocalizedString(const ObjectName& Name, const ObjectName& GroupName, const GESTLString& Str)
+    : Resource(Name, GroupName)
 {
    sString = Str;
 }
@@ -45,7 +46,7 @@ const GESTLString& LocalizedString::getString() const
 //
 LocalizedStringsManager::LocalizedStringsManager()
 {
-   ObjectManagers::getInstance()->registerObjectManager<LocalizedString>("LocalizedString", this);
+   ResourcesManager::getInstance()->registerObjectManager<LocalizedString>("LocalizedString", this);
 }
 
 void LocalizedStringsManager::loadStringsSet(const char* Name)
@@ -75,7 +76,7 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
          GEAssert(!get(cStringID));
 
          LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
-         GEInvokeCtor(LocalizedString, cLocaString)(cStringID, sText);
+         GEInvokeCtor(LocalizedString, cLocaString)(cStringID, Name, sText);
 
          add(cLocaString);
       }
@@ -97,7 +98,7 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
          GEAssert(!get(cStringID));
 
          LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
-         GEInvokeCtor(LocalizedString, cLocaString)(cStringID, Value::fromStream(ValueType::String, sStream).getAsString());
+         GEInvokeCtor(LocalizedString, cLocaString)(cStringID, Name, Value::fromStream(ValueType::String, sStream).getAsString());
 
          add(cLocaString);
       }

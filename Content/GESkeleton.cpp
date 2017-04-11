@@ -106,10 +106,10 @@ void Bone::setSize(float Size)
 //
 //  Skeleton
 //
-const ManagedContentType Skeleton::ContentType = ManagedContentType::Skeleton;
+const ResourceType Skeleton::Type = ResourceType::Skeleton;
 
 Skeleton::Skeleton(const char* FileName)
-   : ManagedContent(FileName)
+   : Resource(FileName, "Skeletons")
 {
    ContentData cSkeletonData;
 

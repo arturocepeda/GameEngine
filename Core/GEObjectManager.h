@@ -104,23 +104,4 @@ namespace GE { namespace Core
          mRegistry.clear();
       }
    };
-
-
-   class ObjectManagers : public Singleton<ObjectManagers>
-   {
-   private:
-      GESTLMap(uint, const ObjectRegistry*) mObjectManagersRegistry;
-
-   public:
-      template<typename T>
-      void registerObjectManager(const ObjectName& Name, ObjectManager<T>* Mgr)
-      {
-         mObjectManagersRegistry[Name.getID()] = Mgr->getObjectRegistry();
-      }
-
-      const ObjectRegistry* getObjectRegistry(const ObjectName& Name)
-      {
-         return mObjectManagersRegistry.find(Name.getID())->second;
-      }
-   };
 }}

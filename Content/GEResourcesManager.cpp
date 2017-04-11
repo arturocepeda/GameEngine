@@ -6,12 +6,11 @@
 //
 //  Content
 //
-//  --- GEContentManager.cpp ---
+//  --- GEResourcesManager.cpp ---
 //
 //////////////////////////////////////////////////////////////////
 
-#include "GEContentManager.h"
-#include "Core/GEAllocator.h"
+#include "GEResourcesManager.h"
 #include "Rendering/GEPrimitives.h"
 
 using namespace GE;
@@ -19,27 +18,27 @@ using namespace GE::Content;
 using namespace GE::Core;
 using namespace GE::Rendering;
 
-ContentManager::ContentManager()
+ResourcesManager::ResourcesManager()
 {
-   mManagersRegistry[Mesh::ContentType] = &mMeshes;
-   mManagersRegistry[Skeleton::ContentType] = &mSkeletons;
-   mManagersRegistry[AnimationSet::ContentType] = &mAnimationSets;
+   mSimpleResourceManagersRegistry[Mesh::Type] = &mMeshes;
+   mSimpleResourceManagersRegistry[Skeleton::Type] = &mSkeletons;
+   mSimpleResourceManagersRegistry[AnimationSet::Type] = &mAnimationSets;
 
-   ObjectManagers::getInstance()->registerObjectManager<Mesh>("Mesh", &mMeshes);
-   ObjectManagers::getInstance()->registerObjectManager<Skeleton>("Skeleton", &mSkeletons);
-   ObjectManagers::getInstance()->registerObjectManager<AnimationSet>("AnimationSet", &mAnimationSets);
+   registerObjectManager<Mesh>("Mesh", &mMeshes);
+   registerObjectManager<Skeleton>("Skeleton", &mSkeletons);
+   registerObjectManager<AnimationSet>("AnimationSet", &mAnimationSets);
 
    loadBuiltInMeshes();
 }
 
-ContentManager::~ContentManager()
+ResourcesManager::~ResourcesManager()
 {
    mMeshes.clear();
    mSkeletons.clear();
    mAnimationSets.clear();
 }
 
-void ContentManager::loadBuiltInMeshes()
+void ResourcesManager::loadBuiltInMeshes()
 {
    Sphere cSphere(1.0f, 48, 24);
    Mesh* cBuiltInMesh = Allocator::alloc<Mesh>();

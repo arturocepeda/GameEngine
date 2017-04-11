@@ -17,6 +17,7 @@
 #include "Core/GEAllocator.h"
 #include "Core/GEApplication.h"
 #include "Core/GEProfiler.h"
+#include "Content/GEResourcesManager.h"
 #include "Entities/GEEntity.h"
 #include "Entities/GEComponentParticleSystem.h"
 #include "Entities/GEComponentUIElement.h"
@@ -56,10 +57,10 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    , fFramesPerSecond(0.0f)
    , iDrawCalls(0)
 {
-   ObjectManagers::getInstance()->registerObjectManager<Texture>("Texture", &mTextures);
-   ObjectManagers::getInstance()->registerObjectManager<Material>("Material", &mMaterials);
-   ObjectManagers::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mShaderPrograms);
-   ObjectManagers::getInstance()->registerObjectManager<Font>("Font", &mFonts);
+   ResourcesManager::getInstance()->registerObjectManager<Texture>("Texture", &mTextures);
+   ResourcesManager::getInstance()->registerObjectManager<Material>("Material", &mMaterials);
+   ResourcesManager::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mShaderPrograms);
+   ResourcesManager::getInstance()->registerObjectManager<Font>("Font", &mFonts);
 
    // Position (3) + UV (2)
    sGPUBufferPairs[GeometryGroup::_2DStatic].VertexStride = (3 + 2) * sizeof(float);
@@ -235,6 +236,7 @@ void RenderSystem::preloadTextures(const char* FileName)
    char sFileName[64];
    sprintf(sFileName, "%s.textures", FileName);
 
+   ObjectName cGroupName = ObjectName(FileName);
    ContentData cTexturesData;
 
    if(Application::ContentType == ApplicationContentType::Xml)
@@ -260,7 +262,7 @@ void RenderSystem::preloadTextures(const char* FileName)
 
          sPreloadedTexture.Tex = Allocator::alloc<Texture>();
          GEInvokeCtor(Texture, sPreloadedTexture.Tex)
-            (sTextureName, sPreloadedTexture.Data->getWidth(), sPreloadedTexture.Data->getHeight());
+            (sTextureName, cGroupName, sPreloadedTexture.Data->getWidth(), sPreloadedTexture.Data->getHeight());
 
          GEMutexLock(mTextureLoadMutex);
 
@@ -320,7 +322,7 @@ void RenderSystem::preloadTextures(const char* FileName)
 
          sPreloadedTexture.Tex = Allocator::alloc<Texture>();
          GEInvokeCtor(Texture, sPreloadedTexture.Tex)
-            (cTextureName, sPreloadedTexture.Data->getWidth(), sPreloadedTexture.Data->getHeight());
+            (cTextureName, cGroupName, sPreloadedTexture.Data->getWidth(), sPreloadedTexture.Data->getHeight());
 
          GEMutexLock(mTextureLoadMutex);
 
@@ -460,6 +462,7 @@ void RenderSystem::loadMaterials(const char* FileName)
    char sFileName[64];
    sprintf(sFileName, "%s.materials", FileName);
 
+   ObjectName cGroupName = ObjectName(FileName);
    ContentData cMaterialsData;
 
    if(Application::ContentType == ApplicationContentType::Xml)
@@ -473,7 +476,7 @@ void RenderSystem::loadMaterials(const char* FileName)
       for(const pugi::xml_node& xmlMaterial : xmlMaterials.children("Material"))
       {
          Material* cMaterial = Allocator::alloc<Material>();
-         GEInvokeCtor(Material, cMaterial)(xmlMaterial.attribute("name").value());
+         GEInvokeCtor(Material, cMaterial)(xmlMaterial.attribute("name").value(), cGroupName);
          cMaterial->loadFromXml(xmlMaterial);
          loadMaterial(cMaterial);
       }
@@ -490,7 +493,7 @@ void RenderSystem::loadMaterials(const char* FileName)
       {
          ObjectName cMaterialName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
          Material* cMaterial = Allocator::alloc<Material>();
-         GEInvokeCtor(Material, cMaterial)(cMaterialName);
+         GEInvokeCtor(Material, cMaterial)(cMaterialName, cGroupName);
          cMaterial->loadFromStream(sStream);
          loadMaterial(cMaterial);
       }
@@ -554,6 +557,7 @@ void RenderSystem::loadFonts(const char* FileName)
    char sFileName[64];
    sprintf(sFileName, "%s.fonts", FileName);
 
+   ObjectName cGroupName = ObjectName(FileName);
    ContentData cFontsData;
 
    if(Application::ContentType == ApplicationContentType::Xml)
@@ -570,7 +574,7 @@ void RenderSystem::loadFonts(const char* FileName)
          const char* sFileName = xmlFont.attribute("fileName").value();
 
          Font* fFont = Allocator::alloc<Font>();
-         GEInvokeCtor(Font, fFont)(sFontName, sFileName, pDevice);
+         GEInvokeCtor(Font, fFont)(sFontName, cGroupName, sFileName, pDevice);
          mFonts.add(fFont);
          pBoundTexture = const_cast<Texture*>(fFont->getTexture());
       }
@@ -590,7 +594,7 @@ void RenderSystem::loadFonts(const char* FileName)
       {
          ObjectName cFontName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
          Font* fFont = Allocator::alloc<Font>();
-         GEInvokeCtor(Font, fFont)(cFontName, sStream, pDevice);
+         GEInvokeCtor(Font, fFont)(cFontName, cGroupName, sStream, pDevice);
          mFonts.add(fFont);
          pBoundTexture = const_cast<Texture*>(fFont->getTexture());
       }

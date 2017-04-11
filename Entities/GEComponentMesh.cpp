@@ -15,7 +15,7 @@
 #include "Core/GEDevice.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEGeometry.h"
-#include "Content/GEContentManager.h"
+#include "Content/GEResourcesManager.h"
 
 using namespace GE;
 using namespace GE::Content;
@@ -37,7 +37,7 @@ ComponentMesh::ComponentMesh(Entity* Owner)
 
    eRenderingMode = RenderingMode::_3D;
 
-   GERegisterPropertyObjectManager(ComponentMesh, ObjectName, MeshName, Mesh);
+   GERegisterPropertyResource(ComponentMesh, ObjectName, MeshName, Mesh);
    GERegisterPropertyBitMask(ComponentMesh, DynamicShadowsBitMask, DynamicShadows);
 }
 
@@ -53,10 +53,10 @@ const Core::ObjectName& ComponentMesh::getMeshName() const
 
 void ComponentMesh::setMeshName(const ObjectName& MeshName)
 {
-   Mesh* cMesh = ContentManager::getInstance()->get<Mesh>(MeshName);
+   Mesh* cMesh = ResourcesManager::getInstance()->get<Mesh>(MeshName);
 
    if(!cMesh)
-      cMesh = ContentManager::getInstance()->load<Mesh>(MeshName.getString().c_str());
+      cMesh = ResourcesManager::getInstance()->load<Mesh>(MeshName.getString().c_str());
 
    loadMesh(cMesh);
 }

@@ -16,8 +16,8 @@ using namespace GE;
 using namespace GE::Rendering;
 using namespace GE::Core;
 
-Texture::Texture(const ObjectName& Name, uint Width, uint Height)
-   : Object(Name)
+Texture::Texture(const ObjectName& Name, const ObjectName& GroupName, uint Width, uint Height)
+   : Resource(Name, GroupName)
    , iWidth(Width)
    , iHeight(Height)
    , pHandlePtr(0)

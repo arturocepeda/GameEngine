@@ -13,6 +13,7 @@
 #pragma once
 
 #include "Core/GEObject.h"
+#include "Content/GEResource.h"
 #include "GERenderingObjects.h"
 
 namespace GE { namespace Rendering
@@ -33,7 +34,7 @@ namespace GE { namespace Rendering
    };
 
 
-   class Texture : public Core::Object
+   class Texture : public Content::Resource
    {
    private:
       uint iWidth;
@@ -44,7 +45,7 @@ namespace GE { namespace Rendering
    public:
       GESTLVector(TextureAtlasEntry) AtlasUV;
 
-      Texture(const Core::ObjectName& Name, uint Width, uint Height);
+      Texture(const Core::ObjectName& Name, const Core::ObjectName& GroupName, uint Width, uint Height);
 
       uint getWidth() const;
       uint getHeight() const;

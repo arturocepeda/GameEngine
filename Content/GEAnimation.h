@@ -14,7 +14,7 @@
 
 #include "Types/GETypes.h"
 #include "Core/GEObject.h"
-#include "GEManagedContent.h"
+#include "GEResource.h"
 
 namespace GE { namespace Content
 {
@@ -62,7 +62,7 @@ namespace GE { namespace Content
    };
 
 
-   class AnimationSet : public ManagedContent
+   class AnimationSet : public Resource
    {
    private:
       GESTLVector(Animation*) vAnimations;
@@ -70,7 +70,7 @@ namespace GE { namespace Content
       Animation* loadAnimation(const char* FileName, const Core::ObjectName& AnimationName);
 
    public:
-      static const ManagedContentType ContentType;
+      static const ResourceType Type;
 
       AnimationSet(const char* FileName);
       ~AnimationSet();

@@ -16,7 +16,7 @@
 
 #include "Input/GEInputSystem.h"
 
-#include "Content/GEContentManager.h"
+#include "Content/GEResourcesManager.h"
 #include "Content/GELocalizedString.h"
 
 #include "Entities/GEComponentTransform.h"
@@ -56,11 +56,8 @@ void Application::startUp()
    InputSystem* cInputSystem = Allocator::alloc<InputSystem>();
    GEInvokeCtor(InputSystem, cInputSystem);
 
-   ObjectManagers* cObjectManagers = Allocator::alloc<ObjectManagers>();
-   GEInvokeCtor(ObjectManagers, cObjectManagers);
-
-   ContentManager* cContentManager = Allocator::alloc<ContentManager>();
-   GEInvokeCtor(ContentManager, cContentManager);
+   ResourcesManager* cResourcesManager = Allocator::alloc<ResourcesManager>();
+   GEInvokeCtor(ResourcesManager, cResourcesManager);
 
    LocalizedStringsManager* cLocaStringsManager = Allocator::alloc<LocalizedStringsManager>();
    GEInvokeCtor(LocalizedStringsManager, cLocaStringsManager);
@@ -73,11 +70,8 @@ void Application::shutDown()
    GEInvokeDtor(LocalizedStringsManager, LocalizedStringsManager::getInstance());
    Allocator::free(LocalizedStringsManager::getInstance());
 
-   GEInvokeDtor(ContentManager, ContentManager::getInstance());
-   Allocator::free(ContentManager::getInstance());
-
-   GEInvokeDtor(ObjectManagers, ObjectManagers::getInstance());
-   Allocator::free(ObjectManagers::getInstance());
+   GEInvokeDtor(ResourcesManager, ResourcesManager::getInstance());
+   Allocator::free(ResourcesManager::getInstance());
 
    GEInvokeDtor(InputSystem, InputSystem::getInstance());
    Allocator::free(InputSystem::getInstance());
