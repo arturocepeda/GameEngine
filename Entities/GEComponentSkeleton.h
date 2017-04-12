@@ -133,6 +133,7 @@ namespace GE { namespace Entities
 
       Content::Skeleton* getSkeleton() const;
       Entity* getBoneEntity(uint BoneIndex) const;
+      Entity* getBoneEntity(const Core::ObjectName& BoneName) const;
 
       const Matrix4* getBoneMatrices() const;
       const Matrix4* getBoneInverseTransposeMatrices() const;

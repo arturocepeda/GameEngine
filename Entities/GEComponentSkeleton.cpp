@@ -130,6 +130,17 @@ Entity* ComponentSkeleton::getBoneEntity(uint BoneIndex) const
    return vBoneEntities[BoneIndex];
 }
 
+Entity* ComponentSkeleton::getBoneEntity(const Core::ObjectName& BoneName) const
+{
+   for(uint i = 0; i < vBoneEntities.size(); i++)
+   {
+      if(vBoneEntities[i]->getName() == BoneName)
+         return vBoneEntities[i];
+   }
+
+   return 0;
+}
+
 const Matrix4* ComponentSkeleton::getBoneMatrices() const
 {
    return sBoneMatrices;

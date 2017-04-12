@@ -69,6 +69,7 @@ public:
    ComponentCamera* getComponentCamera() { return getComponent<ComponentCamera>(); }
    ComponentCollider* getComponentCollider() { return getComponent<ComponentCollider>(); }
    ComponentUIElement* getComponentUIElement() { return getComponent<ComponentUIElement>(); }
+   ComponentSkeleton* getComponentSkeleton() { return getComponent<ComponentSkeleton>(); }
 };
 
 
@@ -464,6 +465,12 @@ void Script::registerTypes()
       , "getAlpha", &ComponentUIElement::getAlpha
       , sol::base_classes, sol::bases<Component>()
    );
+   lua.new_usertype<ComponentSkeleton>
+   (
+      "ComponentSkeleton"
+      , "getBoneEntity", (Entity* (ComponentSkeleton::*)(const ObjectName&) const)&ComponentSkeleton::getBoneEntity
+      , sol::base_classes, sol::bases<Component>()
+   );
    lua.new_usertype<Entity>
    (
       "Entity"
@@ -473,6 +480,7 @@ void Script::registerTypes()
       , "getComponentCamera", &luaEntity::getComponentCamera
       , "getComponentCollider", &luaEntity::getComponentCollider
       , "getComponentUIElement", &luaEntity::getComponentUIElement
+      , "getComponentSkeleton", &luaEntity::getComponentSkeleton
       , sol::base_classes, sol::bases<Serializable>()
    );
    lua.new_usertype<Scene>

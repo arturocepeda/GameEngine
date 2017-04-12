@@ -131,6 +131,9 @@ void ScriptInstance::update()
    if(sScriptName.empty())
       return;
 
+   cScript->setVariable<Scene*>("scene", Scene::getActiveScene());
+   cScript->setVariable<float>("deltaTime", Time::getClock(0).getDelta());
+
    if(!bInitialized)
    {
       Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
@@ -143,9 +146,6 @@ void ScriptInstance::update()
 
       bInitialized = true;
    }
-
-   cScript->setVariable<Scene*>("scene", Scene::getActiveScene());
-   cScript->setVariable<float>("deltaTime", Time::getClock(0).getDelta());
 
    if(cScript->isFunctionDefined(cUpdateFunctionName))
    {

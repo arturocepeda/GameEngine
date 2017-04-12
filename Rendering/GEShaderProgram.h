@@ -17,6 +17,7 @@
 #include "Core/GEObject.h"
 #include "Core/GEValue.h"
 #include "Core/GESerializable.h"
+#include "Content/GEResource.h"
 #include "Rendering/GERenderingObjects.h"
 
 #include "Externals/pugixml/pugixml.hpp"
@@ -31,7 +32,7 @@ namespace GE { namespace Rendering
    };
 
 
-   class ShaderProgram : public Core::Object, public Core::Serializable
+   class ShaderProgram : public Content::Resource, public Core::Serializable
    {
    public:
       typedef GESTLVector(ShaderProgramParameter) ParameterList;
