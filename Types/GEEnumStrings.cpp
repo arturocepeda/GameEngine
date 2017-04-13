@@ -116,6 +116,13 @@ namespace GE { namespace Entities
       "Line",
       "Mesh"
    };
+
+   const char* strParticleSettingsBitMask[] =
+   {
+      "VaryAlpha",
+      "VaryColor",
+      "VarySize"
+   };
 }}
 
 namespace GE { namespace Rendering

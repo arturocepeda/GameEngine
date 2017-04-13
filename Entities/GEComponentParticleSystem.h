@@ -31,6 +31,16 @@ namespace GE { namespace Entities
    };
 
 
+   GESerializableEnum(ParticleSettingsBitMask)
+   {
+      VaryAlpha  =  1 << 0,
+      VaryColor  =  1 << 1,
+      VarySize   =  1 << 2,
+
+      Count = 3
+   };
+
+
    struct Particle
    {
       Vector3 Position;
@@ -69,6 +79,8 @@ namespace GE { namespace Entities
       bool bDynamicShadows;
       float fEmissionRate;
       uint iEmissionBurstCount;
+
+      uint8_t eParticleSettings;
 
       float fParticleLifeTimeMin;
       float fParticleLifeTimeMax;
@@ -131,6 +143,8 @@ namespace GE { namespace Entities
       float getEmissionRate() const { return fEmissionRate; }
       uint getEmissionBurstCount() const { return iEmissionBurstCount; }
 
+      uint8_t getParticleSettings() const { return eParticleSettings; }
+
       float getParticleLifeTimeMin() const { return fParticleLifeTimeMin; }
       float getParticleLifeTimeMax() const { return fParticleLifeTimeMax; }
 
@@ -162,6 +176,8 @@ namespace GE { namespace Entities
       void setDynamicShadows(bool Active) { bDynamicShadows = Active; }
       void setEmissionRate(float Rate) { fEmissionRate = Rate; }
       void setEmissionBurstCount(uint Value) { iEmissionBurstCount = Value; }
+
+      void setParticleSettings(uint8_t Value) { eParticleSettings = Value; }
 
       void setParticleLifeTimeMin(float Value) { fParticleLifeTimeMin = Value; }
       void setParticleLifeTimeMax(float Value) { fParticleLifeTimeMax = Value; }
@@ -204,6 +220,8 @@ namespace GE { namespace Entities
       GEProperty(Bool, DynamicShadows)
       GEProperty(Float, EmissionRate)
       GEProperty(UInt, EmissionBurstCount)
+
+      GEPropertyBitMask(ParticleSettingsBitMask, ParticleSettings)
 
       GEProperty(Float, ParticleLifeTimeMin)
       GEProperty(Float, ParticleLifeTimeMax)

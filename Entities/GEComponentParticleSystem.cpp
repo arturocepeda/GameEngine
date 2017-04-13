@@ -46,6 +46,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , bDynamicShadows(false)
    , fEmissionRate(0.0f)
    , iEmissionBurstCount(1)
+   , eParticleSettings((1 << (uint8_t)ParticleSettingsBitMask::Count) - 1)
    , fParticleLifeTimeMin(0.0f)
    , fParticleLifeTimeMax(0.0f)
    , fParticleInitialSizeMin(0.0f)
@@ -97,6 +98,8 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(ComponentParticleSystem, Bool, DynamicShadows);
    GERegisterProperty(ComponentParticleSystem, Float, EmissionRate);
    GERegisterProperty(ComponentParticleSystem, UInt, EmissionBurstCount);
+
+   GERegisterPropertyBitMask(ComponentParticleSystem, ParticleSettingsBitMask, ParticleSettings);
 
    GERegisterProperty(ComponentParticleSystem, Float, ParticleLifeTimeMin);
    GERegisterProperty(ComponentParticleSystem, Float, ParticleLifeTimeMax);
@@ -346,8 +349,23 @@ void ComponentParticleSystem::update()
 
       sParticle.Position += sParticle.LinearVelocity * fDeltaTime;
       sParticle.Angle += sParticle.AngularVelocity * GE_DEG2RAD * fDeltaTime;
-      sParticle.Size += sParticle.SizeVariation * fDeltaTime;
-      sParticle.DiffuseColor += sParticle.DiffuseColorVariation * fDeltaTime;
+
+      if(GEHasFlag(eParticleSettings, ParticleSettingsBitMask::VarySize))
+      {
+         sParticle.Size += sParticle.SizeVariation * fDeltaTime;
+      }
+
+      if(GEHasFlag(eParticleSettings, ParticleSettingsBitMask::VaryColor))
+      {
+         sParticle.DiffuseColor.Red += sParticle.DiffuseColorVariation.Red * fDeltaTime;
+         sParticle.DiffuseColor.Green += sParticle.DiffuseColorVariation.Green * fDeltaTime;
+         sParticle.DiffuseColor.Blue += sParticle.DiffuseColorVariation.Blue * fDeltaTime;
+      }
+
+      if(GEHasFlag(eParticleSettings, ParticleSettingsBitMask::VaryAlpha))
+      {
+         sParticle.DiffuseColor.Alpha += sParticle.DiffuseColorVariation.Alpha * fDeltaTime;
+      }
 
       sParticle.Position += vConstantForce * fDeltaTime;
       sParticle.LinearVelocity += vConstantAcceleration * fDeltaTime;
