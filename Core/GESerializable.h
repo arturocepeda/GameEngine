@@ -183,52 +183,10 @@ namespace GE { namespace Core
 //  Definition of bit mask properties
 //
 #define GEPropertyBitMaskReadonly(EnumType, PropertyName) \
-   GE::Core::Value P_get##PropertyName() \
-   { \
-      GE::uint iPropertyValue = get##PropertyName(); \
-      char sBuffer[GE::Core::Value::BufferSize]; \
-      sBuffer[0] = '\0'; \
-      for(GE::uint i = 0; i < (GE::uint)EnumType::Count; i++) \
-      { \
-         if(GEHasFlag(iPropertyValue, 1 << i)) \
-         { \
-            sprintf(sBuffer, "%s%s|", sBuffer, str##EnumType[i]); \
-         } \
-      } \
-      GE::uint iBitMaskLength = (GE::uint)strlen(sBuffer); \
-      if(iBitMaskLength > 0) sBuffer[iBitMaskLength - 1] = '\0'; \
-      return GE::Core::Value(sBuffer); \
-   }
+   GEPropertyReadonly(Byte, PropertyName)
 
 #define GEPropertyBitMaskWriteonly(EnumType, PropertyName) \
-   void P_set##PropertyName(GE::Core::Value& v) \
-   { \
-      GE::uint iPropertyValue = 0; \
-      const char* sBitMask = v.getAsString(); \
-      GE::uint iBitMaskLength = (GE::uint)strlen(sBitMask); \
-      if(iBitMaskLength > 0) \
-      { \
-         char sBuffer[GE::Core::Value::BufferSize]; \
-         GE::uint iBufferPosition = 0; \
-         for(GE::uint i = 0; i <= iBitMaskLength; i++) \
-         { \
-            sBuffer[iBufferPosition++] = sBitMask[i]; \
-            if(sBitMask[i] != '|' && sBitMask[i] != '\0') continue; \
-            sBuffer[iBufferPosition - 1] = '\0'; \
-            for(GE::uint j = 0; j < (GE::uint)EnumType::Count; j++) \
-            { \
-               if(strcmp(sBuffer, str##EnumType[j]) == 0) \
-               { \
-                  GESetFlag(iPropertyValue, 1 << j); \
-                  iBufferPosition = 0; \
-                  break; \
-               } \
-            } \
-            GEAssert(iBufferPosition == 0); \
-         } \
-      } \
-      set##PropertyName(iPropertyValue); \
-   }
+   GEPropertyWriteonly(Byte, PropertyName)
 
 #define GEPropertyBitMask(EnumType, PropertyName) \
    GEPropertyBitMaskReadonly(EnumType, PropertyName) \
@@ -338,13 +296,13 @@ namespace GE { namespace Core
 //  Register bit mask properties
 //
 #define GERegisterPropertyBitMask(ClassName, EnumType, PropertyName) \
-   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::String, \
+   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
       std::bind(&ClassName::P_get##PropertyName, this), \
       PropertyEditor::BitMask, (void*)str##EnumType, (uint)EnumType::Count)
 
 #define GERegisterPropertyBitMaskReadonly(ClassName, EnumType, PropertyName) \
-   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::String, \
+   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       nullptr, \
       std::bind(&ClassName::P_get##PropertyName, this), \
       PropertyEditor::BitMask, (void*)str##EnumType, (uint)EnumType::Count)
