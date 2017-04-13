@@ -30,7 +30,7 @@ class GameEngineView extends GLSurfaceView
    public GameEngineView(Context context)
    {
       super(context);
-      init(false, 16, 0);
+      init(true, 16, 0);
    }
 
    public GameEngineView(Context context, boolean translucent, int depth, int stencil)

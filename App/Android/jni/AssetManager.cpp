@@ -53,3 +53,101 @@ uint Device::readFile(const char* Filename, unsigned char* ReadBuffer, uint Buff
 
     return 0;
 }
+
+uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
+{
+   AAssetDir* aAssetDir = AAssetManager_openDir(NativeAssetManager, SubDir);
+
+   if(!aAssetDir)
+      return 0;
+
+   uint iExtensionLength = strlen(Extension);
+   uint iFilesCount = 0;
+   const char* sFileName = 0;
+
+   do
+   {
+      sFileName = AAssetDir_getNextFileName(aAssetDir);
+
+      if(sFileName)
+      {
+         uint iFileNameLength = strlen(sFileName);
+
+         if(iFileNameLength < iExtensionLength)
+            continue;
+
+         bool bHasExtension = true;
+         uint iCharIndex = iFileNameLength - iExtensionLength;
+
+         for(uint i = 0; i < iExtensionLength; i++, iCharIndex++)
+         {
+            if(sFileName[iCharIndex] != Extension[i])
+            {
+               bHasExtension = false;
+               break;
+            }
+         }
+
+         if(bHasExtension)
+            iFilesCount++;
+      }
+   }
+   while(sFileName);
+
+   AAssetDir_close(aAssetDir);
+
+   return iFilesCount;
+}
+
+void Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
+{
+   AAssetDir* aAssetDir = AAssetManager_openDir(NativeAssetManager, SubDir);
+
+   if(!aAssetDir)
+      return;
+
+   uint iExtensionLength = strlen(Extension);
+   uint iFileIndex = 0;
+   const char* sFileName = 0;
+
+   do
+   {
+      sFileName = AAssetDir_getNextFileName(aAssetDir);
+
+      if(sFileName)
+      {
+         uint iFileNameLength = strlen(sFileName);
+
+         if(iFileNameLength < iExtensionLength)
+            continue;
+
+         bool bHasExtension = true;
+         uint iCharIndex = iFileNameLength - iExtensionLength;
+
+         for(uint i = 0; i < iExtensionLength; i++, iCharIndex++)
+         {
+            if(sFileName[iCharIndex] != Extension[i])
+            {
+               bHasExtension = false;
+               break;
+            }
+         }
+
+         if(bHasExtension)
+         {
+            if(iFileIndex == Index)
+            {
+               uint iReturnStringLength = iFileNameLength - iExtensionLength - 1;
+               strncpy(Name, sFileName, iReturnStringLength);
+               Name[iReturnStringLength] = '\0';
+               break;
+            }
+
+            iFileIndex++;
+         }
+      }
+   }
+   while(sFileName);
+
+   AAssetDir_close(aAssetDir);
+}

@@ -172,7 +172,6 @@ public class GameEngineActivity extends Activity implements SensorEventListener
       {
          GameEngineLib.UpdateAccelerometerStatus(event.values[0], event.values[1], event.values[2]);
       }
-
       // rotation vector
       else
       {
