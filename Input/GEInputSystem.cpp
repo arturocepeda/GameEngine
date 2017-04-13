@@ -32,7 +32,7 @@ void InputSystem::inputKeyPress(char Key)
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState)
+   if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputKeyPress(Key);
    }
@@ -42,7 +42,7 @@ void InputSystem::inputKeyRelease(char Key)
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState)
+   if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputKeyRelease(Key);
    }
@@ -52,7 +52,7 @@ void InputSystem::inputMouse(int X, int Y)
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState)
+   if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputMouse(X, Y);
    }
@@ -62,7 +62,7 @@ void InputSystem::inputMouseLeftButton()
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState)
+   if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputMouseLeftButton();
    }
@@ -72,7 +72,7 @@ void InputSystem::inputMouseRightButton()
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState)
+   if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputMouseRightButton();
    }
@@ -82,7 +82,7 @@ void InputSystem::inputMouseWheel(int Delta)
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState)
+   if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputMouseWheel(Delta);
    }
@@ -92,7 +92,7 @@ void InputSystem::inputTouchBegin(int ID, const Vector2& Point)
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState)
+   if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputTouchBegin(ID, Point);
    }
@@ -114,7 +114,7 @@ void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vec
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState)
+   if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputTouchMove(ID, PreviousPoint, CurrentPoint);
    }
@@ -136,7 +136,7 @@ void InputSystem::inputTouchEnd(int ID, const Vector2& Point)
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState)
+   if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputTouchEnd(ID, Point);
    }
@@ -158,7 +158,7 @@ void InputSystem::updateAccelerometerStatus(const Vector3& Status)
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState)
+   if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->updateAccelerometerStatus(Status);
    }

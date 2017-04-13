@@ -20,6 +20,7 @@ State::State(const ObjectName& Name, void* GlobalData)
    : Object(Name)
    , pGlobalData(GlobalData)
    , eStateType(StateType::Exclusive)
+   , bInputEnabled(true)
    , iMouseX(0)
    , iMouseY(0)
    , iMouseLastX(0)
@@ -34,6 +35,11 @@ State::~State()
 StateType State::getStateType() const
 {
    return eStateType;
+}
+
+bool State::getInputEnabled() const
+{
+   return bInputEnabled;
 }
 
 void State::pause()
