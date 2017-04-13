@@ -97,6 +97,22 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
    Device::Orientation = DeviceOrientation::Landscape;
 #endif
 
+   // system language
+   jclass localeClass = env->FindClass("java/util/Locale");
+   jmethodID localeDefaultMethod = env->GetStaticMethodID(localeClass, "getDefault", "()Ljava/util/Locale;");
+   jmethodID localeGetLanguageMethod = env->GetMethodID(localeClass, "getLanguage", "()Ljava/lang/String;");
+   jobject localeInstance = env->CallStaticObjectMethod(localeClass, localeDefaultMethod);
+   jstring languageStringObj = (jstring)env->CallObjectMethod(localeInstance, localeGetLanguageMethod);
+
+   const char* sLanguage = env->GetStringUTFChars(languageStringObj, 0);
+
+   if(strcmp(sLanguage, "en") == 0)
+      Device::Language = SystemLanguage::English;
+   else if(strcmp(sLanguage, "es") == 0)
+      Device::Language = SystemLanguage::Spanish;
+   else if(strcmp(sLanguage, "de") == 0)
+      Device::Language = SystemLanguage::German;
+
    // IDs for touch management
    for(int i = 0; i < GE_MAX_FINGERS; i++)
       iFingerID[i] = -1;
