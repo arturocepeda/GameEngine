@@ -22,11 +22,8 @@
 #include <sys/stat.h>
 #include <android/log.h>
 
-using namespace GE;
 using namespace GE::Core;
 using namespace GE::Content;
-
-GESTLVector(GE::byte) pFileData;
 
 int Device::ScreenWidth = 0;
 int Device::ScreenHeight = 0;
@@ -77,13 +74,12 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
    char sFileName[256];
    sprintf(sFileName, "%s/%s.%s", SubDir, Name, Extension);
 
-   uint iFileLength = getFileLength(sFileName);
+   unsigned int iFileLength = getFileLength(sFileName);
+
    GEAssert(iFileLength > 0);
 
-   uint iBufferSize = Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength;
-   pFileData.resize(iBufferSize);
-
-   readFile(sFileName, &pFileData[0], iFileLength);
+   unsigned char* pFileData = new unsigned char[Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength];
+   readFile(sFileName, pFileData, iFileLength);
 
    if(Type == ContentType::GenericTextData)
       pFileData[iFileLength] = '\0';
@@ -92,14 +88,16 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
    {
    case ContentType::Texture:
    case ContentType::FontTexture:
-      static_cast<ImageData*>(ContentData)->load(iFileLength, (const char*)&pFileData[0]);
+      static_cast<ImageData*>(ContentData)->load(iFileLength, (const char*)pFileData);
       break;
    case ContentType::Audio:
-      static_cast<AudioData*>(ContentData)->load(iFileLength, (const char*)&pFileData[0]);
+      static_cast<AudioData*>(ContentData)->load(iFileLength, (const char*)pFileData);
       break;
    default:
-      ContentData->load(Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength, (const char*)&pFileData[0]);
+      ContentData->load(Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength, (const char*)pFileData);
    }
+
+   delete[] pFileData;
 }
 
 bool Device::userFileExists(const char* SubDir, const char* Name, const char* Extension)
@@ -130,10 +128,11 @@ void Device::readUserFile(const char* SubDir, const char* Name, const char* Exte
    uint iFileSize = ftell(file);
    fseek(file, 0L, SEEK_SET);
 
-   pFileData.resize(iFileSize);
-   fread(&pFileData[0], 1, iFileSize, file);
-   ContentData->load(iFileSize, (const char*)&pFileData[0]);
+   char* sBuffer = Allocator::alloc<char>(iFileSize);
+   fread(sBuffer, 1, iFileSize, file);
+   ContentData->load(iFileSize, sBuffer);
 
+   Allocator::free(sBuffer);
    fclose(file);
 }
 

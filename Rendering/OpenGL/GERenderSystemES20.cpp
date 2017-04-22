@@ -481,8 +481,6 @@ void RenderSystem::renderShadowMap()
    if(cLight->getLightType() != LightType::Directional)
       return;
 
-   GEProfilerMarker("RenderSystem::renderShadowMap()");
-
    glBindFramebuffer(GL_FRAMEBUFFER, iFrameBuffer);
    glViewport(0, 0, ShadowMapSize, ShadowMapSize);
 

@@ -15,7 +15,6 @@
 #include "Core/GEDevice.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEGeometry.h"
-#include "Core/GEProfiler.h"
 #include "Content/GEResourcesManager.h"
 
 using namespace GE;
@@ -118,8 +117,6 @@ void ComponentMesh::updateSkinning()
 {
    if(!cSkeleton)
       return;
-
-   GEProfilerMarker("ComponentMesh::updateSkinning()");
 
    float* fOriginalVertexDataPtr = cMesh->getGeometryData().VertexData;
    float* fVertexDataPtr = sGeometryData.VertexData;

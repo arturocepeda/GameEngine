@@ -153,8 +153,6 @@ const Matrix4* ComponentSkeleton::getBoneInverseTransposeMatrices() const
 
 void ComponentSkeleton::updateBoneMatrices()
 {
-   GEProfilerMarker("ComponentSkeleton::updateBoneMatrices()");
-
    const uint iBonesCount = cSkeleton->getBonesCount();
 
    for(uint i = 0; i < iBonesCount; i++)
