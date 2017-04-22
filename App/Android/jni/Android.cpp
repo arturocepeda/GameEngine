@@ -120,12 +120,14 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
    cPixelToScreenX = new Scaler(0.0f, Device::ScreenWidth, -1.0f, 1.0f);
    cPixelToScreenY = new Scaler(0.0f, Device::ScreenHeight, Device::getAspectRatio(), -Device::getAspectRatio());
    
-    // initialize rendering system
+   // initialize rendering system
    cRender = new RenderSystemES20();
-   
+
    // initialize audio system
+#if defined (GE_AUDIO_SUPPORT)
    cAudio = new AudioSystemOpenSL();
    cAudio->init();
+#endif
    
    // create and register the states
    registerStates(cStateManager);
