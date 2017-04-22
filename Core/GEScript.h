@@ -37,6 +37,8 @@ namespace GE { namespace Core
 
       static GESTLSet(uint) sDefaultGlobalNames;
 
+      static void* customAlloc(void*, void* ptr, size_t, size_t nsize);
+
       void collectGlobalSymbols();
       void registerTypes();
 

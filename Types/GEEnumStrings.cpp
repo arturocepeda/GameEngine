@@ -46,7 +46,8 @@ namespace GE { namespace Core
    const char* strAllocationCategory[] =
    {
       "General",
-      "STL"
+      "STL",
+      "Scripting"
    };
 
    const char* strSystemLanguage[] =

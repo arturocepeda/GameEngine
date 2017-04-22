@@ -136,7 +136,7 @@ void Script::handleFunctionError(const char* FunctionName, const char* Msg)
 
 void Script::reset()
 {
-   lua = sol::state();
+   lua = sol::state(sol::default_at_panic, customAlloc);
    lua.open_libraries();
    registerTypes();
 }
@@ -268,6 +268,23 @@ void Script::runFunction(const char* FunctionName)
       handleFunctionError(FunctionName);
    }
 #endif
+}
+
+void* Script::customAlloc(void*, void* ptr, size_t, size_t nsize)
+{
+   if(nsize == 0)
+   {
+      if(ptr)
+      {
+         Allocator::free(ptr);
+      }
+
+      return 0;
+   }
+
+   return ptr
+      ? Allocator::realloc<char>(ptr, (uint)nsize, AllocationCategory::Scripting)
+      : Allocator::alloc<char>((uint)nsize, AllocationCategory::Scripting);
 }
 
 void Script::collectGlobalSymbols()
