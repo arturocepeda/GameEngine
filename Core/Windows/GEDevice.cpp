@@ -27,6 +27,8 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Content;
 
+GESTLVector(GE::byte) pFileData;
+
 int Device::ScreenWidth = 0;
 int Device::ScreenHeight = 0;
 
@@ -152,12 +154,12 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
    sprintf(sFileName, "%s\\%s.%s", SubDir, Name, Extension);
 
    uint iFileLength = getFileLength(sFileName);
-
    GEAssert(iFileLength > 0);
 
-   byte* pFileData =
-      Allocator::alloc<byte>(Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength);
-   readFile(sFileName, pFileData, iFileLength);
+   uint iBufferSize = Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength;
+   pFileData.resize(iBufferSize);
+
+   readFile(sFileName, &pFileData[0], iFileLength);
 
    if(Type == ContentType::GenericTextData)
       pFileData[iFileLength] = '\0';
@@ -166,16 +168,14 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
    {
    case ContentType::Texture:
    case ContentType::FontTexture:
-      static_cast<ImageData*>(ContentData)->load(iFileLength, (const char*)pFileData);
+      static_cast<ImageData*>(ContentData)->load(iFileLength, (const char*)&pFileData[0]);
       break;
    case ContentType::Audio:
-      static_cast<AudioData*>(ContentData)->load(iFileLength, (const char*)pFileData);
+      static_cast<AudioData*>(ContentData)->load(iFileLength, (const char*)&pFileData[0]);
       break;
    default:
-      ContentData->load(Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength, (const char*)pFileData);
+      ContentData->load(Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength, (const char*)&pFileData[0]);
    }
-
-   Allocator::free(pFileData);
 }
 
 bool Device::userFileExists(const char* SubDir, const char* Name, const char* Extension)
@@ -222,12 +222,11 @@ void Device::readUserFile(const char* SubDir, const char* Name, const char* Exte
    uint iFileLength = (uint)file.tellg();
    file.seekg(0, std::ios::beg);
 
-   byte* pFileData = Allocator::alloc<byte>(iFileLength);
-   file.read((char*)pFileData, iFileLength);
+   pFileData.resize(iFileLength);
+   file.read((char*)&pFileData[0], iFileLength);
    file.close();
 
-   ContentData->load(iFileLength, (const char*)pFileData);
-   Allocator::free(pFileData);
+   ContentData->load(iFileLength, (const char*)&pFileData[0]);
 }
 
 void Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension, const ContentData* ContentData)

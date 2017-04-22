@@ -14,11 +14,14 @@
 #include "../GEAllocator.h"
 #include "Content/GEImageData.h"
 #include "Content/GEAudioData.h"
+#include "Types/GESTLTypes.h"
 #include <fstream>
 
 namespace GE { namespace Core
 {
    using namespace Content;
+   
+   GESTLVector(GE::byte) pFileData;
    
    int Device::ScreenWidth = 0;
    int Device::ScreenHeight = 0;
@@ -152,25 +155,24 @@ namespace GE { namespace Core
       NSString* nsFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:nsResourceName];
       const char* sFilePath = [nsFilePath UTF8String];
       
-      unsigned int iFileLength = getFileLength(sFilePath);
-      unsigned char* pFileData = new unsigned char[iFileLength];
-      readFile(sFilePath, pFileData, iFileLength);
+      uint iFileLength = getFileLength(sFilePath);
+      pFileData.resize(iFileLength);
+      
+      readFile(sFilePath, &pFileData[0], iFileLength);
       
       switch(Type)
       {
          case ContentType::Texture:
          case ContentType::FontTexture:
-            static_cast<ImageData*>(ContentData)->load(iFileLength, (const char*)pFileData);
+            static_cast<ImageData*>(ContentData)->load(iFileLength, (const char*)&pFileData[0]);
             break;
          case ContentType::Audio:
-            static_cast<AudioData*>(ContentData)->load(iFileLength, (const char*)pFileData);
+            static_cast<AudioData*>(ContentData)->load(iFileLength, (const char*)&pFileData[0]);
             break;
          default:
-            ContentData->load(iFileLength, (const char*)pFileData);
+            ContentData->load(iFileLength, (const char*)&pFileData[0]);
             break;
       }
-      
-      delete[] pFileData;
    }
    
    bool Device::userFileExists(const char* SubDir, const char* Name, const char* Extension)
@@ -215,11 +217,10 @@ namespace GE { namespace Core
       uint iFileSize = (uint)ftell(file);
       fseek(file, 0L, SEEK_SET);
       
-      char* sBuffer = Allocator::alloc<char>(iFileSize);
-      fread(sBuffer, 1, iFileSize, file);
-      ContentData->load(iFileSize, sBuffer);
+      pFileData.resize(iFileSize);
+      fread(&pFileData[0], 1, iFileSize, file);
+      ContentData->load(iFileSize, (const char*)&pFileData[0]);
       
-      Allocator::free(sBuffer);
       fclose(file);
    }
    

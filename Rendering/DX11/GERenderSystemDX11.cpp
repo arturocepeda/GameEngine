@@ -706,6 +706,8 @@ void RenderSystem::renderShadowMap()
    if(cLight->getLightType() != LightType::Directional)
       return;
 
+   GEProfilerMarker("RenderSystem::renderShadowMap()");
+
    CD3D11_VIEWPORT dxViewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)ShadowMapSize, (float)ShadowMapSize);
    dxContext->RSSetViewports(1, &dxViewport);
 
