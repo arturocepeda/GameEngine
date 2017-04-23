@@ -55,28 +55,28 @@ namespace GE { namespace Core
       bool loadFromFile(const char* FileName);
 
       template<typename T>
-      void setVariable(const char* VariableName, T Value)
+      void setVariable(const ObjectName& VariableName, T Value)
       {
-         lua[VariableName] = Value;
+         lua[VariableName.getString().c_str()] = Value;
       }
       template<typename T>
-      T getVariable(const char* VariableName)
+      T getVariable(const ObjectName& VariableName)
       {
-         return lua.get<T>(VariableName);
+         return lua.get<T>(VariableName.getString().c_str());
       }
 
-      ValueType getVariableType(const char* VariableName) const;
+      ValueType getVariableType(const ObjectName& VariableName) const;
 
       const GESTLVector(ObjectName)& getGlobalVariableNames() const { return vGlobalVariableNames; }
       const GESTLVector(ObjectName)& getGlobalFunctionNames() const { return vGlobalFunctionNames; }
 
       bool isFunctionDefined(const ObjectName& FunctionName) const;
-      void runFunction(const char* FunctionName);
+      void runFunction(const ObjectName& FunctionName);
 
       template<typename T>
-      std::function<T> getFunction(const char* FunctionName)
+      std::function<T> getFunction(const ObjectName& FunctionName)
       {
-         return (std::function<T>)lua[FunctionName];
+         return (std::function<T>)lua[FunctionName.getString().c_str()];
       }
    };
 }}

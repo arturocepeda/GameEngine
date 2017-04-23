@@ -210,26 +210,26 @@ bool Script::loadFromFile(const char* FileName)
    return true;
 }
 
-ValueType Script::getVariableType(const char* VariableName) const
+ValueType Script::getVariableType(const ObjectName& VariableName) const
 {
    lua_State* luaState = lua.lua_state();
-   lua_getglobal(luaState, VariableName);
+   lua_getglobal(luaState, VariableName.getString().c_str());
 
+   ValueType eValueType = ValueType::Count;
    int iIndex = lua_gettop(luaState);
 
    if(lua_isboolean(luaState, iIndex))
-      return ValueType::Bool;
-
-   if(lua_isinteger(luaState, iIndex))
-      return ValueType::Int;
-
-   if(lua_isnumber(luaState, iIndex))
-      return ValueType::Float;
-
-   if(lua_isstring(luaState, iIndex))
-      return ValueType::String;
+      eValueType = ValueType::Bool;
+   else if(lua_isinteger(luaState, iIndex))
+      eValueType = ValueType::Int;
+   else if(lua_isnumber(luaState, iIndex))
+      eValueType = ValueType::Float;
+   else if(lua_isstring(luaState, iIndex))
+      eValueType = ValueType::String;
    
-   return ValueType::Count;
+   lua_pop(luaState, 1);
+
+   return eValueType;
 }
 
 bool Script::isFunctionDefined(const ObjectName& FunctionName) const
@@ -245,19 +245,19 @@ bool Script::isFunctionDefined(const ObjectName& FunctionName) const
    return false;
 }
 
-void Script::runFunction(const char* FunctionName)
+void Script::runFunction(const ObjectName& FunctionName)
 {
 #if defined (GE_EDITOR_SUPPORT)
-   sol::protected_function luaFunction = lua[FunctionName];
+   sol::protected_function luaFunction = lua[FunctionName.getString().c_str()];
    sol::protected_function_result luaFunctionResult = luaFunction();
 
    if(!luaFunctionResult.valid())
    {
       sol::error luaError = luaFunctionResult;
-      handleFunctionError(FunctionName, luaError.what());
+      handleFunctionError(FunctionName.getString().c_str(), luaError.what());
    }
 #else
-   std::function<void()> luaFunction = (std::function<void()>)lua[FunctionName];
+   std::function<void()> luaFunction = (std::function<void()>)lua[FunctionName.getString().c_str()];
 
    try
    {
@@ -265,7 +265,7 @@ void Script::runFunction(const char* FunctionName)
    }
    catch(...)
    {
-      handleFunctionError(FunctionName);
+      handleFunctionError(FunctionName.getString().c_str());
    }
 #endif
 }
@@ -328,6 +328,8 @@ void Script::collectGlobalSymbols()
       {
          vGlobalVariableNames.push_back(vGlobalUserSymbols[i]);
       }
+
+      lua_pop(luaState, 1);
    }
 }
 

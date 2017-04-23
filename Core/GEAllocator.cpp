@@ -38,6 +38,7 @@ AllocationInfo::AllocationInfo(const char* sDesc, AllocationCategory eCategory, 
 #if defined (GE_DEVELOPMENT)
 std::map<void*, AllocationInfo> Allocator::mAllocationsRegistry;
 uint Allocator::iTotalBytesAllocated[(int)AllocationCategory::Count];
+bool Allocator::bLoggingEnabled[(int)AllocationCategory::Count];
 GEMutex Allocator::pMutex;
 bool Allocator::bInitialized = false;
 #endif
@@ -46,6 +47,11 @@ void Allocator::init()
 {
 #if defined (GE_DEVELOPMENT)
    memset(&iTotalBytesAllocated[0], 0, sizeof(uint) * (int)AllocationCategory::Count);
+   memset(&bLoggingEnabled[0], 0, sizeof(bool) * (int)AllocationCategory::Count);
+
+   bLoggingEnabled[(int)AllocationCategory::General] = true;
+   bLoggingEnabled[(int)AllocationCategory::Scripting] = true;
+
    GEMutexInit(pMutex);
    bInitialized = true;
 #endif
@@ -74,7 +80,7 @@ void Allocator::free(void* Ptr)
       const AllocationInfo& sAllocationInfo = it->second;
       iTotalBytesAllocated[(int)sAllocationInfo.Category] -= sAllocationInfo.Size;
 
-      if(sAllocationInfo.Category != AllocationCategory::STL)
+      if(bLoggingEnabled[(int)sAllocationInfo.Category])
       {
          Device::log("Heap Release [%s]: %s --- %u bytes (total: %u bytes)",
             strAllocationCategory[(int)sAllocationInfo.Category],

@@ -56,6 +56,7 @@ namespace GE { namespace Core
 #if defined (GE_DEVELOPMENT)
       static std::map<void*, AllocationInfo> mAllocationsRegistry;
       static uint iTotalBytesAllocated[(int)AllocationCategory::Count];
+      static bool bLoggingEnabled[(int)AllocationCategory::Count];
       static GEMutex pMutex;
       static bool bInitialized;
 #endif
@@ -86,7 +87,7 @@ namespace GE { namespace Core
             mAllocationsRegistry[pPtr] = AllocationInfo(sBuffer, Category, iSize);;
             iTotalBytesAllocated[(int)Category] += iSize;
 
-            if(Category != AllocationCategory::STL)
+            if(bLoggingEnabled[(int)Category])
             {
                Device::log("Heap Allocation [%s]: %s --- %u bytes (total: %u bytes)",
                   strAllocationCategory[(int)Category],
@@ -104,6 +105,8 @@ namespace GE { namespace Core
       template<typename T>
       static T* realloc(void* Ptr, uint ElementsCount = 1, AllocationCategory Category = AllocationCategory::General)
       {
+         GEAssert(Ptr);
+
          uint iSize = sizeof(T) * ElementsCount;
          T* pPtr = (T*)::realloc(Ptr, iSize);
          GEAssert(pPtr);
