@@ -113,6 +113,17 @@ const PropertyArray& Serializable::getPropertyArray(uint PropertyArrayIndex) con
    return vPropertyArrays[PropertyArrayIndex];
 }
 
+const PropertyArray* Serializable::getPropertyArray(const ObjectName& PropertyArrayName) const
+{
+   for(uint i = 0; i < vPropertyArrays.size(); i++)
+   {
+      if(vPropertyArrays[i].Name == PropertyArrayName)
+         return &vPropertyArrays[i];
+   }
+
+   return 0;
+}
+
 Value Serializable::get(const ObjectName& PropertyName)
 {
    Property* cProperty = 0;
@@ -156,14 +167,17 @@ void Serializable::copy(Serializable* cSource)
    for(uint i = 0; i < cSource->getPropertyArraysCount(); i++)
    {
       const PropertyArray& sSourcePropertyArray = cSource->getPropertyArray(i);
-      const PropertyArray& sTargetPropertyArray = vPropertyArrays[i];
+      const PropertyArray* sTargetPropertyArray = getPropertyArray(sSourcePropertyArray.Name);
 
-      for(uint j = 0; j < sSourcePropertyArray.Entries->size(); j++)
+      if(sTargetPropertyArray)
       {
-         if(sTargetPropertyArray.Entries->size() <= j)
-            sTargetPropertyArray.Add();
+         for(uint j = 0; j < sSourcePropertyArray.Entries->size(); j++)
+         {
+            if(sTargetPropertyArray->Entries->size() <= j)
+               sTargetPropertyArray->Add();
 
-         sTargetPropertyArray.Entries->at(j)->copy(sSourcePropertyArray.Entries->at(j));
+            sTargetPropertyArray->Entries->at(j)->copy(sSourcePropertyArray.Entries->at(j));
+         }
       }
    }
 
@@ -174,9 +188,12 @@ void Serializable::copy(Serializable* cSource)
       if(!sSourceProperty.Setter)
          continue;
 
-      const Property& sTargetProperty = vProperties[i];
+      const Property* sTargetProperty = getProperty(sSourceProperty.Name);
+
+      GEAssert(sSourceProperty.Type == sTargetProperty->Type);
+
       Value cSourcePropertyValue = sSourceProperty.Getter();
-      sTargetProperty.Setter(cSourcePropertyValue);
+      sTargetProperty->Setter(cSourcePropertyValue);
    }
 }
 

@@ -110,6 +110,7 @@ namespace GE { namespace Core
 
       uint getPropertyArraysCount() const;
       const PropertyArray& getPropertyArray(uint PropertyArrayIndex) const;
+      const PropertyArray* getPropertyArray(const ObjectName& PropertyArrayName) const;
 
       Value get(const ObjectName& PropertyName);
       void set(const ObjectName& PropertyName, Value& PropertyValue);
