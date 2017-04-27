@@ -12,10 +12,15 @@
 
 #include "GEUtils.h"
 #include "GEAllocator.h"
+#include "GESerializable.h"
 #include "Types/GETypes.h"
+#include "Content/GEContentData.h"
+
+#include <sstream>
 
 using namespace GE;
 using namespace GE::Core;
+using namespace GE::Content;
 
 //
 //  Scaler
@@ -81,6 +86,76 @@ void XmlStringWriter::write(const void* data, size_t size)
 const char* XmlStringWriter::getData()
 {
    return sBuffer;
+}
+
+
+//
+//  SerializableIO
+//
+bool SerializableIO::saveToXmlFile(Serializable* Obj, const char* Directory, const char* FileName)
+{
+   pugi::xml_document xml;
+   pugi::xml_node xmlSettings = xml.append_child(Obj->getClassName().getString().c_str());
+
+   Obj->saveToXml(xmlSettings);
+
+   XmlStringWriter xmlWriter;
+   xml.save(xmlWriter);
+
+   const char* xmlContent = xmlWriter.getData();
+   ContentData cContentData;
+   cContentData.load((uint)strlen(xmlContent), xmlContent);
+
+   Device::writeUserFile(Directory, FileName, "xml", &cContentData);
+
+   return true;
+}
+
+bool SerializableIO::saveToBinaryFile(Serializable* Obj, const char* Directory, const char* FileName)
+{
+   std::stringstream sStream;
+   Obj->saveToStream(sStream);
+      
+   std::stringstream::pos_type iStreamSize = sStream.tellp();
+   sStream.seekp(0, std::ios::beg);
+
+   ContentData cContentData;
+   cContentData.load((uint)iStreamSize, sStream);
+
+   Device::writeUserFile(Directory, FileName, "ge", &cContentData);
+
+   return true;
+}
+
+bool SerializableIO::loadFromXmlFile(Serializable* Obj, const char* Directory, const char* FileName)
+{
+   if(!Device::userFileExists(Directory, FileName, "xml"))
+      return false;
+
+   ContentData cContentData;
+   Device::readUserFile(Directory, FileName, "xml", &cContentData);
+
+   pugi::xml_document xml;
+   xml.load_buffer(cContentData.getData(), cContentData.getDataSize());
+   Obj->loadFromXml(xml.child(Obj->getClassName().getString().c_str()));
+
+   return true;
+}
+
+bool SerializableIO::loadFromBinaryFile(Serializable* Obj, const char* Directory, const char* FileName)
+{
+   if(!Device::userFileExists(Directory, FileName, "ge"))
+      return false;
+
+   ContentData cContentData;
+   Device::readUserFile(Directory, FileName, "ge", &cContentData);
+
+   ContentDataMemoryBuffer sMemoryBuffer(cContentData);
+   std::istream sStream(&sMemoryBuffer);
+
+   Obj->loadFromStream(sStream);
+
+   return true;
 }
 
 

@@ -296,14 +296,32 @@ void Serializable::loadFromStream(std::istream& Stream)
 
       if(sProperty.Setter)
       {
-         bool bPropertySet;
-         Stream.read(reinterpret_cast<char*>(&bPropertySet), 1);
+         Value cPropertyValue = Value::fromStream(sProperty.Type, Stream);
+         sProperty.Setter(cPropertyValue);
+      }
+   }
+}
 
-         if(bPropertySet)
-         {
-            Value cPropertyValue = Value::fromStream(sProperty.Type, Stream);
-            sProperty.Setter(cPropertyValue);
-         }
+void Serializable::saveToStream(std::ostream& Stream)
+{
+   for(uint i = 0; i < vPropertyArrays.size(); i++)
+   {
+      const PropertyArray& sPropertyArray = vPropertyArrays[i];
+
+      for(uint j = 0; j < sPropertyArray.Entries->size(); j++)
+      {
+         SerializableArrayElement* cArrayElement = sPropertyArray.Entries->at(j);
+         cArrayElement->saveToStream(Stream);
+      }
+   }
+
+   for(uint i = 0; i < vProperties.size(); i++)
+   {
+      const Property& sProperty = vProperties[i];
+
+      if(sProperty.Setter)
+      {
+         sProperty.Getter().writeToStream(Stream);
       }
    }
 }

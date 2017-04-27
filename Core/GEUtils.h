@@ -23,6 +23,9 @@
 
 namespace GE { namespace Core
 {
+   class Serializable;
+
+
    //
    //  NonCopyable
    //
@@ -73,6 +76,20 @@ namespace GE { namespace Core
       virtual void write(const void* data, size_t size) override;
 
       const char* getData();
+   };
+
+
+   //
+   //  SerializableIO
+   //
+   class SerializableIO
+   {
+   public:
+      static bool saveToXmlFile(Serializable* Obj, const char* Directory, const char* FileName);
+      static bool saveToBinaryFile(Serializable* Obj, const char* Directory, const char* FileName);
+
+      static bool loadFromXmlFile(Serializable* Obj, const char* Directory, const char* FileName);
+      static bool loadFromBinaryFile(Serializable* Obj, const char* Directory, const char* FileName);
    };
 
 
