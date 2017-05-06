@@ -13,6 +13,7 @@
 #include "GEUtils.h"
 #include "GEAllocator.h"
 #include "GESerializable.h"
+#include "GEDevice.h"
 #include "Types/GETypes.h"
 #include "Content/GEContentData.h"
 

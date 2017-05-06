@@ -481,6 +481,12 @@ void RenderSystem::renderShadowMap()
    if(cLight->getLightType() != LightType::Directional)
       return;
 
+   GLint glDefaultFrameBuffer = 0;
+   glGetIntegerv(GL_FRAMEBUFFER_BINDING, &glDefaultFrameBuffer);
+   
+   GLint glDefaultViewport[4];
+   glGetIntegerv(GL_VIEWPORT, glDefaultViewport);
+   
    glBindFramebuffer(GL_FRAMEBUFFER, iFrameBuffer);
    glViewport(0, 0, ShadowMapSize, ShadowMapSize);
 
@@ -568,9 +574,9 @@ void RenderSystem::renderShadowMap()
          glDrawElements(GL_TRIANGLES, sRenderOperation.Renderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
       }
    }
-
-   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-   glViewport(0, 0, Device::getScreenWidth(), Device::getScreenHeight());
+   
+   glBindFramebuffer(GL_FRAMEBUFFER, glDefaultFrameBuffer);
+   glViewport(glDefaultViewport[0], glDefaultViewport[1], glDefaultViewport[2], glDefaultViewport[3]);
 }
 
 void RenderSystem::renderBegin()
