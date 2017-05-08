@@ -739,7 +739,23 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       MaterialPass* cMaterialPass = sRenderOperation.RenderMaterialPass;
 
       if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Cast))
-         vShadowedMeshesToRender.push_back(sRenderOperation);
+      {
+         bool bAlreadyQueued = false;
+
+         for(uint i = 0; i < vShadowedMeshesToRender.size(); i++)
+         {
+            if(vShadowedMeshesToRender[i].Renderable == cRenderable)
+            {
+               bAlreadyQueued = true;
+               break;
+            }
+         }
+
+         if(!bAlreadyQueued)
+         {
+            vShadowedMeshesToRender.push_back(sRenderOperation);
+         }
+      }
 
       if(cMaterialPass->getMaterial()->getAlpha() < 0.99f)
       {
