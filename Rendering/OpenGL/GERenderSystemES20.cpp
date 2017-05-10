@@ -513,11 +513,7 @@ void RenderSystem::renderShadowMap()
          Matrix4Multiply(matLightViewProjection, matModel, &matLightWVP);
          glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
 
-         // set vertex declaration
-         const int iVertexStride = sRenderOperation.Renderable->getGeometryData().VertexStride;
-         glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, 0);
-
-         // draw
+         // bind buffers
          GESTLMap(uint, GeometryRenderInfo)* cGeometryRegistry = 0;
 
          if(sRenderOperation.Renderable->getGeometryType() == GeometryType::Static)
@@ -531,6 +527,11 @@ void RenderSystem::renderShadowMap()
             bindBuffers(sGPUBufferPairs[GeometryGroup::MeshDynamic]);
          }
 
+         // set vertex declaration
+         const int iVertexStride = sRenderOperation.Renderable->getGeometryData().VertexStride;
+         glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, 0);
+
+         // draw
          std::map<uint, GeometryRenderInfo>::const_iterator itInfo = cGeometryRegistry->find(cEntity->getFullName().getID());
          const GeometryRenderInfo& sGeometryInfo = itInfo->second;
          char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
@@ -561,12 +562,13 @@ void RenderSystem::renderShadowMap()
             glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), 0);
          }
 
+         // bind buffers
+         bindBuffers(sGPUBufferPairs[GeometryGroup::Particles]);
+
          // set vertex declaration
          static_cast<RenderSystemES20*>(this)->setVertexDeclaration(sRenderOperation);
 
          // draw
-         bindBuffers(sGPUBufferPairs[GeometryGroup::Particles]);
-
          std::map<uint, GeometryRenderInfo>::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
          const GeometryRenderInfo& sGeometryInfo = itInfo->second;
          char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
