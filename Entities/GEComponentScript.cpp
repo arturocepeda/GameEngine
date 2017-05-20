@@ -131,17 +131,18 @@ void ScriptInstance::update()
    if(sScriptName.empty())
       return;
 
+   Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
+
    cScript->setVariable<Scene*>("scene", Scene::getActiveScene());
-   cScript->setVariable<float>("deltaTime", Time::getClock(0).getDelta());
+   cScript->setVariable<float>("deltaTime", Time::getClock(cEntity->getClockIndex()).getDelta());
 
    if(!bInitialized)
    {
-      Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
       cScript->setVariable<Entity*>("entity", cEntity);
 
       if(cScript->isFunctionDefined(cInitFunctionName))
       {
-         cScript->runFunction("init");
+         cScript->runFunction(cInitFunctionName);
       }
 
       bInitialized = true;
@@ -149,7 +150,7 @@ void ScriptInstance::update()
 
    if(cScript->isFunctionDefined(cUpdateFunctionName))
    {
-      cScript->runFunction("update");
+      cScript->runFunction(cUpdateFunctionName);
    }
 }
 
@@ -162,7 +163,7 @@ void ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
       return;
 
    std::function<void(int, const Vector2&)> function =
-      cScript->getFunction<void(int, const Vector2&)>(cInputTouchBeginFunctionName.getString().c_str());
+      cScript->getFunction<void(int, const Vector2&)>(cInputTouchBeginFunctionName);
 
    if(function)
    {
@@ -186,7 +187,7 @@ void ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const 
       return;
 
    std::function<void(int, const Vector2&, const Vector2&)> function =
-      cScript->getFunction<void(int, const Vector2&, const Vector2&)>(cInputTouchMoveFunctionName.getString().c_str());
+      cScript->getFunction<void(int, const Vector2&, const Vector2&)>(cInputTouchMoveFunctionName);
 
    if(function)
    {
@@ -210,7 +211,7 @@ void ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
       return;
 
    std::function<void(int, const Vector2&)> function =
-      cScript->getFunction<void(int, const Vector2&)>(cInputTouchEndFunctionName.getString().c_str());
+      cScript->getFunction<void(int, const Vector2&)>(cInputTouchEndFunctionName);
 
    if(function)
    {

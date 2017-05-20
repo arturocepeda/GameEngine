@@ -16,6 +16,9 @@ using namespace GE;
 using namespace GE::Core;
 
 
+const float MaxDelta = 0.1f;
+
+
 //
 //  Clock
 //
@@ -31,7 +34,7 @@ Clock::~Clock()
 
 float Clock::getDelta() const
 {
-   return fDelta;
+   return fDelta < MaxDelta ? fDelta : MaxDelta;
 }
 
 float Clock::getTimeFactor() const

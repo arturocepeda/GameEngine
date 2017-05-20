@@ -50,7 +50,6 @@ void Allocator::init()
    memset(&bLoggingEnabled[0], 0, sizeof(bool) * (int)AllocationCategory::Count);
 
    bLoggingEnabled[(int)AllocationCategory::General] = true;
-   bLoggingEnabled[(int)AllocationCategory::Scripting] = true;
 
    GEMutexInit(pMutex);
    bInitialized = true;
