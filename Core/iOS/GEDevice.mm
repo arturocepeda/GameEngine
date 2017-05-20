@@ -153,8 +153,19 @@ namespace GE { namespace Core
       const char* sFilePath = [nsFilePath UTF8String];
       
       unsigned int iFileLength = getFileLength(sFilePath);
-      unsigned char* pFileData = new unsigned char[iFileLength];
+      unsigned int iArraySize = iFileLength;
+      
+      if(Type == ContentType::GenericTextData)
+         iArraySize++;
+      
+      unsigned char* pFileData = new unsigned char[iArraySize];
       readFile(sFilePath, pFileData, iFileLength);
+
+      if(Type == ContentType::GenericTextData)
+      {
+         pFileData[iFileLength] = '\0';
+         iFileLength++;
+      }
       
       switch(Type)
       {
