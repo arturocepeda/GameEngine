@@ -173,6 +173,7 @@ bool Script::loadFromFile(const char* FileName)
          {
             sol::error luaError = luaResult;
             handleScriptError(FileName, luaError.what());
+            return false;
          }
 #else
          lua.script(cContentData.getData());
@@ -243,31 +244,6 @@ bool Script::isFunctionDefined(const ObjectName& FunctionName) const
    }
 
    return false;
-}
-
-void Script::runFunction(const ObjectName& FunctionName)
-{
-#if defined (GE_EDITOR_SUPPORT)
-   sol::protected_function luaFunction = lua[FunctionName.getString().c_str()];
-   sol::protected_function_result luaFunctionResult = luaFunction();
-
-   if(!luaFunctionResult.valid())
-   {
-      sol::error luaError = luaFunctionResult;
-      handleFunctionError(FunctionName.getString().c_str(), luaError.what());
-   }
-#else
-   std::function<void()> luaFunction = (std::function<void()>)lua[FunctionName.getString().c_str()];
-
-   try
-   {
-      luaFunction();
-   }
-   catch(...)
-   {
-      handleFunctionError(FunctionName.getString().c_str());
-   }
-#endif
 }
 
 void* Script::customAlloc(void*, void* ptr, size_t, size_t nsize)

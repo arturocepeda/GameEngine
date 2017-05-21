@@ -68,6 +68,7 @@ namespace GE { namespace Core
       template<typename T>
       static T* alloc(uint ElementsCount = 1, AllocationCategory Category = AllocationCategory::General)
       {
+         (void)Category;
          uint iSize = sizeof(T) * ElementsCount;
          T* pPtr = (T*)::realloc(0, iSize);
          GEAssert(pPtr);

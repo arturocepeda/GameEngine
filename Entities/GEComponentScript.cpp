@@ -142,7 +142,7 @@ void ScriptInstance::update()
 
       if(cScript->isFunctionDefined(cInitFunctionName))
       {
-         cScript->runFunction(cInitFunctionName);
+         cScript->runFunction<void>(cInitFunctionName);
       }
 
       bInitialized = true;
@@ -150,79 +150,31 @@ void ScriptInstance::update()
 
    if(cScript->isFunctionDefined(cUpdateFunctionName))
    {
-      cScript->runFunction(cUpdateFunctionName);
+      cScript->runFunction<void>(cUpdateFunctionName);
    }
 }
 
 void ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 {
-   if(sScriptName.empty())
-      return;
-
-   if(!cScript->isFunctionDefined(cInputTouchBeginFunctionName))
-      return;
-
-   std::function<void(int, const Vector2&)> function =
-      cScript->getFunction<void(int, const Vector2&)>(cInputTouchBeginFunctionName);
-
-   if(function)
+   if(!sScriptName.empty() && cScript->isFunctionDefined(cInputTouchBeginFunctionName))
    {
-      try
-      {
-         function(ID, Point);
-      }
-      catch(...)
-      {
-         Script::handleFunctionError(cInputTouchBeginFunctionName.getString().c_str());
-      }
+      cScript->runFunction<void>(cInputTouchBeginFunctionName, ID, Point);
    }
 }
 
 void ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
 {
-   if(sScriptName.empty())
-      return;
-
-   if(!cScript->isFunctionDefined(cInputTouchMoveFunctionName))
-      return;
-
-   std::function<void(int, const Vector2&, const Vector2&)> function =
-      cScript->getFunction<void(int, const Vector2&, const Vector2&)>(cInputTouchMoveFunctionName);
-
-   if(function)
+   if(!sScriptName.empty() && cScript->isFunctionDefined(cInputTouchMoveFunctionName))
    {
-      try
-      {
-         function(ID, PreviousPoint, CurrentPoint);
-      }
-      catch(...)
-      {
-         Script::handleFunctionError(cInputTouchMoveFunctionName.getString().c_str());
-      }
+      cScript->runFunction<void>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint);
    }
 }
 
 void ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 {
-   if(sScriptName.empty())
-      return;
-
-   if(!cScript->isFunctionDefined(cInputTouchEndFunctionName))
-      return;
-
-   std::function<void(int, const Vector2&)> function =
-      cScript->getFunction<void(int, const Vector2&)>(cInputTouchEndFunctionName);
-
-   if(function)
+   if(!sScriptName.empty() && cScript->isFunctionDefined(cInputTouchEndFunctionName))
    {
-      try
-      {
-         function(ID, Point);
-      }
-      catch(...)
-      {
-         Script::handleFunctionError(cInputTouchEndFunctionName.getString().c_str());
-      }
+      cScript->runFunction<void>(cInputTouchEndFunctionName, ID, Point);
    }
 }
 

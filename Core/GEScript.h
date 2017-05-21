@@ -71,12 +71,26 @@ namespace GE { namespace Core
       const GESTLVector(ObjectName)& getGlobalFunctionNames() const { return vGlobalFunctionNames; }
 
       bool isFunctionDefined(const ObjectName& FunctionName) const;
-      void runFunction(const ObjectName& FunctionName);
 
-      template<typename T>
-      std::function<T> getFunction(const ObjectName& FunctionName)
+      template<typename ReturnType, typename... Parameters>
+      ReturnType runFunction(const ObjectName& FunctionName, Parameters&&... ParameterList)
       {
-         return (std::function<T>)lua[FunctionName.getString().c_str()];
+#if defined (GE_EDITOR_SUPPORT)
+         sol::protected_function luaFunction = lua[FunctionName.getString().c_str()];
+         auto luaFunctionResult = luaFunction(ParameterList...);
+
+         if(!luaFunctionResult.valid())
+         {
+            sol::error luaError = luaFunctionResult;
+            handleFunctionError(FunctionName.getString().c_str(), luaError.what());
+            return (ReturnType)0;
+         }
+
+         return (ReturnType)luaFunctionResult;
+#else
+         sol::function luaFunction = lua[FunctionName.getString().c_str()];
+         return (ReturnType)luaFunction(ParameterList...);
+#endif
       }
    };
 }}
