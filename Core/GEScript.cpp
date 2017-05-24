@@ -235,15 +235,7 @@ ValueType Script::getVariableType(const ObjectName& VariableName) const
 
 bool Script::isFunctionDefined(const ObjectName& FunctionName) const
 {
-   for(uint i = 0; i < vGlobalFunctionNames.size(); i++)
-   {
-      if(vGlobalFunctionNames[i] == FunctionName)
-      {
-         return true;
-      }
-   }
-
-   return false;
+   return mFunctions.find(FunctionName.getID()) != mFunctions.end();
 }
 
 void* Script::customAlloc(void*, void* ptr, size_t, size_t nsize)
@@ -291,6 +283,7 @@ void Script::collectGlobalSymbols()
    // fill the lists of variables and functions
    vGlobalVariableNames.clear();
    vGlobalFunctionNames.clear();
+   mFunctions.clear();
 
    for(uint i = 0; i < vGlobalUserSymbols.size(); i++)
    {
@@ -299,6 +292,7 @@ void Script::collectGlobalSymbols()
       if(lua_isfunction(luaState, lua_gettop(luaState)))
       {
          vGlobalFunctionNames.push_back(vGlobalUserSymbols[i]);
+         mFunctions[vGlobalUserSymbols[i].getID()] = lua[vGlobalUserSymbols[i].getString().c_str()];
       }
       else
       {

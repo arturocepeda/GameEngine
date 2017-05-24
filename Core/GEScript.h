@@ -30,10 +30,17 @@ namespace GE { namespace Core
    class Script
    {
    private:
+#if defined (GE_EDITOR_SUPPORT)
+      typedef sol::protected_function ScriptFunction;
+#else
+      typedef sol::function ScriptFunction;
+#endif
       sol::state lua;
 
       GESTLVector(ObjectName) vGlobalVariableNames;
       GESTLVector(ObjectName) vGlobalFunctionNames;
+
+      GESTLMap(uint32_t, ScriptFunction) mFunctions;
 
       static GESTLSet(uint) sDefaultGlobalNames;
 
@@ -75,8 +82,8 @@ namespace GE { namespace Core
       template<typename ReturnType, typename... Parameters>
       ReturnType runFunction(const ObjectName& FunctionName, Parameters&&... ParameterList)
       {
+         ScriptFunction& luaFunction = mFunctions.find(FunctionName.getID())->second;
 #if defined (GE_EDITOR_SUPPORT)
-         sol::protected_function luaFunction = lua[FunctionName.getString().c_str()];
          auto luaFunctionResult = luaFunction(ParameterList...);
 
          if(!luaFunctionResult.valid())
@@ -88,7 +95,6 @@ namespace GE { namespace Core
 
          return (ReturnType)luaFunctionResult;
 #else
-         sol::function luaFunction = lua[FunctionName.getString().c_str()];
          return (ReturnType)luaFunction(ParameterList...);
 #endif
       }
