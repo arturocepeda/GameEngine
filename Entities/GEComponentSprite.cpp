@@ -24,7 +24,7 @@ using namespace GE::Rendering;
 //  ComponentSprite
 //
 ComponentSprite::ComponentSprite(Entity* Owner)
-   : ComponentRenderable(Owner, RenderableType::Sprite, GeometryType::Static)
+   : ComponentRenderable(Owner, RenderableType::Sprite, GeometryType::Dynamic)
    , vCenter(0.0f, 0.0f)
    , vSize(1.0f, 1.0f)
    , iTextureAtlasIndex(0)
@@ -157,7 +157,7 @@ const Core::ObjectName& ComponentSprite::getTextureAtlasName() const
 
    Material* cMaterial = static_cast<MaterialPass*>(vMaterialPassList[0])->getMaterial();
 
-   return cMaterial
+   return cMaterial && cMaterial->getDiffuseTexture()
       ? cMaterial->getDiffuseTexture()->AtlasUV[iTextureAtlasIndex].Name
       : ObjectName::Empty;
 }
