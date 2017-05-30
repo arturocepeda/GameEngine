@@ -791,7 +791,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       ComponentSprite* cSprite = static_cast<ComponentSprite*>(cRenderable);
 
       if(cSprite->getLayer() == SpriteLayer::GUI)
-         vGUISpritesToRender.push_back(sRenderOperation);
+         vUIElementsToRender.push_back(sRenderOperation);
       else
          vPre3DSpritesToRender.push_back(sRenderOperation);
 
@@ -820,7 +820,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       if(cRenderable->getRenderingMode() == RenderingMode::_2D ||
          cRenderable->getOwner()->getComponent<ComponentUIElement>())
       {
-         vUILabelsToRender.push_back(sRenderOperation);
+         vUIElementsToRender.push_back(sRenderOperation);
       }
       else
       {
@@ -923,7 +923,7 @@ void RenderSystem::prepareBatchForRendering(const RenderOperation& sBatch)
    switch(cRenderable->getRenderableType())
    {
    case RenderableType::Sprite:
-      vGUISpritesToRender.push_back(sBatch);
+      vUIElementsToRender.push_back(sBatch);
       break;
    case RenderableType::Mesh:
       vOpaqueMeshesToRender.push_back(sBatch);
@@ -933,9 +933,8 @@ void RenderSystem::prepareBatchForRendering(const RenderOperation& sBatch)
 
 void RenderSystem::clearRenderingQueues()
 {
-   vGUISpritesToRender.clear();
+   vUIElementsToRender.clear();
    vPre3DSpritesToRender.clear();
-   vUILabelsToRender.clear();
    v3DLabelsToRender.clear();
    vShadowedMeshesToRender.clear();
    vShadowedParticlesToRender.clear();
@@ -1050,23 +1049,11 @@ void RenderSystem::renderFrame()
       }
    }
 
-   if(!vGUISpritesToRender.empty())
+   if(!vUIElementsToRender.empty())
    {
-      GESTLVector(RenderOperation)::const_iterator it = vGUISpritesToRender.begin();
+      GESTLVector(RenderOperation)::const_iterator it = vUIElementsToRender.begin();
 
-      for(; it != vGUISpritesToRender.end(); it++)
-      {
-         const RenderOperation& sRenderOperation = *it;
-         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-         render(sRenderOperation);
-      }
-   }
-
-   if(!vUILabelsToRender.empty())
-   {
-      GESTLVector(RenderOperation)::const_iterator it = vUILabelsToRender.begin();
-
-      for(; it != vUILabelsToRender.end(); it++)
+      for(; it != vUIElementsToRender.end(); it++)
       {
          const RenderOperation& sRenderOperation = *it;
          useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());

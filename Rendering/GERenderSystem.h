@@ -100,9 +100,8 @@ namespace GE { namespace Rendering
       CullingMode eCullingMode;
       Entities::ComponentCamera* cActiveCamera;
 
-      GESTLVector(RenderOperation) vGUISpritesToRender;
+      GESTLVector(RenderOperation) vUIElementsToRender;
       GESTLVector(RenderOperation) vPre3DSpritesToRender;
-      GESTLVector(RenderOperation) vUILabelsToRender;
       GESTLVector(RenderOperation) v3DLabelsToRender;
       GESTLVector(RenderOperation) vShadowedMeshesToRender;
       GESTLVector(RenderOperation) vShadowedParticlesToRender;

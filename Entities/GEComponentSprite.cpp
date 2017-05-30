@@ -74,6 +74,10 @@ void ComponentSprite::updateVertexData()
    GEAssert(getMaterialPass(0)->getMaterial());
 
    Material* cMaterial = getMaterialPass(0)->getMaterial();
+
+   if(!cMaterial->getDiffuseTexture())
+      return;
+
    const TextureCoordinates& UV = cMaterial->getDiffuseTexture()->AtlasUV[iTextureAtlasIndex].UV;
 
    switch(eUVMode)
