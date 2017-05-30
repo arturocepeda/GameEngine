@@ -149,6 +149,9 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateFrame(JNIEnv
    if(bPaused)
       return;
 
+   if(cTaskManager->getExitPending())
+      exit(0);
+
    double dCurrentTime = cTimer.getTime();
    Time::setDelta((dCurrentTime - dTime) * 0.000001f);
    dTime = dCurrentTime;
