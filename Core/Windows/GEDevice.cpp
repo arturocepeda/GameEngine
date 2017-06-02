@@ -33,6 +33,9 @@ int Device::ScreenHeight = 0;
 SystemLanguage Device::Language = SystemLanguage::English;
 DeviceOrientation Device::Orientation = DeviceOrientation::Portrait;
 
+int Device::AudioSystemSampleRate = 0;
+int Device::AudioSystemFramesPerBuffer = 0;
+
 int Device::getScreenWidth()
 {
    return ScreenWidth;

@@ -146,3 +146,19 @@ void LocalizedStringsManager::unloadStringsSet(const char* Name)
       }
    }
 }
+
+void LocalizedStringsManager::setVariable(const ObjectName& VariableName, const char* VariableValue)
+{
+   GESTLString sVariableValue(VariableValue);
+   mVariables[VariableName.getID()] = sVariableValue;
+}
+
+const char* LocalizedStringsManager::getVariable(const ObjectName& VariableName)
+{
+   GESTLMap(uint32_t, GESTLString)::const_iterator it = mVariables.find(VariableName.getID());
+
+   if(it == mVariables.end())
+      return 0;
+
+   return it->second.c_str();
+}

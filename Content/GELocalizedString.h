@@ -34,10 +34,16 @@ namespace GE { namespace Content
 
    class LocalizedStringsManager : public Core::ObjectManager<LocalizedString>, public Core::Singleton<LocalizedStringsManager>
    {
+   private:
+      GESTLMap(uint32_t, GESTLString) mVariables;
+
    public:
       LocalizedStringsManager();
 
       void loadStringsSet(const char* Name);
       void unloadStringsSet(const char* Name);
+
+      void setVariable(const Core::ObjectName& VariableName, const char* VariableValue);
+      const char* getVariable(const Core::ObjectName& VariableName);
    };
 }}

@@ -40,6 +40,7 @@ namespace GE { namespace Entities
       GESTLVector(float) vVertexData;
       GESTLVector(ushort) vIndices;
 
+      void processVariables();
       void generateVertexData();
 
       float measureCharacter(uint iCharIndex);

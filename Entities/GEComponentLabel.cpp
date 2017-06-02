@@ -56,6 +56,38 @@ ComponentLabel::~ComponentLabel()
 {
 }
 
+void ComponentLabel::processVariables()
+{
+   size_t iVariableStartPos = sText.find('$');
+
+   while(iVariableStartPos != GESTLString::npos)
+   {
+      size_t iVariableEndPos = iVariableStartPos + 1;
+
+      while(iVariableEndPos < sText.length() &&
+         (isalnum(sText[iVariableEndPos]) || sText[iVariableEndPos] == '_'))
+      {
+         iVariableEndPos++;
+      }
+
+      size_t iVariableNameLength = iVariableEndPos - iVariableStartPos - 1;
+
+      if(iVariableNameLength > 0)
+      {
+         GESTLString sVariableName = sText.substr(iVariableStartPos + 1, iVariableNameLength);
+         ObjectName cVariableName = ObjectName(sVariableName.c_str());
+         const char* sVariableValue = LocalizedStringsManager::getInstance()->getVariable(cVariableName);
+
+         if(sVariableValue)
+         {
+            sText.replace(iVariableStartPos, iVariableNameLength + 1, sVariableValue);
+         }
+      }
+
+      iVariableStartPos = sText.find('$', iVariableStartPos + 1);
+   }
+}
+
 void ComponentLabel::generateVertexData()
 {
    const uint iTextLength = (uint)strlen(sText.c_str());
@@ -386,6 +418,7 @@ void ComponentLabel::setText(const char* Text)
       }
    }
 
+   processVariables();
    generateVertexData();
 }
 
