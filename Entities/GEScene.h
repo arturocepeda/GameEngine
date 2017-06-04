@@ -106,6 +106,7 @@ namespace GE { namespace Entities
       }
 
       Entity* addPrefab(const char* PrefabName, const Core::ObjectName& EntityName, Entity* cParent = 0);
+      void setupEntityFromPrefab(Entity* cEntity, const char* PrefabName);
 
       SceneBackgroundMode getBackgroundMode() const;
       const char* getBackgroundMaterialName() const;

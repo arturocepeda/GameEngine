@@ -388,10 +388,18 @@ void Scene::removeComponent(ComponentType eType, Component* cComponent)
 
 Entity* Scene::addPrefab(const char* PrefabName, const ObjectName& EntityName, Entity* cParent)
 {
+   Entity* cEntity = addEntity(EntityName, cParent);
+   setupEntityFromPrefab(cEntity, PrefabName);
+   cEntity->init();
+
+   return cEntity;
+}
+
+void Scene::setupEntityFromPrefab(Entity* cEntity, const char* PrefabName)
+{
    char sFilename[64];
    sprintf(sFilename, "%s.prefab", PrefabName);
    ContentData cContent;
-   Entity* cEntity = addEntity(EntityName, cParent);
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
@@ -411,9 +419,6 @@ Entity* Scene::addPrefab(const char* PrefabName, const ObjectName& EntityName, E
    }
 
    cEntity->setPrefabName(ObjectName(PrefabName));
-   cEntity->init();
-
-   return cEntity;
 }
 
 SceneBackgroundMode Scene::getBackgroundMode() const
