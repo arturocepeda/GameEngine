@@ -29,9 +29,9 @@ ComponentTransform::ComponentTransform(Entity* Owner)
 
    updateWorldMatrix();
 
-   GERegisterProperty(ComponentTransform, Vector3, Position);
-   GERegisterPropertySpecialEditor(ComponentTransform, Vector3, Orientation, PropertyEditor::Rotation);
-   GERegisterProperty(ComponentTransform, Vector3, Scale);
+   GERegisterProperty(Vector3, Position);
+   GERegisterPropertySpecialEditor(Vector3, Orientation, PropertyEditor::Rotation);
+   GERegisterProperty(Vector3, Scale);
 }
 
 ComponentTransform::~ComponentTransform()

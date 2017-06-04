@@ -36,7 +36,7 @@ ScriptInstance::ScriptInstance()
    cScript = Allocator::alloc<Script>();
    GEInvokeCtor(Script, cScript);
 
-   GERegisterProperty(ScriptInstance, String, ScriptName);
+   GERegisterProperty(String, ScriptName);
 
    iBasePropertiesCount = getPropertiesCount();
 }
@@ -187,12 +187,12 @@ ComponentScript::ComponentScript(Entity* Owner)
 {
    cClassName = ObjectName("Script");
 
-   GERegisterPropertyArray(ComponentScript, ScriptInstance);
+   GERegisterPropertyArray(ScriptInstance);
 }
 
 ComponentScript::~ComponentScript()
 {
-   GEReleasePropertyArray(ComponentScript, ScriptInstance);
+   GEReleasePropertyArray(ScriptInstance);
 }
 
 void ComponentScript::update()

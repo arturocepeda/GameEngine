@@ -42,11 +42,11 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    sGeometryData.NumIndices = 6;
    sGeometryData.Indices = QuadIndices;
 
-   GERegisterProperty(ComponentSprite, Vector2, Center);
-   GERegisterProperty(ComponentSprite, Vector2, Size);
-   GERegisterPropertyEnum(ComponentSprite, UVMode, UVMode);
-   GERegisterPropertyEnum(ComponentSprite, FullScreenSizeMode, FullScreenSizeMode);
-   GERegisterProperty(ComponentSprite, ObjectName, TextureAtlasName);
+   GERegisterProperty(Vector2, Center);
+   GERegisterProperty(Vector2, Size);
+   GERegisterPropertyEnum(UVMode, UVMode);
+   GERegisterPropertyEnum(FullScreenSizeMode, FullScreenSizeMode);
+   GERegisterProperty(ObjectName, TextureAtlasName);
 }
 
 ComponentSprite::~ComponentSprite()

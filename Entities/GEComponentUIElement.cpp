@@ -30,7 +30,7 @@ ComponentUIElement::ComponentUIElement(Entity* Owner)
    cTransform = cOwner->getComponent<ComponentTransform>();
    GEAssert(cTransform);
 
-   GERegisterPropertyMinMax(ComponentUIElement, Float, Alpha, 0.0f, 1.0f);
+   GERegisterPropertyMinMax(Float, Alpha, 0.0f, 1.0f);
 }
 
 ComponentUIElement::~ComponentUIElement()
@@ -76,8 +76,8 @@ ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
 {
    cClassName = ObjectName("UI2DElement");
 
-   GERegisterPropertyEnum(ComponentUI2DElement, Alignment, Anchor);
-   GERegisterProperty(ComponentUI2DElement, Vector2, Offset);
+   GERegisterPropertyEnum(Alignment, Anchor);
+   GERegisterProperty(Vector2, Offset);
 }
 
 ComponentUI2DElement::~ComponentUI2DElement()

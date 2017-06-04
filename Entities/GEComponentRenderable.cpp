@@ -39,16 +39,16 @@ ComponentRenderable::ComponentRenderable(Entity* Owner, RenderableType RType, Ge
    cTransform = cOwner->getComponent<ComponentTransform>();
    GEAssert(cTransform);
 
-   GERegisterProperty(ComponentRenderable, Bool, Visible);
-   GERegisterPropertyEnum(ComponentRenderable, GeometryType, GeometryType);
-   GERegisterPropertyEnum(ComponentRenderable, RenderingMode, RenderingMode);
-   GERegisterProperty(ComponentRenderable, Color, Color);
-   GERegisterPropertyArray(ComponentRenderable, MaterialPass);
+   GERegisterProperty(Bool, Visible);
+   GERegisterPropertyEnum(GeometryType, GeometryType);
+   GERegisterPropertyEnum(RenderingMode, RenderingMode);
+   GERegisterProperty(Color, Color);
+   GERegisterPropertyArray(MaterialPass);
 }
 
 ComponentRenderable::~ComponentRenderable()
 {
-   GEReleasePropertyArray(ComponentRenderable, MaterialPass);
+   GEReleasePropertyArray(MaterialPass);
 }
 
 void ComponentRenderable::show()

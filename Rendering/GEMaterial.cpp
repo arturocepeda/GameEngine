@@ -32,12 +32,12 @@ Material::Material(const ObjectName& Name, const ObjectName& GroupName)
    , eBlendingMode(BlendingMode::None)
    , bBatchRendering(false)
 {
-   GERegisterPropertyReadonly(Material, ObjectName, Name);
-   GERegisterPropertyResource(Material, ObjectName, ShaderProgram, ShaderProgram);
-   GERegisterProperty(Material, Color, DiffuseColor);
-   GERegisterPropertyResource(Material, ObjectName, DiffuseTextureName, Texture);
-   GERegisterPropertyEnum(Material, BlendingMode, BlendingMode);
-   GERegisterProperty(Material, Bool, BatchRendering);
+   GERegisterPropertyReadonly(ObjectName, Name);
+   GERegisterPropertyResource(ObjectName, ShaderProgram, ShaderProgram);
+   GERegisterProperty(Color, DiffuseColor);
+   GERegisterPropertyResource(ObjectName, DiffuseTextureName, Texture);
+   GERegisterPropertyEnum(BlendingMode, BlendingMode);
+   GERegisterProperty(Bool, BatchRendering);
 }
 
 uint Material::getSizeInBytes() const
@@ -151,8 +151,8 @@ MaterialPass::MaterialPass()
    , sConstantBufferDataVertex(0)
    , sConstantBufferDataFragment(0)
 {
-   GERegisterPropertyResource(MaterialPass, ObjectName, MaterialName, Material);
-   GERegisterProperty(MaterialPass, Bool, Active);
+   GERegisterPropertyResource(ObjectName, MaterialName, Material);
+   GERegisterProperty(Bool, Active);
 
    iBasePropertiesCount = getPropertiesCount();
 }

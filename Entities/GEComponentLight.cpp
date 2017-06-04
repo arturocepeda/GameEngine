@@ -31,9 +31,9 @@ ComponentLight::ComponentLight(Entity* Owner)
 
    cTransform = cOwner->getComponent<ComponentTransform>();
 
-   GERegisterPropertyEnum(ComponentLight, LightType, LightType);
-   GERegisterProperty(ComponentLight, Color, Color);
-   GERegisterProperty(ComponentLight, Float, ShadowIntensity);
+   GERegisterPropertyEnum(LightType, LightType);
+   GERegisterProperty(Color, Color);
+   GERegisterProperty(Float, ShadowIntensity);
 }
 
 ComponentLight::~ComponentLight()

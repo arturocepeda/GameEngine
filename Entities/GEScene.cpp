@@ -64,10 +64,10 @@ Scene::Scene(const ObjectName& Name)
 {
    GEMutexInit(mSceneMutex);
 
-   GERegisterPropertyEnum(Scene, SceneBackgroundMode, BackgroundMode);
-   GERegisterProperty(Scene, String, BackgroundMaterialName);
-   GERegisterProperty(Scene, Color, AmbientLightColor);
-   GERegisterProperty(Scene, Float, ShadowsMaxDistance);
+   GERegisterPropertyEnum(SceneBackgroundMode, BackgroundMode);
+   GERegisterProperty(String, BackgroundMaterialName);
+   GERegisterProperty(Color, AmbientLightColor);
+   GERegisterProperty(Float, ShadowsMaxDistance);
 }
 
 Scene::~Scene()

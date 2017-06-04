@@ -247,77 +247,77 @@ namespace GE { namespace Core
 //
 //  Register generic properties
 //
-#define GERegisterProperty(ClassName, PropertyType, PropertyName) \
+#define GERegisterProperty(PropertyType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
-      std::bind(&ClassName::P_get##PropertyName, this))
+      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this]()->GE::Core::Value { return this->P_get##PropertyName(); })
 
-#define GERegisterPropertyMinMax(ClassName, PropertyType, PropertyName, MinValue, MaxValue) \
+#define GERegisterPropertyMinMax(PropertyType, PropertyName, MinValue, MaxValue) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
-      std::bind(&ClassName::P_get##PropertyName, this), \
+      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::Default, 0, 0, \
       MinValue, MaxValue)
 
-#define GERegisterPropertyReadonly(ClassName, PropertyType, PropertyName) \
+#define GERegisterPropertyReadonly(PropertyType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
       nullptr, \
-      std::bind(&ClassName::P_get##PropertyName, this))
+      [this]()->GE::Core::Value { return this->P_get##PropertyName(); })
 
-#define GERegisterPropertyResource(ClassName, PropertyType, PropertyName, ObjectType) \
+#define GERegisterPropertyResource(PropertyType, PropertyName, ObjectType) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
-      std::bind(&ClassName::P_get##PropertyName, this), \
+      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::Default, \
       (void*)GE::Content::ResourcesManager::getInstance()->getObjectRegistry(#ObjectType))
 
-#define GERegisterPropertySpecialEditor(ClassName, PropertyType, PropertyName, Editor) \
+#define GERegisterPropertySpecialEditor(PropertyType, PropertyName, Editor) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
-      std::bind(&ClassName::P_get##PropertyName, this), \
+      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       Editor)
 
 
 //
 //  Register enum properties
 //
-#define GERegisterPropertyEnum(ClassName, EnumType, PropertyName) \
+#define GERegisterPropertyEnum(EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::String, \
-      std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
-      std::bind(&ClassName::P_get##PropertyName, this), \
+      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::Enum, (void*)str##EnumType, (uint)EnumType::Count)
 
-#define GERegisterPropertyEnumReadonly(ClassName, EnumType, PropertyName) \
+#define GERegisterPropertyEnumReadonly(EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::String, \
       nullptr, \
-      std::bind(&ClassName::P_get##PropertyName, this), \
+      [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::Enum, (void*)str##EnumType, (uint)EnumType::Count)
 
 
 //
 //  Register bit mask properties
 //
-#define GERegisterPropertyBitMask(ClassName, EnumType, PropertyName) \
+#define GERegisterPropertyBitMask(EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
-      std::bind(&ClassName::P_set##PropertyName, this, std::placeholders::_1), \
-      std::bind(&ClassName::P_get##PropertyName, this), \
+      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::BitMask, (void*)str##EnumType, (uint)EnumType::Count)
 
-#define GERegisterPropertyBitMaskReadonly(ClassName, EnumType, PropertyName) \
+#define GERegisterPropertyBitMaskReadonly(EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       nullptr, \
-      std::bind(&ClassName::P_get##PropertyName, this), \
+      [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::BitMask, (void*)str##EnumType, (uint)EnumType::Count)
 
 
 //
 //  Register property array
 //
-#define GERegisterPropertyArray(ClassName, ArrayElementName) \
+#define GERegisterPropertyArray(ArrayElementName) \
    registerPropertyArray(GE::Core::ObjectName(#ArrayElementName), &v##ArrayElementName##List, \
-      std::bind(&ClassName::add##ArrayElementName, this), \
-      std::bind(&ClassName::remove##ArrayElementName, this, std::placeholders::_1), \
-      std::bind(&ClassName::xmlToStream##ArrayElementName, this, std::placeholders::_1, std::placeholders::_2))
+      [this]() { this->add##ArrayElementName(); }, \
+      [this](uint i) { this->remove##ArrayElementName(i); }, \
+      [this](const pugi::xml_node& n, std::ostream& o) { this->xmlToStream##ArrayElementName(n, o); })
 
-#define GEReleasePropertyArray(ClassName, ArrayElementName) \
+#define GEReleasePropertyArray(ArrayElementName) \
    clear##ArrayElementName##List()

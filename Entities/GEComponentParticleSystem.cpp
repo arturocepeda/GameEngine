@@ -86,46 +86,46 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
       iCurrentVertexOffset += 4;
    }
 
-   GERegisterPropertyEnum(ComponentParticleSystem, ParticleEmitterType, EmitterType);
+   GERegisterPropertyEnum(ParticleEmitterType, EmitterType);
 
-   GERegisterProperty(ComponentParticleSystem, Vector3, EmitterPointA);
-   GERegisterProperty(ComponentParticleSystem, Vector3, EmitterPointB);
-   GERegisterProperty(ComponentParticleSystem, Float, EmitterRadius);
-   GERegisterPropertyResource(ComponentParticleSystem, ObjectName, EmitterMesh, Mesh);
-   GERegisterProperty(ComponentParticleSystem, ObjectName, EmitterMeshEntity);
+   GERegisterProperty(Vector3, EmitterPointA);
+   GERegisterProperty(Vector3, EmitterPointB);
+   GERegisterProperty(Float, EmitterRadius);
+   GERegisterPropertyResource(ObjectName, EmitterMesh, Mesh);
+   GERegisterProperty(ObjectName, EmitterMeshEntity);
 
-   GERegisterProperty(ComponentParticleSystem, Bool, EmitterActive);
-   GERegisterProperty(ComponentParticleSystem, Bool, DynamicShadows);
-   GERegisterProperty(ComponentParticleSystem, Float, EmissionRate);
-   GERegisterProperty(ComponentParticleSystem, UInt, EmissionBurstCount);
+   GERegisterProperty(Bool, EmitterActive);
+   GERegisterProperty(Bool, DynamicShadows);
+   GERegisterProperty(Float, EmissionRate);
+   GERegisterProperty(UInt, EmissionBurstCount);
 
-   GERegisterPropertyBitMask(ComponentParticleSystem, ParticleSettingsBitMask, ParticleSettings);
+   GERegisterPropertyBitMask(ParticleSettingsBitMask, ParticleSettings);
 
-   GERegisterProperty(ComponentParticleSystem, Float, ParticleLifeTimeMin);
-   GERegisterProperty(ComponentParticleSystem, Float, ParticleLifeTimeMax);
+   GERegisterProperty(Float, ParticleLifeTimeMin);
+   GERegisterProperty(Float, ParticleLifeTimeMax);
 
-   GERegisterProperty(ComponentParticleSystem, Float, ParticleInitialSizeMin);
-   GERegisterProperty(ComponentParticleSystem, Float, ParticleInitialSizeMax);
-   GERegisterProperty(ComponentParticleSystem, Color, ParticleInitialColorMin);
-   GERegisterProperty(ComponentParticleSystem, Color, ParticleInitialColorMax);
-   GERegisterProperty(ComponentParticleSystem, Float, ParticleInitialAngleMin);
-   GERegisterProperty(ComponentParticleSystem, Float, ParticleInitialAngleMax);
+   GERegisterProperty(Float, ParticleInitialSizeMin);
+   GERegisterProperty(Float, ParticleInitialSizeMax);
+   GERegisterProperty(Color, ParticleInitialColorMin);
+   GERegisterProperty(Color, ParticleInitialColorMax);
+   GERegisterProperty(Float, ParticleInitialAngleMin);
+   GERegisterProperty(Float, ParticleInitialAngleMax);
 
-   GERegisterProperty(ComponentParticleSystem, Vector3, ParticleLinearVelocityMin);
-   GERegisterProperty(ComponentParticleSystem, Vector3, ParticleLinearVelocityMax);
-   GERegisterProperty(ComponentParticleSystem, Float, ParticleAngularVelocityMin);
-   GERegisterProperty(ComponentParticleSystem, Float, ParticleAngularVelocityMax);
+   GERegisterProperty(Vector3, ParticleLinearVelocityMin);
+   GERegisterProperty(Vector3, ParticleLinearVelocityMax);
+   GERegisterProperty(Float, ParticleAngularVelocityMin);
+   GERegisterProperty(Float, ParticleAngularVelocityMax);
 
-   GERegisterProperty(ComponentParticleSystem, Float, ParticleFinalSizeMin);
-   GERegisterProperty(ComponentParticleSystem, Float, ParticleFinalSizeMax);
-   GERegisterProperty(ComponentParticleSystem, Color, ParticleFinalColorMin);
-   GERegisterProperty(ComponentParticleSystem, Color, ParticleFinalColorMax);
+   GERegisterProperty(Float, ParticleFinalSizeMin);
+   GERegisterProperty(Float, ParticleFinalSizeMax);
+   GERegisterProperty(Color, ParticleFinalColorMin);
+   GERegisterProperty(Color, ParticleFinalColorMax);
 
-   GERegisterProperty(ComponentParticleSystem, UInt, ParticleTextureAtlasIndexMin);
-   GERegisterProperty(ComponentParticleSystem, UInt, ParticleTextureAtlasIndexMax);
+   GERegisterProperty(UInt, ParticleTextureAtlasIndexMin);
+   GERegisterProperty(UInt, ParticleTextureAtlasIndexMax);
 
-   GERegisterProperty(ComponentParticleSystem, Vector3, ConstantForce);
-   GERegisterProperty(ComponentParticleSystem, Vector3, ConstantAcceleration);
+   GERegisterProperty(Vector3, ConstantForce);
+   GERegisterProperty(Vector3, ConstantAcceleration);
 }
 
 ComponentParticleSystem::~ComponentParticleSystem()

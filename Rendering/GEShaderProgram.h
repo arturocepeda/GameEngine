@@ -61,6 +61,7 @@ namespace GE { namespace Rendering
       void parseParameters(const pugi::xml_node& xmlShader);
       void parseParameters(std::istream& sStream);
 
+      GEPropertyReadonly(ObjectName, Name)
       GEPropertyEnum(DepthBufferMode, DepthBufferMode)
       GEPropertyEnum(CullingMode, CullingMode)
    };

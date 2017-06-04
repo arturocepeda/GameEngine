@@ -38,11 +38,11 @@ Entity::Entity(const ObjectName& Name, Entity* Parent, Scene* Owner)
    updateFullName();
    memset(vComponents, 0, sizeof(Component*) * (uint)ComponentType::Count);
 
-   GERegisterProperty(Entity, ObjectName, Name);
-   GERegisterProperty(Entity, Bool, Active);
-   GERegisterProperty(Entity, UInt, ClockIndex);
-   GERegisterPropertyEnum(Entity, EntitySaveBehavior, SaveBehavior);
-   GERegisterProperty(Entity, ObjectName, PrefabName);
+   GERegisterProperty(ObjectName, Name);
+   GERegisterProperty(Bool, Active);
+   GERegisterProperty(UInt, ClockIndex);
+   GERegisterPropertyEnum(EntitySaveBehavior, SaveBehavior);
+   GERegisterProperty(ObjectName, PrefabName);
 }
 
 Entity::~Entity()

@@ -35,9 +35,9 @@ ComponentCamera::ComponentCamera(Entity* Owner)
    cTransform = cOwner->getComponent<ComponentTransform>();
    calculateProjectionMatrix();
 
-   GERegisterProperty(ComponentCamera, Float, FOV);
-   GERegisterProperty(ComponentCamera, Float, NearZ);
-   GERegisterProperty(ComponentCamera, Float, FarZ);
+   GERegisterProperty(Float, FOV);
+   GERegisterProperty(Float, NearZ);
+   GERegisterProperty(Float, FarZ);
 }
 
 ComponentCamera::~ComponentCamera()

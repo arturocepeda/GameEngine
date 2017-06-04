@@ -22,8 +22,9 @@ ShaderProgram::ShaderProgram(const ObjectName& Name)
    , eDepthBufferMode(DepthBufferMode::NoDepth)
    , eCullingMode(CullingMode::Back)
 {
-   GERegisterPropertyEnum(ShaderProgram, DepthBufferMode, DepthBufferMode);
-   GERegisterPropertyEnum(ShaderProgram, CullingMode, CullingMode);
+   GERegisterPropertyReadonly(ObjectName, Name);
+   GERegisterPropertyEnum(DepthBufferMode, DepthBufferMode);
+   GERegisterPropertyEnum(CullingMode, CullingMode);
 }
 
 ShaderProgram::~ShaderProgram()
