@@ -90,13 +90,32 @@ void InputSystem::inputMouseWheel(int Delta)
 
 void InputSystem::inputTouchBegin(int ID, const Vector2& Point)
 {
+   Scene* cActiveScene = Scene::getActiveScene();
+
+   if(cActiveScene)
+   {
+      GESTLVector(Component*) cComponents = cActiveScene->getComponents<ComponentScript>();
+
+      for(uint i = 0; i < cComponents.size(); i++)
+      {
+         if(cComponents[i]->getOwner()->isActiveInHierarchy())
+         {
+            if(!static_cast<ComponentScript*>(cComponents[i])->inputTouchBegin(ID, Point))
+               return;
+         }
+      }
+   }
+
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
    if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputTouchBegin(ID, Point);
    }
+}
 
+void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
+{
    Scene* cActiveScene = Scene::getActiveScene();
 
    if(cActiveScene)
@@ -107,21 +126,22 @@ void InputSystem::inputTouchBegin(int ID, const Vector2& Point)
       {
          if(cComponents[i]->getOwner()->isActiveInHierarchy())
          {
-            static_cast<ComponentScript*>(cComponents[i])->inputTouchBegin(ID, Point);
+            if(!static_cast<ComponentScript*>(cComponents[i])->inputTouchMove(ID, PreviousPoint, CurrentPoint))
+               return;
          }
       }
    }
-}
 
-void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
-{
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
    if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputTouchMove(ID, PreviousPoint, CurrentPoint);
    }
+}
 
+void InputSystem::inputTouchEnd(int ID, const Vector2& Point)
+{
    Scene* cActiveScene = Scene::getActiveScene();
 
    if(cActiveScene)
@@ -132,34 +152,17 @@ void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vec
       {
          if(cComponents[i]->getOwner()->isActiveInHierarchy())
          {
-            static_cast<ComponentScript*>(cComponents[i])->inputTouchMove(ID, PreviousPoint, CurrentPoint);
+            if(!static_cast<ComponentScript*>(cComponents[i])->inputTouchEnd(ID, Point))
+               return;
          }
       }
    }
-}
 
-void InputSystem::inputTouchEnd(int ID, const Vector2& Point)
-{
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
    if(cCurrentState && cCurrentState->getInputEnabled())
    {
       cCurrentState->inputTouchEnd(ID, Point);
-   }
-
-   Scene* cActiveScene = Scene::getActiveScene();
-
-   if(cActiveScene)
-   {
-      GESTLVector(Component*) cComponents = cActiveScene->getComponents<ComponentScript>();
-
-      for(uint i = 0; i < cComponents.size(); i++)
-      {
-         if(cComponents[i]->getOwner()->isActiveInHierarchy())
-         {
-            static_cast<ComponentScript*>(cComponents[i])->inputTouchEnd(ID, Point);
-         }
-      }
    }
 }
 

@@ -154,28 +154,37 @@ void ScriptInstance::update()
    }
 }
 
-void ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
+bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 {
    if(!sScriptName.empty() && cScript->isFunctionDefined(cInputTouchBeginFunctionName))
    {
-      cScript->runFunction<void>(cInputTouchBeginFunctionName, ID, Point);
+      if(!cScript->runFunction<bool>(cInputTouchBeginFunctionName, ID, Point))
+         return false;
    }
+
+   return true;
 }
 
-void ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
+bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
 {
    if(!sScriptName.empty() && cScript->isFunctionDefined(cInputTouchMoveFunctionName))
    {
-      cScript->runFunction<void>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint);
+      if(!cScript->runFunction<bool>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint))
+         return false;
    }
+
+   return true;
 }
 
-void ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
+bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 {
    if(!sScriptName.empty() && cScript->isFunctionDefined(cInputTouchEndFunctionName))
    {
-      cScript->runFunction<void>(cInputTouchEndFunctionName, ID, Point);
+      if(!cScript->runFunction<bool>(cInputTouchEndFunctionName, ID, Point))
+         return false;
    }
+
+   return true;
 }
 
 
@@ -203,26 +212,35 @@ void ComponentScript::update()
    }
 }
 
-void ComponentScript::inputTouchBegin(int ID, const Vector2& Point)
+bool ComponentScript::inputTouchBegin(int ID, const Vector2& Point)
 {
    for(uint i = 0; i < vScriptInstanceList.size(); i++)
    {
-      getScriptInstance(i)->inputTouchBegin(ID, Point);
+      if(!getScriptInstance(i)->inputTouchBegin(ID, Point))
+         return false;
    }
+
+   return true;
 }
 
-void ComponentScript::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
+bool ComponentScript::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
 {
    for(uint i = 0; i < vScriptInstanceList.size(); i++)
    {
-      getScriptInstance(i)->inputTouchMove(ID, PreviousPoint, CurrentPoint);
+      if(!getScriptInstance(i)->inputTouchMove(ID, PreviousPoint, CurrentPoint))
+         return false;
    }
+
+   return true;
 }
 
-void ComponentScript::inputTouchEnd(int ID, const Vector2& Point)
+bool ComponentScript::inputTouchEnd(int ID, const Vector2& Point)
 {
    for(uint i = 0; i < vScriptInstanceList.size(); i++)
    {
-      getScriptInstance(i)->inputTouchEnd(ID, Point);
+      if(!getScriptInstance(i)->inputTouchEnd(ID, Point))
+         return false;
    }
+
+   return true;
 }

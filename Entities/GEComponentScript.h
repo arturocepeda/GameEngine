@@ -38,9 +38,9 @@ namespace GE { namespace Entities
 
       void update();
 
-      void inputTouchBegin(int ID, const Vector2& Point);
-      void inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
-      void inputTouchEnd(int ID, const Vector2& Point);
+      bool inputTouchBegin(int ID, const Vector2& Point);
+      bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
+      bool inputTouchEnd(int ID, const Vector2& Point);
 
       GEProperty(String, ScriptName);
    };
@@ -56,9 +56,9 @@ namespace GE { namespace Entities
 
       void update();
 
-      void inputTouchBegin(int ID, const Vector2& Point);
-      void inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
-      void inputTouchEnd(int ID, const Vector2& Point);
+      bool inputTouchBegin(int ID, const Vector2& Point);
+      bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
+      bool inputTouchEnd(int ID, const Vector2& Point);
 
       GEPropertyArray(ScriptInstance, ScriptInstance)
    };
