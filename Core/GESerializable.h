@@ -33,6 +33,7 @@ namespace GE { namespace Core
    typedef GESTLVector(SerializableArrayElement*) PropertyArrayEntries;
    typedef std::function<void()> PropertyArrayAdd;
    typedef std::function<void(uint)> PropertyArrayRemove;
+   typedef std::function<void(uint, uint)> PropertyArraySwap;
    typedef std::function<void(const pugi::xml_node&, std::ostream&)> PropertyArrayXmlToStream;
 
    enum class PropertyEditor
@@ -68,6 +69,7 @@ namespace GE { namespace Core
 
 #if defined (GE_EDITOR_SUPPORT)
       PropertyArrayRemove Remove;
+      PropertyArraySwap Swap;
       PropertyArrayXmlToStream XmlToStream;
 #endif
    };
@@ -97,7 +99,7 @@ namespace GE { namespace Core
       PropertyArray& registerPropertyArray(const ObjectName& PropertyArrayName,
          PropertyArrayEntries* PropertyArrayEntries,
          const PropertyArrayAdd& Add, const PropertyArrayRemove& Remove,
-         const PropertyArrayXmlToStream& XmlToStream);
+         const PropertyArraySwap& Swap, const PropertyArrayXmlToStream& XmlToStream);
 
    public:
       static const ObjectName EventPropertiesUpdated;
@@ -225,6 +227,15 @@ namespace GE { namespace Core
       GE::Core::Allocator::free(cEntry); \
       v##ClassName##List.erase(v##ClassName##List.begin() + Index); \
    } \
+   void swap##ClassName(uint IndexA, uint IndexB) \
+   { \
+      GEAssert(IndexA < v##ClassName##List.size()); \
+      GEAssert(IndexB < v##ClassName##List.size()); \
+      GEAssert(IndexA != IndexB); \
+      GE::Core::SerializableArrayElement* cCachedEntry = v##ClassName##List[IndexA]; \
+      v##ClassName##List[IndexA] = v##ClassName##List[IndexB]; \
+      v##ClassName##List[IndexB] = cCachedEntry; \
+   } \
    void clear##ClassName##List() \
    { \
       for(GE::uint i = 0; i < v##ClassName##List.size(); i++) \
@@ -317,6 +328,7 @@ namespace GE { namespace Core
    registerPropertyArray(GE::Core::ObjectName(#ArrayElementName), &v##ArrayElementName##List, \
       [this]() { this->add##ArrayElementName(); }, \
       [this](uint i) { this->remove##ArrayElementName(i); }, \
+      [this](uint i, uint j) { this->swap##ArrayElementName(i, j); }, \
       [this](const pugi::xml_node& n, std::ostream& o) { this->xmlToStream##ArrayElementName(n, o); })
 
 #define GEReleasePropertyArray(ArrayElementName) \

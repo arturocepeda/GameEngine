@@ -61,7 +61,7 @@ void Serializable::removeProperty(uint PropertyIndex)
 PropertyArray& Serializable::registerPropertyArray(const ObjectName& PropertyArrayName,
    PropertyArrayEntries* PropertyArrayEntries,
    const PropertyArrayAdd& Add, const PropertyArrayRemove& Remove,
-   const PropertyArrayXmlToStream& XmlToStream)
+   const PropertyArraySwap& Swap, const PropertyArrayXmlToStream& XmlToStream)
 {
    PropertyArray sPropertyArray;
    sPropertyArray.Name = PropertyArrayName;
@@ -69,6 +69,7 @@ PropertyArray& Serializable::registerPropertyArray(const ObjectName& PropertyArr
    sPropertyArray.Add = Add;
 #if defined (GE_EDITOR_SUPPORT)
    sPropertyArray.Remove = Remove;
+   sPropertyArray.Swap = Swap;
    sPropertyArray.XmlToStream = XmlToStream;
 #endif
    vPropertyArrays.push_back(sPropertyArray);
