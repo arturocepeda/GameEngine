@@ -178,17 +178,27 @@ void ComponentSkeleton::updateBoneMatrices()
 
 void ComponentSkeleton::updateSkinnedMeshes()
 {
-   ComponentMesh* cMesh = cOwner->getComponent<ComponentMesh>();
+   ComponentRenderable* cRenderable = cOwner->getComponent<ComponentRenderable>();
 
-   if(cMesh && cMesh->getMesh()->isSkinned())
-      cMesh->updateSkinning();
+   if(cRenderable && cRenderable->getRenderableType() == RenderableType::Mesh)
+   {
+      ComponentMesh* cMesh = static_cast<ComponentMesh*>(cRenderable);
+
+      if(cMesh->getMesh()->isSkinned())
+         cMesh->updateSkinning();
+   }
 
    for(uint i = 0; i < cOwner->getChildrenCount(); i++)
    {
-      cMesh = cOwner->getChildByIndex(i)->getComponent<ComponentMesh>();
+      cRenderable = cOwner->getChildByIndex(i)->getComponent<ComponentRenderable>();
 
-      if(cMesh && cMesh->getMesh()->isSkinned())
-         cMesh->updateSkinning();
+      if(cRenderable && cRenderable->getRenderableType() == RenderableType::Mesh)
+      {
+         ComponentMesh* cMesh = static_cast<ComponentMesh*>(cRenderable);
+
+         if(cMesh->getMesh()->isSkinned())
+            cMesh->updateSkinning();
+      }
    }
 }
 
