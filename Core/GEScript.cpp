@@ -136,6 +136,10 @@ void Script::handleFunctionError(const char* FunctionName, const char* Msg)
 
 void Script::reset()
 {
+   vGlobalVariableNames.clear();
+   vGlobalFunctionNames.clear();
+   mFunctions.clear();
+
    lua = sol::state(sol::default_at_panic, customAlloc);
    lua.open_libraries();
    registerTypes();
@@ -281,10 +285,6 @@ void Script::collectGlobalSymbols()
    lua_pop(luaState, 1);
 
    // fill the lists of variables and functions
-   vGlobalVariableNames.clear();
-   vGlobalFunctionNames.clear();
-   mFunctions.clear();
-
    for(uint i = 0; i < vGlobalUserSymbols.size(); i++)
    {
       lua_getglobal(luaState, vGlobalUserSymbols[i].getString().c_str());

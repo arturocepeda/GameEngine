@@ -30,7 +30,7 @@ Serializable::~Serializable()
 {
 }
 
-Property& Serializable::registerProperty(const ObjectName& PropertyName, ValueType Type,
+void Serializable::registerProperty(const ObjectName& PropertyName, ValueType Type,
    const PropertySetter& Setter, const PropertyGetter& Getter,
    PropertyEditor Editor, void* PropertyDataPtr, uint PropertyDataUInt,
    float MinValue, float MaxValue)
@@ -49,7 +49,6 @@ Property& Serializable::registerProperty(const ObjectName& PropertyName, ValueTy
    sProperty.MaxValue = MaxValue;
 #endif
    vProperties.push_back(sProperty);
-   return vProperties.back();
 }
 
 void Serializable::removeProperty(uint PropertyIndex)
@@ -58,7 +57,7 @@ void Serializable::removeProperty(uint PropertyIndex)
    vProperties.erase(vProperties.begin() + PropertyIndex);
 }
 
-PropertyArray& Serializable::registerPropertyArray(const ObjectName& PropertyArrayName,
+void Serializable::registerPropertyArray(const ObjectName& PropertyArrayName,
    PropertyArrayEntries* PropertyArrayEntries,
    const PropertyArrayAdd& Add, const PropertyArrayRemove& Remove,
    const PropertyArraySwap& Swap, const PropertyArrayXmlToStream& XmlToStream)
@@ -73,7 +72,22 @@ PropertyArray& Serializable::registerPropertyArray(const ObjectName& PropertyArr
    sPropertyArray.XmlToStream = XmlToStream;
 #endif
    vPropertyArrays.push_back(sPropertyArray);
-   return vPropertyArrays.back();
+}
+
+void Serializable::registerAction(const ObjectName& ActionName, const ActionFunction& Function)
+{
+   Action sAction;
+   sAction.Name = ActionName;
+   sAction.Function = Function;
+   GEAssert(sAction.Function != nullptr);
+   vActions.push_back(sAction);
+}
+
+void Serializable::registerEditorAction(const ObjectName& ActionName, const ActionFunction& Function)
+{
+#if defined (GE_EDITOR_SUPPORT)
+   registerAction(ActionName, Function);
+#endif
 }
 
 const ObjectName& Serializable::getClassName() const
@@ -125,6 +139,17 @@ const PropertyArray* Serializable::getPropertyArray(const ObjectName& PropertyAr
    return 0;
 }
 
+uint Serializable::getActionsCount() const
+{
+   return (uint)vActions.size();
+}
+
+const Action& Serializable::getAction(uint ActionIndex) const
+{
+   GEAssert(ActionIndex < (uint)vActions.size());
+   return vActions[ActionIndex];
+}
+
 Value Serializable::get(const ObjectName& PropertyName)
 {
    Property* cProperty = 0;
@@ -159,6 +184,20 @@ void Serializable::set(const ObjectName& PropertyName, Value& PropertyValue)
    GEAssert(cProperty);
    GEAssert(cProperty->Setter);
    cProperty->Setter(PropertyValue);
+}
+
+void Serializable::executeAction(const ObjectName& ActionName)
+{
+#if defined (GE_EDITOR_SUPPORT)
+   for(uint i = 0; i < vActions.size(); i++)
+   {
+      if(vActions[i].Name == ActionName)
+      {
+         vActions[i].Function();
+         break;
+      }
+   }
+#endif
 }
 
 void Serializable::copy(Serializable* cSource)

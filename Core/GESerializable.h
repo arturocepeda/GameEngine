@@ -29,6 +29,7 @@ namespace GE { namespace Core
 
    typedef std::function<Value()> PropertyGetter;
    typedef std::function<void(Value&)> PropertySetter;
+   typedef std::function<void()> ActionFunction;
 
    typedef GESTLVector(SerializableArrayElement*) PropertyArrayEntries;
    typedef std::function<void()> PropertyArrayAdd;
@@ -74,14 +75,22 @@ namespace GE { namespace Core
 #endif
    };
 
+   struct Action
+   {
+      ObjectName Name;
+      ActionFunction Function;
+   };
+
    class Serializable
    {
    private:
       typedef GESTLVector(Property) PropertiesList;
       typedef GESTLVector(PropertyArray) PropertyArraysList;
+      typedef GESTLVector(Action) ActionsList;
 
       PropertiesList vProperties;
       PropertyArraysList vPropertyArrays;
+      ActionsList vActions;
 
    protected:
       ObjectName cClassName;
@@ -89,17 +98,20 @@ namespace GE { namespace Core
       Serializable(const ObjectName& ClassName);
       virtual ~Serializable();
 
-      Property& registerProperty(const ObjectName& PropertyName, ValueType Type,
+      void registerProperty(const ObjectName& PropertyName, ValueType Type,
          const PropertySetter& Setter, const PropertyGetter& Getter,
          PropertyEditor Editor = PropertyEditor::Default,
          void* PropertyDataPtr = 0, uint PropertyDataUInt = 0,
          float MinValue = 0.0f, float MaxValue = 0.0f);
       void removeProperty(uint PropertyIndex);
 
-      PropertyArray& registerPropertyArray(const ObjectName& PropertyArrayName,
+      void registerPropertyArray(const ObjectName& PropertyArrayName,
          PropertyArrayEntries* PropertyArrayEntries,
          const PropertyArrayAdd& Add, const PropertyArrayRemove& Remove,
          const PropertyArraySwap& Swap, const PropertyArrayXmlToStream& XmlToStream);
+
+      void registerAction(const ObjectName& ActionName, const ActionFunction& Function);
+      void registerEditorAction(const ObjectName& ActionName, const ActionFunction& Function);
 
    public:
       static const ObjectName EventPropertiesUpdated;
@@ -114,8 +126,13 @@ namespace GE { namespace Core
       const PropertyArray& getPropertyArray(uint PropertyArrayIndex) const;
       const PropertyArray* getPropertyArray(const ObjectName& PropertyArrayName) const;
 
+      uint getActionsCount() const;
+      const Action& getAction(uint ActionIndex) const;
+
       Value get(const ObjectName& PropertyName);
       void set(const ObjectName& PropertyName, Value& PropertyValue);
+
+      void executeAction(const ObjectName& ActionName);
 
       virtual void copy(Serializable* cSource);
 
