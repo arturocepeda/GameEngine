@@ -326,10 +326,16 @@ void Scene::setEntityParent(Entity* cEntity, Entity* cNewParent)
    mRegistry[cEntity->getFullName().getID()] = cEntity;
 
    // update the local transform matrix
-   Matrix4 mNewParentInverseWorldMatrix = cNewParent->getComponent<ComponentTransform>()->mGlobalWorldMatrix;
-   Matrix4Invert(&mNewParentInverseWorldMatrix);
-
-   Matrix4Multiply(mNewParentInverseWorldMatrix, cTransform->mGlobalWorldMatrix, &cTransform->mLocalWorldMatrix);
+   if(cNewParent)
+   {
+      Matrix4 mNewParentInverseWorldMatrix = cNewParent->getComponent<ComponentTransform>()->mGlobalWorldMatrix;
+      Matrix4Invert(&mNewParentInverseWorldMatrix);
+      Matrix4Multiply(mNewParentInverseWorldMatrix, cTransform->mGlobalWorldMatrix, &cTransform->mLocalWorldMatrix);
+   }
+   else
+   {
+      cTransform->mLocalWorldMatrix = cTransform->mGlobalWorldMatrix;
+   }
 
    Vector3 vLocalPosition;
    Rotation cLocalRotation;
