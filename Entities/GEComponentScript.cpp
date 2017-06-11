@@ -39,6 +39,35 @@ ScriptInstance::ScriptInstance()
    GERegisterProperty(String, ScriptName);
 
    iBasePropertiesCount = getPropertiesCount();
+
+   registerEditorAction("Reload", [this]
+   {
+      struct CachedPropertyValue
+      {
+         uint PropertyNameHash;
+         Value PropertyValue;
+      };
+
+      const uint iNumProperties = getPropertiesCount() - iBasePropertiesCount;
+      CachedPropertyValue* vCachedPropertyValues = Allocator::alloc<CachedPropertyValue>(iNumProperties);
+
+      for(uint i = 0; i < iNumProperties; i++)
+      {
+         const Property& sProperty = getProperty(i + iBasePropertiesCount);
+         vCachedPropertyValues[i].PropertyNameHash = sProperty.Name.getID();
+         vCachedPropertyValues[i].PropertyValue = sProperty.Getter();
+      }
+
+      setScriptName(getScriptName());
+
+      for(uint i = 0; i < iNumProperties; i++)
+      {
+         ObjectName cPropertyName = ObjectName(vCachedPropertyValues[i].PropertyNameHash);
+         set(cPropertyName, vCachedPropertyValues[i].PropertyValue);
+      }
+
+      Allocator::free(vCachedPropertyValues);
+   });
 }
 
 ScriptInstance::~ScriptInstance()
