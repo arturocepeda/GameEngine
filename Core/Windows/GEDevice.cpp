@@ -33,6 +33,8 @@ int Device::ScreenHeight = 0;
 SystemLanguage Device::Language = SystemLanguage::English;
 DeviceOrientation Device::Orientation = DeviceOrientation::Portrait;
 
+LogListener* Device::CurrentLogListener = 0;
+
 int Device::AudioSystemSampleRate = 0;
 int Device::AudioSystemFramesPerBuffer = 0;
 
@@ -324,7 +326,7 @@ void Device::getUserFileName(const char* SubDir, const char* Extension, uint Ind
 
 void Device::log(const char* Message, ...)
 {
-#if defined(_DEBUG)
+#if defined(GE_EDITOR_SUPPORT)
   char sBuffer[512];
 
   va_list vArguments;
@@ -334,6 +336,11 @@ void Device::log(const char* Message, ...)
 
   OutputDebugString(sBuffer);
   OutputDebugString("\n");
+
+  if(CurrentLogListener)
+  {
+     CurrentLogListener->onLog(sBuffer);
+  }
 #endif
 }
 

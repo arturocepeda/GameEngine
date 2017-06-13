@@ -34,6 +34,13 @@ namespace GE { namespace Core
    };
 
 
+   class LogListener
+   {
+   public:
+      virtual void onLog(const char*) {}
+   };
+
+
    class Device
    {
    private:
@@ -48,6 +55,8 @@ namespace GE { namespace Core
 
       static DeviceOrientation Orientation;
       static Quaternion Rotation;
+
+      static LogListener* CurrentLogListener;
 
       static int AudioSystemSampleRate;
       static int AudioSystemFramesPerBuffer;
