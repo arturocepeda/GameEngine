@@ -97,7 +97,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(Bool, EmitterActive);
    GERegisterProperty(Bool, DynamicShadows);
    GERegisterProperty(Float, EmissionRate);
-   GERegisterProperty(UInt, EmissionBurstCount);
+   GERegisterPropertyMinMax(UInt, EmissionBurstCount, 1, 256);
 
    GERegisterPropertyBitMask(ParticleSettingsBitMask, ParticleSettings);
 
@@ -126,6 +126,8 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
 
    GERegisterProperty(Vector3, ConstantForce);
    GERegisterProperty(Vector3, ConstantAcceleration);
+
+   registerEditorAction("Burst", [this] { burst(iEmissionBurstCount); });
 }
 
 ComponentParticleSystem::~ComponentParticleSystem()
