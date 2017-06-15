@@ -1,8 +1,8 @@
 
 #include "main.h"
 #include "Core/GEUtils.h"
-#include "Core/GEObjectManager.h"
 #include "Core/GEApplication.h"
+#include "Content/GEResourcesManager.h"
 #include "Rendering/GEMaterial.h"
 
 #include <map>
@@ -263,9 +263,9 @@ int main(int argc, char* argv[])
 
 void registerObjectManagers()
 {
-   ObjectManagers::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mManagerShaderPrograms);
-   ObjectManagers::getInstance()->registerObjectManager<Material>("Material", &mManagerMaterials);
-   ObjectManagers::getInstance()->registerObjectManager<Texture>("Texture", &mManagerTextures);
+   ResourcesManager::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mManagerShaderPrograms);
+   ResourcesManager::getInstance()->registerObjectManager<Material>("Material", &mManagerMaterials);
+   ResourcesManager::getInstance()->registerObjectManager<Texture>("Texture", &mManagerTextures);
 }
 
 void importMeshData(FbxNode* fbxNode)
@@ -371,7 +371,7 @@ void importMaterials(FbxNode* fbxNode)
       if(bMaterialRegistered)
          continue;
 
-      Material cMaterial(sMaterialName);
+      Material cMaterial(sMaterialName, "Materials");
 
       xml_node xmlMaterial = xmlMaterialsRoot->append_child("Material");
       xml_attribute xmlMaterialName = xmlMaterial.append_attribute("name");
@@ -671,6 +671,9 @@ void importAnimations(FbxScene* fbxScene, FbxNode* fbxNode)
          FbxTime::EMode fbxTimeMode = fbxScene->GetGlobalSettings().GetTimeMode();
          const uint FrameRate = fbxTimeMode == FbxTime::eFrames30 ? 30 : 24;
          uint iKeyCount = (uint)((float)iDurationMs * 0.001f * (float)FrameRate);
+
+         if(iKeyCount < 1)
+            iKeyCount = 1;
 
          FbxLongLong iTimePerKeyFrame = iDurationMs / iKeyCount;
          FbxLongLong iCurrentTimeMs = iTimeBegin;
