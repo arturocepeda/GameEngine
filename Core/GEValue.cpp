@@ -365,6 +365,9 @@ void Value::toString(char* Buffer) const
    case ValueType::Bool:
       Parser::writeBool(getAsBool(), Buffer);
       break;
+   case ValueType::Byte:
+      Parser::writeByte(getAsByte(), Buffer);
+      break;
    case ValueType::String:
       strcpy(Buffer, getAsString());
       break;

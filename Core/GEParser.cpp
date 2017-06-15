@@ -39,6 +39,11 @@ bool Parser::parseBool(const char* StrValue)
    return strcmp(StrValue, "true") == 0;
 }
 
+byte Parser::parseByte(const char* StrValue)
+{
+   return (byte)atoi(StrValue);
+}
+
 Vector2 Parser::parseVector2(const char* StrValue)
 {
    Vector2 vVector;
@@ -78,6 +83,11 @@ void Parser::writeFloat(float Value, char* OutStr)
 void Parser::writeBool(bool Value, char* OutStr)   
 {
    strcpy(OutStr, Value ? "true" : "false");
+}
+
+void Parser::writeByte(byte Value, char* OutStr)
+{
+   sprintf(OutStr, "%d", (int)Value);
 }
 
 void Parser::writeVector2(const Vector2& Value, char* OutStr)

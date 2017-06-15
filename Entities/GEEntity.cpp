@@ -200,7 +200,7 @@ void Entity::updateFullName()
 {
    if(cParent)
    {
-      char sBuffer[256];
+      char sBuffer[512];
       sprintf(sBuffer, "%s/%s", cParent->cFullName.getString().c_str(), cName.getString().c_str());
       cFullName = ObjectName(sBuffer);
    }
