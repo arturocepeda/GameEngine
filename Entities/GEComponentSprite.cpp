@@ -47,6 +47,46 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    GERegisterPropertyEnum(UVMode, UVMode);
    GERegisterPropertyEnum(FullScreenSizeMode, FullScreenSizeMode);
    GERegisterProperty(ObjectName, TextureAtlasName);
+
+   registerEditorAction("Adjust Height to current Width", [this]
+   {
+      if(getMaterialPassCount() == 0 || !getMaterialPass(0)->getMaterial())
+         return;
+
+      const Texture* cTexture = getMaterialPass(0)->getMaterial()->getDiffuseTexture();
+
+      if(!cTexture)
+         return;
+
+      const TextureAtlasEntry& sAtlasEntry = cTexture->AtlasUV[iTextureAtlasIndex];
+
+      const float fTextureRatio = (float)cTexture->getHeight() / cTexture->getWidth();
+      const float fAtlasRatio = (sAtlasEntry.UV.V1 - sAtlasEntry.UV.V0) / (sAtlasEntry.UV.U1 - sAtlasEntry.UV.U0);
+      const float fRatio = fTextureRatio * fAtlasRatio;
+
+      vSize.Y = vSize.X * fRatio;
+      bVertexDataDirty = true;
+   });
+
+   registerEditorAction("Adjust Width to current Height", [this]
+   {
+      if(getMaterialPassCount() == 0 || !getMaterialPass(0)->getMaterial())
+         return;
+
+      const Texture* cTexture = getMaterialPass(0)->getMaterial()->getDiffuseTexture();
+
+      if(!cTexture)
+         return;
+
+      const TextureAtlasEntry& sAtlasEntry = cTexture->AtlasUV[iTextureAtlasIndex];
+
+      const float fTextureRatio = (float)cTexture->getWidth() / cTexture->getHeight();
+      const float fAtlasRatio = (sAtlasEntry.UV.U1 - sAtlasEntry.UV.U0) / (sAtlasEntry.UV.V1 - sAtlasEntry.UV.V0);
+      const float fRatio = fTextureRatio * fAtlasRatio;
+
+      vSize.X = vSize.Y * fRatio;
+      bVertexDataDirty = true;
+   });
 }
 
 ComponentSprite::~ComponentSprite()
