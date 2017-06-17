@@ -289,12 +289,13 @@ void RenderSystem::preloadTextures(const char* FileName)
                sAtlasUV.V0 = Parser::parseFloat(xmlChar.attribute("y").value()) / fHeight;
                sAtlasUV.V1 = sAtlasUV.V0 + (Parser::parseFloat(xmlChar.attribute("h").value()) / fHeight);
 
-               TextureAtlasEntry sAtlasEntry;
-               sAtlasEntry.Name = ObjectName(xmlChar.attribute("n").value());
-               sAtlasEntry.UV = sAtlasUV;
+               ObjectName cAtlasEntryName = ObjectName(xmlChar.attribute("n").value());
+               TextureAtlasEntry sAtlasEntry = TextureAtlasEntry(cAtlasEntryName, sAtlasUV);
 
                sPreloadedTexture.Tex->AtlasUV.push_back(sAtlasEntry);
             }
+
+            sPreloadedTexture.Tex->populateAtlasUVManager();
          }
 
          GEMutexUnlock(mTextureLoadMutex);
@@ -337,21 +338,24 @@ void RenderSystem::preloadTextures(const char* FileName)
 
             for(uint j = 0; j < iAtlasEntriesCount; j++)
             {
-               TextureAtlasEntry sAtlasEntry;
-               sAtlasEntry.Name = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+               ObjectName cAtlasEntryName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
 
                float x = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
                float y = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
                float w = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
                float h = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
 
-               sAtlasEntry.UV.U0 = x / fWidth;
-               sAtlasEntry.UV.U1 = sAtlasEntry.UV.U0 + (w / fWidth);
-               sAtlasEntry.UV.V0 = y / fHeight;
-               sAtlasEntry.UV.V1 = sAtlasEntry.UV.V0 + (h / fHeight);
+               TextureCoordinates sUV;
+               sUV.U0 = x / fWidth;
+               sUV.U1 = sUV.U0 + (w / fWidth);
+               sUV.V0 = y / fHeight;
+               sUV.V1 = sUV.V0 + (h / fHeight);
 
+               TextureAtlasEntry sAtlasEntry = TextureAtlasEntry(cAtlasEntryName, sUV);
                sPreloadedTexture.Tex->AtlasUV.push_back(sAtlasEntry);
             }
+
+            sPreloadedTexture.Tex->populateAtlasUVManager();
          }
 
          GEMutexUnlock(mTextureLoadMutex);

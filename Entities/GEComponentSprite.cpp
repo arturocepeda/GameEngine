@@ -113,6 +113,12 @@ void ComponentSprite::updateVertexData()
    GEAssert(getMaterialPass(0));
    GEAssert(getMaterialPass(0)->getMaterial());
 
+#if defined (GE_EDITOR_SUPPORT)
+   Property* cTextureAtlasNameProperty = const_cast<Property*>(getProperty("TextureAtlasName"));
+   void* pCachedDataPtr = cTextureAtlasNameProperty->DataPtr;
+   cTextureAtlasNameProperty->DataPtr = 0;
+#endif
+
    Material* cMaterial = getMaterialPass(0)->getMaterial();
 
    if(!cMaterial->getDiffuseTexture())
@@ -153,6 +159,13 @@ void ComponentSprite::updateVertexData()
    default:
       break;
    }
+
+#if defined (GE_EDITOR_SUPPORT)
+   cTextureAtlasNameProperty->DataPtr = (void*)cMaterial->getDiffuseTexture()->AtlasUVManager.getObjectRegistry();
+
+   if(cTextureAtlasNameProperty->DataPtr != pCachedDataPtr)
+      cOwner->triggerEvent(EventPropertiesUpdated);
+#endif
 }
 
 void ComponentSprite::update()
@@ -202,7 +215,7 @@ const Core::ObjectName& ComponentSprite::getTextureAtlasName() const
    Material* cMaterial = static_cast<MaterialPass*>(vMaterialPassList[0])->getMaterial();
 
    return cMaterial && cMaterial->getDiffuseTexture()
-      ? cMaterial->getDiffuseTexture()->AtlasUV[iTextureAtlasIndex].Name
+      ? cMaterial->getDiffuseTexture()->AtlasUV[iTextureAtlasIndex].getName()
       : ObjectName::Empty;
 }
 
@@ -303,7 +316,7 @@ void ComponentSprite::setTextureAtlasName(const Core::ObjectName& AtlasName)
 
    for(uint i = 0; i < vTextureAtlasArray.size(); i++)
    {
-      if(vTextureAtlasArray[i].Name == AtlasName)
+      if(vTextureAtlasArray[i].getName() == AtlasName)
       {
          setTextureAtlasIndex(i);
          return;

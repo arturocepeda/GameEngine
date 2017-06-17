@@ -65,7 +65,7 @@ namespace GE { namespace Core
 
       uint count() const
       {
-         return mRegistry.size();
+         return (uint)mRegistry.size();
       }
 
       void iterate(std::function<bool(T*)> EntryProcessor)

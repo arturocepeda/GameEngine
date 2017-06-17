@@ -46,3 +46,9 @@ const void* Texture::getHandler() const
 {
    return pHandlePtr;
 }
+
+void Texture::populateAtlasUVManager()
+{
+   for(uint i = 0; i < AtlasUV.size(); i++)
+      AtlasUVManager.add(&AtlasUV[i]);
+}

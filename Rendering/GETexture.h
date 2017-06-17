@@ -27,10 +27,16 @@ namespace GE { namespace Rendering
    };
 
 
-   struct TextureAtlasEntry
+   class TextureAtlasEntry : public Core::Object
    {
-      Core::ObjectName Name;
+   public:
       TextureCoordinates UV;
+
+      TextureAtlasEntry(const Core::ObjectName& Name, const TextureCoordinates& TexCoord)
+         : Core::Object(Name)
+         , UV(TexCoord)
+      {
+      }
    };
 
 
@@ -44,6 +50,7 @@ namespace GE { namespace Rendering
 
    public:
       GESTLVector(TextureAtlasEntry) AtlasUV;
+      Core::ObjectManager<TextureAtlasEntry> AtlasUVManager;
 
       Texture(const Core::ObjectName& Name, const Core::ObjectName& GroupName, uint Width, uint Height);
 
@@ -52,5 +59,7 @@ namespace GE { namespace Rendering
 
       void setHandler(void* HandlePtr);
       const void* getHandler() const;
+
+      void populateAtlasUVManager();
    };
 }}

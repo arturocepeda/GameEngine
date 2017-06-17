@@ -179,20 +179,23 @@ void MaterialPass::setMaterial(Material* M)
 
    releaseConstantBufferData();
 
-   const ObjectRegistry* cShadersObjectRegistry = ResourcesManager::getInstance()->getObjectRegistry(ShadersObjectRegistryName);
-   ShaderProgram* cShaderProgram = static_cast<ShaderProgram*>(cShadersObjectRegistry->find(cMaterial->getShaderProgram().getID())->second);
-   GEAssert(cShaderProgram);
-
-   if(cShaderProgram->VertexParameters.size() > 0)
+   if(cMaterial)
    {
-      sConstantBufferDataVertex = Allocator::alloc<char>(Material::ConstantBufferSize);
-      registerShaderProperties(sConstantBufferDataVertex, cShaderProgram->VertexParameters);
-   }
+      const ObjectRegistry* cShadersObjectRegistry = ResourcesManager::getInstance()->getObjectRegistry(ShadersObjectRegistryName);
+      ShaderProgram* cShaderProgram = static_cast<ShaderProgram*>(cShadersObjectRegistry->find(cMaterial->getShaderProgram().getID())->second);
+      GEAssert(cShaderProgram);
 
-   if(cShaderProgram->FragmentParameters.size() > 0)
-   {
-      sConstantBufferDataFragment = Allocator::alloc<char>(Material::ConstantBufferSize);
-      registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->FragmentParameters);
+      if(cShaderProgram->VertexParameters.size() > 0)
+      {
+         sConstantBufferDataVertex = Allocator::alloc<char>(Material::ConstantBufferSize);
+         registerShaderProperties(sConstantBufferDataVertex, cShaderProgram->VertexParameters);
+      }
+
+      if(cShaderProgram->FragmentParameters.size() > 0)
+      {
+         sConstantBufferDataFragment = Allocator::alloc<char>(Material::ConstantBufferSize);
+         registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->FragmentParameters);
+      }
    }
 
    EventArgs sEventArgs;
@@ -250,9 +253,15 @@ void MaterialPass::setMaterialName(const Core::ObjectName& Name)
    if(cMaterial && Name == cMaterial->getName())
       return;
 
+   Material* cNewMaterial = 0;
    const ObjectRegistry* cMaterialObjectRegistry = ResourcesManager::getInstance()->getObjectRegistry(MaterialObjectRegistryName);
-   GEAssert(cMaterialObjectRegistry->find(Name.getID()) != cMaterialObjectRegistry->end());
-   setMaterial(static_cast<Material*>(cMaterialObjectRegistry->find(Name.getID())->second));
+   
+   if(cMaterialObjectRegistry->find(Name.getID()) != cMaterialObjectRegistry->end())
+   {
+      cNewMaterial = static_cast<Material*>(cMaterialObjectRegistry->find(Name.getID())->second);
+   }
+
+   setMaterial(cNewMaterial);
 }
 
 void MaterialPass::setActive(bool Active)
