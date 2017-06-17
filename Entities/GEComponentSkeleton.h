@@ -110,6 +110,7 @@ namespace GE { namespace Entities
       Core::ObjectName cDefaultAnimationName;
 
       Matrix4* mBonePoseMatrix;
+      float fDefaultBlendingTime;
       float fAnimationSpeedFactor;
 
       Callback onAnimationInstancesUpdated;
@@ -147,6 +148,9 @@ namespace GE { namespace Entities
       const Core::ObjectName& getDefaultAnimationName() const;
       void setDefaultAnimationName(const Core::ObjectName& Name);
 
+      float getDefaultBlendingTime() const;
+      void setDefaultBlendingTime(float Time);
+
       float getAnimationSpeedFactor() const;
       void setAnimationSpeedFactor(float Factor);
 
@@ -163,6 +167,7 @@ namespace GE { namespace Entities
       GEProperty(ObjectName, SkeletonName)
       GEProperty(ObjectName, AnimationSetName)
       GEProperty(ObjectName, DefaultAnimationName)
+      GEProperty(Float, DefaultBlendingTime)
       GEProperty(Float, AnimationSpeedFactor)
    };
 }}

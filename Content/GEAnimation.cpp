@@ -149,7 +149,7 @@ AnimationSet::AnimationSet(const char* FileName)
          const char* sAnimationFileName = xmlAnimation.attribute("fileName").value();
 
          Animation* cAnimation = loadAnimation(sAnimationFileName, cAnimationName);
-         vAnimations.push_back(cAnimation);
+         mAnimations.add(cAnimation);
 
          pugi::xml_attribute xmlAnimationApplyRootMotionX = xmlAnimation.attribute("applyRootMotionX");
 
@@ -181,7 +181,7 @@ AnimationSet::AnimationSet(const char* FileName)
          Value cAnimationFileName = Value::fromStream(ValueType::String, sStream);
 
          Animation* cAnimation = loadAnimation(cAnimationFileName.getAsString(), cAnimationName);
-         vAnimations.push_back(cAnimation);
+         mAnimations.add(cAnimation);
 
          cAnimation->setApplyRootMotionX(Value::fromStream(ValueType::Bool, sStream).getAsBool());
          cAnimation->setApplyRootMotionY(Value::fromStream(ValueType::Bool, sStream).getAsBool());
@@ -192,13 +192,6 @@ AnimationSet::AnimationSet(const char* FileName)
 
 AnimationSet::~AnimationSet()
 {
-   for(uint i = 0; i < vAnimations.size(); i++)
-   {
-      GEInvokeDtor(Animation, vAnimations[i]);
-      Allocator::free(vAnimations[i]);
-   }
-
-   vAnimations.clear();
 }
 
 Animation* AnimationSet::loadAnimation(const char* FileName, const ObjectName& AnimationName)
@@ -264,11 +257,10 @@ Animation* AnimationSet::loadAnimation(const char* FileName, const ObjectName& A
 
 Animation* AnimationSet::getAnimation(const ObjectName& Name)
 {
-   for(uint i = 0; i < vAnimations.size(); i++)
-   {
-      if(vAnimations[i]->getName() == Name)
-         return vAnimations[i];
-   }
+   return mAnimations.get(Name);
+}
 
-   return 0;
+const ObjectRegistry* AnimationSet::getObjectRegistry()
+{
+   return mAnimations.getObjectRegistry();
 }

@@ -13,7 +13,7 @@
 #pragma once
 
 #include "Types/GETypes.h"
-#include "Core/GEObject.h"
+#include "Core/GEObjectManager.h"
 #include "GEResource.h"
 
 namespace GE { namespace Content
@@ -65,7 +65,7 @@ namespace GE { namespace Content
    class AnimationSet : public Resource
    {
    private:
-      GESTLVector(Animation*) vAnimations;
+      Core::ObjectManager<Animation> mAnimations;
 
       Animation* loadAnimation(const char* FileName, const Core::ObjectName& AnimationName);
 
@@ -76,5 +76,7 @@ namespace GE { namespace Content
       ~AnimationSet();
 
       Animation* getAnimation(const Core::ObjectName& Name);
+
+      const Core::ObjectRegistry* getObjectRegistry();
    };
 }}

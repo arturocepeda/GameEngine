@@ -34,6 +34,7 @@ ComponentSkeleton::ComponentSkeleton(Entity* Owner)
    , sBoneInverseTransposeMatrices(0)
    , mBonePoseMatrix(0)
    , cAnimationSet(0)
+   , fDefaultBlendingTime(0.0f)
    , fAnimationSpeedFactor(1.0f)
 {
    cClassName = ObjectName("Skeleton");
@@ -41,6 +42,7 @@ ComponentSkeleton::ComponentSkeleton(Entity* Owner)
    GERegisterPropertyResource(ObjectName, SkeletonName, Skeleton);
    GERegisterPropertyResource(ObjectName, AnimationSetName, AnimationSet);
    GERegisterProperty(ObjectName, DefaultAnimationName);
+   GERegisterProperty(Float, DefaultBlendingTime);
    GERegisterProperty(Float, AnimationSpeedFactor);
 }
 
@@ -209,9 +211,14 @@ AnimationSet* ComponentSkeleton::getAnimationSet() const
 
 void ComponentSkeleton::setAnimationSet(AnimationSet* Set)
 {
-   GEAssert(Set);
    cAnimationSet = Set;
    cDefaultAnimationName = ObjectName::Empty;
+
+#if defined (GE_EDITOR_SUPPORT)
+   Property* cDefaultAnimationNameProperty = const_cast<Property*>(getProperty("DefaultAnimationName"));
+   cDefaultAnimationNameProperty->DataPtr = Set ? (void*)Set->getObjectRegistry() : 0;
+   cOwner->triggerEvent(EventPropertiesUpdated);
+#endif
 }
 
 const ObjectName& ComponentSkeleton::getAnimationSetName() const
@@ -233,10 +240,23 @@ void ComponentSkeleton::setDefaultAnimationName(const ObjectName& Name)
 {
    cDefaultAnimationName = Name;
 
-   GEAssert(cAnimationSet);
+   if(!cAnimationSet)
+      return;
+
    AnimationPlayInfo sPlayInfo;
    sPlayInfo.AnimationName = Name;
+   sPlayInfo.BlendTime = fDefaultBlendingTime;
    playAnimation(sPlayInfo);
+}
+
+float ComponentSkeleton::getDefaultBlendingTime() const
+{
+   return fDefaultBlendingTime;
+}
+
+void ComponentSkeleton::setDefaultBlendingTime(float Time)
+{
+   fDefaultBlendingTime = Time;
 }
 
 float ComponentSkeleton::getAnimationSpeedFactor() const
@@ -251,10 +271,13 @@ void ComponentSkeleton::setAnimationSpeedFactor(float Factor)
 
 void ComponentSkeleton::playAnimation(const AnimationPlayInfo& PlayInfo)
 {
-   GEAssert(cAnimationSet);
+   if(!cAnimationSet)
+      return;
 
    Animation* cAnimation = cAnimationSet->getAnimation(PlayInfo.AnimationName);
-   GEAssert(cAnimation);
+   
+   if(!cAnimation)
+      return;
 
    if(cDefaultAnimationName.getID() == 0)
       cDefaultAnimationName = PlayInfo.AnimationName;
@@ -274,18 +297,18 @@ void ComponentSkeleton::playAnimation(const AnimationPlayInfo& PlayInfo)
 
    if(PlayInfo.BlendTime > GE_EPSILON)
    {
+      cInstance.blendIn(PlayInfo.BlendTime);
+
       for(uint i = 0; i < iInstanceLastIndex; i++)
          vActiveAnimationInstances[i].blendOut(PlayInfo.BlendTime);
-
-      cInstance.blendIn(PlayInfo.BlendTime);
    }
    else
    {
-      for(uint i = 0; i < iInstanceLastIndex; i++)
-         vActiveAnimationInstances.erase(vActiveAnimationInstances.begin());
-
       cInstance.State = AnimationInstanceState::Playing;
       cInstance.CurrentWeight = 1.0f;
+
+      for(uint i = 0; i < iInstanceLastIndex; i++)
+         vActiveAnimationInstances.erase(vActiveAnimationInstances.begin());
    }
 }
 
