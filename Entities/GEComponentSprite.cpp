@@ -46,6 +46,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    GERegisterProperty(Vector2, Size);
    GERegisterPropertyEnum(UVMode, UVMode);
    GERegisterPropertyEnum(FullScreenSizeMode, FullScreenSizeMode);
+   GERegisterProperty(UInt, TextureAtlasIndex);
    GERegisterProperty(ObjectName, TextureAtlasName);
 
    registerEditorAction("Adjust Height to current Width", [this]
@@ -165,6 +166,9 @@ void ComponentSprite::updateVertexData()
 
    if(cTextureAtlasNameProperty->DataPtr != pCachedDataPtr)
       cOwner->triggerEvent(EventPropertiesUpdated);
+
+   Property* cTextureAtlasIndexProperty = const_cast<Property*>(getProperty("TextureAtlasIndex"));
+   cTextureAtlasIndexProperty->MaxValue = (float)(cMaterial->getDiffuseTexture()->AtlasUV.size() - 1);
 #endif
 }
 

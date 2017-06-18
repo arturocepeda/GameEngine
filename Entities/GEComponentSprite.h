@@ -86,6 +86,7 @@ namespace GE { namespace Entities
       GEProperty(Vector2, Size)
       GEPropertyEnum(UVMode, UVMode)
       GEPropertyEnum(FullScreenSizeMode, FullScreenSizeMode)
+      GEProperty(UInt, TextureAtlasIndex)
       GEProperty(ObjectName, TextureAtlasName)
    };
 }}
