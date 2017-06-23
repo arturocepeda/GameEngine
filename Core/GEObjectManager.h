@@ -57,7 +57,7 @@ namespace GE { namespace Core
             return false;
 
          GEInvokeDtor(T, static_cast<T*>(it->second));
-         Allocator::free(it->second);
+         Allocator::free(static_cast<T*>(it->second));
          mRegistry.erase(it);
 
          return true;

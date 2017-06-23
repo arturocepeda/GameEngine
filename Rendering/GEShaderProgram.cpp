@@ -15,9 +15,10 @@
 using namespace GE;
 using namespace GE::Rendering;
 using namespace GE::Core;
+using namespace GE::Content;
 
 ShaderProgram::ShaderProgram(const ObjectName& Name)
-   : Resource(Name, ObjectName::Empty)
+   : Resource(Name, ObjectName::Empty, ResourceType::ShaderProgram)
    , Serializable("ShaderProgram")
    , eDepthBufferMode(DepthBufferMode::NoDepth)
    , eCullingMode(CullingMode::Back)

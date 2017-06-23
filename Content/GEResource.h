@@ -25,21 +25,27 @@ namespace GE { namespace Content
       Mesh,
       Skeleton,
       AnimationSet,
+      LocalizedString,
 
       Count
    };
 
 
-   class Resource : public Core::Object
+   class Resource : public Core::EventHandlingObject
    {
    protected:
       Core::ObjectName cGroupName;
+      ResourceType eType;
 
    public:
-      Resource(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
+      static Core::ObjectName EventResourceCreated;
+      static Core::ObjectName EventResourceDestroyed;
+
+      Resource(const Core::ObjectName& Name, const Core::ObjectName& GroupName, ResourceType Type);
       virtual ~Resource();
 
       const Core::ObjectName& getGroupName() const;
+      ResourceType getType() const;
 
       virtual uint getSizeInBytes() const;
    };

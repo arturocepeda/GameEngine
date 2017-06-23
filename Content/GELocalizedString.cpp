@@ -26,7 +26,7 @@ using namespace GE::Core;
 //  LocalizedString
 //
 LocalizedString::LocalizedString(const ObjectName& Name, const ObjectName& GroupName, const GESTLString& Str)
-    : Resource(Name, GroupName)
+    : Resource(Name, GroupName, ResourceType::LocalizedString)
 {
    sString = Str;
 }

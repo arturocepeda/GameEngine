@@ -49,8 +49,6 @@ void Allocator::init()
    memset(&iTotalBytesAllocated[0], 0, sizeof(uint) * (int)AllocationCategory::Count);
    memset(&bLoggingEnabled[0], 0, sizeof(bool) * (int)AllocationCategory::Count);
 
-   bLoggingEnabled[(int)AllocationCategory::General] = true;
-
    GEMutexInit(pMutex);
    bInitialized = true;
 #endif
@@ -74,21 +72,23 @@ void Allocator::free(void* Ptr)
       GEMutexLock(pMutex);
 
       std::map<void*, AllocationInfo>::const_iterator it = mAllocationsRegistry.find(Ptr);
-      GEAssert(it != mAllocationsRegistry.end());
 
-      const AllocationInfo& sAllocationInfo = it->second;
-      iTotalBytesAllocated[(int)sAllocationInfo.Category] -= sAllocationInfo.Size;
-
-      if(bLoggingEnabled[(int)sAllocationInfo.Category])
+      if(it != mAllocationsRegistry.end())
       {
-         Device::log("Heap Release [%s]: %s --- %u bytes (total: %u bytes)",
-            strAllocationCategory[(int)sAllocationInfo.Category],
-            sAllocationInfo.Description,
-            sAllocationInfo.Size,
-            iTotalBytesAllocated[(int)sAllocationInfo.Category]);
-      }
+         const AllocationInfo& sAllocationInfo = it->second;
+         iTotalBytesAllocated[(int)sAllocationInfo.Category] -= sAllocationInfo.Size;
 
-      mAllocationsRegistry.erase(it);
+         if(bLoggingEnabled[(int)sAllocationInfo.Category])
+         {
+            Device::log("Heap Release [%s]: %s --- %u bytes (total: %u bytes)",
+               strAllocationCategory[(int)sAllocationInfo.Category],
+               sAllocationInfo.Description,
+               sAllocationInfo.Size,
+               iTotalBytesAllocated[(int)sAllocationInfo.Category]);
+         }
+
+         mAllocationsRegistry.erase(it);
+      }
 
       GEMutexUnlock(pMutex);
    }

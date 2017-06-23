@@ -15,9 +15,10 @@
 using namespace GE;
 using namespace GE::Rendering;
 using namespace GE::Core;
+using namespace GE::Content;
 
 Texture::Texture(const ObjectName& Name, const ObjectName& GroupName, uint Width, uint Height)
-   : Resource(Name, GroupName)
+   : Resource(Name, GroupName, ResourceType::Texture)
    , iWidth(Width)
    , iHeight(Height)
    , pHandlePtr(0)
