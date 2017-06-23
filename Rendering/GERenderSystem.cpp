@@ -200,18 +200,21 @@ void RenderSystem::loadMaterial(Material* cMaterial)
 {
    mMaterials.add(cMaterial);
 
-   //if(cMaterial->getBatchRendering())
-   //{
-   //   const uint iMaterialID = cMaterial->getName().getID();
-   //   mBatches[iMaterialID] = RenderOperation();
+   if(cMaterial->getBatchRendering())
+   {
+      const uint iMaterialID = cMaterial->getName().getID();
+      mBatches[iMaterialID] = RenderOperation();
 
-   //   GESTLMap(uint, RenderOperation)::iterator it = mBatches.find(iMaterialID);
-   //   RenderOperation& sRenderBatch = it->second;
-   //   sRenderBatch.RenderMaterial = cMaterial;
+      GESTLMap(uint, RenderOperation)::iterator it = mBatches.find(iMaterialID);
+      RenderOperation& sRenderBatch = it->second;
 
-   //   sRenderBatch.Data.VertexData = Allocator::alloc<float>(RenderBatchVertexDataFloatsCount);
-   //   sRenderBatch.Data.Indices = Allocator::alloc<ushort>(RenderBatchIndicesCount);
-   //}
+      sRenderBatch.RenderMaterialPass = Allocator::alloc<MaterialPass>();
+      GEInvokeCtor(MaterialPass, sRenderBatch.RenderMaterialPass)();
+      sRenderBatch.RenderMaterialPass->setMaterial(cMaterial);
+
+      sRenderBatch.Data.VertexData = Allocator::alloc<float>(RenderBatchVertexDataFloatsCount);
+      sRenderBatch.Data.Indices = Allocator::alloc<ushort>(RenderBatchIndicesCount);
+   }
 }
 
 void RenderSystem::unloadMaterial(const ObjectName& cMaterialName)
@@ -223,6 +226,8 @@ void RenderSystem::unloadMaterial(const ObjectName& cMaterialName)
    {
       GESTLMap(uint, RenderOperation)::iterator it = mBatches.find(cMaterial->getName().getID());
       RenderOperation& sRenderBatch = it->second;
+      GEInvokeDtor(MaterialPass, sRenderBatch.RenderMaterialPass);
+      Allocator::free(sRenderBatch.RenderMaterialPass);
       Allocator::free(sRenderBatch.Data.VertexData);
       Allocator::free(sRenderBatch.Data.Indices);
       mBatches.erase(it);
