@@ -42,7 +42,8 @@ namespace GE { namespace Core
       Default,
       Rotation,
       Enum,
-      BitMask
+      BitMask,
+      Script
    };
 
    struct Property

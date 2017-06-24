@@ -22,7 +22,7 @@ namespace GE { namespace Entities
    {
    private:
       Core::Script* cScript;
-      GESTLString sScriptName;
+      Core::ObjectName cScriptName;
 
       uint iBasePropertiesCount;
       bool bInitialized;
@@ -33,8 +33,8 @@ namespace GE { namespace Entities
       ScriptInstance();
       ~ScriptInstance();
 
-      void setScriptName(const char* FileName);
-      const char* getScriptName() const;
+      void setScriptName(const Core::ObjectName& Name);
+      const Core::ObjectName& getScriptName() const;
 
       void update();
 
@@ -42,7 +42,7 @@ namespace GE { namespace Entities
       bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
       bool inputTouchEnd(int ID, const Vector2& Point);
 
-      GEProperty(String, ScriptName);
+      GEProperty(ObjectName, ScriptName);
    };
 
 

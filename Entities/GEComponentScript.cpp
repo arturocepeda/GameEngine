@@ -36,7 +36,7 @@ ScriptInstance::ScriptInstance()
    cScript = Allocator::alloc<Script>();
    GEInvokeCtor(Script, cScript);
 
-   GERegisterProperty(String, ScriptName);
+   GERegisterPropertySpecialEditor(ObjectName, ScriptName, PropertyEditor::Script);
 
    iBasePropertiesCount = getPropertiesCount();
 
@@ -76,19 +76,19 @@ ScriptInstance::~ScriptInstance()
    Allocator::free(cScript);
 }
 
-void ScriptInstance::setScriptName(const char* FileName)
+void ScriptInstance::setScriptName(const ObjectName& Name)
 {
-   if(!FileName || strlen(FileName) == 0)
+   if(Name.isEmpty())
       return;
 
    bInitialized = false;
 
    cScript->reset();
 
-   if(!cScript->loadFromFile(FileName))
+   if(!cScript->loadFromFile(Name.getString().c_str()))
       return;
 
-   sScriptName = FileName;
+   cScriptName = Name;
 
    while(getPropertiesCount() > iBasePropertiesCount)
       removeProperty(getPropertiesCount() - 1);
@@ -96,9 +96,9 @@ void ScriptInstance::setScriptName(const char* FileName)
    registerScriptProperties();
 }
 
-const char* ScriptInstance::getScriptName() const
+const ObjectName& ScriptInstance::getScriptName() const
 {
-   return sScriptName.c_str();
+   return cScriptName;
 }
 
 void ScriptInstance::registerScriptProperties()
@@ -157,7 +157,7 @@ void ScriptInstance::registerScriptProperties()
 
 void ScriptInstance::update()
 {
-   if(sScriptName.empty())
+   if(cScriptName.isEmpty())
       return;
 
    Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
@@ -185,7 +185,7 @@ void ScriptInstance::update()
 
 bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 {
-   if(!sScriptName.empty() && cScript->isFunctionDefined(cInputTouchBeginFunctionName))
+   if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputTouchBeginFunctionName))
    {
       if(!cScript->runFunction<bool>(cInputTouchBeginFunctionName, ID, Point))
          return false;
@@ -196,7 +196,7 @@ bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 
 bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
 {
-   if(!sScriptName.empty() && cScript->isFunctionDefined(cInputTouchMoveFunctionName))
+   if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputTouchMoveFunctionName))
    {
       if(!cScript->runFunction<bool>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint))
          return false;
@@ -207,7 +207,7 @@ bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const 
 
 bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 {
-   if(!sScriptName.empty() && cScript->isFunctionDefined(cInputTouchEndFunctionName))
+   if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputTouchEndFunctionName))
    {
       if(!cScript->runFunction<bool>(cInputTouchEndFunctionName, ID, Point))
          return false;
