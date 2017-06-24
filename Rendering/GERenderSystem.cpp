@@ -848,10 +848,17 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       {
          ComponentParticleSystem* cParticleSystem = static_cast<ComponentParticleSystem*>(cRenderable);
 
-         if(cParticleSystem->getDynamicShadows())
-            vShadowedParticlesToRender.push_back(sRenderOperation);
+         if(cRenderable->getRenderingMode() == RenderingMode::_2D)
+         {
+            vUIElementsToRender.push_back(sRenderOperation);
+         }
+         else
+         {
+            if(cParticleSystem->getDynamicShadows())
+               vShadowedParticlesToRender.push_back(sRenderOperation);
 
-         vTransparentMeshesToRender.push_back(sRenderOperation);
+            vTransparentMeshesToRender.push_back(sRenderOperation);
+         }
 
          GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::Particles];
          mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
