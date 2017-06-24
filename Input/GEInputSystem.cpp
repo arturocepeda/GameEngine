@@ -100,7 +100,7 @@ void InputSystem::inputTouchBegin(int ID, const Vector2& Point)
       {
          if(cComponents[i]->getOwner()->isActiveInHierarchy())
          {
-            if(!static_cast<ComponentScript*>(cComponents[i])->inputTouchBegin(ID, Point))
+            if(static_cast<ComponentScript*>(cComponents[i])->inputTouchBegin(ID, Point))
                return;
          }
       }
@@ -126,7 +126,7 @@ void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vec
       {
          if(cComponents[i]->getOwner()->isActiveInHierarchy())
          {
-            if(!static_cast<ComponentScript*>(cComponents[i])->inputTouchMove(ID, PreviousPoint, CurrentPoint))
+            if(static_cast<ComponentScript*>(cComponents[i])->inputTouchMove(ID, PreviousPoint, CurrentPoint))
                return;
          }
       }
@@ -152,7 +152,7 @@ void InputSystem::inputTouchEnd(int ID, const Vector2& Point)
       {
          if(cComponents[i]->getOwner()->isActiveInHierarchy())
          {
-            if(!static_cast<ComponentScript*>(cComponents[i])->inputTouchEnd(ID, Point))
+            if(static_cast<ComponentScript*>(cComponents[i])->inputTouchEnd(ID, Point))
                return;
          }
       }
