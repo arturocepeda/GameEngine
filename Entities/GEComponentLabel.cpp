@@ -249,27 +249,24 @@ void ComponentLabel::generateVertexData()
          float fHalfGlyphOffsetY = (sGlyph.OffsetY * fCharacterSize) * 0.5f;
          float fHalfAdvanceX = fAdvanceX * 0.5f;
 
-         const float fPosZFrom = eRenderingMode == RenderingMode::_3D ? 0.001f : 0.0f;
-         const float fPosZTo = 0.0f;
-
          vVertexData.push_back(fPosX - fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY);
-         vVertexData.push_back(fPosZFrom);
+         vVertexData.push_back(0.0f);
          vVertexData.push_back(sGlyph.UV.U0); vVertexData.push_back(sGlyph.UV.V1);
 
          vVertexData.push_back(fPosX + fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY);
-         vVertexData.push_back(fPosZTo);
+         vVertexData.push_back(0.0f);
          vVertexData.push_back(sGlyph.UV.U1); vVertexData.push_back(sGlyph.UV.V1);
 
          vVertexData.push_back(fPosX - fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY);
-         vVertexData.push_back(fPosZFrom);
+         vVertexData.push_back(0.0f);
          vVertexData.push_back(sGlyph.UV.U0); vVertexData.push_back(sGlyph.UV.V0);
 
          vVertexData.push_back(fPosX + fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY);
-         vVertexData.push_back(fPosZTo);
+         vVertexData.push_back(0.0f);
          vVertexData.push_back(sGlyph.UV.U1); vVertexData.push_back(sGlyph.UV.V0);
 
          vIndices.push_back(sGeometryData.NumVertices);
