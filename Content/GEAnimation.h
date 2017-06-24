@@ -22,7 +22,7 @@ namespace GE { namespace Content
    {
       float TimeInSeconds;
       Vector3 FramePosition;
-      Vector3 FrameRotation;
+      Rotation FrameRotation;
       Vector3 FrameScale;
    };
 

@@ -236,12 +236,15 @@ Animation* AnimationSet::loadAnimation(const char* FileName, const ObjectName& A
          cKeyFrame.FramePosition.Z = *reinterpret_cast<float*>(pData);
          pData += sizeof(float);
 
-         cKeyFrame.FrameRotation.X = *reinterpret_cast<float*>(pData);
+         Vector3 vEulerRotation;
+         vEulerRotation.X = *reinterpret_cast<float*>(pData);
          pData += sizeof(float);
-         cKeyFrame.FrameRotation.Y = *reinterpret_cast<float*>(pData);
+         vEulerRotation.Y = *reinterpret_cast<float*>(pData);
          pData += sizeof(float);
-         cKeyFrame.FrameRotation.Z = *reinterpret_cast<float*>(pData);
+         vEulerRotation.Z = *reinterpret_cast<float*>(pData);
          pData += sizeof(float);
+
+         cKeyFrame.FrameRotation = Rotation(vEulerRotation * GE_DEG2RAD);
 
          cKeyFrame.FrameScale.X = *reinterpret_cast<float*>(pData);
          pData += sizeof(float);

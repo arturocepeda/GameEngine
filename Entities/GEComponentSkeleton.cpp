@@ -448,10 +448,8 @@ void ComponentSkeleton::updateAnimationInstance(AnimationInstance* cInstance)
       Vector3 vPosition = Vector3::lerp(sKeyFrameA.FramePosition, sKeyFrameB.FramePosition, fLerpFactor);
       Vector3 vScale = Vector3::lerp(sKeyFrameA.FrameScale, sKeyFrameB.FrameScale, fLerpFactor);
 
-      Rotation cRotationA = Rotation(sKeyFrameA.FrameRotation * GE_DEG2RAD);
-      Rotation cRotationB = Rotation(sKeyFrameB.FrameRotation * GE_DEG2RAD);
-      const Quaternion& qQuaternionA = cRotationA.getQuaternion();
-      const Quaternion& qQuaternionB = cRotationB.getQuaternion();
+      const Quaternion& qQuaternionA = sKeyFrameA.FrameRotation.getQuaternion();
+      const Quaternion& qQuaternionB = sKeyFrameB.FrameRotation.getQuaternion();
       Quaternion qQuaternion = Quaternion::slerp(qQuaternionA, qQuaternionB, fLerpFactor);
 
       Matrix4 mBoneInstancePoseMatrix;
