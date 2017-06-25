@@ -180,20 +180,13 @@ namespace GE { namespace Core
 //  Definition of enum properties
 //
 #define GEPropertyEnumReadonly(EnumType, PropertyName) \
-   GE::Core::Value P_get##PropertyName() { return GE::Core::Value(str##EnumType[(GE::uint)get##PropertyName()]); }
+   GE::Core::Value P_get##PropertyName() { return GE::Core::Value((GE::byte)get##PropertyName()); }
 
 #define GEPropertyEnumWriteonly(EnumType, PropertyName) \
    void P_set##PropertyName(GE::Core::Value& v) \
    { \
-      for(GE::uint i = 0; i < (GE::uint)EnumType::Count; i++) \
-      { \
-         if(strcmp(v.getAsString(), str##EnumType[i]) == 0) \
-         { \
-            set##PropertyName((EnumType)i); \
-            return; \
-         } \
-      } \
-      GEAssert(false); \
+      GEAssert(v.getAsByte() < (GE::byte)EnumType::Count); \
+      set##PropertyName((EnumType)v.getAsByte()); \
    }
 
 #define GEPropertyEnum(EnumType, PropertyName) \
@@ -311,13 +304,13 @@ namespace GE { namespace Core
 //  Register enum properties
 //
 #define GERegisterPropertyEnum(EnumType, PropertyName) \
-   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::String, \
+   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::Enum, (void*)str##EnumType, (uint)EnumType::Count)
 
 #define GERegisterPropertyEnumReadonly(EnumType, PropertyName) \
-   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::String, \
+   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       nullptr, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::Enum, (void*)str##EnumType, (uint)EnumType::Count)
