@@ -118,7 +118,18 @@ void Material::setDiffuseTextureName(const ObjectName& Name)
    if(RenderSystem::getInstance())
    {
       cDiffuseTexture = RenderSystem::getInstance()->getTexture(Name);
-      cDiffuseTextureName = cDiffuseTexture ? cDiffuseTexture->getName() : ObjectName::Empty;
+
+      if(cDiffuseTexture)
+      {
+         cDiffuseTextureName = cDiffuseTexture->getName();
+      }
+      else
+      {
+         cDiffuseTextureName = ObjectName::Empty;
+
+         Device::log("Texture not found: '%s' (Referenced in Material: '%s')",
+            Name.getString().c_str(), cName.getString().c_str());
+      }
    }
 }
 
@@ -257,6 +268,10 @@ void MaterialPass::setMaterialName(const Core::ObjectName& Name)
    if(cMaterialObjectRegistry->find(Name.getID()) != cMaterialObjectRegistry->end())
    {
       cNewMaterial = static_cast<Material*>(cMaterialObjectRegistry->find(Name.getID())->second);
+   }
+   else
+   {
+      Device::log("Material not found: '%s'", Name.getString().c_str());
    }
 
    setMaterial(cNewMaterial);
