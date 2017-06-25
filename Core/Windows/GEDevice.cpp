@@ -77,15 +77,8 @@ GESTLString getFullPath(const char* Filename)
 uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
 {
    char sPath[MAX_PATH];
-   DWORD dw = GetModuleFileName(NULL, sPath, MAX_PATH);
+   DWORD dw = GetCurrentDirectory(MAX_PATH, sPath);
    GEAssert(dw >= 0);
-
-   size_t iCharIndex = strlen(sPath) - 1;
-
-   while(sPath[iCharIndex] != '\\')
-      iCharIndex--;
-
-   sPath[iCharIndex] = '\0';
 
    char sFindString[MAX_PATH];
    sprintf(sFindString, "%s\\%s\\*.%s", sPath, SubDir, Extension);
@@ -109,15 +102,8 @@ uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
 void Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
    char sPath[MAX_PATH];
-   DWORD dw = GetModuleFileName(NULL, sPath, MAX_PATH);
+   DWORD dw = GetCurrentDirectory(MAX_PATH, sPath);
    GEAssert(dw >= 0);
-
-   size_t iCharIndex = strlen(sPath) - 1;
-
-   while(sPath[iCharIndex] != '\\')
-      iCharIndex--;
-
-   sPath[iCharIndex] = '\0';
 
    char sFindString[MAX_PATH];
    sprintf(sFindString, "%s\\%s\\*.%s", sPath, SubDir, Extension);

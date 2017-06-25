@@ -69,6 +69,7 @@ namespace GE { namespace Content
       "Mesh",
       "Skeleton",
       "AnimationSet",
+      "LocalizedString",
    };
 }}
 
