@@ -939,6 +939,7 @@ void RenderSystem::prepareBatchForRendering(const RenderOperation& sBatch)
    switch(cRenderable->getRenderableType())
    {
    case RenderableType::Sprite:
+   case RenderableType::Label:
       vUIElementsToRender.push_back(sBatch);
       break;
    case RenderableType::Mesh:
