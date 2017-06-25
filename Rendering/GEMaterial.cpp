@@ -115,12 +115,10 @@ void Material::setDiffuseTexture(Texture* DiffuseTexture)
 
 void Material::setDiffuseTextureName(const ObjectName& Name)
 {
-   cDiffuseTextureName = Name;
-
    if(RenderSystem::getInstance())
    {
       cDiffuseTexture = RenderSystem::getInstance()->getTexture(Name);
-      GEAssert(cDiffuseTexture);
+      cDiffuseTextureName = cDiffuseTexture ? cDiffuseTexture->getName() : ObjectName::Empty;
    }
 }
 
