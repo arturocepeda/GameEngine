@@ -115,18 +115,14 @@ void Material::setDiffuseTexture(Texture* DiffuseTexture)
 
 void Material::setDiffuseTextureName(const ObjectName& Name)
 {
+   cDiffuseTextureName = Name;
+
    if(RenderSystem::getInstance())
    {
       cDiffuseTexture = RenderSystem::getInstance()->getTexture(Name);
 
-      if(cDiffuseTexture)
+      if(!cDiffuseTexture)
       {
-         cDiffuseTextureName = cDiffuseTexture->getName();
-      }
-      else
-      {
-         cDiffuseTextureName = ObjectName::Empty;
-
          Device::log("Texture not found: '%s' (Referenced in Material: '%s')",
             Name.getString().c_str(), cName.getString().c_str());
       }
