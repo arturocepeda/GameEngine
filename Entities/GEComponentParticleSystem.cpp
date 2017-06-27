@@ -33,6 +33,12 @@ using namespace GE::Content;
 //
 //  ComponentParticleSystem
 //
+#if defined (GE_EDITOR_SUPPORT)
+const uint MaxParticles = 8192;
+#else
+const uint MaxParticles = 1024;
+#endif
+
 RandFloat cRandFloat01(0.0f, 1.0f);
 
 ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)

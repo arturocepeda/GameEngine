@@ -62,8 +62,6 @@ namespace GE { namespace Entities
    class ComponentParticleSystem : public ComponentRenderable
    {
    private:
-      static const uint MaxParticles = 1024;
-
       typedef GESTLVector(Particle) ParticleList;
       ParticleList lParticles;
       float fElapsedTimeSinceLastEmission;
