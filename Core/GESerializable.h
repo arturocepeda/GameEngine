@@ -56,6 +56,7 @@ namespace GE { namespace Core
 #if defined (GE_EDITOR_SUPPORT)
       ObjectName Class;
       PropertyEditor Editor;
+      Value DefaultValue;
       void* DataPtr;
       uint DataUInt;
       float MinValue;

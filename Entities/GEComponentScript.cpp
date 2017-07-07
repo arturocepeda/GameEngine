@@ -105,7 +105,7 @@ void ScriptInstance::registerScriptProperties()
 {
    const GESTLVector(ObjectName)& vGlobalVariableNames = cScript->getGlobalVariableNames();
 
-   for(int i = (int)(vGlobalVariableNames.size() - 1); i >= 0; i--)
+   for(uint i = 0; i < vGlobalVariableNames.size(); i++)
    {
       const ObjectName& vGlobalVariableName = vGlobalVariableNames[i];
       const char* sGlobalVariableName = vGlobalVariableName.getString().c_str();

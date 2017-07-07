@@ -437,9 +437,11 @@ const char* Scene::getBackgroundMaterialName() const
    return cBackgroundMaterialName.getString().c_str();
 }
 
-const Color& Scene::getAmbientLightColor() const
+Color Scene::getAmbientLightColor() const
 {
-   return RenderSystem::getInstance()->getAmbientLightColor();
+   return RenderSystem::getInstance()
+      ? RenderSystem::getInstance()->getAmbientLightColor()
+      : Color();
 }
 
 float Scene::getShadowsMaxDistance() const

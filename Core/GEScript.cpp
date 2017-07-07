@@ -301,6 +301,11 @@ void Script::collectGlobalSymbols()
 
       lua_pop(luaState, 1);
    }
+
+   std::sort(vGlobalVariableNames.begin(), vGlobalVariableNames.end(), [this](const ObjectName& l, const ObjectName& r)
+   {
+      return strcmp(l.getString().c_str(), r.getString().c_str()) < 0;
+   });
 }
 
 void Script::registerTypes()

@@ -16,6 +16,7 @@
 #include "Rendering/GEFont.h"
 #include "Entities/GEEntity.h"
 #include "Entities/GEComponent.h"
+#include "Content/GEResourcesManager.h"
 
 #include "Externals/pugixml/pugixml.hpp"
 #include <D3DCompiler.h>
@@ -39,6 +40,7 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Entities;
+using namespace GE::Content;
 using namespace pugi;
 
 const char ContentXmlDirName[] = ".";
@@ -82,10 +84,10 @@ int main(int argc, char* argv[])
 
 void registerObjectManagers()
 {
-   ObjectManagers::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mManagerShaderPrograms);
-   ObjectManagers::getInstance()->registerObjectManager<Material>("Material", &mManagerMaterials);
-   ObjectManagers::getInstance()->registerObjectManager<Texture>("Texture", &mManagerTextures);
-   ObjectManagers::getInstance()->registerObjectManager<Font>("Font", &mManagerFonts);
+   ResourcesManager::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mManagerShaderPrograms);
+   ResourcesManager::getInstance()->registerObjectManager<Material>("Material", &mManagerMaterials);
+   ResourcesManager::getInstance()->registerObjectManager<Texture>("Texture", &mManagerTextures);
+   ResourcesManager::getInstance()->registerObjectManager<Font>("Font", &mManagerFonts);
 }
 
 void packShaders(RenderingAPI eRenderingAPI)
@@ -156,7 +158,7 @@ void packShaders(RenderingAPI eRenderingAPI)
          Value((GE::byte)sParameter.Offset).writeToStream(sOutputFile);
       }
 
-      cShaderProgram->xmlToStream(xmlShader, sOutputFile);
+      cShaderProgram->saveToStream(sOutputFile);
 
       uint iVertexElementsMask = cShaderProgram->getVertexElementsMask(xmlShader);
       Value((GE::byte)iVertexElementsMask).writeToStream(sOutputFile);
@@ -411,6 +413,11 @@ void packMaterials()
       char sBinFileName[MAX_PATH];
       getBinFileName(sXmlFileName, sBinFileName);
 
+      char sGroupName[MAX_PATH];
+      strcpy(sGroupName, sXmlFileName);
+      size_t iXmlFileNameLength = strlen(sXmlFileName);
+      sGroupName[iXmlFileNameLength - 14] = '\0';
+
       char sOutputPath[MAX_PATH];
       GetCurrentDirectory(MAX_PATH, sOutputPath);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
@@ -440,10 +447,10 @@ void packMaterials()
          const char* sMaterialName = xmlMaterial.attribute("name").value();
          Value(sMaterialName).writeToStream(sOutputFile);
 
-         Material* cMaterial = new Material(sMaterialName);
+         Material* cMaterial = new Material(sMaterialName, sGroupName);
          mManagerMaterials.add(cMaterial);
          cMaterial->loadFromXml(xmlMaterial);
-         cMaterial->xmlToStream(xmlMaterial, sOutputFile);
+         cMaterial->saveToStream(sOutputFile);
       }
 
       sOutputFile.close();

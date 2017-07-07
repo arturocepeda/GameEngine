@@ -35,19 +35,22 @@ void Serializable::registerProperty(const ObjectName& PropertyName, ValueType Ty
    PropertyEditor Editor, void* PropertyDataPtr, uint PropertyDataUInt,
    float MinValue, float MaxValue)
 {
-   Property sProperty;
-   sProperty.Name = PropertyName;
-   sProperty.Type = Type;
-   sProperty.Setter = Setter;
-   sProperty.Getter = Getter;
+   Property sProperty =
+   {
+      PropertyName,
+      Type,
+      Getter,
+      Setter,
 #if defined (GE_EDITOR_SUPPORT)
-   sProperty.Class = cClassName;
-   sProperty.Editor = Editor;
-   sProperty.DataPtr = PropertyDataPtr;
-   sProperty.DataUInt = PropertyDataUInt;
-   sProperty.MinValue = MinValue;
-   sProperty.MaxValue = MaxValue;
+      cClassName,
+      Editor,
+      Getter(),
+      PropertyDataPtr,
+      PropertyDataUInt,
+      MinValue,
+      MaxValue,
 #endif
+   };
    vProperties.push_back(sProperty);
 }
 
@@ -405,18 +408,17 @@ void Serializable::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stre
             const char* sValue = xmlProperty.attribute("value").value();
             GEAssert(strlen(sValue) < Value::BufferSize);
 
-            bPropertySet = true;
-            Stream.write(reinterpret_cast<const char*>(&bPropertySet), 1);
-
             Value cValue = Value(sProperty.Type, sValue);
             cValue.writeToStream(Stream);
+            bPropertySet = true;
+
             break;
          }
       }
 
       if(!bPropertySet)
       {
-         Stream.write(reinterpret_cast<const char*>(&bPropertySet), 1);
+         sProperty.DefaultValue.writeToStream(Stream);
       }
    }
 #endif

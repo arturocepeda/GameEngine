@@ -440,7 +440,7 @@ bool Value::operator!=(const Value& Other) const
    return !operator==(Other);
 }
 
-void Value::writeToStream(std::ostream& Stream)
+void Value::writeToStream(std::ostream& Stream) const
 {
    switch(eType)
    {

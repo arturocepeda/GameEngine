@@ -110,7 +110,7 @@ namespace GE { namespace Entities
 
       SceneBackgroundMode getBackgroundMode() const;
       const char* getBackgroundMaterialName() const;
-      const Color& getAmbientLightColor() const;
+      Color getAmbientLightColor() const;
       float getShadowsMaxDistance() const;
 
       void setBackgroundMode(SceneBackgroundMode BackgroundMode);

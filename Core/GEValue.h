@@ -103,7 +103,7 @@ namespace GE { namespace Core
       bool operator==(const Value& Other) const;
       bool operator!=(const Value& Other) const;
 
-      void writeToStream(std::ostream& Stream);
+      void writeToStream(std::ostream& Stream) const;
 
       static Value fromStream(ValueType Type, std::istream& Stream);
       static Value fromRawData(ValueType Type, const char* Data, uint DataSize);
