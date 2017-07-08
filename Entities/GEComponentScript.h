@@ -25,9 +25,11 @@ namespace GE { namespace Entities
       Core::ObjectName cScriptName;
 
       uint iBasePropertiesCount;
+      uint iBaseActionsCount;
       bool bInitialized;
 
       void registerScriptProperties();
+      void registerScriptActions();
 
    public:
       ScriptInstance();

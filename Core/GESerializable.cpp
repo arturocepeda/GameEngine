@@ -93,6 +93,12 @@ void Serializable::registerEditorAction(const ObjectName& ActionName, const Acti
 #endif
 }
 
+void Serializable::removeAction(uint ActionIndex)
+{
+   GEAssert(ActionIndex < (uint)vActions.size());
+   vActions.erase(vActions.begin() + ActionIndex);
+}
+
 const ObjectName& Serializable::getClassName() const
 {
    return cClassName;

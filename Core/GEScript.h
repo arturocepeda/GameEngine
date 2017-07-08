@@ -45,6 +45,7 @@ namespace GE { namespace Core
       static GESTLSet(uint) sDefaultGlobalNames;
 
       static void* customAlloc(void*, void* ptr, size_t, size_t nsize);
+      static bool alphabeticalComparison(const ObjectName& l, const ObjectName& r);
 
       void collectGlobalSymbols();
       void registerTypes();

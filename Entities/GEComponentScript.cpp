@@ -26,6 +26,16 @@ const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
 const ObjectName cInputTouchMoveFunctionName = ObjectName("inputTouchMove");
 const ObjectName cInputTouchEndFunctionName = ObjectName("inputTouchEnd");
 
+const ObjectName* cInternalFunctionNames[] =
+{
+   &cInitFunctionName,
+   &cUpdateFunctionName,
+   &cInputTouchBeginFunctionName,
+   &cInputTouchMoveFunctionName,
+   &cInputTouchEndFunctionName,
+};
+const uint iInternalFuncionNamesCount = sizeof(cInternalFunctionNames) / sizeof(ObjectName*);
+
 //
 //  ScriptInstance
 //
@@ -37,8 +47,6 @@ ScriptInstance::ScriptInstance()
    GEInvokeCtor(Script, cScript);
 
    GERegisterPropertySpecialEditor(ObjectName, ScriptName, PropertyEditor::Script);
-
-   iBasePropertiesCount = getPropertiesCount();
 
    registerEditorAction("Reload", [this]
    {
@@ -63,11 +71,19 @@ ScriptInstance::ScriptInstance()
       for(uint i = 0; i < iNumProperties; i++)
       {
          ObjectName cPropertyName = ObjectName(vCachedPropertyValues[i].PropertyNameHash);
-         set(cPropertyName, vCachedPropertyValues[i].PropertyValue);
+         const Property* cProperty = getProperty(cPropertyName);
+
+         if(cProperty)
+         {
+            cProperty->Setter(vCachedPropertyValues[i].PropertyValue);
+         }
       }
 
       Allocator::free(vCachedPropertyValues);
    });
+
+   iBasePropertiesCount = getPropertiesCount();
+   iBaseActionsCount = getActionsCount();
 }
 
 ScriptInstance::~ScriptInstance()
@@ -93,7 +109,11 @@ void ScriptInstance::setScriptName(const ObjectName& Name)
    while(getPropertiesCount() > iBasePropertiesCount)
       removeProperty(getPropertiesCount() - 1);
 
+   while(getActionsCount() > iBaseActionsCount)
+      removeAction(getActionsCount() - 1);
+
    registerScriptProperties();
+   registerScriptActions();
 }
 
 const ObjectName& ScriptInstance::getScriptName() const
@@ -107,8 +127,8 @@ void ScriptInstance::registerScriptProperties()
 
    for(uint i = 0; i < vGlobalVariableNames.size(); i++)
    {
-      const ObjectName& vGlobalVariableName = vGlobalVariableNames[i];
-      const char* sGlobalVariableName = vGlobalVariableName.getString().c_str();
+      const ObjectName& cGlobalVariableName = vGlobalVariableNames[i];
+      const char* sGlobalVariableName = cGlobalVariableName.getString().c_str();
       ValueType ePropertyValue = cScript->getVariableType(sGlobalVariableName);
 
       if(ePropertyValue == ValueType::Count)
@@ -143,7 +163,7 @@ void ScriptInstance::registerScriptProperties()
          }
       };
 
-      registerProperty(vGlobalVariableName, ePropertyValue, setter, getter);
+      registerProperty(cGlobalVariableName, ePropertyValue, setter, getter);
    }
 
    if(cOwner)
@@ -152,6 +172,36 @@ void ScriptInstance::registerScriptProperties()
       EventArgs sEventArgs;
       sEventArgs.Sender = cEntity;
       cEntity->triggerEvent(EventPropertiesUpdated, &sEventArgs);
+   }
+}
+
+void ScriptInstance::registerScriptActions()
+{
+   const GESTLVector(ObjectName)& vGlobalFunctionNames = cScript->getGlobalFunctionNames();
+
+   for(uint i = 0; i < vGlobalFunctionNames.size(); i++)
+   {
+      const ObjectName& cGlobalFunctionName = vGlobalFunctionNames[i];
+      bool bInternalFunction = false;
+
+      for(uint j = 0; j < iInternalFuncionNamesCount; j++)
+      {
+         if(cGlobalFunctionName == *cInternalFunctionNames[j])
+         {
+            bInternalFunction = true;
+            break;
+         }
+      }
+
+      if(bInternalFunction)
+         continue;
+
+      const char* sGlobalFunctionName = cGlobalFunctionName.getString().c_str();
+
+      registerEditorAction(sGlobalFunctionName, [this, cGlobalFunctionName]
+      {
+         cScript->runFunction<void>(cGlobalFunctionName);
+      });
    }
 }
 

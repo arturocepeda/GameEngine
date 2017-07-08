@@ -244,6 +244,18 @@ bool Script::isFunctionDefined(const ObjectName& FunctionName) const
 
 void* Script::customAlloc(void*, void* ptr, size_t, size_t nsize)
 {
+   if(nsize > 0)
+   {
+      if(ptr)
+         Device::log("LUA reallocation (%d bytes)", nsize);
+      else
+         Device::log("LUA allocation (%d bytes)", nsize);
+   }
+   else
+   {
+      Device::log("LUA deallocation");
+   }
+
    if(nsize == 0)
    {
       if(ptr)
@@ -257,6 +269,11 @@ void* Script::customAlloc(void*, void* ptr, size_t, size_t nsize)
    return ptr
       ? Allocator::realloc<char>(ptr, (uint)nsize, AllocationCategory::Scripting)
       : Allocator::alloc<char>((uint)nsize, AllocationCategory::Scripting);
+}
+
+bool Script::alphabeticalComparison(const ObjectName& l, const ObjectName& r)
+{
+   return strcmp(l.getString().c_str(), r.getString().c_str()) < 0;
 }
 
 void Script::collectGlobalSymbols()
@@ -302,10 +319,8 @@ void Script::collectGlobalSymbols()
       lua_pop(luaState, 1);
    }
 
-   std::sort(vGlobalVariableNames.begin(), vGlobalVariableNames.end(), [this](const ObjectName& l, const ObjectName& r)
-   {
-      return strcmp(l.getString().c_str(), r.getString().c_str()) < 0;
-   });
+   std::sort(vGlobalVariableNames.begin(), vGlobalVariableNames.end(), alphabeticalComparison);
+   std::sort(vGlobalFunctionNames.begin(), vGlobalFunctionNames.end(), alphabeticalComparison);
 }
 
 void Script::registerTypes()
@@ -439,6 +454,8 @@ void Script::registerTypes()
    (
       "ComponentSprite"
       , "isOver", &ComponentSprite::isOver
+      , "getTextureAtlasIndex", &ComponentSprite::getTextureAtlasIndex
+      , "setTextureAtlasIndex", &ComponentSprite::setTextureAtlasIndex
       , sol::base_classes, sol::bases<ComponentRenderable>()
    );
    lua.new_usertype<ComponentCamera>
