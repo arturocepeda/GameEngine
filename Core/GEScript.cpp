@@ -244,18 +244,6 @@ bool Script::isFunctionDefined(const ObjectName& FunctionName) const
 
 void* Script::customAlloc(void*, void* ptr, size_t, size_t nsize)
 {
-   if(nsize > 0)
-   {
-      if(ptr)
-         Device::log("LUA reallocation (%d bytes)", nsize);
-      else
-         Device::log("LUA allocation (%d bytes)", nsize);
-   }
-   else
-   {
-      Device::log("LUA deallocation");
-   }
-
    if(nsize == 0)
    {
       if(ptr)
