@@ -13,6 +13,7 @@
 #include "GEInputSystem.h"
 #include "Core/GEStateManager.h"
 #include "Entities/GEScene.h"
+#include "Entities/GEEntity.h"
 #include "Entities/GEComponentScript.h"
 
 using namespace GE;

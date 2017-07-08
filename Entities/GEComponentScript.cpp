@@ -12,6 +12,7 @@
 
 #include "GEComponentScript.h"
 #include "Content/GEContentData.h"
+#include "Core/GEScript.h"
 #include "Core/GETime.h"
 #include "Entities/GEScene.h"
 

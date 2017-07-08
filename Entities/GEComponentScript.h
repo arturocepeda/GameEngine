@@ -14,7 +14,11 @@
 
 #include "GEComponent.h"
 #include "GEComponentType.h"
-#include "Core/GEScript.h"
+
+namespace GE { namespace Core
+{
+   class Script;
+}}
 
 namespace GE { namespace Entities
 {
