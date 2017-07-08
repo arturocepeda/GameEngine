@@ -22,6 +22,7 @@
 #include "Entities/GEComponentCamera.h"
 #include "Entities/GEComponentCollider.h"
 #include "Entities/GEComponentUIElement.h"
+#include "Entities/GEComponentScript.h"
 #include "Rendering/GERenderSystem.h"
 #include "Rendering/GEMaterial.h"
 
@@ -70,6 +71,7 @@ public:
    ComponentCollider* getComponentCollider() { return getComponent<ComponentCollider>(); }
    ComponentUIElement* getComponentUIElement() { return getComponent<ComponentUIElement>(); }
    ComponentSkeleton* getComponentSkeleton() { return getComponent<ComponentSkeleton>(); }
+   ComponentScript* getComponentScript() { return getComponent<ComponentScript>(); }
 };
 
 
@@ -470,6 +472,19 @@ void Script::registerTypes()
       , "getBoneEntity", (Entity* (ComponentSkeleton::*)(const ObjectName&) const)&ComponentSkeleton::getBoneEntity
       , sol::base_classes, sol::bases<Component>()
    );
+   lua.new_usertype<ComponentScript>
+   (
+      "ComponentScript"
+      , "getScriptInstanceCount", &ComponentScript::getScriptInstanceCount
+      , "getScriptInstance", &ComponentScript::getScriptInstance
+      , sol::base_classes, sol::bases<Component>()
+   );
+   lua.new_usertype<ScriptInstance>
+   (
+      "ScriptInstance"
+      , "getScriptName", &ScriptInstance::getScriptName
+      , sol::base_classes, sol::bases<Serializable>()
+   );
    lua.new_usertype<Entity>
    (
       "Entity"
@@ -480,6 +495,7 @@ void Script::registerTypes()
       , "getComponentCollider", &luaEntity::getComponentCollider
       , "getComponentUIElement", &luaEntity::getComponentUIElement
       , "getComponentSkeleton", &luaEntity::getComponentSkeleton
+      , "getComponentScript", &luaEntity::getComponentScript
       , sol::base_classes, sol::bases<Serializable>()
    );
    lua.new_usertype<Scene>
