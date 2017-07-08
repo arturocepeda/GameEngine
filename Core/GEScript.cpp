@@ -19,6 +19,7 @@
 #include "Entities/GEScene.h"
 #include "Entities/GEComponentTransform.h"
 #include "Entities/GEComponentSprite.h"
+#include "Entities/GEComponentParticleSystem.h"
 #include "Entities/GEComponentCamera.h"
 #include "Entities/GEComponentCollider.h"
 #include "Entities/GEComponentUIElement.h"
@@ -67,6 +68,8 @@ public:
    ComponentTransform* getComponentTransform() { return getComponent<ComponentTransform>(); }
    ComponentRenderable* getComponentRenderable() { return getComponent<ComponentRenderable>(); }
    ComponentSprite* getComponentSprite() { return getComponent<ComponentSprite>(); }
+   ComponentMesh* getComponentMesh() { return getComponent<ComponentMesh>(); }
+   ComponentParticleSystem* getComponentParticleSystem() { return getComponent<ComponentParticleSystem>(); }
    ComponentCamera* getComponentCamera() { return getComponent<ComponentCamera>(); }
    ComponentCollider* getComponentCollider() { return getComponent<ComponentCollider>(); }
    ComponentUIElement* getComponentUIElement() { return getComponent<ComponentUIElement>(); }
@@ -396,8 +399,45 @@ void Script::registerTypes()
    );
 
    //
+   //  GE::Content
+   //
+   lua.new_usertype<Skeleton>
+   (
+      "Skeleton"
+      , "getBonesCount", &Skeleton::getBonesCount
+   );
+
+   //
    //  GE::Entities
    //
+   lua.new_usertype<Scene>
+   (
+      "Scene"
+      , "getActiveScene", &Scene::getActiveScene
+      , "getEntity", &Scene::getEntity
+      , "addEntity", (Entity* (Scene::*)(const ObjectName&, Entity*))&Scene::addEntity
+      , "addPrefab", (Entity* (Scene::*)(const char*, const ObjectName&, Entity*))&Scene::addPrefab
+      , sol::base_classes, sol::bases<Serializable>()
+   );
+   lua.new_usertype<Entity>
+   (
+      "Entity"
+      , "getActive", &Entity::getActive
+      , "setActive", &Entity::setActive
+      , "addComponent", (Component* (Entity::*)(const Core::ObjectName&))&Entity::addComponent
+      , "getComponentTransform", &luaEntity::getComponentTransform
+      , "getComponentRenderable", &luaEntity::getComponentRenderable
+      , "getComponentSprite", &luaEntity::getComponentSprite
+      , "getComponentMesh", &luaEntity::getComponentMesh
+      , "getComponentParticleSystem", &luaEntity::getComponentParticleSystem
+      , "getComponentCamera", &luaEntity::getComponentCamera
+      , "getComponentCollider", &luaEntity::getComponentCollider
+      , "getComponentUIElement", &luaEntity::getComponentUIElement
+      , "getComponentSkeleton", &luaEntity::getComponentSkeleton
+      , "getComponentScript", &luaEntity::getComponentScript
+      , "init", &Entity::init
+      , sol::base_classes, sol::bases<Serializable>()
+   );
    lua.new_usertype<Component>
    (
       "Component"
@@ -448,6 +488,21 @@ void Script::registerTypes()
       , "setTextureAtlasIndex", &ComponentSprite::setTextureAtlasIndex
       , sol::base_classes, sol::bases<ComponentRenderable>()
    );
+   lua.new_usertype<ComponentMesh>
+   (
+      "ComponentMesh"
+      , "getMeshName", &ComponentMesh::getMeshName
+      , "setMeshName", &ComponentMesh::setMeshName
+      , sol::base_classes, sol::bases<ComponentRenderable>()
+   );
+   lua.new_usertype<ComponentParticleSystem>
+   (
+      "ComponentParticleSystem"
+      , "getEmitterActive", &ComponentParticleSystem::getEmitterActive
+      , "setEmitterActive", &ComponentParticleSystem::setEmitterActive
+      , "burst", &ComponentParticleSystem::burst
+      , sol::base_classes, sol::bases<ComponentRenderable>()
+   );
    lua.new_usertype<ComponentCamera>
    (
       "ComponentCamera"
@@ -469,7 +524,9 @@ void Script::registerTypes()
    lua.new_usertype<ComponentSkeleton>
    (
       "ComponentSkeleton"
+      , "getSkeleton", &ComponentSkeleton::getSkeleton
       , "getBoneEntity", (Entity* (ComponentSkeleton::*)(const ObjectName&) const)&ComponentSkeleton::getBoneEntity
+      , "getBoneEntityByIndex", (Entity* (ComponentSkeleton::*)(uint) const)&ComponentSkeleton::getBoneEntity
       , sol::base_classes, sol::bases<Component>()
    );
    lua.new_usertype<ComponentScript>
@@ -483,28 +540,6 @@ void Script::registerTypes()
    (
       "ScriptInstance"
       , "getScriptName", &ScriptInstance::getScriptName
-      , sol::base_classes, sol::bases<Serializable>()
-   );
-   lua.new_usertype<Entity>
-   (
-      "Entity"
-      , "getComponentTransform", &luaEntity::getComponentTransform
-      , "getComponentRenderable", &luaEntity::getComponentRenderable
-      , "getComponentSprite", &luaEntity::getComponentSprite
-      , "getComponentCamera", &luaEntity::getComponentCamera
-      , "getComponentCollider", &luaEntity::getComponentCollider
-      , "getComponentUIElement", &luaEntity::getComponentUIElement
-      , "getComponentSkeleton", &luaEntity::getComponentSkeleton
-      , "getComponentScript", &luaEntity::getComponentScript
-      , sol::base_classes, sol::bases<Serializable>()
-   );
-   lua.new_usertype<Scene>
-   (
-      "Scene"
-      , "getActiveScene", &Scene::getActiveScene
-      , "getEntity", &Scene::getEntity
-      , "addEntity", (Entity* (Scene::*)(const ObjectName&, Entity*))&Scene::addEntity
-      , "addPrefab", (Entity* (Scene::*)(const char*, const ObjectName&, Entity*))&Scene::addPrefab
       , sol::base_classes, sol::bases<Serializable>()
    );
 

@@ -38,7 +38,12 @@
     <ClCompile Include="Core\GEParser.cpp" />
     <ClCompile Include="Core\GEPhysics.cpp" />
     <ClCompile Include="Core\GERand.cpp" />
-    <ClCompile Include="Core\GEScript.cpp" />
+    <ClCompile Include="Core\GEScript.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="Core\GESerializable.cpp" />
     <ClCompile Include="Core\GEState.cpp" />
     <ClCompile Include="Core\GEStateManager.cpp" />

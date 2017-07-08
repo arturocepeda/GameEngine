@@ -675,13 +675,7 @@ void Scene::queueForRendering()
       if(!cRenderable->getVisible())
          continue;
 
-#if defined (GE_RENDERING_API_DIRECTX)
-         JobDesc sJobDesc("QueueForRendering");
-         sJobDesc.Task = [cRenderable] { RenderSystem::getInstance()->queueForRendering(cRenderable); };
-         TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
-#else
-         RenderSystem::getInstance()->queueForRendering(cRenderable);
-#endif
+      RenderSystem::getInstance()->queueForRendering(cRenderable);
    }
 }
 
