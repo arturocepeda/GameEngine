@@ -14,6 +14,7 @@
 #include "GETexture.h"
 #include "GERenderSystem.h"
 #include "Content/GEResourcesManager.h"
+#include "Core/GEDevice.h"
 
 using namespace GE;
 using namespace GE::Core;
