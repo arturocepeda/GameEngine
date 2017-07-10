@@ -348,6 +348,9 @@ void Script::registerTypes()
    (
       "Rotation"
       , sol::constructors<sol::types<>, sol::types<const Vector3&>, sol::types<const Vector3&, float>>()
+      , "setFromEulerAngles", &Rotation::setFromEulerAngles
+      , "setFromAxisAngle", &Rotation::setFromAxisAngle
+      , "setFromQuaternion", &Rotation::setFromQuaternion
    );
    lua.new_usertype<Color>
    (

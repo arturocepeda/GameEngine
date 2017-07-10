@@ -50,7 +50,7 @@ void Font::createFontTexture(ImageData& cImageData)
    dxDevice->CreateShaderResourceView(dxTexture, 0, &dxResourceView);
 
    cTexture = Allocator::alloc<Texture>();
-   GEInvokeCtor(Texture, cTexture)(ObjectName(), "FontTextures", cImageData.getWidth(), cImageData.getHeight());
+   GEInvokeCtor(Texture, cTexture)(cName, "FontTextures", cImageData.getWidth(), cImageData.getHeight());
    cTexture->setHandler(dxResourceView);
 }
 
