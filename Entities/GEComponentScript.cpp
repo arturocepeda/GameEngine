@@ -51,14 +51,8 @@ ScriptInstance::ScriptInstance()
 
    registerEditorAction("Reload", [this]
    {
-      struct CachedPropertyValue
-      {
-         uint PropertyNameHash;
-         Value PropertyValue;
-      };
-
       const uint iNumProperties = getPropertiesCount() - iBasePropertiesCount;
-      CachedPropertyValue* vCachedPropertyValues = Allocator::alloc<CachedPropertyValue>(iNumProperties);
+      vCachedPropertyValues.resize(iNumProperties);
 
       for(uint i = 0; i < iNumProperties; i++)
       {
@@ -68,19 +62,6 @@ ScriptInstance::ScriptInstance()
       }
 
       setScriptName(getScriptName());
-
-      for(uint i = 0; i < iNumProperties; i++)
-      {
-         ObjectName cPropertyName = ObjectName(vCachedPropertyValues[i].PropertyNameHash);
-         const Property* cProperty = getProperty(cPropertyName);
-
-         if(cProperty)
-         {
-            cProperty->Setter(vCachedPropertyValues[i].PropertyValue);
-         }
-      }
-
-      Allocator::free(vCachedPropertyValues);
    });
 
    iBasePropertiesCount = getPropertiesCount();
@@ -231,6 +212,23 @@ void ScriptInstance::update()
    if(cScript->isFunctionDefined(cUpdateFunctionName))
    {
       cScript->runFunction<void>(cUpdateFunctionName);
+   }
+
+   if(!vCachedPropertyValues.empty())
+   {
+      for(uint i = 0; i < vCachedPropertyValues.size(); i++)
+      {
+         ObjectName cPropertyName = ObjectName(vCachedPropertyValues[i].PropertyNameHash);
+         const Property* cProperty = getProperty(cPropertyName);
+
+         if(cProperty)
+         {
+            cProperty->Setter(vCachedPropertyValues[i].PropertyValue);
+         }
+      }
+
+      vCachedPropertyValues.clear();
+      vCachedPropertyValues.shrink_to_fit();
    }
 }
 

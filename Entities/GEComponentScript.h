@@ -32,6 +32,15 @@ namespace GE { namespace Entities
       uint iBaseActionsCount;
       bool bInitialized;
 
+      struct CachedPropertyValue
+      {
+         uint PropertyNameHash;
+         Core::Value PropertyValue;
+
+         CachedPropertyValue() : PropertyNameHash(0), PropertyValue(0) {}
+      };
+      GESTLVector(CachedPropertyValue) vCachedPropertyValues;
+
       void registerScriptProperties();
       void registerScriptActions();
 
