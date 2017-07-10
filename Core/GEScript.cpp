@@ -106,7 +106,6 @@ Script::Script()
 
       // add GE variable names
       sDefaultGlobalNames.insert(ObjectName("deltaTime").getID());
-      sDefaultGlobalNames.insert(ObjectName("scene").getID());
       sDefaultGlobalNames.insert(ObjectName("entity").getID());
    }
 }

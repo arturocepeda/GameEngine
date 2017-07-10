@@ -658,7 +658,9 @@ void Scene::update()
    for(uint i = 0; i < vScripts.size(); i++)
    {
       ComponentScript* cScript = static_cast<ComponentScript*>(vScripts[i]);
-      cScript->update();
+
+      if(cScript->getOwner()->getActive())
+         cScript->update();
    }
 }
 

@@ -194,7 +194,6 @@ void ScriptInstance::update()
 
    Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
 
-   cScript->setVariable<Scene*>("scene", Scene::getActiveScene());
    cScript->setVariable<float>("deltaTime", Time::getClock(cEntity->getClockIndex()).getDelta());
 
    if(!bInitialized)
