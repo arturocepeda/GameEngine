@@ -44,6 +44,11 @@ namespace GE
          Y = vY;
       }
 
+      float getSquaredLength() const
+      {
+         return X * X + Y * Y;
+      }
+
       float getLength()
       {
          return sqrt(X * X + Y * Y);
@@ -57,7 +62,23 @@ namespace GE
          Y /= fLength;
       }
 
-      Vector2 operator+(const Vector2& v)
+      float getSquaredDistanceTo(const Vector2& other) const
+      {
+         float fDeltaX = other.X - X;
+         float fDeltaY = other.Y - Y;
+
+         return fDeltaX * fDeltaX + fDeltaY * fDeltaY;
+      }
+
+      float getDistanceTo(const Vector2& other) const
+      {
+         float fDeltaX = other.X - X;
+         float fDeltaY = other.Y - Y;
+
+         return sqrt(fDeltaX * fDeltaX + fDeltaY * fDeltaY);
+      }
+
+      Vector2 operator+(const Vector2& v) const
       {
          return Vector2(X + v.X, Y + v.Y);
       }
@@ -68,7 +89,7 @@ namespace GE
          return *this;
       }
 
-      Vector2 operator-(const Vector2& v)
+      Vector2 operator-(const Vector2& v) const
       {
          return Vector2(X - v.X, Y - v.Y);
       }
@@ -90,7 +111,7 @@ namespace GE
          return *this;
       }
 
-      float operator*(const Vector2& v)
+      float operator*(const Vector2& v) const
       {
          return (X * v.X + Y * v.Y);
       }

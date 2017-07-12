@@ -10,6 +10,10 @@
 //
 //////////////////////////////////////////////////////////////////
 
+#if defined _MSC_VER
+# pragma warning(disable : 4503)
+#endif
+
 #include "Core/GEScript.h"
 #include "Core/GEPlatform.h"
 #include "Core/GEApplication.h"
@@ -43,6 +47,7 @@
 # endif
 #endif
 
+
 using namespace GE;
 using namespace GE::Core;
 using namespace GE::Content;
@@ -57,25 +62,6 @@ void luaLog(const char* sMessage)
 {
    Device::log("[Lua] %s", sMessage);
 }
-
-
-//
-//  (Extensions for Lua types)
-//
-class luaEntity : public Entity
-{
-public:
-   ComponentTransform* getComponentTransform() { return getComponent<ComponentTransform>(); }
-   ComponentRenderable* getComponentRenderable() { return getComponent<ComponentRenderable>(); }
-   ComponentSprite* getComponentSprite() { return getComponent<ComponentSprite>(); }
-   ComponentMesh* getComponentMesh() { return getComponent<ComponentMesh>(); }
-   ComponentParticleSystem* getComponentParticleSystem() { return getComponent<ComponentParticleSystem>(); }
-   ComponentCamera* getComponentCamera() { return getComponent<ComponentCamera>(); }
-   ComponentCollider* getComponentCollider() { return getComponent<ComponentCollider>(); }
-   ComponentUIElement* getComponentUIElement() { return getComponent<ComponentUIElement>(); }
-   ComponentSkeleton* getComponentSkeleton() { return getComponent<ComponentSkeleton>(); }
-   ComponentScript* getComponentScript() { return getComponent<ComponentScript>(); }
-};
 
 
 //
@@ -331,6 +317,15 @@ void Script::registerTypes()
       , sol::constructors<sol::types<>, sol::types<float, float>>()
       , "X", &Vector2::X
       , "Y", &Vector2::Y
+      , "normalize", &Vector2::normalize
+      , "getSquaredLength", &Vector2::getSquaredLength
+      , "getLength", &Vector2::getLength
+      , "getDistanceTo", &Vector2::getDistanceTo
+      , "lerp", &Vector2::lerp
+      , sol::meta_method::addition, &Vector2::operator+
+      , sol::meta_method::subtraction, (Vector2 (Vector2::*)(const Vector2&) const)&Vector2::operator-
+      , sol::meta_method::multiplication, (Vector2 (Vector2::*)(const float) const)&Vector2::operator*
+      , sol::meta_method::unary_minus, (Vector2 (Vector2::*)())&Vector2::operator-
    );
    lua.new_usertype<Vector3>
    (
@@ -343,6 +338,13 @@ void Script::registerTypes()
       , "getSquaredLength", &Vector3::getSquaredLength
       , "getLength", &Vector3::getLength
       , "getDistanceTo", &Vector3::getDistanceTo
+      , "dotProduct", &Vector3::dotProduct
+      , "crossProduct", &Vector3::crossProduct
+      , "lerp", &Vector3::lerp
+      , sol::meta_method::addition, &Vector3::operator+
+      , sol::meta_method::subtraction, (Vector3 (Vector3::*)(const Vector3&) const)&Vector3::operator-
+      , sol::meta_method::multiplication, (Vector3 (Vector3::*)(const float) const)&Vector3::operator*
+      , sol::meta_method::unary_minus, (Vector3 (Vector3::*)())&Vector3::operator-
    );
    lua.new_usertype<Rotation>
    (
@@ -427,16 +429,31 @@ void Script::registerTypes()
       , "getActive", &Entity::getActive
       , "setActive", &Entity::setActive
       , "addComponent", (Component* (Entity::*)(const Core::ObjectName&))&Entity::addComponent
-      , "getComponentTransform", &luaEntity::getComponentTransform
-      , "getComponentRenderable", &luaEntity::getComponentRenderable
-      , "getComponentSprite", &luaEntity::getComponentSprite
-      , "getComponentMesh", &luaEntity::getComponentMesh
-      , "getComponentParticleSystem", &luaEntity::getComponentParticleSystem
-      , "getComponentCamera", &luaEntity::getComponentCamera
-      , "getComponentCollider", &luaEntity::getComponentCollider
-      , "getComponentUIElement", &luaEntity::getComponentUIElement
-      , "getComponentSkeleton", &luaEntity::getComponentSkeleton
-      , "getComponentScript", &luaEntity::getComponentScript
+      , "addComponentTransform", &Entity::addComponent<ComponentTransform>
+      , "addComponentSprite", &Entity::addComponent<ComponentSprite>
+      , "addComponentMesh", &Entity::addComponent<ComponentMesh>
+      , "addComponentParticleSystem", &Entity::addComponent<ComponentParticleSystem>
+      , "addComponentCamera", &Entity::addComponent<ComponentCamera>
+      , "addComponentColliderSphere", &Entity::addComponent<ComponentColliderSphere>
+      , "addComponentColliderMesh", &Entity::addComponent<ComponentColliderMesh>
+      , "addComponentUI2DElement", &Entity::addComponent<ComponentUI2DElement>
+      , "addComponentUI3DElement", &Entity::addComponent<ComponentUI3DElement>
+      , "addComponentSkeleton", &Entity::addComponent<ComponentSkeleton>
+      , "addComponentScript", &Entity::addComponent<ComponentScript>
+      , "getComponentTransform", &Entity::getComponent<ComponentTransform>
+      , "getComponentRenderable", &Entity::getComponent<ComponentRenderable>
+      , "getComponentSprite", &Entity::getComponent<ComponentSprite>
+      , "getComponentMesh", &Entity::getComponent<ComponentMesh>
+      , "getComponentParticleSystem", &Entity::getComponent<ComponentParticleSystem>
+      , "getComponentCamera", &Entity::getComponent<ComponentCamera>
+      , "getComponentCollider", &Entity::getComponent<ComponentCollider>
+      , "getComponentColliderSphere", &Entity::getComponent<ComponentColliderSphere>
+      , "getComponentColliderMesh", &Entity::getComponent<ComponentColliderMesh>
+      , "getComponentUIElement", &Entity::getComponent<ComponentUIElement>
+      , "getComponentUI2DElement", &Entity::getComponent<ComponentUI2DElement>
+      , "getComponentUI3DElement", &Entity::getComponent<ComponentUI3DElement>
+      , "getComponentSkeleton", &Entity::getComponent<ComponentSkeleton>
+      , "getComponentScript", &Entity::getComponent<ComponentScript>
       , "init", &Entity::init
       , sol::base_classes, sol::bases<Serializable>()
    );
