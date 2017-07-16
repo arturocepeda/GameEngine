@@ -225,6 +225,7 @@ void MaterialPass::registerShaderProperties(char* sBuffer, const ShaderProgram::
          return Value::fromRawData(sParameter.Type, sBuffer + sParameter.Offset, iValueSize);
       };
 
+      setter(Value::getDefaultValue(sParameter.Type));
       registerProperty(sParameter.Name, sParameter.Type, setter, getter);
    }
 }

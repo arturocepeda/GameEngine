@@ -421,6 +421,7 @@ void Script::registerTypes()
       , "getEntity", &Scene::getEntity
       , "addEntity", (Entity* (Scene::*)(const ObjectName&, Entity*))&Scene::addEntity
       , "addPrefab", (Entity* (Scene::*)(const char*, const ObjectName&, Entity*))&Scene::addPrefab
+      , "removeEntity", (bool (Scene::*)(const ObjectName&))&Scene::removeEntity
       , sol::base_classes, sol::bases<Serializable>()
    );
    lua.new_usertype<Entity>
