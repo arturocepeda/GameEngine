@@ -543,11 +543,12 @@ void RenderSystem::loadShaders()
          const char* sVertexSource = xmlShader.attribute("vertexSource").value();
          const char* sFragmentSource = xmlShader.attribute("fragmentSource").value();
          uint iVertexElementsMask = cShaderProgram->getVertexElementsMask(xmlShader);
+         cShaderProgram->parsePreprocessorMacros(xmlShader);
 
          cShaderProgram->VS = Allocator::alloc<VertexShader>();
-         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sVertexSource, iVertexElementsMask, dxDevice.Get());
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sVertexSource, iVertexElementsMask, cShaderProgram->PreprocessorMacros, dxDevice.Get());
          cShaderProgram->PS = Allocator::alloc<PixelShader>();
-         GEInvokeCtor(PixelShader, cShaderProgram->PS)(sFragmentSource, dxDevice.Get());
+         GEInvokeCtor(PixelShader, cShaderProgram->PS)(sFragmentSource, cShaderProgram->PreprocessorMacros, dxDevice.Get());
 
          cShaderProgram->parseParameters(xmlShader);
          cShaderProgram->loadFromXml(xmlShader);
@@ -831,9 +832,22 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
          const Matrix4& matModel = cTransform->getGlobalWorldMatrix();
 
          if(cRenderable->getRenderingMode() == RenderingMode::_2D)
+         {
             calculate2DTransformMatrix(matModel);
+         }
          else
+         {
+#if defined (GE_EDITOR_SUPPORT)
+            if(!cActiveCamera)
+            {
+               Entity* cOwner = cRenderable->getOwner();
+               Device::log("There is no active camera. The entity '%s' will be deactivated.", cOwner->getFullName().getString().c_str());
+               cOwner->setActive(false);
+               return;
+            }
+#endif
             calculate3DTransformMatrix(matModel);
+         }
 
          // if the renderable is a 3D mesh, calculate the inverse transpose matrix
          if(cRenderable->getRenderableType() == RenderableType::Mesh)

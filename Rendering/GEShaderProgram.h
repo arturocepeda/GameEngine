@@ -24,6 +24,13 @@
 
 namespace GE { namespace Rendering
 {
+   struct ShaderProgramPreprocessorMacro
+   {
+      char Name[64];
+      char Value[64];
+   };
+
+
    struct ShaderProgramParameter
    {
       Core::ObjectName Name;
@@ -35,6 +42,7 @@ namespace GE { namespace Rendering
    class ShaderProgram : public Content::Resource, public Core::Serializable
    {
    public:
+      typedef GESTLVector(ShaderProgramPreprocessorMacro) PreprocessorMacroList;
       typedef GESTLVector(ShaderProgramParameter) ParameterList;
 
    protected:
@@ -45,6 +53,8 @@ namespace GE { namespace Rendering
       void parseParameters(std::istream& sStream, ParameterList* vParameterList);
 
    public:
+      PreprocessorMacroList PreprocessorMacros;
+
       ParameterList VertexParameters;
       ParameterList FragmentParameters;
 
@@ -58,6 +68,7 @@ namespace GE { namespace Rendering
       void setCullingMode(CullingMode Mode);
 
       uint getVertexElementsMask(const pugi::xml_node& xmlShader);
+      void parsePreprocessorMacros(const pugi::xml_node& xmlShader);
       void parseParameters(const pugi::xml_node& xmlShader);
       void parseParameters(std::istream& sStream);
 

@@ -30,13 +30,21 @@ Shader::~Shader()
    glDeleteShader(iID);
 }
 
-void Shader::load(const char* sFilename, const char* sExt)
+void Shader::load(const char* sFilename, const char* sExt, const ShaderProgram::PreprocessorMacroList& Macros)
 {
    // read source file
    ContentData cShader;
    Device::readContentFile(ContentType::Shader, "Shaders/glsl", sFilename, sExt, &cShader);
 
    GESTLString sShaderSource(cShader.getData(), cShader.getDataSize());
+
+   // add preprocessor macros
+   for(uint i = 0; i < Macros.size(); i++)
+   {
+      char sBuffer[256];
+      sprintf(sBuffer, "#define %s %s\n", Macros[i].Name, Macros[i].Value);
+      sShaderSource.insert(0, sBuffer);
+   }
 
    // process include directives
    const char* IncludeStr = "#include \"";
@@ -115,7 +123,7 @@ bool Shader::check()
 //
 //  VertexShader
 //
-VertexShader::VertexShader(const char* Filename, int VertexElements)
+VertexShader::VertexShader(const char* Filename, int VertexElements, const ShaderProgram::PreprocessorMacroList& Macros)
    : iVertexElements(VertexElements)
 {
    // get shader ID
@@ -123,7 +131,7 @@ VertexShader::VertexShader(const char* Filename, int VertexElements)
    iStatus = 0;
    
    // load shader
-   load(Filename, "vsh");
+   load(Filename, "vsh", Macros);
 }
 
 VertexShader::VertexShader(const char* Data, int DataSize, int VertexElements)
@@ -146,14 +154,14 @@ int VertexShader::getVertexElements() const
 //
 //  FragmentShader
 //
-FragmentShader::FragmentShader(const char* Filename)
+FragmentShader::FragmentShader(const char* Filename, const ShaderProgram::PreprocessorMacroList& Macros)
 {
    // get shader ID
    iID = glCreateShader(GL_FRAGMENT_SHADER);
    iStatus = 0;
    
    // load shader
-   load(Filename, "fsh");
+   load(Filename, "fsh", Macros);
 }
 
 FragmentShader::FragmentShader(const char* Data, int DataSize)

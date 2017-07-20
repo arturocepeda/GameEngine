@@ -29,7 +29,7 @@ using namespace GE::Rendering;
 //
 //  VertexShader
 //
-VertexShader::VertexShader(const char* Filename, uint VertexElements, ID3D11Device1* DXDevice)
+VertexShader::VertexShader(const char* Filename, uint VertexElements, const ShaderProgram::PreprocessorMacroList& Macros, ID3D11Device1* DXDevice)
    : dxInputLayout(0)
    , dxVertexShader(0)
 {
@@ -39,9 +39,31 @@ VertexShader::VertexShader(const char* Filename, uint VertexElements, ID3D11Devi
    wchar_t wsBuffer[64];
    mbstowcs(wsBuffer, sBuffer, strlen(sBuffer) + 1);
 
+   D3D_SHADER_MACRO* dxDefines = 0;
+
+   if(!Macros.empty())
+   {
+      dxDefines = new D3D_SHADER_MACRO[Macros.size() + 1];
+
+      for(uint i = 0; i < Macros.size(); i++)
+      {
+         dxDefines[i].Name = Macros[i].Name;
+         dxDefines[i].Definition = Macros[i].Value;
+      }
+
+      dxDefines[Macros.size()].Name = 0;
+      dxDefines[Macros.size()].Definition = 0;
+   }
+
    ID3DBlob* dxCodeBlob = 0;
    ID3DBlob* dxErrorBlob = 0;
-   HRESULT hr = D3DCompileFromFile(wsBuffer, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", 0, 0, &dxCodeBlob, &dxErrorBlob);
+   HRESULT hr = D3DCompileFromFile(wsBuffer, dxDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", 0, 0, &dxCodeBlob, &dxErrorBlob);
+
+   if(!Macros.empty())
+   {
+      delete[] dxDefines;
+      dxDefines = 0;
+   }
 
    if(FAILED(hr))
    {
@@ -160,7 +182,7 @@ ID3D11VertexShader* VertexShader::getShader() const
 //
 //  PixelShader
 //
-PixelShader::PixelShader(const char* Filename, ID3D11Device1* DXDevice)
+PixelShader::PixelShader(const char* Filename, const ShaderProgram::PreprocessorMacroList& Macros, ID3D11Device1* DXDevice)
    : dxPixelShader(0)
 {
    char sBuffer[64];
@@ -169,9 +191,31 @@ PixelShader::PixelShader(const char* Filename, ID3D11Device1* DXDevice)
    wchar_t wsBuffer[64];
    mbstowcs(wsBuffer, sBuffer, strlen(sBuffer) + 1);
 
+   D3D_SHADER_MACRO* dxDefines = 0;
+
+   if(!Macros.empty())
+   {
+      dxDefines = new D3D_SHADER_MACRO[Macros.size() + 1];
+
+      for(uint i = 0; i < Macros.size(); i++)
+      {
+         dxDefines[i].Name = Macros[i].Name;
+         dxDefines[i].Definition = Macros[i].Value;
+      }
+
+      dxDefines[Macros.size()].Name = 0;
+      dxDefines[Macros.size()].Definition = 0;
+   }
+
    ID3DBlob* dxCodeBlob = 0;
    ID3DBlob* dxErrorBlob = 0;
-   HRESULT hr = D3DCompileFromFile(wsBuffer, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", 0, 0, &dxCodeBlob, &dxErrorBlob);
+   HRESULT hr = D3DCompileFromFile(wsBuffer, dxDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", 0, 0, &dxCodeBlob, &dxErrorBlob);
+
+   if(!Macros.empty())
+   {
+      delete[] dxDefines;
+      dxDefines = 0;
+   }
 
    if(FAILED(hr))
    {

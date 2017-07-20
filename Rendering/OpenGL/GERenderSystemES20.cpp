@@ -249,13 +249,14 @@ void RenderSystem::loadShaders()
          GEInvokeCtor(ShaderProgramES20, cShaderProgram)(sShaderName);
 
          uint iVertexElementsMask = cShaderProgram->getVertexElementsMask(xmlShader);
+         cShaderProgram->parsePreprocessorMacros(xmlShader);
 
          cShaderProgram->ID = glCreateProgram();
          cShaderProgram->Status = 0;
          cShaderProgram->VS = Allocator::alloc<VertexShader>();
-         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sShaderVertexSource, iVertexElementsMask);
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sShaderVertexSource, iVertexElementsMask, cShaderProgram->PreprocessorMacros);
          cShaderProgram->FS = Allocator::alloc<FragmentShader>();
-         GEInvokeCtor(FragmentShader, cShaderProgram->FS)(sShaderFragmentSource);
+         GEInvokeCtor(FragmentShader, cShaderProgram->FS)(sShaderFragmentSource, cShaderProgram->PreprocessorMacros);
 
          static_cast<RenderSystemES20*>(this)->attachShaders(cShaderProgram);
 

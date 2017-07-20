@@ -52,6 +52,17 @@ void ShaderProgram::setCullingMode(CullingMode Mode)
    eCullingMode = Mode;
 }
 
+void ShaderProgram::parsePreprocessorMacros(const pugi::xml_node& xmlShader)
+{
+   for(const pugi::xml_node& xmlParameter : xmlShader.children("PreprocessorMacro"))
+   {
+      ShaderProgramPreprocessorMacro sPreprocessorMacro;
+      strcpy(sPreprocessorMacro.Name, xmlParameter.attribute("name").value());
+      strcpy(sPreprocessorMacro.Value, xmlParameter.attribute("value").value());
+      PreprocessorMacros.push_back(sPreprocessorMacro);
+   }
+}
+
 void ShaderProgram::parseParameters(const pugi::xml_node& xmlShader, const char* sTag, ParameterList* vParameterList)
 {
    uint iOffset = 0;

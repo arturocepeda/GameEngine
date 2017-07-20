@@ -68,7 +68,9 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
 {
    cClassName = ObjectName("ParticleSystem");
 
-   eRenderingMode = RenderingMode::_3D;
+   eRenderingMode = RenderSystem::getInstance()->getActiveCamera()
+      ? RenderingMode::_3D
+      : RenderingMode::_2D;
 
    sGeometryData.NumVertices = 4 * MaxParticles;
    sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);

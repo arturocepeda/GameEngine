@@ -660,7 +660,8 @@ void RenderSystem::queueForRendering(ComponentRenderable* Renderable)
 
    if(!Renderable->getVisible() ||
       !Renderable->getOwner()->isActiveInHierarchy() ||
-      Renderable->getMaterialPassCount() == 0)
+      Renderable->getMaterialPassCount() == 0 ||
+      Renderable->getGeometryData().NumIndices == 0)
    {
       return;
    }
