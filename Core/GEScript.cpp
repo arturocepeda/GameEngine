@@ -18,6 +18,7 @@
 #include "Core/GEPlatform.h"
 #include "Core/GEApplication.h"
 #include "Core/GEDevice.h"
+#include "Core/GEInterpolator.h"
 #include "Core/GEPhysics.h"
 #include "Content/GEContentData.h"
 #include "Entities/GEScene.h"
@@ -387,6 +388,27 @@ void Script::registerTypes()
       , "get", &Serializable::get
       , "set", &Serializable::set
    );
+   lua.new_enum<true>
+   (
+      "InterpolationMode"
+      , "Linear", InterpolationMode::Linear
+      , "Quadratic", InterpolationMode::Quadratic
+      , "Logarithmic", InterpolationMode::Logarithmic
+   );
+   lua.new_usertype<PropertyInterpolatorFloat>
+   (
+      "PropertyInterpolatorFloat"
+      , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "animate", &PropertyInterpolatorFloat::animate
+      , "update", &PropertyInterpolatorFloat::update
+   );
+   lua.new_usertype<PropertyInterpolatorVector3>
+   (
+      "PropertyInterpolatorVector3"
+      , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "animate", &PropertyInterpolatorVector3::animate
+      , "update", &PropertyInterpolatorVector3::update
+   );
    lua.new_usertype<Physics::Ray>
    (
       "Ray"
@@ -485,7 +507,7 @@ void Script::registerTypes()
       , "setOrientation", &ComponentTransform::setOrientation
       , "setScale", (void (ComponentTransform::*)(const Vector3&))&ComponentTransform::setScale
       , "setForwardVector", &ComponentTransform::setForwardVector
-      , sol::base_classes, sol::bases<Component>()
+      , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_usertype<ComponentRenderable>
    (
@@ -498,7 +520,7 @@ void Script::registerTypes()
       , "getColor", &ComponentRenderable::getColor
       , "setVisible", &ComponentRenderable::setVisible
       , "setColor", &ComponentRenderable::setColor
-      , sol::base_classes, sol::bases<Component>()
+      , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_usertype<ComponentSprite>
    (
@@ -506,14 +528,14 @@ void Script::registerTypes()
       , "isOver", &ComponentSprite::isOver
       , "getTextureAtlasIndex", &ComponentSprite::getTextureAtlasIndex
       , "setTextureAtlasIndex", &ComponentSprite::setTextureAtlasIndex
-      , sol::base_classes, sol::bases<ComponentRenderable>()
+      , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
    lua.new_usertype<ComponentMesh>
    (
       "ComponentMesh"
       , "getMeshName", &ComponentMesh::getMeshName
       , "setMeshName", &ComponentMesh::setMeshName
-      , sol::base_classes, sol::bases<ComponentRenderable>()
+      , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
    lua.new_usertype<ComponentParticleSystem>
    (
@@ -521,25 +543,25 @@ void Script::registerTypes()
       , "getEmitterActive", &ComponentParticleSystem::getEmitterActive
       , "setEmitterActive", &ComponentParticleSystem::setEmitterActive
       , "burst", &ComponentParticleSystem::burst
-      , sol::base_classes, sol::bases<ComponentRenderable>()
+      , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
    lua.new_usertype<ComponentCamera>
    (
       "ComponentCamera"
       , "getScreenRay", &ComponentCamera::getScreenRay
-      , sol::base_classes, sol::bases<Component>()
+      , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_usertype<ComponentCollider>
    (
       "ComponentCollider"
       , "checkCollision", &ComponentCollider::checkCollision
-      , sol::base_classes, sol::bases<Component>()
+      , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_usertype<ComponentUIElement>
    (
       "ComponentUIElement"
       , "getAlpha", &ComponentUIElement::getAlpha
-      , sol::base_classes, sol::bases<Component>()
+      , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_usertype<ComponentSkeleton>
    (
@@ -547,19 +569,22 @@ void Script::registerTypes()
       , "getSkeleton", &ComponentSkeleton::getSkeleton
       , "getBoneEntity", (Entity* (ComponentSkeleton::*)(const ObjectName&) const)&ComponentSkeleton::getBoneEntity
       , "getBoneEntityByIndex", (Entity* (ComponentSkeleton::*)(uint) const)&ComponentSkeleton::getBoneEntity
-      , sol::base_classes, sol::bases<Component>()
+      , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_usertype<ComponentScript>
    (
       "ComponentScript"
       , "getScriptInstanceCount", &ComponentScript::getScriptInstanceCount
       , "getScriptInstance", &ComponentScript::getScriptInstance
-      , sol::base_classes, sol::bases<Component>()
+      , "addScriptInstance", &ComponentScript::addScriptInstance
+      , "removeScriptInstance", &ComponentScript::removeScriptInstance
+      , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_usertype<ScriptInstance>
    (
       "ScriptInstance"
       , "getScriptName", &ScriptInstance::getScriptName
+      , "setScriptName", &ScriptInstance::setScriptName
       , sol::base_classes, sol::bases<Serializable>()
    );
 

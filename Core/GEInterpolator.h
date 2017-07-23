@@ -15,6 +15,7 @@
 #include "GEConstants.h"
 #include "GEMath.h"
 #include "GETime.h"
+#include "GESerializable.h"
 #include <functional>
 
 namespace GE { namespace Core
@@ -322,6 +323,55 @@ namespace GE { namespace Core
             updateAlternatingDescendingState();
             break;
          }
+      }
+   };
+
+
+   class PropertyInterpolatorFloat : public Interpolator<float>
+   {
+   public:
+      PropertyInterpolatorFloat(Serializable* cSerializable, const ObjectName& cPropertyName, InterpolationMode eMode)
+         : Interpolator<float>(eMode)
+      {
+         GEAssert(cSerializable);
+
+         const Property* cProperty = cSerializable->getProperty(cPropertyName);
+         GEAssert(cProperty);
+         GEAssert(cProperty->Getter);
+         GEAssert(cProperty->Setter);
+         GEAssert(cProperty->Type == ValueType::Float);
+
+         attachGetter([cProperty]() -> float { return cProperty->Getter().getAsFloat(); });
+         attachSetter([cProperty](const float& v) { cProperty->Setter(Value(v)); });
+      }
+      
+      void animate(const float& fValue, float fDuration)
+      {
+         Interpolator<float>::animate(fValue, fDuration, nullptr);
+      }
+   };
+
+   class PropertyInterpolatorVector3 : public Interpolator<Vector3>
+   {
+   public:
+      PropertyInterpolatorVector3(Serializable* cSerializable, const ObjectName& cPropertyName, InterpolationMode eMode)
+         : Interpolator<Vector3>(eMode)
+      {
+         GEAssert(cSerializable);
+
+         const Property* cProperty = cSerializable->getProperty(cPropertyName);
+         GEAssert(cProperty);
+         GEAssert(cProperty->Getter);
+         GEAssert(cProperty->Setter);
+         GEAssert(cProperty->Type == ValueType::Vector3);
+
+         attachGetter([cProperty]() -> Vector3 { return cProperty->Getter().getAsVector3(); });
+         attachSetter([cProperty](const Vector3& v) { cProperty->Setter(Value(v)); });
+      }
+
+      void animate(const Vector3& vValue, float fDuration)
+      {
+         Interpolator<Vector3>::animate(vValue, fDuration, nullptr);
       }
    };
 }}

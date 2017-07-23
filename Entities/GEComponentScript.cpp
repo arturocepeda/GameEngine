@@ -196,23 +196,6 @@ void ScriptInstance::update()
 
    cScript->setVariable<float>("deltaTime", Time::getClock(cEntity->getClockIndex()).getDelta());
 
-   if(!bInitialized)
-   {
-      cScript->setVariable<Entity*>("entity", cEntity);
-
-      if(cScript->isFunctionDefined(cInitFunctionName))
-      {
-         cScript->runFunction<void>(cInitFunctionName);
-      }
-
-      bInitialized = true;
-   }
-
-   if(cScript->isFunctionDefined(cUpdateFunctionName))
-   {
-      cScript->runFunction<void>(cUpdateFunctionName);
-   }
-
    if(!vCachedPropertyValues.empty())
    {
       for(uint i = 0; i < vCachedPropertyValues.size(); i++)
@@ -228,6 +211,23 @@ void ScriptInstance::update()
 
       vCachedPropertyValues.clear();
       vCachedPropertyValues.shrink_to_fit();
+   }
+
+   if(!bInitialized)
+   {
+      cScript->setVariable<Entity*>("entity", cEntity);
+
+      if(cScript->isFunctionDefined(cInitFunctionName))
+      {
+         cScript->runFunction<void>(cInitFunctionName);
+      }
+
+      bInitialized = true;
+   }
+
+   if(cScript->isFunctionDefined(cUpdateFunctionName))
+   {
+      cScript->runFunction<void>(cUpdateFunctionName);
    }
 }
 
