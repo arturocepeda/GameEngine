@@ -30,6 +30,7 @@ namespace GE { namespace Entities
 
       uint iBasePropertiesCount;
       uint iBaseActionsCount;
+      bool bActive;
       bool bInitialized;
 
       struct CachedPropertyValue
@@ -51,6 +52,9 @@ namespace GE { namespace Entities
       void setScriptName(const Core::ObjectName& Name);
       const Core::ObjectName& getScriptName() const;
 
+      void setActive(bool Value);
+      bool getActive() const;
+
       void update();
 
       bool inputTouchBegin(int ID, const Vector2& Point);
@@ -58,6 +62,7 @@ namespace GE { namespace Entities
       bool inputTouchEnd(int ID, const Vector2& Point);
 
       GEProperty(ObjectName, ScriptName);
+      GEProperty(Bool, Active);
    };
 
 

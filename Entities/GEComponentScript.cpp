@@ -22,6 +22,8 @@ using namespace GE::Entities;
 using namespace GE::Content;
 
 const ObjectName cInitFunctionName = ObjectName("init");
+const ObjectName cActivateFunctionName = ObjectName("activate");
+const ObjectName cDeactivateFunctionName = ObjectName("deactivate");
 const ObjectName cUpdateFunctionName = ObjectName("update");
 const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
 const ObjectName cInputTouchMoveFunctionName = ObjectName("inputTouchMove");
@@ -30,6 +32,8 @@ const ObjectName cInputTouchEndFunctionName = ObjectName("inputTouchEnd");
 const ObjectName* cInternalFunctionNames[] =
 {
    &cInitFunctionName,
+   &cActivateFunctionName,
+   &cDeactivateFunctionName,
    &cUpdateFunctionName,
    &cInputTouchBeginFunctionName,
    &cInputTouchMoveFunctionName,
@@ -42,12 +46,14 @@ const uint iInternalFuncionNamesCount = sizeof(cInternalFunctionNames) / sizeof(
 //
 ScriptInstance::ScriptInstance()
    : SerializableArrayElement("ScriptInstance")
+   , bActive(true)
    , bInitialized(false)
 {
    cScript = Allocator::alloc<Script>();
    GEInvokeCtor(Script, cScript);
 
    GERegisterPropertySpecialEditor(ObjectName, ScriptName, PropertyEditor::Script);
+   GERegisterProperty(Bool, Active);
 
    registerEditorAction("Reload", [this]
    {
@@ -101,6 +107,34 @@ void ScriptInstance::setScriptName(const ObjectName& Name)
 const ObjectName& ScriptInstance::getScriptName() const
 {
    return cScriptName;
+}
+
+void ScriptInstance::setActive(bool Value)
+{
+   if(bActive == Value)
+      return;
+
+   bActive = Value;
+
+   if(bActive)
+   {
+      if(cScript->isFunctionDefined(cActivateFunctionName))
+      {
+         cScript->runFunction<void>(cActivateFunctionName);
+      }
+   }
+   else
+   {
+      if(cScript->isFunctionDefined(cDeactivateFunctionName))
+      {
+         cScript->runFunction<void>(cDeactivateFunctionName);
+      }
+   }
+}
+
+bool ScriptInstance::getActive() const
+{
+   return bActive;
 }
 
 void ScriptInstance::registerScriptProperties()
@@ -189,7 +223,7 @@ void ScriptInstance::registerScriptActions()
 
 void ScriptInstance::update()
 {
-   if(cScriptName.isEmpty())
+   if(!bActive || cScriptName.isEmpty())
       return;
 
    Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
@@ -216,10 +250,16 @@ void ScriptInstance::update()
    if(!bInitialized)
    {
       cScript->setVariable<Entity*>("entity", cEntity);
+      cScript->setVariable<ScriptInstance*>("this", this);
 
       if(cScript->isFunctionDefined(cInitFunctionName))
       {
          cScript->runFunction<void>(cInitFunctionName);
+      }
+
+      if(cScript->isFunctionDefined(cActivateFunctionName))
+      {
+         cScript->runFunction<void>(cActivateFunctionName);
       }
 
       bInitialized = true;
@@ -233,6 +273,9 @@ void ScriptInstance::update()
 
 bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 {
+   if(!bActive)
+      return false;
+
    if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputTouchBeginFunctionName))
    {
       if(cScript->runFunction<bool>(cInputTouchBeginFunctionName, ID, Point))
@@ -244,6 +287,9 @@ bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 
 bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
 {
+   if(!bActive)
+      return false;
+
    if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputTouchMoveFunctionName))
    {
       if(cScript->runFunction<bool>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint))
@@ -255,6 +301,9 @@ bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const 
 
 bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 {
+   if(!bActive)
+      return false;
+
    if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputTouchEndFunctionName))
    {
       if(cScript->runFunction<bool>(cInputTouchEndFunctionName, ID, Point))

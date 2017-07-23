@@ -94,6 +94,7 @@ Script::Script()
       // add GE variable names
       sDefaultGlobalNames.insert(ObjectName("deltaTime").getID());
       sDefaultGlobalNames.insert(ObjectName("entity").getID());
+      sDefaultGlobalNames.insert(ObjectName("this").getID());
    }
 }
 
@@ -585,6 +586,8 @@ void Script::registerTypes()
       "ScriptInstance"
       , "getScriptName", &ScriptInstance::getScriptName
       , "setScriptName", &ScriptInstance::setScriptName
+      , "getActive", &ScriptInstance::getActive
+      , "setActive", &ScriptInstance::setActive
       , sol::base_classes, sol::bases<Serializable>()
    );
 
