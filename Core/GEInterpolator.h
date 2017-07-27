@@ -327,11 +327,12 @@ namespace GE { namespace Core
    };
 
 
-   class PropertyInterpolatorFloat : public Interpolator<float>
+   template<typename T>
+   class PropertyInterpolator : public Interpolator<T>
    {
    public:
-      PropertyInterpolatorFloat(Serializable* cSerializable, const ObjectName& cPropertyName, InterpolationMode eMode)
-         : Interpolator<float>(eMode)
+      PropertyInterpolator(Serializable* cSerializable, const ObjectName& cPropertyName, InterpolationMode eMode)
+         : Interpolator<T>(eMode)
       {
          GEAssert(cSerializable);
 
@@ -339,39 +340,14 @@ namespace GE { namespace Core
          GEAssert(cProperty);
          GEAssert(cProperty->Getter);
          GEAssert(cProperty->Setter);
-         GEAssert(cProperty->Type == ValueType::Float);
 
-         attachGetter([cProperty]() -> float { return cProperty->Getter().getAsFloat(); });
-         attachSetter([cProperty](const float& v) { cProperty->Setter(Value(v)); });
+         attachGetter([cProperty]() -> T { return cProperty->Getter().getAs<T>(); });
+         attachSetter([cProperty](const T& v) { cProperty->Setter(Value(v)); });
       }
       
-      void animate(const float& fValue, float fDuration)
+      void animate(const T& tValue, float fDuration)
       {
-         Interpolator<float>::animate(fValue, fDuration, nullptr);
-      }
-   };
-
-   class PropertyInterpolatorVector3 : public Interpolator<Vector3>
-   {
-   public:
-      PropertyInterpolatorVector3(Serializable* cSerializable, const ObjectName& cPropertyName, InterpolationMode eMode)
-         : Interpolator<Vector3>(eMode)
-      {
-         GEAssert(cSerializable);
-
-         const Property* cProperty = cSerializable->getProperty(cPropertyName);
-         GEAssert(cProperty);
-         GEAssert(cProperty->Getter);
-         GEAssert(cProperty->Setter);
-         GEAssert(cProperty->Type == ValueType::Vector3);
-
-         attachGetter([cProperty]() -> Vector3 { return cProperty->Getter().getAsVector3(); });
-         attachSetter([cProperty](const Vector3& v) { cProperty->Setter(Value(v)); });
-      }
-
-      void animate(const Vector3& vValue, float fDuration)
-      {
-         Interpolator<Vector3>::animate(vValue, fDuration, nullptr);
+         Interpolator<T>::animate(tValue, fDuration, nullptr);
       }
    };
 }}

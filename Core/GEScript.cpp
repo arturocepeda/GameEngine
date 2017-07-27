@@ -396,19 +396,26 @@ void Script::registerTypes()
       , "Quadratic", InterpolationMode::Quadratic
       , "Logarithmic", InterpolationMode::Logarithmic
    );
-   lua.new_usertype<PropertyInterpolatorFloat>
+   lua.new_usertype<PropertyInterpolator<float>>
    (
       "PropertyInterpolatorFloat"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
-      , "animate", &PropertyInterpolatorFloat::animate
-      , "update", &PropertyInterpolatorFloat::update
+      , "animate", &PropertyInterpolator<float>::animate
+      , "update", &PropertyInterpolator<float>::update
    );
-   lua.new_usertype<PropertyInterpolatorVector3>
+   lua.new_usertype<PropertyInterpolator<Vector2>>
+   (
+      "PropertyInterpolatorVector2"
+      , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "animate", &PropertyInterpolator<Vector2>::animate
+      , "update", &PropertyInterpolator<Vector2>::update
+   );
+   lua.new_usertype<PropertyInterpolator<Vector3>>
    (
       "PropertyInterpolatorVector3"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
-      , "animate", &PropertyInterpolatorVector3::animate
-      , "update", &PropertyInterpolatorVector3::update
+      , "animate", &PropertyInterpolator<Vector3>::animate
+      , "update", &PropertyInterpolator<Vector3>::update
    );
    lua.new_usertype<Physics::Ray>
    (

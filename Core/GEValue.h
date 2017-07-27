@@ -12,14 +12,12 @@
 
 #pragma once
 
+#include "Core/GEObject.h"
 #include "Types/GETypes.h"
 #include <iostream>
 
 namespace GE { namespace Core
 {
-   class ObjectName;
-
-
    GESerializableEnum(ValueType)
    {
       Int,
@@ -97,6 +95,18 @@ namespace GE { namespace Core
       const GE::Vector2& getAsVector2() const;
       const GE::Vector3& getAsVector3() const;
       const GE::Color& getAsColor() const;
+
+      template<typename T> T getAs() const { return (T)0; }
+      template<> int getAs<int>() const { return getAsInt(); }
+      template<> float getAs<float>() const { return getAsFloat(); }
+      template<> bool getAs<bool>() const { return getAsBool(); }
+      template<> byte getAs<byte>() const { return getAsByte(); }
+      template<> short getAs<short>() const { return getAsShort(); }
+      template<> const char* getAs<const char*>() const { return getAsString(); }
+      template<> ObjectName getAs<ObjectName>() const { return getAsObjectName(); }
+      template<> GE::Vector2 getAs<GE::Vector2>() const { return getAsVector2(); }
+      template<> GE::Vector3 getAs<GE::Vector3>() const { return getAsVector3(); }
+      template<> GE::Color getAs<GE::Color>() const { return getAsColor(); }
 
       void toString(char* Buffer) const;
 
