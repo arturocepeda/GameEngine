@@ -341,8 +341,16 @@ namespace GE { namespace Core
          GEAssert(cProperty->Getter);
          GEAssert(cProperty->Setter);
 
-         attachGetter([cProperty]() -> T { return cProperty->Getter().getAs<T>(); });
-         attachSetter([cProperty](const T& v) { cProperty->Setter(Value(v)); });
+         Interpolator<T>::attachGetter([cProperty]() -> T
+         {
+            Value cValue = cProperty->Getter();
+            return cValue.getAs<T>();
+         });
+         Interpolator<T>::attachSetter([cProperty](const T& v)
+         {
+            Value cValue = Value(v);
+            cProperty->Setter(cValue);
+         });
       }
       
       void animate(const T& tValue, float fDuration)

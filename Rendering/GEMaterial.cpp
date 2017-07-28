@@ -236,7 +236,8 @@ void MaterialPass::setDefaultPropertyValues()
    for(uint i = iBasePropertiesCount; i < getPropertiesCount(); i++)
    {
       const Property& cProperty = getProperty(i);
-      cProperty.Setter(Value::getDefaultValue(cProperty.Type));
+      Value cDefaultValue = Value::getDefaultValue(cProperty.Type);
+      cProperty.Setter(cDefaultValue);
    }
 }
 

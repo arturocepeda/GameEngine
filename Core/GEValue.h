@@ -97,16 +97,6 @@ namespace GE { namespace Core
       const GE::Color& getAsColor() const;
 
       template<typename T> T getAs() const { return (T)0; }
-      template<> int getAs<int>() const { return getAsInt(); }
-      template<> float getAs<float>() const { return getAsFloat(); }
-      template<> bool getAs<bool>() const { return getAsBool(); }
-      template<> byte getAs<byte>() const { return getAsByte(); }
-      template<> short getAs<short>() const { return getAsShort(); }
-      template<> const char* getAs<const char*>() const { return getAsString(); }
-      template<> ObjectName getAs<ObjectName>() const { return getAsObjectName(); }
-      template<> GE::Vector2 getAs<GE::Vector2>() const { return getAsVector2(); }
-      template<> GE::Vector3 getAs<GE::Vector3>() const { return getAsVector3(); }
-      template<> GE::Color getAs<GE::Color>() const { return getAsColor(); }
 
       void toString(char* Buffer) const;
 
@@ -118,4 +108,15 @@ namespace GE { namespace Core
       static Value fromStream(ValueType Type, std::istream& Stream);
       static Value fromRawData(ValueType Type, const char* Data, uint DataSize);
    };
+
+   template<> inline int Value::getAs<int>() const { return getAsInt(); }
+   template<> inline float Value::getAs<float>() const { return getAsFloat(); }
+   template<> inline bool Value::getAs<bool>() const { return getAsBool(); }
+   template<> inline byte Value::getAs<byte>() const { return getAsByte(); }
+   template<> inline short Value::getAs<short>() const { return getAsShort(); }
+   template<> inline const char* Value::getAs<const char*>() const { return getAsString(); }
+   template<> inline ObjectName Value::getAs<ObjectName>() const { return getAsObjectName(); }
+   template<> inline GE::Vector2 Value::getAs<GE::Vector2>() const { return getAsVector2(); }
+   template<> inline GE::Vector3 Value::getAs<GE::Vector3>() const { return getAsVector3(); }
+   template<> inline GE::Color Value::getAs<GE::Color>() const { return getAsColor(); }
 }}
