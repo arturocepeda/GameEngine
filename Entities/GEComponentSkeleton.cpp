@@ -79,7 +79,7 @@ void ComponentSkeleton::setSkeletonName(const ObjectName& SkeletonName)
 
       // create entity
       Entity* cBoneEntity = cOwner->getOwner()->addEntity(cCurrentBone->getName(), cOwner);
-      cBoneEntity->setSaveBehavior(EntitySaveBehavior::DoNotSave);
+      cBoneEntity->setInternalFlags((uint8_t)Entity::InternalFlags::Generated);
       vBoneEntities.push_back(cBoneEntity);
 
       Vector3 vBoneEntityPosition;

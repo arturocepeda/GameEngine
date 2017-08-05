@@ -75,12 +75,6 @@ namespace GE { namespace Content
 
 namespace GE { namespace Entities
 {
-   const char* strEntitySaveBehavior[] =
-   {
-      "Save",
-      "DoNotSave"
-   };
-
    const char* strUVMode[] =
    {
       "Normal",

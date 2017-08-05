@@ -270,7 +270,7 @@ Entity* Scene::cloneEntity(Entity* cEntity, const Core::ObjectName& CloneName, E
    {
       Entity* cEntityChild = cEntity->getChildByIndex(i);
 
-      if(cEntityChild->getSaveBehavior() == EntitySaveBehavior::Save)
+      if(!GEHasFlag(cEntityChild->getInternalFlags(), Entity::InternalFlags::Generated))
       {
          cloneEntity(cEntity->getChildByIndex(i), cEntityChild->getName(), cCloneEntity);
       }
@@ -505,7 +505,7 @@ void Scene::setupSkyBox(const char* MaterialName)
    const ObjectName SkyBoxPlaneBackEntityName = ObjectName("Background/PlaneBack");
 
    cBackgroundEntity = addEntity(BackgroundEntityName);
-   cBackgroundEntity->setSaveBehavior(EntitySaveBehavior::DoNotSave);
+   cBackgroundEntity->setInternalFlags((uint8_t)Entity::InternalFlags::Generated);
    cBackgroundEntity->addComponent<ComponentTransform>();
 
    ComponentCamera* cCamera = RenderSystem::getInstance()->getActiveCamera();

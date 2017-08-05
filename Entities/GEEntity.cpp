@@ -32,7 +32,7 @@ Entity::Entity(const ObjectName& Name, Entity* Parent, Scene* Owner)
    , bActive(true)
    , bInitialized(false)
    , iClockIndex(0)
-   , eSaveBehavior(EntitySaveBehavior::Save)
+   , iInternalFlags(0)
 {
    GEAssert(Owner);
    updateFullName();
@@ -41,7 +41,6 @@ Entity::Entity(const ObjectName& Name, Entity* Parent, Scene* Owner)
    GERegisterProperty(ObjectName, Name);
    GERegisterProperty(Bool, Active);
    GERegisterPropertyMinMax(UInt, ClockIndex, 0, Time::ClocksCount - 1);
-   GERegisterPropertyEnum(EntitySaveBehavior, SaveBehavior);
    GERegisterProperty(ObjectName, PrefabName);
 }
 
@@ -267,16 +266,6 @@ void Entity::setClockIndex(uint ClockIndex)
    iClockIndex = ClockIndex;
 }
 
-EntitySaveBehavior Entity::getSaveBehavior() const
-{
-   return eSaveBehavior;
-}
-
-void Entity::setSaveBehavior(EntitySaveBehavior Behavior)
-{
-   eSaveBehavior = Behavior;
-}
-
 const Core::ObjectName& Entity::getPrefabName() const
 {
    return cPrefabName;
@@ -285,4 +274,14 @@ const Core::ObjectName& Entity::getPrefabName() const
 void Entity::setPrefabName(const Core::ObjectName& Name)
 {
    cPrefabName = Name;
+}
+
+uint8_t Entity::getInternalFlags() const
+{
+   return iInternalFlags;
+}
+
+void Entity::setInternalFlags(uint8_t Flags)
+{
+   iInternalFlags = Flags;
 }

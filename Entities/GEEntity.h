@@ -61,15 +61,6 @@ namespace GE { namespace Entities
    typedef GESTLVector(ComponentFactoryPair) ComponentFactoryList;
 
 
-   GESerializableEnum(EntitySaveBehavior)
-   {
-      Save,
-      DoNotSave,
-
-      Count
-   };
-
-
    class Entity : public Core::EventHandlingObject, public Core::Serializable, private Core::NonCopyable
    {
    private:
@@ -85,8 +76,8 @@ namespace GE { namespace Entities
       bool bActive;
       bool bInitialized;
       uint iClockIndex;
-      EntitySaveBehavior eSaveBehavior;
       Core::ObjectName cPrefabName;
+      uint8_t iInternalFlags;
 
       template<typename T>
       void registerComponent(Component* cComponent)
@@ -97,6 +88,12 @@ namespace GE { namespace Entities
       void updateFullName();
 
    public:
+      enum class InternalFlags
+      {
+         // Generated: the entity must not be saved in scenes or prefabs
+         Generated = 1 << 0,
+      };
+
       Entity(const Core::ObjectName& Name, Entity* Parent, Scene* Owner);
       ~Entity();
 
@@ -181,16 +178,15 @@ namespace GE { namespace Entities
       uint getClockIndex() const;
       void setClockIndex(uint ClockIndex);
 
-      EntitySaveBehavior getSaveBehavior() const;
-      void setSaveBehavior(EntitySaveBehavior Behavior);
-
       const Core::ObjectName& getPrefabName() const;
       void setPrefabName(const Core::ObjectName& Name);
+
+      uint8_t getInternalFlags() const;
+      void setInternalFlags(uint8_t Flags);
 
       GEProperty(ObjectName, Name);
       GEProperty(Bool, Active);
       GEProperty(UInt, ClockIndex);
-      GEPropertyEnum(EntitySaveBehavior, SaveBehavior);
       GEProperty(ObjectName, PrefabName);
    };
 }}
