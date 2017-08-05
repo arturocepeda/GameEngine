@@ -12,6 +12,7 @@
 
 #include "GEResource.h"
 #include "Core/GEDevice.h"
+#include "Core/GEEvents.h"
 
 using namespace GE;
 using namespace GE::Content;
@@ -21,9 +22,6 @@ using namespace GE::Core;
 //
 //  Resource
 //
-ObjectName Resource::EventResourceCreated = ObjectName("EventResourceCreated");
-ObjectName Resource::EventResourceDestroyed = ObjectName("EventResourceDestroyed");
-
 Resource::Resource(const ObjectName& Name, const ObjectName& GroupName, ResourceType Type)
    : EventHandlingObject(Name)
    , cGroupName(GroupName)
@@ -31,7 +29,7 @@ Resource::Resource(const ObjectName& Name, const ObjectName& GroupName, Resource
 {
    EventArgs sArgs;
    sArgs.Sender = this;
-   triggerEventStatic(EventResourceCreated, &sArgs);
+   triggerEventStatic(Events::ResourceCreated, &sArgs);
 
    Device::log("Resource created (%s): '%s'", strResourceType[(int)eType], cName.getString().c_str());
 }
@@ -40,7 +38,7 @@ Resource::~Resource()
 {
    EventArgs sArgs;
    sArgs.Sender = this;
-   triggerEventStatic(EventResourceDestroyed, &sArgs);
+   triggerEventStatic(Events::ResourceDestroyed, &sArgs);
 
    Device::log("Resource destroyed (%s): '%s'", strResourceType[(int)eType], cName.getString().c_str());
 }

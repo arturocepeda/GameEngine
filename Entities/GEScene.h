@@ -64,12 +64,6 @@ namespace GE { namespace Entities
       void setupEntity(std::istream& Stream, Entity* cEntity);
 
    public:
-      static const Core::ObjectName EventActiveSceneSet;
-      static const Core::ObjectName EventEntityAdded;
-      static const Core::ObjectName EventEntityRenamed;
-      static const Core::ObjectName EventEntityRemoved;
-      static const Core::ObjectName EventEntityParentChanged;
-
       Scene(const Core::ObjectName& Name);
       ~Scene();
 

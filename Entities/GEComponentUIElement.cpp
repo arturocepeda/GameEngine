@@ -78,7 +78,7 @@ ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
    cClassName = ObjectName("UI2DElement");
 
 #if defined (GE_EDITOR_SUPPORT)
-   EventHandlingObject::connectStaticEventCallback(EventRenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
+   EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
    {
       updateTransformPosition();
       return false;
@@ -92,7 +92,7 @@ ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
 ComponentUI2DElement::~ComponentUI2DElement()
 {
 #if defined (GE_EDITOR_SUPPORT)
-   EventHandlingObject::disconnectStaticEventCallback(EventRenderingSurfaceChanged, this);
+   EventHandlingObject::disconnectStaticEventCallback(Events::RenderingSurfaceChanged, this);
 #endif
 }
 

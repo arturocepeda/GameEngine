@@ -28,6 +28,7 @@
 #include "Core/GEProfiler.h"
 #include "Core/GEPlatform.h"
 #include "Core/GEApplication.h"
+#include "Core/GEEvents.h"
 
 #include <algorithm>
 
@@ -43,12 +44,6 @@ using namespace GE::Rendering;
 
 const ObjectName Name = ObjectName("Name");
 const ObjectName BackgroundEntityName = ObjectName("Background");
-
-const ObjectName Scene::EventActiveSceneSet = ObjectName("EventActiveSceneSet");
-const ObjectName Scene::EventEntityAdded = ObjectName("EventEntityAdded");
-const ObjectName Scene::EventEntityRenamed = ObjectName("EventEntityRenamed");
-const ObjectName Scene::EventEntityRemoved = ObjectName("EventEntityRemoved");
-const ObjectName Scene::EventEntityParentChanged = ObjectName("EventEntityParentChanged");
 
 //
 //  Scene
@@ -144,7 +139,7 @@ void Scene::removeEntityRecursively(Entity* cEntity)
 void Scene::setActiveScene(Scene* S)
 {
    cActiveScene = S;
-   triggerEventStatic(EventActiveSceneSet);
+   triggerEventStatic(Events::ActiveSceneSet);
 }
 
 Scene* Scene::getActiveScene()
@@ -163,7 +158,7 @@ Entity* Scene::addEntity(const ObjectName& Name, Entity* cParent)
    EventArgs sEventArgs;
    sEventArgs.Sender = this;
    sEventArgs.Args = cEntity;
-   triggerEvent(EventEntityAdded, &sEventArgs);
+   triggerEvent(Events::EntityAdded, &sEventArgs);
 
    return cEntity;
 }
@@ -200,7 +195,7 @@ bool Scene::removeEntity(const ObjectName& FullName)
    EventArgs sEventArgs;
    sEventArgs.Sender = this;
    sEventArgs.Args = it->second;
-   triggerEvent(EventEntityRemoved, &sEventArgs);
+   triggerEvent(Events::EntityRemoved, &sEventArgs);
 
    GEMutexUnlock(mSceneMutex);
 
@@ -228,7 +223,7 @@ bool Scene::renameEntity(Entity* cEntity, const Core::ObjectName& NewName)
       EventArgs sEventArgs;
       sEventArgs.Sender = this;
       sEventArgs.Args = cEntity;
-      triggerEvent(EventEntityRenamed, &sEventArgs);
+      triggerEvent(Events::EntityRenamed, &sEventArgs);
    }
    else
    {
@@ -351,7 +346,7 @@ void Scene::setEntityParent(Entity* cEntity, Entity* cNewParent)
    EventArgs sEventArgs;
    sEventArgs.Sender = this;
    sEventArgs.Args = cEntity;
-   triggerEvent(EventEntityParentChanged, &sEventArgs);
+   triggerEvent(Events::EntityParentChanged, &sEventArgs);
 }
 
 uint Scene::getEntitiesCount() const

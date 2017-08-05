@@ -116,8 +116,6 @@ namespace GE { namespace Core
       void removeAction(uint ActionIndex);
 
    public:
-      static const ObjectName EventPropertiesUpdated;
-
       const ObjectName& getClassName() const;
 
       uint getPropertiesCount() const;

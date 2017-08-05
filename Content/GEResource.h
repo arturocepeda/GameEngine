@@ -38,9 +38,6 @@ namespace GE { namespace Content
       ResourceType eType;
 
    public:
-      static Core::ObjectName EventResourceCreated;
-      static Core::ObjectName EventResourceDestroyed;
-
       Resource(const Core::ObjectName& Name, const Core::ObjectName& GroupName, ResourceType Type);
       virtual ~Resource();
 

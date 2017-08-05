@@ -217,6 +217,9 @@
     <ClCompile Include="Content\GEResource.cpp">
       <Filter>Content</Filter>
     </ClCompile>
+    <ClCompile Include="Core\GEEvents.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\GEAudioSystem.h">
@@ -446,6 +449,9 @@
     </ClInclude>
     <ClInclude Include="Content\GEResource.h">
       <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEEvents.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

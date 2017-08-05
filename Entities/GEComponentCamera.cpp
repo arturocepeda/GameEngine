@@ -37,7 +37,7 @@ ComponentCamera::ComponentCamera(Entity* Owner)
    calculateProjectionMatrix();
 
 #if defined (GE_EDITOR_SUPPORT)
-   EventHandlingObject::connectStaticEventCallback(EventRenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
+   EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
    {
       calculateProjectionMatrix();
       return false;
@@ -52,7 +52,7 @@ ComponentCamera::ComponentCamera(Entity* Owner)
 ComponentCamera::~ComponentCamera()
 {
 #if defined (GE_EDITOR_SUPPORT)
-   EventHandlingObject::disconnectStaticEventCallback(EventRenderingSurfaceChanged, this);
+   EventHandlingObject::disconnectStaticEventCallback(Events::RenderingSurfaceChanged, this);
 #endif
 }
 

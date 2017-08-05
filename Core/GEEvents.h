@@ -16,8 +16,24 @@
 
 namespace GE { namespace Core
 {
-   //
-   //  Rendering
-   //
-   const ObjectName EventRenderingSurfaceChanged;
+   class Events
+   {
+   public:
+      // Serializable
+      static const ObjectName PropertiesUpdated;
+
+      // Resources
+      static const ObjectName ResourceCreated;
+      static const ObjectName ResourceDestroyed;
+
+      // Rendering
+      static const ObjectName RenderingSurfaceChanged;
+
+      // Scene
+      static const ObjectName ActiveSceneSet;
+      static const ObjectName EntityAdded;
+      static const ObjectName EntityRenamed;
+      static const ObjectName EntityRemoved;
+      static const ObjectName EntityParentChanged;
+   };
 }}

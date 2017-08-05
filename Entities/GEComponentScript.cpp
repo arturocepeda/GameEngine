@@ -14,6 +14,7 @@
 #include "Content/GEContentData.h"
 #include "Core/GEScript.h"
 #include "Core/GETime.h"
+#include "Core/GEEvents.h"
 #include "Entities/GEScene.h"
 
 using namespace GE;
@@ -189,7 +190,7 @@ void ScriptInstance::registerScriptProperties()
       Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
       EventArgs sEventArgs;
       sEventArgs.Sender = cEntity;
-      cEntity->triggerEvent(EventPropertiesUpdated, &sEventArgs);
+      cEntity->triggerEvent(Events::PropertiesUpdated, &sEventArgs);
    }
 }
 

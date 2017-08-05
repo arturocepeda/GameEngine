@@ -19,8 +19,6 @@ using namespace GE::Core;
 //
 //  Serializable
 //
-const ObjectName Serializable::EventPropertiesUpdated = ObjectName("EventPropertiesUpdated");
-
 Serializable::Serializable(const ObjectName& ClassName)
    : cClassName(ClassName)
 {

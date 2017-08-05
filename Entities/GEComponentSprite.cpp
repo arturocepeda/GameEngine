@@ -44,7 +44,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    sGeometryData.Indices = QuadIndices;
 
 #if defined (GE_EDITOR_SUPPORT)
-   EventHandlingObject::connectStaticEventCallback(EventRenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
+   EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
    {
       if(eFullScreenSizeMode != FullScreenSizeMode::None)
          setFullScreenSizeMode(eFullScreenSizeMode);
@@ -106,7 +106,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
 ComponentSprite::~ComponentSprite()
 {
 #if defined (GE_EDITOR_SUPPORT)
-   EventHandlingObject::disconnectStaticEventCallback(EventRenderingSurfaceChanged, this);
+   EventHandlingObject::disconnectStaticEventCallback(Events::RenderingSurfaceChanged, this);
 #endif
 
    Allocator::free(sGeometryData.VertexData);
@@ -182,7 +182,7 @@ void ComponentSprite::updateVertexData()
    cTextureAtlasNameProperty->DataPtr = (void*)cMaterial->getDiffuseTexture()->AtlasUVManager.getObjectRegistry();
 
    if(cTextureAtlasNameProperty->DataPtr != pCachedDataPtr)
-      cOwner->triggerEvent(EventPropertiesUpdated);
+      cOwner->triggerEvent(Events::PropertiesUpdated);
 
    Property* cTextureAtlasIndexProperty = const_cast<Property*>(getProperty("TextureAtlasIndex"));
    cTextureAtlasIndexProperty->MaxValue = (float)(cMaterial->getDiffuseTexture()->AtlasUV.size() - 1);

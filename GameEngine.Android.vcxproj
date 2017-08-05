@@ -137,6 +137,7 @@
     <ClInclude Include="Core\GEApplication.h" />
     <ClInclude Include="Core\GEConstants.h" />
     <ClInclude Include="Core\GEDevice.h" />
+    <ClInclude Include="Core\GEEvents.h" />
     <ClInclude Include="Core\GEGeometry.h" />
     <ClInclude Include="Core\GEInterpolator.h" />
     <ClInclude Include="Core\GEMath.h" />
@@ -210,6 +211,7 @@
     <ClCompile Include="Content\GESkeleton.cpp" />
     <ClCompile Include="Core\GEAllocator.cpp" />
     <ClCompile Include="Core\GEApplication.cpp" />
+    <ClCompile Include="Core\GEEvents.cpp" />
     <ClCompile Include="Core\GEGeometry.cpp" />
     <ClCompile Include="Core\GEMath.cpp" />
     <ClCompile Include="Core\GEObject.cpp" />

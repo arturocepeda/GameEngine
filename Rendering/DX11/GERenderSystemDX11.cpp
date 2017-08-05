@@ -103,7 +103,7 @@ RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
    dxContext->RSSetViewports(1, &dxViewport);
 
 #if defined (GE_EDITOR_SUPPORT)
-   EventHandlingObject::connectStaticEventCallback(EventRenderingSurfaceChanged, "RenderSystem", [this](const EventArgs* args) -> bool
+   EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, "RenderSystem", [this](const EventArgs* args) -> bool
    {
       calculate2DViewProjectionMatrix();
 
@@ -124,7 +124,7 @@ RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
 RenderSystemDX11::~RenderSystemDX11()
 {
 #if defined (GE_EDITOR_SUPPORT)
-   EventHandlingObject::disconnectStaticEventCallback(EventRenderingSurfaceChanged, "RenderSystem");
+   EventHandlingObject::disconnectStaticEventCallback(Events::RenderingSurfaceChanged, "RenderSystem");
 #endif
 
    GEInvokeDtor(RenderTextureDX11, cShadowMap);

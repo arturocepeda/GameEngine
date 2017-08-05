@@ -16,6 +16,7 @@
 #include "Content/GEResourcesManager.h"
 #include "Core/GEGeometry.h"
 #include "Core/GETime.h"
+#include "Core/GEEvents.h"
 #include "Core/GEProfiler.h"
 
 using namespace GE;
@@ -217,7 +218,7 @@ void ComponentSkeleton::setAnimationSet(AnimationSet* Set)
 #if defined (GE_EDITOR_SUPPORT)
    Property* cDefaultAnimationNameProperty = const_cast<Property*>(getProperty("DefaultAnimationName"));
    cDefaultAnimationNameProperty->DataPtr = Set ? (void*)Set->getObjectRegistry() : 0;
-   cOwner->triggerEvent(EventPropertiesUpdated);
+   cOwner->triggerEvent(Events::PropertiesUpdated);
 #endif
 }
 
