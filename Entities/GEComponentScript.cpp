@@ -55,7 +55,8 @@ ScriptInstance::ScriptInstance()
    GERegisterPropertySpecialEditor(ObjectName, ScriptName, PropertyEditor::Script);
    GERegisterProperty(Bool, Active);
 
-   registerEditorAction("Reload", [this]
+#if defined (GE_EDITOR_SUPPORT)
+   registerAction("Reload", [this]
    {
       const uint iNumProperties = getPropertiesCount() - iBasePropertiesCount;
       vCachedPropertyValues.resize(iNumProperties);
@@ -69,6 +70,7 @@ ScriptInstance::ScriptInstance()
 
       setScriptName(getScriptName());
    });
+#endif
 
    iBasePropertiesCount = getPropertiesCount();
    iBaseActionsCount = getActionsCount();
@@ -214,7 +216,7 @@ void ScriptInstance::registerScriptActions()
 
       const char* sGlobalFunctionName = cGlobalFunctionName.getString().c_str();
 
-      registerEditorAction(sGlobalFunctionName, [this, cGlobalFunctionName]
+      registerAction(sGlobalFunctionName, [this, cGlobalFunctionName]
       {
          cScript->runFunction<void>(cGlobalFunctionName);
       });

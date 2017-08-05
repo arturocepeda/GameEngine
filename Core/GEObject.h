@@ -33,6 +33,7 @@ namespace GE { namespace Core
       ObjectName(uint ID);
       ObjectName(const char* Name);
       ObjectName(const GESTLString& Name);
+      ObjectName(void* Ptr);
       ~ObjectName();
 
       uint getID() const;

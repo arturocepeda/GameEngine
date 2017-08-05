@@ -13,6 +13,7 @@
 #include "GEComponentSprite.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEDevice.h"
+#include "Core/GEEvents.h"
 #include "Rendering/GERenderSystem.h"
 
 using namespace GE;
@@ -42,6 +43,16 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    sGeometryData.NumIndices = 6;
    sGeometryData.Indices = QuadIndices;
 
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::connectStaticEventCallback(EventRenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
+   {
+      if(eFullScreenSizeMode != FullScreenSizeMode::None)
+         setFullScreenSizeMode(eFullScreenSizeMode);
+
+      return false;
+   });
+#endif
+
    GERegisterProperty(Vector2, Center);
    GERegisterProperty(Vector2, Size);
    GERegisterPropertyEnum(UVMode, UVMode);
@@ -49,7 +60,8 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    GERegisterProperty(UInt, TextureAtlasIndex);
    GERegisterProperty(ObjectName, TextureAtlasName);
 
-   registerEditorAction("Adjust Height to current Width", [this]
+#if defined (GE_EDITOR_SUPPORT)
+   registerAction("Adjust Height to current Width", [this]
    {
       if(getMaterialPassCount() == 0 || !getMaterialPass(0)->getMaterial())
          return;
@@ -69,7 +81,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
       bVertexDataDirty = true;
    });
 
-   registerEditorAction("Adjust Width to current Height", [this]
+   registerAction("Adjust Width to current Height", [this]
    {
       if(getMaterialPassCount() == 0 || !getMaterialPass(0)->getMaterial())
          return;
@@ -88,10 +100,15 @@ ComponentSprite::ComponentSprite(Entity* Owner)
       vSize.X = vSize.Y * fRatio;
       bVertexDataDirty = true;
    });
+#endif
 }
 
 ComponentSprite::~ComponentSprite()
 {
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::disconnectStaticEventCallback(EventRenderingSurfaceChanged, this);
+#endif
+
    Allocator::free(sGeometryData.VertexData);
    sGeometryData.VertexData = 0;
 }

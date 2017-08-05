@@ -13,6 +13,7 @@
 #include "GEComponentUIElement.h"
 #include "GEEntity.h"
 #include "Core/GEDevice.h"
+#include "Core/GEEvents.h"
 
 using namespace GE;
 using namespace GE::Core;
@@ -76,12 +77,23 @@ ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
 {
    cClassName = ObjectName("UI2DElement");
 
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::connectStaticEventCallback(EventRenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
+   {
+      updateTransformPosition();
+      return false;
+   });
+#endif
+
    GERegisterPropertyEnum(Alignment, Anchor);
    GERegisterProperty(Vector2, Offset);
 }
 
 ComponentUI2DElement::~ComponentUI2DElement()
 {
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::disconnectStaticEventCallback(EventRenderingSurfaceChanged, this);
+#endif
 }
 
 void ComponentUI2DElement::updateTransformPosition()

@@ -86,13 +86,6 @@ void Serializable::registerAction(const ObjectName& ActionName, const ActionFunc
    vActions.push_back(sAction);
 }
 
-void Serializable::registerEditorAction(const ObjectName& ActionName, const ActionFunction& Function)
-{
-#if defined (GE_EDITOR_SUPPORT)
-   registerAction(ActionName, Function);
-#endif
-}
-
 void Serializable::removeAction(uint ActionIndex)
 {
    GEAssert(ActionIndex < (uint)vActions.size());

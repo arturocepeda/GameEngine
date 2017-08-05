@@ -135,7 +135,9 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(Vector3, ConstantForce);
    GERegisterProperty(Vector3, ConstantAcceleration);
 
-   registerEditorAction("Burst", [this] { burst(iEmissionBurstCount); });
+#if defined (GE_EDITOR_SUPPORT)
+   registerAction("Burst", [this] { burst(iEmissionBurstCount); });
+#endif
 }
 
 ComponentParticleSystem::~ComponentParticleSystem()

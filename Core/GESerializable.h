@@ -113,7 +113,6 @@ namespace GE { namespace Core
          const PropertyArraySwap& Swap, const PropertyArrayXmlToStream& XmlToStream);
 
       void registerAction(const ObjectName& ActionName, const ActionFunction& Function);
-      void registerEditorAction(const ObjectName& ActionName, const ActionFunction& Function);
       void removeAction(uint ActionIndex);
 
    public:

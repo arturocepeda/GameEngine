@@ -15,6 +15,7 @@
 #include "Core/GEAllocator.h"
 #include "Core/GEProfiler.h"
 #include "Core/GEApplication.h"
+#include "Core/GEEvents.h"
 #include "Content/GEImageData.h"
 #include "Entities/GEEntity.h"
 #include "Entities/GEComponentUIElement.h"
@@ -98,12 +99,34 @@ RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
    dxContext->OMSetRenderTargets(1, dxRenderTargetView.GetAddressOf(), dxDepthStencilView.Get());
 
    // set default viewport
-   CD3D11_VIEWPORT dxViewport(0.0f, 0.0f, (float)Device::ScreenWidth, (float)Device::ScreenHeight);
+   CD3D11_VIEWPORT dxViewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)Device::ScreenWidth, (float)Device::ScreenHeight);
    dxContext->RSSetViewports(1, &dxViewport);
+
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::connectStaticEventCallback(EventRenderingSurfaceChanged, "RenderSystem", [this](const EventArgs* args) -> bool
+   {
+      calculate2DViewProjectionMatrix();
+
+      ID3D11RenderTargetView* nullViews[] = { nullptr };
+      dxContext->OMSetRenderTargets(ARRAYSIZE(nullViews), nullViews, nullptr);
+      dxRenderTargetView = nullptr;
+      dxDepthStencilView = nullptr;
+      dxContext->Flush();
+      RenderSystemDX11Helper::createWindowSizeDependentResources();
+
+      dxContext->OMSetRenderTargets(1, dxRenderTargetView.GetAddressOf(), dxDepthStencilView.Get());
+
+      return false;
+   });
+#endif
 }
 
 RenderSystemDX11::~RenderSystemDX11()
 {
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::disconnectStaticEventCallback(EventRenderingSurfaceChanged, "RenderSystem");
+#endif
+
    GEInvokeDtor(RenderTextureDX11, cShadowMap);
    Allocator::free(cShadowMap);
 
@@ -958,6 +981,11 @@ void RenderSystem::renderEnd()
 
    dxContext->DiscardView(dxRenderTargetView.Get());
    dxContext->DiscardView(dxDepthStencilView.Get());
+
+   {
+      CD3D11_VIEWPORT dxViewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)Device::ScreenWidth, (float)Device::ScreenHeight);
+      dxContext->RSSetViewports(1, &dxViewport);
+   }
 
    if(hr == DXGI_ERROR_DEVICE_REMOVED)
    {

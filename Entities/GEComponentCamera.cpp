@@ -12,6 +12,7 @@
 
 #include "GEComponentCamera.h"
 #include "GEEntity.h"
+#include "Core/GEEvents.h"
 #include "Core/GEDevice.h"
 
 using namespace GE;
@@ -35,6 +36,14 @@ ComponentCamera::ComponentCamera(Entity* Owner)
    cTransform = cOwner->getComponent<ComponentTransform>();
    calculateProjectionMatrix();
 
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::connectStaticEventCallback(EventRenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
+   {
+      calculateProjectionMatrix();
+      return false;
+   });
+#endif
+
    GERegisterProperty(Float, FOV);
    GERegisterProperty(Float, NearZ);
    GERegisterProperty(Float, FarZ);
@@ -42,6 +51,9 @@ ComponentCamera::ComponentCamera(Entity* Owner)
 
 ComponentCamera::~ComponentCamera()
 {
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::disconnectStaticEventCallback(EventRenderingSurfaceChanged, this);
+#endif
 }
 
 void ComponentCamera::update()

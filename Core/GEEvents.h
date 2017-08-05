@@ -1,0 +1,23 @@
+
+//////////////////////////////////////////////////////////////////
+//
+//  Arturo Cepeda Pérez
+//  Game Engine
+//
+//  Core
+//
+//  --- GEEvents.h ---
+//
+//////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include "GEObject.h"
+
+namespace GE { namespace Core
+{
+   //
+   //  Rendering
+   //
+   const ObjectName EventRenderingSurfaceChanged;
+}}

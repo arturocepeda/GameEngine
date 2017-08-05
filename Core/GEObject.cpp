@@ -33,15 +33,23 @@ ObjectName::ObjectName(uint ID)
 
 ObjectName::ObjectName(const char* Name)
 {
-   GESTLString sNameString(Name);
-   iID = hash(sNameString);
-   sName = sNameString;
+   sName = GESTLString(Name);
+   iID = hash(sName);
 }
 
 ObjectName::ObjectName(const GESTLString& Name)
 {
    iID = hash(Name);
    sName = Name;
+}
+
+ObjectName::ObjectName(void* Ptr)
+{
+   char sBuffer[32];
+   sprintf(sBuffer, "0x%p", Ptr);
+
+   sName = GESTLString(sBuffer);
+   iID = hash(sName);
 }
 
 ObjectName::~ObjectName()
