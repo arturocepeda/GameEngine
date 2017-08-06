@@ -29,7 +29,7 @@ const float FontSizeScale = 0.0001f;
 const unsigned char LineFeedChar = '~';
 
 ComponentLabel::ComponentLabel(Entity* Owner)
-   : ComponentRenderable(Owner, RenderableType::Label, GeometryType::Dynamic)
+   : ComponentRenderable(Owner, RenderableType::Label)
    , cFont(0)
    , fFontSize(12.0f)
    , iAlignment(Alignment::MiddleCenter)

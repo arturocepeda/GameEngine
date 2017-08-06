@@ -26,10 +26,10 @@ using namespace GE::Content;
 //
 ushort ComponentRenderable::QuadIndices[6] = { 0, 1, 2, 3, 2, 1 };
 
-ComponentRenderable::ComponentRenderable(Entity* Owner, RenderableType RType, GeometryType GType)
+ComponentRenderable::ComponentRenderable(Entity* Owner, RenderableType RType)
    : Component(Owner)
    , iRenderableType(RType)
-   , eGeometryType(GType)
+   , eGeometryType(GeometryType::Dynamic)
    , eRenderingMode(RenderingMode::_2D)
    , cColor(1.0f, 1.0f, 1.0f)
    , bVisible(true)

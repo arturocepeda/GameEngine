@@ -48,7 +48,7 @@ namespace GE { namespace Entities
 
       bool bVisible;
 
-      ComponentRenderable(Entity* Owner, RenderableType RType, GeometryType GType);
+      ComponentRenderable(Entity* Owner, RenderableType RType);
       ~ComponentRenderable();
 
    public:

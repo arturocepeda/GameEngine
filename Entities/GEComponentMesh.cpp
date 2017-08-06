@@ -28,7 +28,7 @@ using namespace GE::Rendering;
 //  ComponentMesh
 //
 ComponentMesh::ComponentMesh(Entity* Owner)
-   : ComponentRenderable(Owner, RenderableType::Mesh, GeometryType::Static)
+   : ComponentRenderable(Owner, RenderableType::Mesh)
    , cMesh(0)
    , eDynamicShadows(0)
    , cSkeleton(0)

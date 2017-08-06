@@ -25,7 +25,7 @@ using namespace GE::Rendering;
 //  ComponentSprite
 //
 ComponentSprite::ComponentSprite(Entity* Owner)
-   : ComponentRenderable(Owner, RenderableType::Sprite, GeometryType::Dynamic)
+   : ComponentRenderable(Owner, RenderableType::Sprite)
    , vCenter(0.0f, 0.0f)
    , vSize(1.0f, 1.0f)
    , iTextureAtlasIndex(0)

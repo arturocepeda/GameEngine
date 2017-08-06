@@ -42,7 +42,7 @@ const uint MaxParticles = 1024;
 RandFloat cRandFloat01(0.0f, 1.0f);
 
 ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
-   : ComponentRenderable(Owner, RenderableType::ParticleSystem, GeometryType::Dynamic)
+   : ComponentRenderable(Owner, RenderableType::ParticleSystem)
    , fElapsedTimeSinceLastEmission(0.0f)
    , eEmitterType(ParticleEmitterType::Point)
    , fEmitterRadius(0.0f)
