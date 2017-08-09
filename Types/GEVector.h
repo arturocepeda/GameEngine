@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "Core/GEConstants.h"
 #include "Core/GEMath.h"
 #include <cmath>
 
@@ -76,6 +77,11 @@ namespace GE
          float fDeltaY = other.Y - Y;
 
          return sqrt(fDeltaX * fDeltaX + fDeltaY * fDeltaY);
+      }
+
+      bool equals(const Vector2& other) const
+      {
+         return fabsf(other.X - X) < GE_EPSILON && fabsf(other.Y - Y) < GE_EPSILON;
       }
 
       Vector2 operator+(const Vector2& v) const
@@ -222,10 +228,14 @@ namespace GE
          return sqrt(fDeltaX * fDeltaX + fDeltaY * fDeltaY + fDeltaZ * fDeltaZ);
       }
 
-      void rotateYaw(float angle)
+      Vector3 getProjectionOn(const Vector3& unitVector) const
       {
-         X = X * cosf(angle) - Z * sinf(angle);
-         Z = X * sinf(angle) + Z * cosf(angle);
+         return unitVector * this->dotProduct(unitVector);
+      }
+
+      bool equals(const Vector3& other) const
+      {
+         return fabsf(other.X - X) < GE_EPSILON && fabsf(other.Y - Y) < GE_EPSILON && fabsf(other.Z - Z) < GE_EPSILON;
       }
 
       Vector3 operator+(const Vector3& v) const

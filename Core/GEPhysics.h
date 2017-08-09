@@ -37,6 +37,24 @@ namespace GE { namespace Core
          }
       };
 
+      struct Plane
+      {
+         Vector3 Normal;
+         float Distance;
+
+         Plane(const Vector3& vNormal, float fDistance)
+            : Normal(vNormal)
+            , Distance(fDistance)
+         {
+         }
+
+         Plane(const Vector3& vNormal, const Vector3& vPoint)
+            : Normal(vNormal)
+            , Distance(-vPoint.dotProduct(vNormal))
+         {
+         }
+      };
+
       struct QuerySettings
       {
          uint CollisionGroupsBitMask;
@@ -67,5 +85,7 @@ namespace GE { namespace Core
          const QuerySettings& Settings = DefaultQuerySettings, HitInfo* OutHitInfo = 0);
       static bool checkCollision(Entities::Scene* S, Entities::ComponentCollider* Collider,
          const QuerySettings& Settings = DefaultQuerySettings, HitInfo* OutHitInfo = 0);
+
+      static bool checkCollision(const Ray& R, const Plane& P, HitInfo* OutHitInfo = 0);
    };
 }}

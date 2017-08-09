@@ -114,3 +114,19 @@ bool Physics::checkCollision(Scene* S, ComponentCollider* Collider, const QueryS
 
    return false;
 }
+
+bool Physics::checkCollision(const Ray& R, const Plane& P, HitInfo* OutHitInfo)
+{
+   float fRayDotNormalPlane = R.Direction.dotProduct(P.Normal);
+
+   if(fabsf(fRayDotNormalPlane) < GE_EPSILON)
+      return false;
+
+   if(OutHitInfo)
+   {
+      float t = -(R.Origin.dotProduct(P.Normal) + P.Distance) / fRayDotNormalPlane;
+      OutHitInfo->Position = R.Origin + (R.Direction * t);
+   }
+
+   return true;
+}
