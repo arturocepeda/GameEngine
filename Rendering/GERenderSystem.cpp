@@ -767,13 +767,22 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          }
       }
 
-      if(cMaterialPass->getMaterial()->getAlpha() < 0.99f)
+#if defined (GE_EDITOR_SUPPORT)
+      if(GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
       {
-         vTransparentMeshesToRender.push_back(sRenderOperation);
+         vDebugGeometryToRender.push_back(sRenderOperation);
       }
       else
+#endif
       {
-         vOpaqueMeshesToRender.push_back(sRenderOperation);
+         if(cMaterialPass->getMaterial()->getAlpha() < 0.99f)
+         {
+            vTransparentMeshesToRender.push_back(sRenderOperation);
+         }
+         else
+         {
+            vOpaqueMeshesToRender.push_back(sRenderOperation);
+         }
       }
 
       if(cMesh->getGeometryType() == GeometryType::Static)
@@ -800,10 +809,19 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
    {
       ComponentSprite* cSprite = static_cast<ComponentSprite*>(cRenderable);
 
-      if(cSprite->getLayer() == SpriteLayer::GUI)
-         vUIElementsToRender.push_back(sRenderOperation);
+#if defined (GE_EDITOR_SUPPORT)
+      if(GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
+      {
+         vDebugGeometryToRender.push_back(sRenderOperation);
+      }
       else
-         vPre3DSpritesToRender.push_back(sRenderOperation);
+#endif
+      {
+         if(cSprite->getLayer() == SpriteLayer::GUI)
+            vUIElementsToRender.push_back(sRenderOperation);
+         else
+            vPre3DSpritesToRender.push_back(sRenderOperation);
+      }
 
       if(cSprite->getGeometryType() == GeometryType::Static)
       {
@@ -827,14 +845,23 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 
    case RenderableType::Label:
    {
-      if(cRenderable->getRenderingMode() == RenderingMode::_2D ||
-         cRenderable->getOwner()->getComponent<ComponentUIElement>())
+#if defined (GE_EDITOR_SUPPORT)
+      if(GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
       {
-         vUIElementsToRender.push_back(sRenderOperation);
+         vDebugGeometryToRender.push_back(sRenderOperation);
       }
       else
+#endif
       {
-         v3DLabelsToRender.push_back(sRenderOperation);
+         if(cRenderable->getRenderingMode() == RenderingMode::_2D ||
+            cRenderable->getOwner()->getComponent<ComponentUIElement>())
+         {
+            vUIElementsToRender.push_back(sRenderOperation);
+         }
+         else
+         {
+            v3DLabelsToRender.push_back(sRenderOperation);
+         }
       }
 
       GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::_2DDynamic];
@@ -958,6 +985,7 @@ void RenderSystem::clearRenderingQueues()
    vShadowedParticlesToRender.clear();
    vOpaqueMeshesToRender.clear();
    vTransparentMeshesToRender.clear();
+   vDebugGeometryToRender.clear();
    vLightsToRender.clear();
 
    for(GESTLMap(uint, RenderOperation)::iterator it = mBatches.begin(); it != mBatches.end(); it++)
@@ -1078,6 +1106,20 @@ void RenderSystem::renderFrame()
          render(sRenderOperation);
       }
    }
+
+#if defined (GE_EDITOR_SUPPORT)
+   if(!vDebugGeometryToRender.empty())
+   {
+      GESTLVector(RenderOperation)::const_iterator it = vDebugGeometryToRender.begin();
+
+      for(; it != vDebugGeometryToRender.end(); it++)
+      {
+         const RenderOperation& sRenderOperation = *it;
+         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+         render(sRenderOperation);
+      }
+   }
+#endif
 
    float fCurrentTime = Time::getElapsed();
    fFramesPerSecond = 1.0f / (fCurrentTime - fFrameTime);

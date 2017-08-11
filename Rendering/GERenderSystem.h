@@ -107,6 +107,7 @@ namespace GE { namespace Rendering
       GESTLVector(RenderOperation) vShadowedParticlesToRender;
       GESTLVector(RenderOperation) vOpaqueMeshesToRender;
       GESTLVector(RenderOperation) vTransparentMeshesToRender;
+      GESTLVector(RenderOperation) vDebugGeometryToRender;
       GESTLVector(Entities::ComponentLight*) vLightsToRender;
 
       GPUBufferPair sGPUBufferPairs[GeometryGroup::Count];

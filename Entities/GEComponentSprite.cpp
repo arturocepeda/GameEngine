@@ -331,7 +331,13 @@ void ComponentSprite::setTextureAtlasName(const Core::ObjectName& AtlasName)
    GEAssert(!vMaterialPassList.empty());
 
    Material* cMaterial = getMaterialPass(0)->getMaterial();
-   GEAssert(cMaterial);
+
+   if(!cMaterial)
+   {
+      Device::log("No material found in '%s'. The entity will not be rendered.", cOwner->getFullName().getString().c_str());
+      hide();
+      return;
+   }
 
    const GESTLVector(TextureAtlasEntry)& vTextureAtlasArray = cMaterial->getDiffuseTexture()->AtlasUV;
 

@@ -90,6 +90,9 @@ void ComponentLabel::processVariables()
 
 void ComponentLabel::generateVertexData()
 {
+   if(!cFont)
+      return;
+
    const uint iTextLength = (uint)strlen(sText.c_str());
 
    fCharacterSize = (fFontSize * FontSizeScale);
@@ -371,7 +374,13 @@ void ComponentLabel::setFont(Font* TextFont)
 void ComponentLabel::setFontName(const Core::ObjectName& FontName)
 {
    cFont = RenderSystem::getInstance()->getFont(FontName);
-   GEAssert(cFont);
+
+   if(!cFont)
+   {
+      Device::log("No font found in '%s'. The entity will not be rendered.", cOwner->getFullName().getString().c_str());
+      hide();
+      return;
+   }
 
    if(!sText.empty())
       generateVertexData();
@@ -395,8 +404,6 @@ void ComponentLabel::setAlignment(Alignment Align)
 
 void ComponentLabel::setText(const char* Text)
 {
-   GEAssert(cFont);
-
    sText.clear();
    const uint iStrLength = (uint)strlen(Text);
 

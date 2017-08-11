@@ -130,10 +130,10 @@ namespace GE { namespace Entities
       }
 
       template<typename T>
-      void getComponents(GESTLVector(Component*)* OutComponentsList)
+      void getComponents(GESTLVector(T*)* OutComponentsList)
       {
          if(vComponents[(uint)T::getType()])
-            OutComponentsList->push_back(vComponents[(uint)T::getType()]);
+            OutComponentsList->push_back(static_cast<T*>(vComponents[(uint)T::getType()]));
 
          for(uint i = 0; i < vChildren.size(); i++)
             vChildren[i]->getComponents<T>(OutComponentsList);

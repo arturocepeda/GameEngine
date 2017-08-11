@@ -32,7 +32,7 @@ ComponentRenderable::ComponentRenderable(Entity* Owner, RenderableType RType)
    , eGeometryType(GeometryType::Dynamic)
    , eRenderingMode(RenderingMode::_2D)
    , cColor(1.0f, 1.0f, 1.0f)
-   , bVisible(true)
+   , iInternalFlags((uint8_t)InternalFlags::Visible)
 {
    cClassName = ObjectName("Renderable");
 
@@ -53,12 +53,12 @@ ComponentRenderable::~ComponentRenderable()
 
 void ComponentRenderable::show()
 {
-   bVisible = true;
+   GESetFlag(iInternalFlags, InternalFlags::Visible);
 }
 
 void ComponentRenderable::hide()
 {
-   bVisible = false;
+   GEResetFlag(iInternalFlags, InternalFlags::Visible);
 }
 
 RenderableType ComponentRenderable::getRenderableType() const
@@ -88,7 +88,12 @@ const Color& ComponentRenderable::getColor() const
 
 bool ComponentRenderable::getVisible() const
 {
-   return bVisible;
+   return GEHasFlag(iInternalFlags, InternalFlags::Visible);
+}
+
+uint8_t ComponentRenderable::getInternalFlags() const
+{
+   return iInternalFlags;
 }
 
 const GeometryData& ComponentRenderable::getGeometryData() const
@@ -113,5 +118,13 @@ void ComponentRenderable::setColor(const Color& C)
 
 void ComponentRenderable::setVisible(bool Visible)
 {
-   bVisible = Visible;
+   if(Visible)
+      show();
+   else
+      hide();
+}
+
+void ComponentRenderable::setInternalFlags(uint8_t Flags)
+{
+   iInternalFlags = Flags;
 }

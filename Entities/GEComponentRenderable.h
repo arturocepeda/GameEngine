@@ -35,6 +35,13 @@ namespace GE { namespace Entities
 
    class ComponentRenderable : public Component
    {
+   public:
+      enum class InternalFlags
+      {
+         Visible        =  1 << 0,
+         DebugGeometry  =  1 << 1,
+      };
+
    protected:
       static ushort QuadIndices[6];
 
@@ -46,7 +53,7 @@ namespace GE { namespace Entities
     
       Content::GeometryData sGeometryData;
 
-      bool bVisible;
+      uint8_t iInternalFlags;
 
       ComponentRenderable(Entity* Owner, RenderableType RType);
       ~ComponentRenderable();
@@ -64,6 +71,7 @@ namespace GE { namespace Entities
 
       const Color& getColor() const;
       bool getVisible() const;
+      uint8_t getInternalFlags() const;
 
       const Content::GeometryData& getGeometryData() const;
 
@@ -71,6 +79,7 @@ namespace GE { namespace Entities
       void setRenderingMode(RenderingMode Mode);
       void setColor(const Color& C);
       void setVisible(bool Visible);
+      void setInternalFlags(uint8_t Flags);
 
       GEProperty(Bool, Visible)
       GEPropertyEnum(GeometryType, GeometryType)

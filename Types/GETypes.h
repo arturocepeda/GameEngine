@@ -24,8 +24,8 @@
 #define GEAssert(Expr)  assert(Expr)
 
 #define GEHasFlag(Value, Flag)  ((Value & (int)Flag) > 0)
-#define GESetFlag(Value, Flag)  (Value |= Flag)
-#define GEResetFlag(Value, Flag)  (Value &= ~Flag)
+#define GESetFlag(Value, Flag)  (Value |= (int)Flag)
+#define GEResetFlag(Value, Flag)  (Value &= ~((int)Flag))
 
 #define GESerializableEnum(EnumType) \
    extern const char* str##EnumType[]; \

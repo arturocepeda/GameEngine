@@ -960,7 +960,11 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
    dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
    dxContext->DrawIndexed(sRenderOperation.Data.NumIndices, iStartIndexLocation, iBaseVertexLocation);
-   iDrawCalls++;
+
+   if(!cRenderable || !GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
+   {
+      iDrawCalls++;
+   }
 }
 
 void RenderSystemDX11Helper::handleDeviceLost()
