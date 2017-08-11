@@ -53,6 +53,12 @@ const Core::ObjectName& ComponentMesh::getMeshName() const
 
 void ComponentMesh::setMeshName(const ObjectName& MeshName)
 {
+   if(MeshName.isEmpty())
+   {
+      cMesh = 0;
+      return;
+   }
+
    Mesh* cMesh = ResourcesManager::getInstance()->get<Mesh>(MeshName);
 
    if(!cMesh)
