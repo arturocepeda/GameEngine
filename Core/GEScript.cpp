@@ -474,6 +474,7 @@ void Script::registerTypes()
       , "getComponentTransform", &Entity::getComponent<ComponentTransform>
       , "getComponentRenderable", &Entity::getComponent<ComponentRenderable>
       , "getComponentSprite", &Entity::getComponent<ComponentSprite>
+      , "getComponentLabel", &Entity::getComponent<ComponentLabel>
       , "getComponentMesh", &Entity::getComponent<ComponentMesh>
       , "getComponentParticleSystem", &Entity::getComponent<ComponentParticleSystem>
       , "getComponentCamera", &Entity::getComponent<ComponentCamera>
@@ -485,6 +486,9 @@ void Script::registerTypes()
       , "getComponentUI3DElement", &Entity::getComponent<ComponentUI3DElement>
       , "getComponentSkeleton", &Entity::getComponent<ComponentSkeleton>
       , "getComponentScript", &Entity::getComponent<ComponentScript>
+      , "getChildrenCount", &Entity::getChildrenCount
+      , "getChildByIndex", &Entity::getChildByIndex
+      , "getChildByName", &Entity::getChildByName
       , "init", &Entity::init
       , sol::base_classes, sol::bases<Serializable>()
    );
@@ -536,6 +540,14 @@ void Script::registerTypes()
       , "isOver", &ComponentSprite::isOver
       , "getTextureAtlasIndex", &ComponentSprite::getTextureAtlasIndex
       , "setTextureAtlasIndex", &ComponentSprite::setTextureAtlasIndex
+      , "setTextureAtlasName", &ComponentSprite::setTextureAtlasName
+      , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
+   );
+   lua.new_usertype<ComponentLabel>
+   (
+      "ComponentLabel"
+      , "setText", &ComponentLabel::setText
+      , "setStringID", &ComponentLabel::setStringID
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
    lua.new_usertype<ComponentMesh>
