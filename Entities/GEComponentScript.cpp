@@ -153,7 +153,7 @@ void ScriptInstance::registerScriptProperties()
       if(ePropertyValue == ValueType::Count)
          continue;
 
-      PropertySetter setter = [this, sGlobalVariableName](Value& cValue)
+      PropertySetter setter = [this, sGlobalVariableName](const Value& cValue)
       {
          switch(cValue.getType())
          {

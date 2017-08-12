@@ -168,7 +168,7 @@ Value Serializable::get(const ObjectName& PropertyName)
    return cProperty->Getter();
 }
 
-void Serializable::set(const ObjectName& PropertyName, Value& PropertyValue)
+void Serializable::set(const ObjectName& PropertyName, const Value& PropertyValue)
 {
    Property* cProperty = 0;
 

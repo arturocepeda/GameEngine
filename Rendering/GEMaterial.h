@@ -80,7 +80,6 @@ namespace GE { namespace Rendering
       char* sConstantBufferDataFragment;
 
       void registerShaderProperties(char* sBuffer, const ShaderProgram::ParameterList& vParameterList);
-      void setDefaultPropertyValues();
       void releaseConstantBufferData();
 
    public:

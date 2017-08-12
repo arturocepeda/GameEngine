@@ -71,13 +71,19 @@ void ShaderProgram::parseParameters(const pugi::xml_node& xmlShader, const char*
    {
       const char* sParameterName = xmlParameter.attribute("name").value();
       const char* sParameterType = xmlParameter.attribute("type").value();
+      const char* sParameterDefaultValue = xmlParameter.attribute("defaultValue").value();
 
       ValueType eValueType = Value::getValueType(sParameterType);
       uint iValueTypeSize = Value::getDefaultValue(eValueType).getSize();
 
-      ShaderProgramParameter sParameter;
-      sParameter.Name = ObjectName(sParameterName);
-      sParameter.Type = eValueType;
+      ObjectName cParameterName = ObjectName(sParameterName);
+      ShaderProgramParameter sParameter = ShaderProgramParameter(cParameterName, eValueType);
+
+      if(sParameterDefaultValue[0] != '\0')
+      {
+         sParameter.DefaultValue = Value(eValueType, sParameterDefaultValue);
+      }
+
       sParameter.Offset = iOffset;
       vParameterList->push_back(sParameter);
 
@@ -91,9 +97,10 @@ void ShaderProgram::parseParameters(std::istream& sStream, ParameterList* vParam
 
    for(uint i = 0; i < iParameterCount; i++)
    {
-      ShaderProgramParameter sParameter;
-      sParameter.Name = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
-      sParameter.Type = (ValueType)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      ObjectName cParameterName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+      ValueType eParameterType = (ValueType)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+      ShaderProgramParameter sParameter = ShaderProgramParameter(cParameterName, eParameterType);
       sParameter.Offset = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
       vParameterList->push_back(sParameter);
    }

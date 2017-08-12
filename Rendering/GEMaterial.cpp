@@ -202,8 +202,6 @@ void MaterialPass::setMaterial(Material* M)
          sConstantBufferDataFragment = Allocator::alloc<char>(Material::ConstantBufferSize);
          registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->FragmentParameters);
       }
-
-      setDefaultPropertyValues();
    }
 
    EventArgs sEventArgs;
@@ -217,7 +215,7 @@ void MaterialPass::registerShaderProperties(char* sBuffer, const ShaderProgram::
    {
       const ShaderProgramParameter& sParameter = vParameterList[i];
 
-      PropertySetter setter = [sBuffer, &sParameter](Value& cValue)
+      PropertySetter setter = [sBuffer, &sParameter](const Value& cValue)
       {
          memcpy(sBuffer + sParameter.Offset, cValue.getRawData(), cValue.getSize());
       };
@@ -228,16 +226,7 @@ void MaterialPass::registerShaderProperties(char* sBuffer, const ShaderProgram::
       };
 
       registerProperty(sParameter.Name, sParameter.Type, setter, getter);
-   }
-}
-
-void MaterialPass::setDefaultPropertyValues()
-{
-   for(uint i = iBasePropertiesCount; i < getPropertiesCount(); i++)
-   {
-      const Property& cProperty = getProperty(i);
-      Value cDefaultValue = Value::getDefaultValue(cProperty.Type);
-      cProperty.Setter(cDefaultValue);
+      set(sParameter.Name, sParameter.DefaultValue);
    }
 }
 

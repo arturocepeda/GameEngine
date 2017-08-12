@@ -35,7 +35,16 @@ namespace GE { namespace Rendering
    {
       Core::ObjectName Name;
       Core::ValueType Type;
+      Core::Value DefaultValue;
       uint Offset;
+
+      ShaderProgramParameter(const Core::ObjectName& cName, Core::ValueType eType)
+         : Name(cName)
+         , Type(eType)
+         , DefaultValue(Core::Value::getDefaultValue(eType))
+         , Offset(0)
+      {
+      }
    };
 
 

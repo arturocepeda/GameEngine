@@ -13,6 +13,7 @@
 #include "GEComponentLabel.h"
 #include "Rendering/GERenderSystem.h"
 #include "Core/GEAllocator.h"
+#include "Core/GEDevice.h"
 #include "Content/GELocalizedString.h"
 #include "Content/GEResourcesManager.h"
 

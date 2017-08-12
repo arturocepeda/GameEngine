@@ -28,7 +28,7 @@ namespace GE { namespace Core
    class SerializableArrayElement;
 
    typedef std::function<Value()> PropertyGetter;
-   typedef std::function<void(Value&)> PropertySetter;
+   typedef std::function<void(const Value&)> PropertySetter;
    typedef std::function<void()> ActionFunction;
 
    typedef GESTLVector(SerializableArrayElement*) PropertyArrayEntries;
@@ -130,7 +130,7 @@ namespace GE { namespace Core
       const Action& getAction(uint ActionIndex) const;
 
       Value get(const ObjectName& PropertyName);
-      void set(const ObjectName& PropertyName, Value& PropertyValue);
+      void set(const ObjectName& PropertyName, const Value& PropertyValue);
 
       void executeAction(const ObjectName& ActionName);
 
@@ -168,7 +168,7 @@ namespace GE { namespace Core
    GE::Core::Value P_get##PropertyName() { return GE::Core::Value(get##PropertyName()); }
 
 #define GEPropertyWriteonly(PropertyType, PropertyName) \
-   void P_set##PropertyName(GE::Core::Value& v) { set##PropertyName(v.getAs##PropertyType()); }
+   void P_set##PropertyName(const GE::Core::Value& v) { set##PropertyName(v.getAs##PropertyType()); }
 
 #define GEProperty(PropertyType, PropertyName) \
    GEPropertyReadonly(PropertyType, PropertyName) \
@@ -182,7 +182,7 @@ namespace GE { namespace Core
    GE::Core::Value P_get##PropertyName() { return GE::Core::Value((GE::byte)get##PropertyName()); }
 
 #define GEPropertyEnumWriteonly(EnumType, PropertyName) \
-   void P_set##PropertyName(GE::Core::Value& v) \
+   void P_set##PropertyName(const GE::Core::Value& v) \
    { \
       GEAssert(v.getAsByte() < (GE::byte)EnumType::Count); \
       set##PropertyName((EnumType)v.getAsByte()); \
@@ -270,12 +270,12 @@ namespace GE { namespace Core
 //
 #define GERegisterProperty(PropertyType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); })
 
 #define GERegisterPropertyMinMax(PropertyType, PropertyName, MinValue, MaxValue) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::Default, 0, 0, \
       MinValue, MaxValue)
@@ -287,14 +287,14 @@ namespace GE { namespace Core
 
 #define GERegisterPropertyResource(PropertyType, PropertyName, ObjectType) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::Default, \
       (void*)GE::Content::ResourcesManager::getInstance()->getObjectRegistry(#ObjectType))
 
 #define GERegisterPropertySpecialEditor(PropertyType, PropertyName, Editor) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       Editor)
 
@@ -304,7 +304,7 @@ namespace GE { namespace Core
 //
 #define GERegisterPropertyEnum(EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
-      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::Enum, (void*)str##EnumType, (uint)EnumType::Count)
 
@@ -320,7 +320,7 @@ namespace GE { namespace Core
 //
 #define GERegisterPropertyBitMask(EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
-      [this](GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       PropertyEditor::BitMask, (void*)str##EnumType, (uint)EnumType::Count)
 
