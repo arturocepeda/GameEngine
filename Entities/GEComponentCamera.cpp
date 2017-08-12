@@ -14,6 +14,7 @@
 #include "GEEntity.h"
 #include "Core/GEEvents.h"
 #include "Core/GEDevice.h"
+#include "Rendering/GERenderSystem.h"
 
 using namespace GE;
 using namespace GE::Core;
@@ -35,6 +36,11 @@ ComponentCamera::ComponentCamera(Entity* Owner)
    cClassName = ObjectName("Camera");
    cTransform = cOwner->getComponent<ComponentTransform>();
    calculateProjectionMatrix();
+
+   if(!RenderSystem::getInstance()->getActiveCamera())
+   {
+      RenderSystem::getInstance()->setActiveCamera(this);
+   }
 
 #if defined (GE_EDITOR_SUPPORT)
    EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
