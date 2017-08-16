@@ -25,6 +25,7 @@ using namespace GE::Entities;
 ComponentUIElement::ComponentUIElement(Entity* Owner)
    : Component(Owner)
    , fAlpha(1.0f)
+   , iRenderPriority(128)
 {
    cClassName = ObjectName("UIElement");
 
@@ -32,6 +33,7 @@ ComponentUIElement::ComponentUIElement(Entity* Owner)
    GEAssert(cTransform);
 
    GERegisterPropertyMinMax(Float, Alpha, 0.0f, 1.0f);
+   GERegisterPropertyMinMax(Byte, RenderPriority, 0, 255);
 }
 
 ComponentUIElement::~ComponentUIElement()
@@ -61,9 +63,34 @@ float ComponentUIElement::getAlphaInHierarchy() const
    return fAlphaInHierarchy;
 }
 
+uint8_t ComponentUIElement::getRenderPriority() const
+{
+   return iRenderPriority;
+}
+
 void ComponentUIElement::setAlpha(float Alpha)
 {
    fAlpha = Alpha;
+}
+
+void ComponentUIElement::setRenderPriority(uint8_t Value)
+{
+   iRenderPriority = Value;
+}
+
+void ComponentUIElement::changeRenderPriority(int8_t Delta)
+{
+   iRenderPriority += Delta;
+
+   for(uint i = 0; i < cOwner->getChildrenCount(); i++)
+   {
+      ComponentUIElement* cChildUIElement = cOwner->getChildByIndex(i)->getComponent<ComponentUIElement>();
+
+      if(cChildUIElement)
+      {
+         cChildUIElement->changeRenderPriority(Delta);
+      }
+   }
 }
 
 

@@ -302,6 +302,11 @@ void Serializable::saveToXml(pugi::xml_node& XmlNode) const
       if(!sProperty.Setter)
          continue;
 
+#if defined (GE_EDITOR_SUPPORT)
+      if(sProperty.Getter() == sProperty.DefaultValue)
+         continue;
+#endif
+
       char sValueBuffer[Value::BufferSize];
 
       sProperty.Getter().toString(sValueBuffer);

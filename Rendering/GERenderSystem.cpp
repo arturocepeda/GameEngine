@@ -1104,6 +1104,18 @@ void RenderSystem::renderFrame()
 
    if(!vUIElementsToRender.empty())
    {
+      std::sort(vUIElementsToRender.begin(), vUIElementsToRender.end(),
+         [](const RenderOperation& sRO1, const RenderOperation& sRO2) -> bool
+      {
+         ComponentUIElement* cUIElement = sRO1.Renderable->getOwner()->getComponent<ComponentUIElement>();
+         uint8_t iRenderPriority1 = cUIElement ? cUIElement->getRenderPriority() : 0;
+
+         cUIElement = sRO2.Renderable->getOwner()->getComponent<ComponentUIElement>();
+         uint8_t iRenderPriority2 = cUIElement ? cUIElement->getRenderPriority() : 0;
+
+         return iRenderPriority1 > iRenderPriority2;
+      });
+
       GESTLVector(RenderOperation)::const_iterator it = vUIElementsToRender.begin();
 
       for(; it != vUIElementsToRender.end(); it++)

@@ -21,6 +21,7 @@ namespace GE { namespace Entities
    protected:
       ComponentTransform* cTransform;
       float fAlpha;
+      uint8_t iRenderPriority;
 
       ComponentUIElement(Entity* Owner);
 
@@ -31,10 +32,14 @@ namespace GE { namespace Entities
 
       float getAlpha() const;
       float getAlphaInHierarchy() const;
+      uint8_t getRenderPriority() const;
 
       void setAlpha(float Alpha);
+      void setRenderPriority(uint8_t Value);
+      void changeRenderPriority(int8_t Delta);
 
       GEProperty(Float, Alpha)
+      GEProperty(Byte, RenderPriority)
    };
 
 
