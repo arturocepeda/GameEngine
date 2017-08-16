@@ -24,6 +24,7 @@ namespace GE { namespace Core
    {
       Linear,
       Quadratic,
+      QuadraticInverse,
       Logarithmic
    };
 
@@ -76,6 +77,10 @@ namespace GE { namespace Core
       Color getInterpolatedValue(const Color& sStartValue, const Color& sEndValue, float fFactor)
       {
          return Color::lerp(sStartValue, sEndValue, fFactor);
+      }
+      Quaternion getInterpolatedValue(const Quaternion& qStartValue, const Quaternion& qEndValue, float fFactor)
+      {
+         return Quaternion::slerp(qStartValue, qEndValue, fFactor);
       }
 
       void executeOnFinishedAction()
@@ -160,6 +165,10 @@ namespace GE { namespace Core
          case InterpolationMode::Quadratic:
             {
                return t * t;
+            }
+         case InterpolationMode::QuadraticInverse:
+            {
+               return -t * (t - 2.0f);
             }
          case InterpolationMode::Logarithmic:
             {

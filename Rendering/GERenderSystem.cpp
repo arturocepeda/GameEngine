@@ -666,6 +666,13 @@ void RenderSystem::queueForRendering(ComponentRenderable* Renderable)
       return;
    }
 
+   ComponentUIElement* cUIElement = Renderable->getOwner()->getComponent<ComponentUIElement>();
+
+   if(cUIElement && cUIElement->getAlphaInHierarchy() < GE_EPSILON)
+   {
+      return;
+   }
+
    for(uint i = 0; i < Renderable->getMaterialPassCount(); i++)
    {
       MaterialPass* cMaterialPass = Renderable->getMaterialPass(i);
