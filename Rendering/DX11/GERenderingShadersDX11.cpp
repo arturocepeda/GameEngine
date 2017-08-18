@@ -69,11 +69,11 @@ VertexShader::VertexShader(const char* Filename, uint VertexElements, const Shad
    {
       if(dxErrorBlob)
       {
-         OutputDebugStringA((char*)dxErrorBlob->GetBufferPointer());
+         Device::log("ERROR: Vertex Shader could not be loaded\n%s", (char*)dxErrorBlob->GetBufferPointer());
          dxErrorBlob->Release();
       }
 
-      GEAssert(false);
+      return;
    }
 
    char* pShaderByteCodeData = (char*)dxCodeBlob->GetBufferPointer();
@@ -221,11 +221,11 @@ PixelShader::PixelShader(const char* Filename, const ShaderProgram::Preprocessor
    {
       if(dxErrorBlob)
       {
-         OutputDebugStringA((char*)dxErrorBlob->GetBufferPointer());
+         Device::log("ERROR: Pixel Shader could not be loaded\n%s", (char*)dxErrorBlob->GetBufferPointer());
          dxErrorBlob->Release();
       }
 
-      GEAssert(false);
+      return;
    }
 
    char* pShaderByteCodeData = (char*)dxCodeBlob->GetBufferPointer();
