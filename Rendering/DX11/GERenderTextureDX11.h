@@ -32,7 +32,7 @@ namespace GE { namespace Rendering
       RenderTextureDX11(ID3D11Device* Device, ID3D11DeviceContext* Context, uint Width, uint Height);
       ~RenderTextureDX11();
 
-      void setAsRenderTarget();
+      void setAsRenderTarget(UINT Slot);
       void clear(const Color& ClearColor);
       ID3D11ShaderResourceView* getShaderResourceView();
    };

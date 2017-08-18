@@ -70,6 +70,9 @@ ShaderConstantsLighting sShaderConstantsLighting;
 
 RenderTextureDX11* cShadowMap;
 
+const UINT SlotTextureDiffuse = 0;
+const UINT SlotTextureShadowMap = 1;
+
 
 #if defined(GE_PLATFORM_WP8)
 RenderSystemDX11::RenderSystemDX11(Windows::UI::Core::CoreWindow^ window)
@@ -684,7 +687,7 @@ void RenderSystem::bindTexture(const Texture* cTexture)
    pBoundTexture = const_cast<Texture*>(cTexture);
 
    ID3D11ShaderResourceView* dxShaderResourceView = (ID3D11ShaderResourceView*)cTexture->getHandler();
-   dxContext->PSSetShaderResources(0, 1, &dxShaderResourceView);
+   dxContext->PSSetShaderResources(SlotTextureDiffuse, 1, &dxShaderResourceView);
    dxContext->PSSetSamplers(0, 1, &dxSamplerStateClamp);
 }
 
@@ -733,13 +736,17 @@ void RenderSystem::renderShadowMap()
    CD3D11_VIEWPORT dxViewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)ShadowMapSize, (float)ShadowMapSize);
    dxContext->RSSetViewports(1, &dxViewport);
 
-   cShadowMap->setAsRenderTarget();
+   ID3D11ShaderResourceView* dxNullResourceView = nullptr;
+   dxContext->PSSetShaderResources(SlotTextureShadowMap, 1, &dxNullResourceView);
+
+   cShadowMap->setAsRenderTarget(SlotTextureShadowMap);
    cShadowMap->clear(Color(1.0f, 1.0f, 1.0f));
 
    calculateLightViewProjectionMatrix(cLight);
 
    if(!vShadowedMeshesToRender.empty())
    {
+      setBlendingMode(BlendingMode::None);
       useShaderProgram(ShadowMapSolidProgram);
 
       GESTLVector(RenderOperation)::const_iterator it = vShadowedMeshesToRender.begin();
@@ -780,6 +787,7 @@ void RenderSystem::renderShadowMap()
 
    if(!vShadowedParticlesToRender.empty())
    {
+      setBlendingMode(BlendingMode::Alpha);
       useShaderProgram(ShadowMapAlphaProgram);
 
       GESTLVector(RenderOperation)::const_iterator it = vShadowedParticlesToRender.begin();
@@ -922,7 +930,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
       {
          ID3D11ShaderResourceView* dxShaderResourceView = cShadowMap->getShaderResourceView();
-         dxContext->PSSetShaderResources(1, 1, &dxShaderResourceView);
+         dxContext->PSSetShaderResources(SlotTextureShadowMap, 1, &dxShaderResourceView);
          dxContext->PSSetSamplers(0, 1, &dxSamplerStateClamp);
       }
 

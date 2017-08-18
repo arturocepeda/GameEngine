@@ -138,9 +138,9 @@ RenderTextureDX11::~RenderTextureDX11()
    }
 }
 
-void RenderTextureDX11::setAsRenderTarget()
+void RenderTextureDX11::setAsRenderTarget(UINT Slot)
 {
-   dxContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
+   dxContext->OMSetRenderTargets(Slot, &m_renderTargetView, m_depthStencilView);
    dxContext->RSSetViewports(1, &m_viewport);
 }
 
