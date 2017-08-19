@@ -389,11 +389,12 @@ void Script::registerTypes()
       , "get", &Serializable::get
       , "set", &Serializable::set
    );
-   lua.new_enum<true>
+   lua.new_enum
    (
       "InterpolationMode"
       , "Linear", InterpolationMode::Linear
       , "Quadratic", InterpolationMode::Quadratic
+      , "QuadraticInverse", InterpolationMode::QuadraticInverse
       , "Logarithmic", InterpolationMode::Logarithmic
    );
    lua.new_usertype<PropertyInterpolator<float>>
@@ -479,14 +480,10 @@ void Script::registerTypes()
       , "getComponentParticleSystem", &Entity::getComponent<ComponentParticleSystem>
       , "getComponentCamera", &Entity::getComponent<ComponentCamera>
       , "getComponentCollider", &Entity::getComponent<ComponentCollider>
-      , "getComponentColliderSphere", &Entity::getComponent<ComponentColliderSphere>
-      , "getComponentColliderMesh", &Entity::getComponent<ComponentColliderMesh>
       , "getComponentUIElement", &Entity::getComponent<ComponentUIElement>
       , "getComponentUI2DElement", &Entity::getComponent<ComponentUI2DElement>
-      , "getComponentUI3DElement", &Entity::getComponent<ComponentUI3DElement>
       , "getComponentSkeleton", &Entity::getComponent<ComponentSkeleton>
       , "getComponentScript", &Entity::getComponent<ComponentScript>
-      , "getChildrenCount", &Entity::getChildrenCount
       , "getChildByIndex", &Entity::getChildByIndex
       , "getChildByName", &Entity::getChildByName
       , "init", &Entity::init
@@ -589,7 +586,22 @@ void Script::registerTypes()
       , "getSkeleton", &ComponentSkeleton::getSkeleton
       , "getBoneEntity", (Entity* (ComponentSkeleton::*)(const ObjectName&) const)&ComponentSkeleton::getBoneEntity
       , "getBoneEntityByIndex", (Entity* (ComponentSkeleton::*)(uint) const)&ComponentSkeleton::getBoneEntity
+      , "playAnimation", &ComponentSkeleton::playAnimation
       , sol::base_classes, sol::bases<Component, Serializable>()
+   );
+   lua.new_enum
+   (
+      "AnimationPlayMode"
+      , "Loop", AnimationPlayMode::Loop
+      , "Once", AnimationPlayMode::Once
+   );
+   lua.new_usertype<AnimationPlayInfo>
+   (
+      "AnimationPlayInfo"
+      , "AnimationName", &AnimationPlayInfo::AnimationName
+      , "Mode", &AnimationPlayInfo::Mode
+      , "BlendTime", &AnimationPlayInfo::BlendTime
+      , "Speed", &AnimationPlayInfo::Speed
    );
    lua.new_usertype<ComponentScript>
    (

@@ -430,7 +430,16 @@ void ComponentSkeleton::updateAnimationInstance(AnimationInstance* cInstance)
    float fTimeLastKeyFrame = cInstance->RefAnimation->getKeyFrameTime(iLastKeyFrameIndex);
 
    if(cInstance->TimePosition >= fTimeLastKeyFrame)
-      cInstance->TimePosition -= fTimeLastKeyFrame;
+   {
+      if(cInstance->Mode == AnimationPlayMode::Loop)
+      {
+         cInstance->TimePosition -= fTimeLastKeyFrame;
+      }
+      else
+      {
+         cInstance->State = AnimationInstanceState::Inactive;
+      }
+   }
 
    uint iKeyFrameIndexA = 0;
 
@@ -442,11 +451,19 @@ void ComponentSkeleton::updateAnimationInstance(AnimationInstance* cInstance)
 
    uint iKeyFrameIndexB = iKeyFrameIndexA + 1;
 
-   float fTimeA = cInstance->RefAnimation->getKeyFrameTime(iKeyFrameIndexA);
-   float fTimeB = cInstance->RefAnimation->getKeyFrameTime(iKeyFrameIndexB);
+   if(iKeyFrameIndexB > iLastKeyFrameIndex)
+      iKeyFrameIndexB = iLastKeyFrameIndex;
 
-   Scaler s(fTimeA, fTimeB, 0.0f, 1.0f);
-   float fLerpFactor = s.y(cInstance->TimePosition);
+   float fLerpFactor = 0.0f;
+
+   if(iKeyFrameIndexA != iKeyFrameIndexB)
+   {
+      float fTimeA = cInstance->RefAnimation->getKeyFrameTime(iKeyFrameIndexA);
+      float fTimeB = cInstance->RefAnimation->getKeyFrameTime(iKeyFrameIndexB);
+
+      Scaler s(fTimeA, fTimeB, 0.0f, 1.0f);
+      fLerpFactor = s.y(cInstance->TimePosition);
+   }
 
    // set position and rotation for each bone
    const uint iBonesCount = cSkeleton->getBonesCount();
@@ -540,7 +557,11 @@ void ComponentSkeleton::releaseSkeletonData()
 
    if(cSkeleton)
    {
-      cOwner->getOwner()->removeEntity(vBoneEntities[0]->getFullName());
+      if(vBoneEntities.size() > 1)
+      {
+         cOwner->getOwner()->removeEntity(vBoneEntities[0]->getFullName());
+      }
+
       vBoneEntities.clear();
       cSkeleton = 0;
    }
