@@ -13,12 +13,15 @@
 #pragma once
 
 #include "Types/GETypes.h"
+#include "Core/GESerializable.h"
 
 namespace GE { namespace Core
 {
-   class Clock
+   class Clock : public Serializable
    {
    private:
+      static uint iClocksCounter;
+
       float fDelta;
       float fTimeFactor;
 
@@ -31,6 +34,8 @@ namespace GE { namespace Core
 
       void setDelta(float Delta);
       void setTimeFactor(float TimeFactor);
+
+      GEProperty(Float, TimeFactor);
    };
 
 

@@ -23,9 +23,14 @@ const float MaxDelta = 0.1f;
 //  Clock
 //
 Clock::Clock()
-   : fDelta(0.0f)
+   : Serializable("Clock")
+   , fDelta(0.0f)
    , fTimeFactor(1.0f)
 {
+   GERegisterPropertyMinMax(Float, TimeFactor, 0.0f, 4.0f);
+
+   registerAction("Run", [this] { fTimeFactor = 1.0f; });
+   registerAction("Stop", [this] { fTimeFactor = 0.0f; });
 }
 
 Clock::~Clock()
