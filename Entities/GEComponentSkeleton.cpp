@@ -64,6 +64,12 @@ void ComponentSkeleton::setSkeletonName(const ObjectName& SkeletonName)
 
    releaseSkeletonData();
 
+   if(SkeletonName.isEmpty())
+   {
+      cSkeleton = 0;
+      return;
+   }
+
    cSkeleton = ResourcesManager::getInstance()->get<Skeleton>(SkeletonName);
 
    if(!cSkeleton)
@@ -73,41 +79,48 @@ void ComponentSkeleton::setSkeletonName(const ObjectName& SkeletonName)
 
    const uint iBonesCount = cSkeleton->getBonesCount();
 
-   for(uint i = 0; i < iBonesCount; i++)
+   if(iBonesCount > 1)
    {
-      const Bone* cCurrentBone = cSkeleton->getBone(i);
-
-      // create entity
-      Entity* cBoneEntity = cOwner->getOwner()->addEntity(cCurrentBone->getName(), cOwner);
-      cBoneEntity->setInternalFlags((uint8_t)Entity::InternalFlags::Generated);
-      vBoneEntities.push_back(cBoneEntity);
-
-      Vector3 vBoneEntityPosition;
-      Rotation cBoneEntityRotation;
-      Vector3 vBoneEntityScale;
-
-      Geometry::extractTRSFromMatrix(cCurrentBone->getBindMatrix(),
-         &vBoneEntityPosition, &cBoneEntityRotation, &vBoneEntityScale);
-
-      ComponentTransform* cBoneEntityTransform = cBoneEntity->addComponent<ComponentTransform>();
-      cBoneEntityTransform->setPosition(vBoneEntityPosition);
-      cBoneEntityTransform->setRotation(cBoneEntityRotation);
-      cBoneEntityTransform->setScale(vBoneEntityScale);
-   }
-
-   // setup the hierarchy in the bone entities
-   const Bone* cSkeletonRootBone = cSkeleton->getBone(0);
-
-   for(uint i = 0; i < iBonesCount; i++)
-   {
-      const Bone* cCurrentBone = cSkeleton->getBone(i);
-
-      if(cCurrentBone != cSkeletonRootBone)
+      for(uint i = 0; i < iBonesCount; i++)
       {
-         Entity* cBoneEntityParent = vBoneEntities[cCurrentBone->getParentIndex()];
-         Scene* cScene = vBoneEntities[i]->getOwner();
-         cScene->setEntityParent(vBoneEntities[i], cBoneEntityParent);
+         const Bone* cCurrentBone = cSkeleton->getBone(i);
+
+         // create entity
+         Entity* cBoneEntity = cOwner->getOwner()->addEntity(cCurrentBone->getName(), cOwner);
+         cBoneEntity->setInternalFlags((uint8_t)Entity::InternalFlags::Generated);
+         vBoneEntities.push_back(cBoneEntity);
+
+         Vector3 vBoneEntityPosition;
+         Rotation cBoneEntityRotation;
+         Vector3 vBoneEntityScale;
+
+         Geometry::extractTRSFromMatrix(cCurrentBone->getBindMatrix(),
+            &vBoneEntityPosition, &cBoneEntityRotation, &vBoneEntityScale);
+
+         ComponentTransform* cBoneEntityTransform = cBoneEntity->addComponent<ComponentTransform>();
+         cBoneEntityTransform->setPosition(vBoneEntityPosition);
+         cBoneEntityTransform->setRotation(cBoneEntityRotation);
+         cBoneEntityTransform->setScale(vBoneEntityScale);
       }
+
+      // setup the hierarchy in the bone entities
+      const Bone* cSkeletonRootBone = cSkeleton->getBone(0);
+
+      for(uint i = 0; i < iBonesCount; i++)
+      {
+         const Bone* cCurrentBone = cSkeleton->getBone(i);
+
+         if(cCurrentBone != cSkeletonRootBone)
+         {
+            Entity* cBoneEntityParent = vBoneEntities[cCurrentBone->getParentIndex()];
+            Scene* cScene = vBoneEntities[i]->getOwner();
+            cScene->setEntityParent(vBoneEntities[i], cBoneEntityParent);
+         }
+      }
+   }
+   else
+   {
+      vBoneEntities.push_back(cOwner);
    }
 
    // allocate memory for the bone matrices
@@ -171,7 +184,7 @@ void ComponentSkeleton::updateBoneMatrices()
          Matrix4Multiply(cBoneEntityTransform->getLocalWorldMatrix(), mBoneMatrixSoFar, &sBoneMatrices[i]);
          cBoneEntity = cBoneEntity->getParent();
       }
-      while(cBoneEntity != cOwner);
+      while(cBoneEntity && cBoneEntity != cOwner);
 
       sBoneInverseTransposeMatrices[i] = sBoneMatrices[i];
       Matrix4Invert(&sBoneInverseTransposeMatrices[i]);

@@ -33,6 +33,7 @@ namespace GE { namespace Content
       Core::ObjectManager<AnimationSet> mAnimationSets;
 
       void loadBuiltInMeshes();
+      void loadBuiltInSkeleton();
 
    public:
       ResourcesManager();
