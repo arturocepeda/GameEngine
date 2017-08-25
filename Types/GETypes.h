@@ -35,6 +35,7 @@ namespace GE
 {
    GESerializableEnum(Alignment)
    {
+      None,
       TopLeft,
       TopCenter,
       TopRight,

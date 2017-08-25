@@ -355,7 +355,8 @@ void ComponentSprite::setTextureAtlasName(const Core::ObjectName& AtlasName)
 
 bool ComponentSprite::isOver(const Vector2& ScreenPosition) const
 {
-   if(eRenderingMode == RenderingMode::_2D)
+   if(eRenderingMode == RenderingMode::_2D &&
+      cTransform->getWorldRotation().getQuaternion().isIdentity())
    {
       Vector3 vPosition = cTransform->getWorldPosition();
       Vector3 vScale = cTransform->getWorldScale();
@@ -369,11 +370,6 @@ bool ComponentSprite::isOver(const Vector2& ScreenPosition) const
          ScreenPosition.Y > (vPosition.Y - fHalfSizeY) &&
          ScreenPosition.Y < (vPosition.Y + fHalfSizeY);
    }
-
-   ComponentCamera* cCamera = RenderSystem::getInstance()->getActiveCamera();
-
-   if(!cCamera)
-      return false;
 
    Vector3 vVertices[4];
    float* fVertexData = sGeometryData.VertexData;
@@ -391,7 +387,17 @@ bool ComponentSprite::isOver(const Vector2& ScreenPosition) const
    Matrix4Transform(mWorldMatrix, &vVertices[2]);
    Matrix4Transform(mWorldMatrix, &vVertices[3]);
 
-   Physics::Ray sRay = cCamera->getScreenRay(ScreenPosition);
+   Physics::Ray sRay = Physics::Ray(Vector3(ScreenPosition.X, ScreenPosition.Y, 0.0f), -Vector3::UnitZ);
+
+   if(eRenderingMode == RenderingMode::_3D)
+   {
+      ComponentCamera* cCamera = RenderSystem::getInstance()->getActiveCamera();
+
+      if(!cCamera)
+         return false;
+
+      sRay = cCamera->getScreenRay(ScreenPosition);
+   }
 
    for(uint i = 0; i < 2; i++)
    {

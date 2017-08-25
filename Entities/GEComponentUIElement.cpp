@@ -99,7 +99,7 @@ void ComponentUIElement::changeRenderPriority(int8_t Delta)
 //
 ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
    : ComponentUIElement(Owner)
-   , eAnchor(Alignment::MiddleCenter)
+   , eAnchor(Alignment::None)
    , vOffset(Vector2::Zero)
 {
    cClassName = ObjectName("UI2DElement");
@@ -125,6 +125,9 @@ ComponentUI2DElement::~ComponentUI2DElement()
 
 void ComponentUI2DElement::updateTransformPosition()
 {
+   if(eAnchor == Alignment::None)
+      return;
+
    Vector3 vNewPosition = Vector3(vOffset.X, vOffset.Y, 0.0f);
 
    switch(eAnchor)

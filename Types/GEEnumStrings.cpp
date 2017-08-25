@@ -14,6 +14,7 @@ namespace GE
 {
    const char* strAlignment[] =
    {
+      "None",
       "TopLeft",
       "TopCenter",
       "TopRight",

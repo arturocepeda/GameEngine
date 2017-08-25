@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include "Core/GEConstants.h"
+
 #include <cmath>
 
 namespace GE
@@ -64,6 +66,16 @@ namespace GE
          Quaternion qInverse = conjugate();
          qInverse.normalize();
          return qInverse;
+      }
+
+      bool isIdentity() const
+      {
+         return
+            fabsf(X) < GE_EPSILON &&
+            fabsf(Y) < GE_EPSILON &&
+            fabsf(Z) < GE_EPSILON &&
+            W > (1.0f - GE_EPSILON) &&
+            W < (1.0f + GE_EPSILON);
       }
 
       Quaternion operator*(const Quaternion& Other) const

@@ -156,6 +156,7 @@ void ComponentLabel::generateVertexData()
    case Alignment::BottomLeft:
       fPosX = 0.0f;
       break;
+   case Alignment::None:
    case Alignment::TopCenter:
    case Alignment::MiddleCenter:
    case Alignment::BottomCenter:
@@ -181,6 +182,7 @@ void ComponentLabel::generateVertexData()
    case Alignment::TopCenter:
       fPosY = fHalfFontOffsetY - fFontOffsetY;
       break;
+   case Alignment::None:
    case Alignment::MiddleLeft:
    case Alignment::MiddleRight:
    case Alignment::MiddleCenter:
@@ -218,6 +220,7 @@ void ComponentLabel::generateVertexData()
          case Alignment::BottomLeft:
             fPosX = 0.0f;
             break;
+         case Alignment::None:
          case Alignment::TopCenter:
          case Alignment::MiddleCenter:
          case Alignment::BottomCenter:
