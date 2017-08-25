@@ -46,7 +46,7 @@ GESTLVector(uint) vMappedIndicesUint;
 // shadow mapping
 uint iFrameBuffer = 0;
 uint iRenderBuffer = 0;
-uint iDepthTexture = 0;
+Texture* cDepthTexture = 0;
 
 // shaders
 ShaderProgramES20* cActiveProgram = 0;
@@ -80,7 +80,11 @@ RenderSystemES20::RenderSystemES20()
 RenderSystemES20::~RenderSystemES20()
 {
    releaseBuffers();
+
+   GLuint iDepthTexture = (GLuint)((GLuintPtrSize)cDepthTexture->getHandler());
    glDeleteTextures(1, &iDepthTexture);
+   GEInvokeDtor(Texture, cDepthTexture);
+   Allocator::free(cDepthTexture);
 }
 
 void RenderSystemES20::createBuffers()
@@ -109,7 +113,13 @@ void RenderSystemES20::createBuffers()
    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, ShadowMapSize, ShadowMapSize);
    glBindFramebuffer(GL_FRAMEBUFFER, iFrameBuffer);
 
+   cDepthTexture = Allocator::alloc<Texture>();
+   GEInvokeCtor(Texture, cDepthTexture)("Depth", "Texture", ShadowMapSize, ShadowMapSize);
+   
+   GLuint iDepthTexture;
    glGenTextures(1, &iDepthTexture);
+   cDepthTexture->setHandler((void*)((uintPtrSize)iDepthTexture));
+
    glBindTexture(GL_TEXTURE_2D, iDepthTexture);
    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ShadowMapSize, ShadowMapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -160,8 +170,8 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
    GLuint iTexture;
    glGenTextures(1, &iTexture);
    glBindTexture(GL_TEXTURE_2D, iTexture);
-   pBoundTexture = cPreloadedTexture->Tex;
-    
+   pBoundTexture[(uint)TextureSlot::Diffuse] = cPreloadedTexture->Tex;
+   
    // setup texture parameters
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -448,12 +458,16 @@ void RenderSystemES20::setVertexDeclaration(const RenderOperation& cRenderOperat
    }
 }
 
-void RenderSystem::bindTexture(const Texture* cTexture)
+void RenderSystem::bindTexture(TextureSlot eSlot, const Texture* cTexture)
 {
-   if(pBoundTexture != cTexture)
+   GEAssert((uint)eSlot < (uint)TextureSlot::Count);
+
+   glActiveTexture(GL_TEXTURE0 + (GLuint)eSlot);
+
+   if(pBoundTexture[(uint)eSlot] != cTexture)
    {
       glBindTexture(GL_TEXTURE_2D, (GLuint)((GLuintPtrSize)cTexture->getHandler()));
-      pBoundTexture = const_cast<Texture*>(cTexture);
+      pBoundTexture[(uint)eSlot] = const_cast<Texture*>(cTexture);
    }
 }
 
@@ -558,8 +572,7 @@ void RenderSystem::renderShadowMap()
          // bind diffuse texture
          if(sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture())
          {
-            glActiveTexture(GL_TEXTURE0);
-            bindTexture(sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture());
+            bindTexture(TextureSlot::Diffuse, sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture());
             glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), 0);
          }
 
@@ -672,22 +685,19 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
    if(cRenderable->getRenderableType() == RenderableType::Label)
    {
-      glActiveTexture(GL_TEXTURE0);
-      bindTexture(static_cast<ComponentLabel*>(cRenderable)->getFont()->getTexture());
-      glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), 0);
+      bindTexture(TextureSlot::Diffuse, static_cast<ComponentLabel*>(cRenderable)->getFont()->getTexture());
+      glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), (uint)TextureSlot::Diffuse);
    }
    else if(cMaterial->getDiffuseTexture())
    {
-      glActiveTexture(GL_TEXTURE0);
-      bindTexture(cMaterial->getDiffuseTexture());
-      glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), 0);
+      bindTexture(TextureSlot::Diffuse, cMaterial->getDiffuseTexture());
+      glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), (uint)TextureSlot::Diffuse);
    }
 
    if(cMesh && GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
    {
-      glActiveTexture(GL_TEXTURE1);
-      glBindTexture(GL_TEXTURE_2D, iDepthTexture);
-      glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::ShadowTexture), 1);
+      bindTexture(TextureSlot::ShadowMap, cDepthTexture);
+      glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::ShadowTexture), (uint)TextureSlot::ShadowMap);
    }
 
    if(cMaterialPass->hasVertexParameters())

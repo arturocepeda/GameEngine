@@ -62,12 +62,20 @@ namespace GE { namespace Rendering
    class RenderSystem : public Core::Singleton<RenderSystem>
    {
    protected:
-      static const GE::uint VertexBufferSize = 1024 * 1024 * 16;
-      static const GE::uint IndexBufferSize = 1024 * 1024 * 8;
-      static const GE::uint ShadowMapSize = 1024;
+      static const uint VertexBufferSize = 1024 * 1024 * 16;
+      static const uint IndexBufferSize = 1024 * 1024 * 8;
+      static const uint ShadowMapSize = 1024;
 
       static const Core::ObjectName ShadowMapSolidProgram;
       static const Core::ObjectName ShadowMapAlphaProgram;
+
+      enum class TextureSlot
+      {
+         Diffuse,
+         ShadowMap,
+
+         Count
+      };
 
       void* pDevice;
       void* pWindow;
@@ -94,7 +102,7 @@ namespace GE { namespace Rendering
 
       uint iActiveProgram;
       uint iCurrentVertexStride;
-      Texture* pBoundTexture;
+      Texture* pBoundTexture[(uint)TextureSlot::Count];
       BlendingMode eBlendingMode;
       DepthBufferMode eDepthBufferMode;
       CullingMode eCullingMode;
@@ -130,7 +138,7 @@ namespace GE { namespace Rendering
       void useMaterial(Material* cMaterial);
       void useShaderProgram(const Core::ObjectName& cName);
       void bindBuffers(const GPUBufferPair& sBufferPair);
-      void bindTexture(const Texture* cTexture);
+      void bindTexture(TextureSlot eSlot, const Texture* cTexture);
 
       void calculate2DViewProjectionMatrix();
 

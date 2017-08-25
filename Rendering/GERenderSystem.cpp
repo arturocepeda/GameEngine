@@ -48,7 +48,6 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    , bShaderReloadPending(false)
    , iActiveProgram(-1)
    , iCurrentVertexStride(0)
-   , pBoundTexture(0)
    , eBlendingMode(BlendingMode::None)
    , eDepthBufferMode(DepthBufferMode::NoDepth)
    , eCullingMode(CullingMode::Back)
@@ -57,6 +56,8 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    , fFramesPerSecond(0.0f)
    , iDrawCalls(0)
 {
+   memset(pBoundTexture, 0, sizeof(Texture*) * (GE::uint)TextureSlot::Count);
+
    ResourcesManager::getInstance()->registerObjectManager<Texture>("Texture", &mTextures);
    ResourcesManager::getInstance()->registerObjectManager<Material>("Material", &mMaterials);
    ResourcesManager::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mShaderPrograms);
@@ -585,7 +586,7 @@ void RenderSystem::loadFonts(const char* FileName)
          Font* fFont = Allocator::alloc<Font>();
          GEInvokeCtor(Font, fFont)(sFontName, cGroupName, sFileName, pDevice);
          mFonts.add(fFont);
-         pBoundTexture = const_cast<Texture*>(fFont->getTexture());
+         pBoundTexture[(GE::uint)TextureSlot::Diffuse] = const_cast<Texture*>(fFont->getTexture());
       }
    }
    else
@@ -605,7 +606,7 @@ void RenderSystem::loadFonts(const char* FileName)
          Font* fFont = Allocator::alloc<Font>();
          GEInvokeCtor(Font, fFont)(cFontName, cGroupName, sStream, pDevice);
          mFonts.add(fFont);
-         pBoundTexture = const_cast<Texture*>(fFont->getTexture());
+         pBoundTexture[(GE::uint)TextureSlot::Diffuse] = const_cast<Texture*>(fFont->getTexture());
       }
    }
 }

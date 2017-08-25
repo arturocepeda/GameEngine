@@ -70,10 +70,6 @@ ShaderConstantsLighting sShaderConstantsLighting;
 
 RenderTextureDX11* cShadowMap;
 
-const UINT SlotTextureDiffuse = 0;
-const UINT SlotTextureShadowMap = 1;
-
-
 #if defined(GE_PLATFORM_WP8)
 RenderSystemDX11::RenderSystemDX11(Windows::UI::Core::CoreWindow^ window)
    : RenderSystem(nullptr, false, Device::getScreenWidth(), Device::getScreenHeight())
@@ -679,15 +675,17 @@ void RenderSystem::bindBuffers(const GPUBufferPair& sBufferPair)
    }
 }
 
-void RenderSystem::bindTexture(const Texture* cTexture)
+void RenderSystem::bindTexture(TextureSlot eSlot, const Texture* cTexture)
 {
-   if(pBoundTexture == cTexture)
+   GEAssert((GE::uint)eSlot < (GE::uint)TextureSlot::Count);
+
+   if(pBoundTexture[(GE::uint)eSlot] == cTexture)
       return;
 
-   pBoundTexture = const_cast<Texture*>(cTexture);
+   pBoundTexture[(GE::uint)eSlot] = const_cast<Texture*>(cTexture);
 
    ID3D11ShaderResourceView* dxShaderResourceView = (ID3D11ShaderResourceView*)cTexture->getHandler();
-   dxContext->PSSetShaderResources(SlotTextureDiffuse, 1, &dxShaderResourceView);
+   dxContext->PSSetShaderResources((UINT)eSlot, 1, &dxShaderResourceView);
    dxContext->PSSetSamplers(0, 1, &dxSamplerStateClamp);
 }
 
@@ -737,9 +735,9 @@ void RenderSystem::renderShadowMap()
    dxContext->RSSetViewports(1, &dxViewport);
 
    ID3D11ShaderResourceView* dxNullResourceView = nullptr;
-   dxContext->PSSetShaderResources(SlotTextureShadowMap, 1, &dxNullResourceView);
+   dxContext->PSSetShaderResources((UINT)TextureSlot::ShadowMap, 1, &dxNullResourceView);
 
-   cShadowMap->setAsRenderTarget(SlotTextureShadowMap);
+   cShadowMap->setAsRenderTarget((UINT)TextureSlot::ShadowMap);
    cShadowMap->clear(Color(1.0f, 1.0f, 1.0f));
 
    calculateLightViewProjectionMatrix(cLight);
@@ -802,7 +800,9 @@ void RenderSystem::renderShadowMap()
          dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
 
          if(sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture())
-            bindTexture(sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture());
+         {
+            bindTexture(TextureSlot::Diffuse, sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture());
+         }
 
          // draw
          bindBuffers(sGPUBufferPairs[GeometryGroup::Particles]);
@@ -920,9 +920,13 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
    // bind diffuse texture
    if(cRenderable->getRenderableType() == RenderableType::Label)
-      bindTexture(static_cast<ComponentLabel*>(cRenderable)->getFont()->getTexture());
+   {
+      bindTexture(TextureSlot::Diffuse, static_cast<ComponentLabel*>(cRenderable)->getFont()->getTexture());
+   }
    else if(cMaterialPass->getMaterial()->getDiffuseTexture())
-      bindTexture(cMaterialPass->getMaterial()->getDiffuseTexture());
+   {
+      bindTexture(TextureSlot::Diffuse, cMaterialPass->getMaterial()->getDiffuseTexture());
+   }
 
    if(cMesh)
    {
@@ -930,7 +934,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
       {
          ID3D11ShaderResourceView* dxShaderResourceView = cShadowMap->getShaderResourceView();
-         dxContext->PSSetShaderResources(SlotTextureShadowMap, 1, &dxShaderResourceView);
+         dxContext->PSSetShaderResources((UINT)TextureSlot::ShadowMap, 1, &dxShaderResourceView);
          dxContext->PSSetSamplers(0, 1, &dxSamplerStateClamp);
       }
 
