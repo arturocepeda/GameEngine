@@ -140,7 +140,7 @@ namespace GE { namespace Core
       virtual void saveToXml(pugi::xml_node& XmlNode) const;
 
       virtual void loadFromStream(std::istream& Stream);
-      virtual void saveToStream(std::ostream& Stream);
+      virtual void saveToStream(std::ostream& Stream) const;
 
       virtual void xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream);
    };

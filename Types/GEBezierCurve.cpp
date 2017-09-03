@@ -12,8 +12,60 @@
 
 #include "GEBezierCurve.h"
 #include "GETypes.h"
+#include "Core/GEDevice.h"
 
 using namespace GE;
+using namespace GE::Core;
+using namespace GE::Content;
+
+
+//
+//  BezierCurveRefPoint
+//
+BezierCurveRefPoint::BezierCurveRefPoint()
+   : SerializableArrayElement("BeizerCurveRefPoint")
+{
+   GERegisterProperty(Vector3, Value);
+}
+
+void BezierCurveRefPoint::setValue(const Vector3& Value)
+{
+   vValue = Value;
+}
+
+const Vector3& BezierCurveRefPoint::getValue() const
+{
+   return vValue;
+}
+
+
+//
+//  BezierCurve
+//
+BezierCurve::BezierCurve()
+   : Serializable("BezierCurve")
+{
+   GERegisterPropertyArray(RefPoint);
+}
+
+BezierCurve::~BezierCurve()
+{
+}
+
+void BezierCurve::loadFromFile(const char* FileName)
+{
+   char sFileName[64];
+   sprintf(sFileName, "%s.curve", FileName);
+
+   ContentData cData;
+   Device::readContentFile(ContentType::GenericTextData, "Curves", sFileName, "xml", &cData);
+
+   pugi::xml_document xml;
+   xml.load_buffer(cData.getData(), cData.getDataSize());
+   const pugi::xml_node& xmlRoot = xml.child("Curve");
+
+   loadFromXml(xmlRoot);
+}
 
 int BezierCurve::getBinomialCoefficient(int n, int k)
 {
@@ -28,14 +80,9 @@ int BezierCurve::getBinomialCoefficient(int n, int k)
    return iResult;
 }
 
-void BezierCurve::addRefPoint(const Vector3& RefPoint)
-{
-   vRefPoints.push_back(RefPoint);
-}
-
 Vector3 BezierCurve::getPoint(float T)
 {
-   uint iRefPointsCount = (uint)vRefPoints.size();
+   uint iRefPointsCount = getRefPointCount();
    GEAssert(iRefPointsCount > 1);
 
    T = Core::Math::clamp01(T);
@@ -47,7 +94,7 @@ Vector3 BezierCurve::getPoint(float T)
          (float)getBinomialCoefficient(iRefPointsCount - 1, i) *
          Core::Math::pow(1.0f - T, iRefPointsCount - 1 - i) *
          Core::Math::pow(T, i);
-      vPoint += vRefPoints[i] * fFactor;
+      vPoint += getRefPoint(i)->getValue() * fFactor;
    }
 
    return vPoint;

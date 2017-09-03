@@ -31,6 +31,7 @@
 #include "Entities/GEComponentScript.h"
 #include "Rendering/GERenderSystem.h"
 #include "Rendering/GEMaterial.h"
+#include "Types/GEBezierCurve.h"
 
 #if defined (GE_PLATFORM_WINDOWS)
 # if defined (GE_64_BIT)
@@ -417,6 +418,19 @@ void Script::registerTypes()
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &PropertyInterpolator<Vector3>::animate
       , "update", &PropertyInterpolator<Vector3>::update
+   );
+   lua.new_usertype<BezierCurve>
+   (
+      "BezierCurve"
+      , sol::constructors<sol::types<>>()
+      , "loadFromFile", &BezierCurve::loadFromFile
+   );
+   lua.new_usertype<BezierPropertyInterpolator>
+   (
+      "BezierPropertyInterpolator"
+      , sol::constructors<sol::types<BezierCurve*, Serializable*, const ObjectName&, InterpolationMode>>()
+      , "animate", &BezierPropertyInterpolator::animate
+      , "update", &BezierPropertyInterpolator::update
    );
    lua.new_usertype<Physics::Ray>
    (

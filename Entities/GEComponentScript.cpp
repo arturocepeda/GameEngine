@@ -226,13 +226,6 @@ void ScriptInstance::registerScriptActions()
 
 void ScriptInstance::update()
 {
-   if(!bActive || cScriptName.isEmpty())
-      return;
-
-   Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
-
-   cScript->setVariable<float>("deltaTime", Time::getClock(cEntity->getClockIndex()).getDelta());
-
    if(!vCachedPropertyValues.empty())
    {
       for(uint i = 0; i < vCachedPropertyValues.size(); i++)
@@ -249,6 +242,11 @@ void ScriptInstance::update()
       vCachedPropertyValues.clear();
       vCachedPropertyValues.shrink_to_fit();
    }
+
+   if(!bActive || cScriptName.isEmpty())
+      return;
+
+   Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
 
    if(!bInitialized)
    {
@@ -270,6 +268,7 @@ void ScriptInstance::update()
 
    if(cScript->isFunctionDefined(cUpdateFunctionName))
    {
+      cScript->setVariable<float>("deltaTime", Time::getClock(cEntity->getClockIndex()).getDelta());
       cScript->runFunction<void>(cUpdateFunctionName);
    }
 }

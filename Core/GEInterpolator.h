@@ -16,6 +16,8 @@
 #include "GEMath.h"
 #include "GETime.h"
 #include "GESerializable.h"
+#include "Types/GEBezierCurve.h"
+
 #include <functional>
 
 namespace GE { namespace Core
@@ -365,6 +367,34 @@ namespace GE { namespace Core
       void animate(const T& tValue, float fDuration)
       {
          Interpolator<T>::animate(tValue, fDuration, nullptr);
+      }
+   };
+
+
+   class BezierPropertyInterpolator : public Interpolator<float>
+   {
+   public:
+      BezierPropertyInterpolator(BezierCurve* cBezierCurve, Serializable* cSerializable, const ObjectName& cPropertyName, InterpolationMode eMode)
+         : Interpolator<float>(eMode)
+      {
+         GEAssert(cBezierCurve);
+         GEAssert(cSerializable);
+
+         const Property* cProperty = cSerializable->getProperty(cPropertyName);
+         GEAssert(cProperty);
+         GEAssert(cProperty->Type == ValueType::Vector3);
+         GEAssert(cProperty->Setter);
+
+         Interpolator<float>::attachSetter([cBezierCurve, cProperty](const float& v)
+         {
+            Value cValue = Value(cBezierCurve->getPoint(v));
+            cProperty->Setter(cValue);
+         });
+      }
+
+      void animate(float fDuration)
+      {
+         Interpolator<float>::animate(0.0f, 1.0f, fDuration, nullptr);
       }
    };
 }}

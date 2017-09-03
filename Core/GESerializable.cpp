@@ -347,7 +347,7 @@ void Serializable::loadFromStream(std::istream& Stream)
    }
 }
 
-void Serializable::saveToStream(std::ostream& Stream)
+void Serializable::saveToStream(std::ostream& Stream) const
 {
    for(uint i = 0; i < vPropertyArrays.size(); i++)
    {
