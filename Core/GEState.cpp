@@ -21,10 +21,6 @@ State::State(const ObjectName& Name, void* GlobalData)
    , pGlobalData(GlobalData)
    , eStateType(StateType::Exclusive)
    , bInputEnabled(true)
-   , iMouseX(0)
-   , iMouseY(0)
-   , iMouseLastX(0)
-   , iMouseLastY(0)
 {
 }
 
@@ -58,12 +54,8 @@ void State::inputKeyRelease(char Key)
 {
 }
 
-void State::inputMouse(int X, int Y)
+void State::inputMouse(const Vector2& Point)
 {
-   iMouseLastX = iMouseX;
-   iMouseLastY = iMouseY;
-   iMouseX = X;
-   iMouseY = Y;
 }
 
 void State::inputMouseLeftButton()

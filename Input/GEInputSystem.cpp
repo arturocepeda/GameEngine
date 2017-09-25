@@ -49,13 +49,13 @@ void InputSystem::inputKeyRelease(char Key)
    }
 }
 
-void InputSystem::inputMouse(int X, int Y)
+void InputSystem::inputMouse(const Vector2& Point)
 {
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
    if(cCurrentState && cCurrentState->getInputEnabled())
    {
-      cCurrentState->inputMouse(X, Y);
+      cCurrentState->inputMouse(Point);
    }
 }
 

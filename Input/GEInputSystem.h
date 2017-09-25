@@ -26,7 +26,7 @@ namespace GE { namespace Input
       void inputKeyPress(char Key);
       void inputKeyRelease(char Key);
 
-      void inputMouse(int X, int Y);
+      void inputMouse(const Vector2& Point);
       void inputMouseLeftButton();
       void inputMouseRightButton();
       void inputMouseWheel(int Delta);

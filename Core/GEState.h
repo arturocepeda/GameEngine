@@ -53,11 +53,6 @@ namespace GE { namespace Core
       StateType eStateType;
       bool bInputEnabled;
 
-      int iMouseX;
-      int iMouseY;
-      int iMouseLastX;
-      int iMouseLastY;
-
    public:
       State(const ObjectName& Name, void* GlobalData);
       virtual ~State();
@@ -75,7 +70,7 @@ namespace GE { namespace Core
       virtual void inputKeyPress(char Key);
       virtual void inputKeyRelease(char Key);
 
-      virtual void inputMouse(int X, int Y);
+      virtual void inputMouse(const Vector2& Point);
       virtual void inputMouseLeftButton();
       virtual void inputMouseRightButton();
       virtual void inputMouseWheel(int Delta);
