@@ -242,16 +242,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
         }
 #endif
 
-        if(bMouseLeftButton)
-        {
-           GE::Vector2 vMouseCurrentPosition = GetMouseScreenPosition();
+        GE::Vector2 vMouseCurrentPosition = GetMouseScreenPosition();
 
-           if(fabs(vMouseCurrentPosition.X - vMouseLastPosition.X) > GE_EPSILON ||
-              fabs(vMouseCurrentPosition.Y - vMouseLastPosition.Y) > GE_EPSILON)
+        if(fabs(vMouseCurrentPosition.X - vMouseLastPosition.X) > GE_EPSILON ||
+           fabs(vMouseCurrentPosition.Y - vMouseLastPosition.Y) > GE_EPSILON)
+        {
+           InputSystem::getInstance()->inputMouse(vMouseCurrentPosition);
+
+           if(bMouseLeftButton)
            {
               InputSystem::getInstance()->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
-              vMouseLastPosition = vMouseCurrentPosition;
            }
+
+           vMouseLastPosition = vMouseCurrentPosition;
         }
 
         // update and render
@@ -270,8 +273,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
                fTimeDelta = 1.0f / GE_FPS;
 
             Time::setDelta(fTimeDelta);
-
-            InputSystem::getInstance()->inputMouse(pMouse.x, pMouse.y);
 
             TaskManager::getInstance()->update();
             TaskManager::getInstance()->render();
