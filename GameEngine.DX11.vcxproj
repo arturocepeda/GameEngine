@@ -58,7 +58,7 @@
     <ClCompile Include="Entities\GEComponent.cpp" />
     <ClCompile Include="Entities\GEComponentCamera.cpp" />
     <ClCompile Include="Entities\GEComponentCollider.cpp" />
-    <ClCompile Include="Entities\GEComponentGenericData.cpp" />
+    <ClCompile Include="Entities\GEComponentDataContainer.cpp" />
     <ClCompile Include="Entities\GEComponentLabel.cpp" />
     <ClCompile Include="Entities\GEComponentLight.cpp" />
     <ClCompile Include="Entities\GEComponentMesh.cpp" />
@@ -131,7 +131,7 @@
     <ClInclude Include="Entities\GEComponent.h" />
     <ClInclude Include="Entities\GEComponentCamera.h" />
     <ClInclude Include="Entities\GEComponentCollider.h" />
-    <ClInclude Include="Entities\GEComponentGenericData.h" />
+    <ClInclude Include="Entities\GEComponentDataContainer.h" />
     <ClInclude Include="Entities\GEComponentLabel.h" />
     <ClInclude Include="Entities\GEComponentLight.h" />
     <ClInclude Include="Entities\GEComponentMesh.h" />

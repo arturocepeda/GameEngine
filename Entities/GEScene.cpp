@@ -17,7 +17,6 @@
 #include "Entities/GEComponentParticleSystem.h"
 #include "Entities/GEComponentSkeleton.h"
 #include "Entities/GEComponentCollider.h"
-#include "Entities/GEComponentGenericData.h"
 #include "Entities/GEComponentScript.h"
 #include "Rendering/GERenderSystem.h"
 #include "Content/GEContentData.h"

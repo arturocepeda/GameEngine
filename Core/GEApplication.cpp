@@ -29,7 +29,7 @@
 #include "Entities/GEComponentParticleSystem.h"
 #include "Entities/GEComponentSkeleton.h"
 #include "Entities/GEComponentCollider.h"
-#include "Entities/GEComponentGenericData.h"
+#include "Entities/GEComponentDataContainer.h"
 #include "Entities/GEComponentScript.h"
 
 using namespace GE;
@@ -93,6 +93,6 @@ void Application::registerComponentFactories()
    Entity::registerComponentFactory<ComponentSkeleton>("Skeleton", ComponentType::Skeleton);
    Entity::registerComponentFactory<ComponentColliderSphere>("ColliderSphere", ComponentType::Collider);
    Entity::registerComponentFactory<ComponentColliderMesh>("ColliderMesh", ComponentType::Collider);
-   Entity::registerComponentFactory<ComponentGenericData>("GenericData", ComponentType::GenericData);
+   Entity::registerComponentFactory<ComponentDataContainer>("DataContainer", ComponentType::DataContainer);
    Entity::registerComponentFactory<ComponentScript>("Script", ComponentType::Script);
 }

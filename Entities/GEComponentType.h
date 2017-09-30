@@ -22,7 +22,7 @@ namespace GE { namespace Entities
       Renderable,
       UIElement,
       Skeleton,
-      GenericData,
+      DataContainer,
       Collider,
       Script,
 

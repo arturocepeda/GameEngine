@@ -156,9 +156,6 @@
     <ClCompile Include="Rendering\DX11\GERenderTextureDX11.cpp">
       <Filter>Rendering.DX11</Filter>
     </ClCompile>
-    <ClCompile Include="Entities\GEComponentGenericData.cpp">
-      <Filter>Entities</Filter>
-    </ClCompile>
     <ClCompile Include="Types\GEEnumStrings.cpp">
       <Filter>Types</Filter>
     </ClCompile>
@@ -218,6 +215,9 @@
     </ClCompile>
     <ClCompile Include="Core\GEEvents.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentDataContainer.cpp">
+      <Filter>Entities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -386,9 +386,6 @@
     <ClInclude Include="Rendering\DX11\GERenderTextureDX11.h">
       <Filter>Rendering.DX11</Filter>
     </ClInclude>
-    <ClInclude Include="Entities\GEComponentGenericData.h">
-      <Filter>Entities</Filter>
-    </ClInclude>
     <ClInclude Include="Core\GEPhysics.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -451,6 +448,9 @@
     </ClInclude>
     <ClInclude Include="Core\GEEvents.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentDataContainer.h">
+      <Filter>Entities</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
