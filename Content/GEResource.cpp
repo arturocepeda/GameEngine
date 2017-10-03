@@ -31,7 +31,10 @@ Resource::Resource(const ObjectName& Name, const ObjectName& GroupName, Resource
    sArgs.Sender = this;
    triggerEventStatic(Events::ResourceCreated, &sArgs);
 
-   Device::log("Resource created (%s): '%s'", strResourceType[(int)eType], cName.getString().c_str());
+   if(eType != ResourceType::Serializable)
+   {
+      Device::log("Resource created (%s): '%s'", strResourceType[(int)eType], cName.getString().c_str());
+   }
 }
 
 Resource::~Resource()
@@ -40,7 +43,10 @@ Resource::~Resource()
    sArgs.Sender = this;
    triggerEventStatic(Events::ResourceDestroyed, &sArgs);
 
-   Device::log("Resource destroyed (%s): '%s'", strResourceType[(int)eType], cName.getString().c_str());
+   if(eType != ResourceType::Serializable)
+   {
+      Device::log("Resource destroyed (%s): '%s'", strResourceType[(int)eType], cName.getString().c_str());
+   }
 }
 
 const Core::ObjectName& Resource::getGroupName() const
@@ -56,4 +62,20 @@ ResourceType Resource::getType() const
 uint Resource::getSizeInBytes() const
 {
    return 0;
+}
+
+
+//
+//  SerializableResource
+//
+SerializableResource::SerializableResource(const ObjectName& Name, const ObjectName& GroupName, const ObjectName& TypeName)
+   : Resource(Name, GroupName, ResourceType::Serializable)
+   , Serializable(TypeName)
+{
+   Device::log("Resource created (%s): '%s'", getClassName().getString().c_str(), cName.getString().c_str());
+}
+
+SerializableResource::~SerializableResource()
+{
+   Device::log("Resource destroyed (%s): '%s'", getClassName().getString().c_str(), cName.getString().c_str());
 }

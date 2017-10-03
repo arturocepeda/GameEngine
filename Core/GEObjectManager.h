@@ -16,9 +16,6 @@
 #include "GEAllocator.h"
 #include "GESingleton.h"
 
-#include <map>
-#include <functional>
-
 namespace GE { namespace Core
 {
    typedef GESTLMap(uint, Object*) ObjectRegistry;

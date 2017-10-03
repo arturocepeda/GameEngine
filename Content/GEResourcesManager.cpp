@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////
 
 #include "GEResourcesManager.h"
+
 #include "Rendering/GEPrimitives.h"
 
 using namespace GE;
@@ -18,6 +19,10 @@ using namespace GE::Content;
 using namespace GE::Core;
 using namespace GE::Rendering;
 
+
+//
+//  ResourcesManager
+//
 ResourcesManager::ResourcesManager()
 {
    mSimpleResourceManagersRegistry[Mesh::Type] = &mMeshes;
@@ -62,4 +67,40 @@ void ResourcesManager::loadBuiltInSkeleton()
    Skeleton* cTransformSkeleton = Allocator::alloc<Skeleton>();
    GEInvokeCtor(Skeleton, cTransformSkeleton)();
    add<Skeleton>(cTransformSkeleton);
+}
+
+
+//
+//  SerializableResourcesManager
+//
+SerializableResourcesManager::SerializableResourcesManager()
+{
+}
+
+SerializableResourcesManager::~SerializableResourcesManager()
+{
+}
+
+uint SerializableResourcesManager::getEntriesCount() const
+{
+   return (uint)vEntries.size();
+}
+
+SerializableResourceManagerObjects* SerializableResourcesManager::getEntry(uint Index)
+{
+   GEAssert(vEntries.size() > Index);
+   return &vEntries[Index];
+}
+
+SerializableResourceManagerObjects* SerializableResourcesManager::getEntry(const ObjectName& ResourceTypeName)
+{
+   for(uint i = 0; i < vEntries.size(); i++)
+   {
+      if(vEntries[i].Factory->getResourceTypeName() == ResourceTypeName)
+      {
+         return &vEntries[i];
+      }
+   }
+
+   return 0;
 }

@@ -48,7 +48,7 @@ namespace GE { namespace Rendering
    };
 
 
-   class ShaderProgram : public Content::Resource, public Core::Serializable
+   class ShaderProgram : public Content::SerializableResource
    {
    public:
       typedef GESTLVector(ShaderProgramPreprocessorMacro) PreprocessorMacroList;
@@ -67,7 +67,7 @@ namespace GE { namespace Rendering
       ParameterList VertexParameters;
       ParameterList FragmentParameters;
 
-      ShaderProgram(const Core::ObjectName& Name);
+      ShaderProgram(const Core::ObjectName& Name, const Core::ObjectName& GroupName = Core::ObjectName::Empty);
       virtual ~ShaderProgram();
 
       const DepthBufferMode getDepthBufferMode() const;

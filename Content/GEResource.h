@@ -13,19 +13,18 @@
 #pragma once
 
 #include "Core/GEObject.h"
+#include "Core/GESerializable.h"
 
 namespace GE { namespace Content
 {
    GESerializableEnum(ResourceType)
    {
-      ShaderProgram,
       Texture,
-      Material,
       Font,
       Mesh,
       Skeleton,
       AnimationSet,
-      LocalizedString,
+      Serializable,
 
       Count
    };
@@ -45,5 +44,15 @@ namespace GE { namespace Content
       ResourceType getType() const;
 
       virtual uint getSizeInBytes() const;
+   };
+
+
+   class SerializableResource : public Resource, public Core::Serializable
+   {
+   protected:
+      SerializableResource(const Core::ObjectName& Name, const Core::ObjectName& GroupName, const Core::ObjectName& TypeName);
+
+   public:
+      virtual ~SerializableResource();
    };
 }}

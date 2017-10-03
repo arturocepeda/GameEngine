@@ -22,7 +22,7 @@ namespace GE { namespace Rendering
 {
    class Texture;
    
-   class Material : public Content::Resource, public Core::Serializable
+   class Material : public Content::SerializableResource
    {
    public:
       static const uint ConstantBufferSize = 64;

@@ -59,6 +59,9 @@ void Application::startUp()
    ResourcesManager* cResourcesManager = Allocator::alloc<ResourcesManager>();
    GEInvokeCtor(ResourcesManager, cResourcesManager);
 
+   SerializableResourcesManager* cSerializableResourcesManager = Allocator::alloc<SerializableResourcesManager>();
+   GEInvokeCtor(SerializableResourcesManager, cSerializableResourcesManager);
+
    LocalizedStringsManager* cLocaStringsManager = Allocator::alloc<LocalizedStringsManager>();
    GEInvokeCtor(LocalizedStringsManager, cLocaStringsManager);
 
@@ -69,6 +72,9 @@ void Application::shutDown()
 {
    GEInvokeDtor(LocalizedStringsManager, LocalizedStringsManager::getInstance());
    Allocator::free(LocalizedStringsManager::getInstance());
+
+   GEInvokeDtor(SerializableResourcesManager, SerializableResourcesManager::getInstance());
+   Allocator::free(SerializableResourcesManager::getInstance());
 
    GEInvokeDtor(ResourcesManager, ResourcesManager::getInstance());
    Allocator::free(ResourcesManager::getInstance());

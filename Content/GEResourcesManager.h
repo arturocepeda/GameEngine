@@ -99,4 +99,75 @@ namespace GE { namespace Content
          cObjectManager->clear();
       }
    };
+
+
+   class SerializableResourceAbstractFactory
+   {
+   protected:
+      Core::ObjectName cResourceTypeName;
+
+      SerializableResourceAbstractFactory(const Core::ObjectName& ResourceTypeName)
+         : cResourceTypeName(ResourceTypeName)
+      {
+      }
+
+   public:
+      virtual Resource* create(const Core::ObjectName& Name, const Core::ObjectName& GroupName) = 0;
+
+      const Core::ObjectName& getResourceTypeName() const { return cResourceTypeName; }
+   };
+
+
+   template<typename T>
+   class SerializableResourceFactory : public SerializableResourceAbstractFactory
+   {
+   public:
+      SerializableResourceFactory(const Core::ObjectName& ResourceTypeName)
+         : SerializableResourceAbstractFactory(ResourceTypeName)
+      {
+      }
+
+      virtual Resource* create(const Core::ObjectName& Name, const Core::ObjectName& GroupName) override
+      {
+         T* cSerializableResource = Core::Allocator::alloc<T>();
+         GEInvokeCtor(T, cSerializableResource)(Name, GroupName);
+         GEAssert(static_cast<Core::Serializable*>(cSerializableResource)->getClassName() == cResourceTypeName);
+         return static_cast<Resource*>(cSerializableResource);
+      }
+   };
+
+
+   struct SerializableResourceManagerObjects
+   {
+      Core::ObjectRegistry* Registry;
+      SerializableResourceAbstractFactory* Factory;
+   };
+
+
+   class SerializableResourcesManager : public Core::Singleton<SerializableResourcesManager>
+   {
+   private:
+      typedef GESTLVector(SerializableResourceManagerObjects) SerializableResourceManagerObjectsList;
+
+      SerializableResourceManagerObjectsList vEntries;
+
+   public:
+      SerializableResourcesManager();
+      ~SerializableResourcesManager();
+
+      template<typename T>
+      void registerSerializableResourceType(const Core::ObjectName& ResourceTypeName, const Core::ObjectManager<T>* Manager)
+      {
+         SerializableResourceManagerObjects sManagerObjects;
+         sManagerObjects.Registry = const_cast<ObjectRegistry*>(Manager->getObjectRegistry());
+         sManagerObjects.Factory = Core::Allocator::alloc<SerializableResourceFactory<T>>();
+         GEInvokeCtor(SerializableResourceFactory<T>, sManagerObjects.Factory)(ResourceTypeName);
+         vEntries.push_back(sManagerObjects);
+      }
+
+      uint getEntriesCount() const;
+
+      SerializableResourceManagerObjects* getEntry(uint Index);
+      SerializableResourceManagerObjects* getEntry(const Core::ObjectName& ResourceTypeName);
+   };
 }}

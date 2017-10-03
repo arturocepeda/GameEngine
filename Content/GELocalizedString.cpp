@@ -25,8 +25,8 @@ using namespace GE::Core;
 //
 //  LocalizedString
 //
-LocalizedString::LocalizedString(const ObjectName& Name, const ObjectName& GroupName, const GESTLString& Str)
-    : Resource(Name, GroupName, ResourceType::LocalizedString)
+LocalizedString::LocalizedString(const ObjectName& Name, const GESTLString& Str)
+    : Object(Name)
 {
    sString = Str;
 }
@@ -76,7 +76,7 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
          GEAssert(!get(cStringID));
 
          LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
-         GEInvokeCtor(LocalizedString, cLocaString)(cStringID, Name, sText);
+         GEInvokeCtor(LocalizedString, cLocaString)(cStringID, sText);
 
          add(cLocaString);
       }
@@ -98,7 +98,7 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
          GEAssert(!get(cStringID));
 
          LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
-         GEInvokeCtor(LocalizedString, cLocaString)(cStringID, Name, Value::fromStream(ValueType::String, sStream).getAsString());
+         GEInvokeCtor(LocalizedString, cLocaString)(cStringID, Value::fromStream(ValueType::String, sStream).getAsString());
 
          add(cLocaString);
       }

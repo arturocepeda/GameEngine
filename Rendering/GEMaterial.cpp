@@ -24,9 +24,10 @@ using namespace GE::Rendering;
 //
 //  Material
 //
+const ObjectName MaterialName = ObjectName("Material");
+
 Material::Material(const ObjectName& Name, const ObjectName& GroupName)
-   : Resource(Name, GroupName, ResourceType::Material)
-   , Serializable("Material")
+   : SerializableResource(Name, GroupName, MaterialName)
    , cDiffuseColor(1.0f, 1.0f, 1.0f)
    , cSpecularColor(1.0f, 1.0f, 1.0f)
    , cDiffuseTexture(0)

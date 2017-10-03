@@ -19,13 +19,13 @@
 
 namespace GE { namespace Content
 {
-   class LocalizedString : public Resource
+   class LocalizedString : public Core::Object
    {
    private:
       GESTLString sString;
 
    public:
-      LocalizedString(const Core::ObjectName& Name, const Core::ObjectName& GroupName, const GESTLString& Str);
+      LocalizedString(const Core::ObjectName& Name, const GESTLString& Str);
       ~LocalizedString();
 
       const GESTLString& getString() const;

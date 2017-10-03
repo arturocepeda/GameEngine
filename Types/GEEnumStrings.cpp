@@ -63,14 +63,12 @@ namespace GE { namespace Content
 {
    const char* strResourceType[] =
    {
-      "ShaderProgram",
       "Texture",
-      "Material",
       "Font",
       "Mesh",
       "Skeleton",
       "AnimationSet",
-      "LocalizedString",
+      "Serializable",
    };
 }}
 
