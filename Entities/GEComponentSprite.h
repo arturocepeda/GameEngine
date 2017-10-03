@@ -16,10 +16,12 @@
 
 namespace GE { namespace Entities
 {
-   enum class SpriteLayer
+   GESerializableEnum(SpriteLayer)
    {
       GUI,
-      Pre3D
+      Pre3D,
+
+      Count
    };
 
 
@@ -84,6 +86,7 @@ namespace GE { namespace Entities
 
       GEProperty(Vector2, Center)
       GEProperty(Vector2, Size)
+      GEPropertyEnum(SpriteLayer, Layer)
       GEPropertyEnum(UVMode, UVMode)
       GEPropertyEnum(FullScreenSizeMode, FullScreenSizeMode)
       GEProperty(UInt, TextureAtlasIndex)

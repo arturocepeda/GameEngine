@@ -55,6 +55,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
 
    GERegisterProperty(Vector2, Center);
    GERegisterProperty(Vector2, Size);
+   GERegisterPropertyEnum(SpriteLayer, Layer);
    GERegisterPropertyEnum(UVMode, UVMode);
    GERegisterPropertyEnum(FullScreenSizeMode, FullScreenSizeMode);
    GERegisterProperty(UInt, TextureAtlasIndex);
