@@ -112,7 +112,8 @@ namespace GE { namespace Content
       }
 
    public:
-      virtual Resource* create(const Core::ObjectName& Name, const Core::ObjectName& GroupName) = 0;
+      virtual SerializableResource* create(const Core::ObjectName& Name, const Core::ObjectName& GroupName) = 0;
+      virtual void destroy(SerializableResource* Ptr) = 0;
 
       const Core::ObjectName& getResourceTypeName() const { return cResourceTypeName; }
    };
@@ -127,12 +128,19 @@ namespace GE { namespace Content
       {
       }
 
-      virtual Resource* create(const Core::ObjectName& Name, const Core::ObjectName& GroupName) override
+      virtual SerializableResource* create(const Core::ObjectName& Name, const Core::ObjectName& GroupName) override
       {
          T* cSerializableResource = Core::Allocator::alloc<T>();
          GEInvokeCtor(T, cSerializableResource)(Name, GroupName);
-         GEAssert(static_cast<Core::Serializable*>(cSerializableResource)->getClassName() == cResourceTypeName);
-         return static_cast<Resource*>(cSerializableResource);
+         GEAssert(static_cast<SerializableResource*>(cSerializableResource)->getClassName() == cResourceTypeName);
+         return static_cast<SerializableResource*>(cSerializableResource);
+      }
+
+      virtual void destroy(SerializableResource* Ptr) override
+      {
+         T* cSerializableResource = static_cast<T*>(Ptr);
+         GEInvokeDtor(T, cSerializableResource);
+         Core::Allocator::free(cSerializableResource);
       }
    };
 
