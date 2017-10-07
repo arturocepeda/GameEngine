@@ -142,7 +142,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
 
     // create and register the states
     StateManager cStateManager;
-    registerStates(cStateManager);
+    registerStates();
 
     // create the main window
     GE::uint iWindowPositionX = (iFullscreenWidth / 2) - (iWindowWidth / 2);
@@ -164,6 +164,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
     GEInvokeCtor(AudioSystemFMOD, cAudio);
     cAudio->init();
     cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
+
+    // initialize app module
+    initAppModule();
 
 #ifndef _DEBUG
     // hide the mouse pointer
