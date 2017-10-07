@@ -54,5 +54,7 @@ namespace GE { namespace Content
 
    public:
       virtual ~SerializableResource();
+
+      void setName(const Core::ObjectName& Name);
    };
 }}

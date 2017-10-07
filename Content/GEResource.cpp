@@ -79,3 +79,8 @@ SerializableResource::~SerializableResource()
 {
    Device::log("Resource destroyed (%s): '%s'", getClassName().getString().c_str(), cName.getString().c_str());
 }
+
+void SerializableResource::setName(const Core::ObjectName& Name)
+{
+   cName = Name;
+}
