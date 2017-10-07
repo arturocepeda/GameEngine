@@ -70,6 +70,7 @@ void luaLog(const char* sMessage)
 //  Script
 //
 GESTLSet(uint) Script::sDefaultGlobalNames;
+GESTLVector(Script::registerTypesExtension) Script::vRegisterTypesExtensions;
 
 Script::Script()
 {
@@ -101,6 +102,11 @@ Script::Script()
 
 Script::~Script()
 {
+}
+
+void Script::addRegisterTypesExtension(registerTypesExtension Extension)
+{
+   vRegisterTypesExtensions.push_back(Extension);
 }
 
 void Script::handleScriptError(const char* ScriptName, const char* Msg)
@@ -654,4 +660,13 @@ void Script::registerTypes()
       , "setMaterialName", &MaterialPass::setMaterialName
       , sol::base_classes, sol::bases<Serializable>()
    );
+
+   // Extensions
+   if(!vRegisterTypesExtensions.empty())
+   {
+      for(uint i = 0; i < vRegisterTypesExtensions.size(); i++)
+      {
+         vRegisterTypesExtensions[i](lua);
+      }
+   }
 }

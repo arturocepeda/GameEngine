@@ -29,6 +29,9 @@ namespace GE { namespace Core
 {
    class Script
    {
+   public:
+      typedef std::function<void(sol::state&)> registerTypesExtension;
+
    private:
 #if defined (GE_EDITOR_SUPPORT)
       typedef sol::protected_function ScriptFunction;
@@ -43,6 +46,7 @@ namespace GE { namespace Core
       GESTLMap(uint32_t, ScriptFunction) mFunctions;
 
       static GESTLSet(uint) sDefaultGlobalNames;
+      static GESTLVector(registerTypesExtension) vRegisterTypesExtensions;
 
       static void* customAlloc(void*, void* ptr, size_t, size_t nsize);
       static bool alphabeticalComparison(const ObjectName& l, const ObjectName& r);
@@ -53,6 +57,8 @@ namespace GE { namespace Core
    public:
       Script();
       ~Script();
+
+      static void addRegisterTypesExtension(registerTypesExtension Extension);
 
       static void handleScriptError(const char* ScriptName, const char* Msg = 0);
       static void handleFunctionError(const char* FunctionName, const char* Msg = 0);
