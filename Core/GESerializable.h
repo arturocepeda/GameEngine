@@ -306,13 +306,13 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
-      PropertyEditor::Enum, (void*)str##EnumType, (uint)EnumType::Count)
+      PropertyEditor::Enum, (void*)str##EnumType, (uint32_t)EnumType::Count)
 
 #define GERegisterPropertyEnumReadonly(EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       nullptr, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
-      PropertyEditor::Enum, (void*)str##EnumType, (uint)EnumType::Count)
+      PropertyEditor::Enum, (void*)str##EnumType, (uint32_t)EnumType::Count)
 
 
 //

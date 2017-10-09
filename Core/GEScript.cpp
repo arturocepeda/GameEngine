@@ -598,6 +598,7 @@ void Script::registerTypes()
    (
       "ComponentUIElement"
       , "getAlpha", &ComponentUIElement::getAlpha
+      , "setAlpha", &ComponentUIElement::setAlpha
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_usertype<ComponentSkeleton>
