@@ -223,14 +223,22 @@ bool Scene::renameEntity(Entity* cEntity, const Core::ObjectName& NewName)
       sEventArgs.Sender = this;
       sEventArgs.Args = cEntity;
       triggerEvent(Events::EntityRenamed, &sEventArgs);
+
+      GEMutexUnlock(mSceneMutex);
+
+      for(uint i = 0; i < cEntity->getChildrenCount(); i++)
+      {
+         Entity* cChild = cEntity->getChildByIndex(i);
+         renameEntity(cChild, cChild->getName());
+      }
    }
    else
    {
       cEntity->cName = cOriginalName;
       cEntity->cFullName = cOriginalFullName;
-   }
 
-   GEMutexUnlock(mSceneMutex);
+      GEMutexUnlock(mSceneMutex);
+   }
 
    return bNewNameIsUnique;
 }

@@ -351,7 +351,9 @@ void ComponentSprite::setTextureAtlasName(const Core::ObjectName& AtlasName)
       }
    }
 
-   GEAssert(false);
+   Device::log("Texture atlas not found ('%s') in the '%s' texture.",
+      AtlasName.getString().c_str(),
+      cMaterial->getDiffuseTextureName().getString().c_str());
 }
 
 bool ComponentSprite::isOver(const Vector2& ScreenPosition) const

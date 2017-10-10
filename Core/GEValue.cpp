@@ -432,6 +432,12 @@ bool Value::operator==(const Value& Other) const
       break;
    }
 
+   if(eType == ValueType::String || eType == ValueType::ObjectName)
+   {
+      if(strlen(Other.sBuffer) != iLengthToCheck)
+         return false;
+   }
+
    return memcmp(sBuffer, Other.sBuffer, iLengthToCheck) == 0;
 }
 
