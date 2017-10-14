@@ -293,9 +293,6 @@ void ComponentSkeleton::playAnimation(const AnimationPlayInfo& PlayInfo)
    if(!cAnimation)
       return;
 
-   if(cDefaultAnimationName.getID() == 0)
-      cDefaultAnimationName = PlayInfo.AnimationName;
-
    for(uint i = 0; i < vActiveAnimationInstances.size(); i++)
    {
       if(vActiveAnimationInstances[i].RefAnimation == cAnimation)

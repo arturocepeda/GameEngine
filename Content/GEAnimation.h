@@ -24,6 +24,12 @@ namespace GE { namespace Content
       Vector3 FramePosition;
       Rotation FrameRotation;
       Vector3 FrameScale;
+
+      AnimationKeyFrame()
+         : TimeInSeconds(0.0f)
+         , FrameScale(Vector3::One)
+      {
+      }
    };
 
 
