@@ -30,8 +30,8 @@ Serializable::~Serializable()
 
 void Serializable::registerProperty(const ObjectName& PropertyName, ValueType Type,
    const PropertySetter& Setter, const PropertyGetter& Getter,
-   PropertyEditor Editor, void* PropertyDataPtr, uint PropertyDataUInt,
-   float MinValue, float MaxValue)
+   PropertyEditor Editor, uint8_t Flags, void* PropertyDataPtr,
+   uint PropertyDataUInt, float MinValue, float MaxValue)
 {
    Property sProperty =
    {
@@ -43,6 +43,7 @@ void Serializable::registerProperty(const ObjectName& PropertyName, ValueType Ty
       cClassName,
       Editor,
       Getter(),
+      Flags,
       PropertyDataPtr,
       PropertyDataUInt,
       MinValue,
@@ -304,6 +305,8 @@ void Serializable::saveToXml(pugi::xml_node& XmlNode) const
 
 #if defined (GE_EDITOR_SUPPORT)
       if(sProperty.Getter() == sProperty.DefaultValue)
+         continue;
+      if(GEHasFlag(sProperty.Flags, PropertyFlags::EditorOnly))
          continue;
 #endif
 

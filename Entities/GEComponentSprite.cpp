@@ -59,7 +59,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    GERegisterPropertyEnum(UVMode, UVMode);
    GERegisterPropertyEnum(FullScreenSizeMode, FullScreenSizeMode);
    GERegisterProperty(UInt, TextureAtlasIndex);
-   GERegisterProperty(ObjectName, TextureAtlasName);
+   GERegisterPropertyEditorOnly(ObjectName, TextureAtlasName);
 
 #if defined (GE_EDITOR_SUPPORT)
    registerAction("Adjust Height to current Width", [this]

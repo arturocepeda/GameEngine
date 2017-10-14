@@ -46,6 +46,11 @@ namespace GE { namespace Core
       Script
    };
 
+   enum class PropertyFlags
+   {
+      EditorOnly = 1 << 0,
+   };
+
    struct Property
    {
       ObjectName Name;
@@ -57,6 +62,7 @@ namespace GE { namespace Core
       ObjectName Class;
       PropertyEditor Editor;
       Value DefaultValue;
+      uint8_t Flags;
       void* DataPtr;
       uint DataUInt;
       float MinValue;
@@ -102,7 +108,7 @@ namespace GE { namespace Core
 
       void registerProperty(const ObjectName& PropertyName, ValueType Type,
          const PropertySetter& Setter, const PropertyGetter& Getter,
-         PropertyEditor Editor = PropertyEditor::Default,
+         PropertyEditor Editor = PropertyEditor::Default, uint8_t Flags = 0,
          void* PropertyDataPtr = 0, uint PropertyDataUInt = 0,
          float MinValue = 0.0f, float MaxValue = 0.0f);
       void removeProperty(uint PropertyIndex);
@@ -277,7 +283,7 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
       [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
-      PropertyEditor::Default, 0, 0, \
+      PropertyEditor::Default, 0, 0, 0, \
       MinValue, MaxValue)
 
 #define GERegisterPropertyReadonly(PropertyType, PropertyName) \
@@ -289,7 +295,7 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
       [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
-      PropertyEditor::Default, \
+      PropertyEditor::Default, 0, \
       (void*)GE::Content::ResourcesManager::getInstance()->getObjectRegistry(#ObjectType))
 
 #define GERegisterPropertySpecialEditor(PropertyType, PropertyName, Editor) \
@@ -297,6 +303,16 @@ namespace GE { namespace Core
       [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
       Editor)
+
+#if defined (GE_EDITOR_SUPPORT)
+# define GERegisterPropertyEditorOnly(PropertyType, PropertyName) \
+   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
+      [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
+      [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
+      PropertyEditor::Default, (uint8_t)PropertyFlags::EditorOnly);
+#else
+# define GERegisterPropertyEditorOnly(PropertyType, PropertyName)
+#endif
 
 
 //
@@ -306,13 +322,13 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
-      PropertyEditor::Enum, (void*)str##EnumType, (uint32_t)EnumType::Count)
+      PropertyEditor::Enum, 0, (void*)str##EnumType, (uint32_t)EnumType::Count)
 
 #define GERegisterPropertyEnumReadonly(EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       nullptr, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
-      PropertyEditor::Enum, (void*)str##EnumType, (uint32_t)EnumType::Count)
+      PropertyEditor::Enum, 0, (void*)str##EnumType, (uint32_t)EnumType::Count)
 
 
 //
@@ -322,13 +338,13 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       [this](const GE::Core::Value& v) { this->P_set##PropertyName(v); }, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
-      PropertyEditor::BitMask, (void*)str##EnumType, (uint)EnumType::Count)
+      PropertyEditor::BitMask, 0, (void*)str##EnumType, (uint)EnumType::Count)
 
 #define GERegisterPropertyBitMaskReadonly(EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       nullptr, \
       [this]()->GE::Core::Value { return this->P_get##PropertyName(); }, \
-      PropertyEditor::BitMask, (void*)str##EnumType, (uint)EnumType::Count)
+      PropertyEditor::BitMask, 0, (void*)str##EnumType, (uint)EnumType::Count)
 
 
 //
