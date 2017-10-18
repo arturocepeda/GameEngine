@@ -12,6 +12,11 @@
 
 #include "GEMath.h"
 #include "GEConstants.h"
+
+#include "Types/GEVector.h"
+#include "Types/GEQuaternion.h"
+#include "Types/GEColor.h"
+
 #include <cmath>
 
 using namespace GE;
@@ -64,4 +69,58 @@ float Math::getSimplifiedAngle(float AngleInRadians)
       AngleInRadians += GE_DOUBLEPI;
 
    return AngleInRadians;
+}
+
+float Math::getInterpolationFactor(float T, InterpolationMode Mode)
+{
+   switch(Mode)
+   {
+      case InterpolationMode::Linear:
+      {
+         return T;
+      }
+      case InterpolationMode::Quadratic:
+      {
+         return T * T;
+      }
+      case InterpolationMode::QuadraticInverse:
+      {
+         return -T * (T - 2.0f);
+      }
+      case InterpolationMode::Logarithmic:
+      {
+         //
+         //  log(1) = 0 and log(e) = 1, so we need to map [0, 1] to [1, e] and then calculate the logarithm
+         //
+         float fMappedT = 1.0f + T * (GE_E - 1.0f);
+         return log(fMappedT);
+      }
+   }
+
+   return T;
+}
+
+float Math::getInterpolatedValue(float fStartValue, float fEndValue, float fFactor)
+{
+   return Math::lerp(fStartValue, fEndValue, fFactor);
+}
+
+Vector2 Math::getInterpolatedValue(const Vector2& vStartValue, const Vector2& vEndValue, float fFactor)
+{
+   return Vector2::lerp(vStartValue, vEndValue, fFactor);
+}
+
+Vector3 Math::getInterpolatedValue(const Vector3& vStartValue, const Vector3& vEndValue, float fFactor)
+{
+   return Vector3::lerp(vStartValue, vEndValue, fFactor);
+}
+
+Color Math::getInterpolatedValue(const Color& sStartValue, const Color& sEndValue, float fFactor)
+{
+   return Color::lerp(sStartValue, sEndValue, fFactor);
+}
+
+Quaternion Math::getInterpolatedValue(const Quaternion& qStartValue, const Quaternion& qEndValue, float fFactor)
+{
+   return Quaternion::slerp(qStartValue, qEndValue, fFactor);
 }

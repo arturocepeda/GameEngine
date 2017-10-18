@@ -162,7 +162,7 @@ namespace GE { namespace Core
    public:
       virtual ~SerializableArrayElement();
 
-      void setOwner(Serializable* Owner);
+      virtual void setOwner(Serializable* Owner);
    };
 }}
 

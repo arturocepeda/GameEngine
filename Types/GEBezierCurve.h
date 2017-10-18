@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "Core/GESerializable.h"
+#include "Content/GEResource.h"
 
 namespace GE
 {
@@ -31,16 +31,14 @@ namespace GE
    };
 
 
-   class BezierCurve : public Core::Serializable
+   class BezierCurve : public Content::SerializableResource
    {
    private:
       int getBinomialCoefficient(int n, int k);
 
    public:
-      BezierCurve();
+      BezierCurve(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
       ~BezierCurve();
-
-      void loadFromFile(const char* FileName);
 
       Vector3 getPoint(float T);
 

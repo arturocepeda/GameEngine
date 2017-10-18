@@ -84,6 +84,7 @@
     <ClCompile Include="Rendering\GEShaderProgram.cpp" />
     <ClCompile Include="Rendering\GETexture.cpp" />
     <ClCompile Include="Types\GEBezierCurve.cpp" />
+    <ClCompile Include="Types\GECurve.cpp" />
     <ClCompile Include="Types\GEEnumStrings.cpp" />
     <ClCompile Include="Types\GERotation.cpp" />
     <ClCompile Include="Types\GEVector.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="Rendering\GETexture.h" />
     <ClInclude Include="Types\GEBezierCurve.h" />
     <ClInclude Include="Types\GEColor.h" />
+    <ClInclude Include="Types\GECurve.h" />
     <ClInclude Include="Types\GEMatrix.h" />
     <ClInclude Include="Types\GEQuaternion.h" />
     <ClInclude Include="Types\GERotation.h" />

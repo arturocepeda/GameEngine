@@ -16,21 +16,13 @@
 #include "GEMath.h"
 #include "GETime.h"
 #include "GESerializable.h"
+#include "Types/GECurve.h"
 #include "Types/GEBezierCurve.h"
 
 #include <functional>
 
 namespace GE { namespace Core
 {
-   enum class InterpolationMode
-   {
-      Linear,
-      Quadratic,
-      QuadraticInverse,
-      Logarithmic
-   };
-
-
    template<typename T>
    class Interpolator
    {
@@ -64,27 +56,6 @@ namespace GE { namespace Core
 
       std::function<void()> onFinished;
 
-      float getInterpolatedValue(float fStartValue, float fEndValue, float fFactor)
-      {
-         return Math::lerp(fStartValue, fEndValue, fFactor);
-      }
-      Vector2 getInterpolatedValue(const Vector2& vStartValue, const Vector2& vEndValue, float fFactor)
-      {
-         return Vector2::lerp(vStartValue, vEndValue, fFactor);
-      }
-      Vector3 getInterpolatedValue(const Vector3& vStartValue, const Vector3& vEndValue, float fFactor)
-      {
-         return Vector3::lerp(vStartValue, vEndValue, fFactor);
-      }
-      Color getInterpolatedValue(const Color& sStartValue, const Color& sEndValue, float fFactor)
-      {
-         return Color::lerp(sStartValue, sEndValue, fFactor);
-      }
-      Quaternion getInterpolatedValue(const Quaternion& qStartValue, const Quaternion& qEndValue, float fFactor)
-      {
-         return Quaternion::slerp(qStartValue, qEndValue, fFactor);
-      }
-
       void executeOnFinishedAction()
       {
          if(onFinished)
@@ -103,8 +74,8 @@ namespace GE { namespace Core
          }
          else
          {
-            float fInterpolationFactor = getInterpolationFactor(fElapsedTime / fDuration);
-            setter(getInterpolatedValue(tStartValue, tEndValue, fInterpolationFactor));
+            float fInterpolationFactor = Math::getInterpolationFactor(fElapsedTime / fDuration, eInterpolationMode);
+            setter(Math::getInterpolatedValue(tStartValue, tEndValue, fInterpolationFactor));
          }
       }
 
@@ -127,8 +98,8 @@ namespace GE { namespace Core
          }
          else
          {
-            float fInterpolationFactor = getInterpolationFactor(fElapsedTime / fDuration);
-            setter(getInterpolatedValue(tStartValue, tEndValue, fInterpolationFactor));
+            float fInterpolationFactor = Math::getInterpolationFactor(fElapsedTime / fDuration, eInterpolationMode);
+            setter(Math::getInterpolatedValue(tStartValue, tEndValue, fInterpolationFactor));
          }
       }
 
@@ -151,38 +122,9 @@ namespace GE { namespace Core
          }
          else
          {
-            float fInterpolationFactor = getInterpolationFactor(fElapsedTime / fDuration);
-            setter(getInterpolatedValue(tEndValue, tStartValue, fInterpolationFactor));
+            float fInterpolationFactor = Math::getInterpolationFactor(fElapsedTime / fDuration, eInterpolationMode);
+            setter(Math::getInterpolatedValue(tEndValue, tStartValue, fInterpolationFactor));
          }
-      }
-
-      float getInterpolationFactor(float t)
-      {
-         switch(eInterpolationMode)
-         {
-         case InterpolationMode::Linear:
-            {
-               return t;
-            }
-         case InterpolationMode::Quadratic:
-            {
-               return t * t;
-            }
-         case InterpolationMode::QuadraticInverse:
-            {
-               return -t * (t - 2.0f);
-            }
-         case InterpolationMode::Logarithmic:
-            {
-               //
-               //  log(1) = 0 and log(e) = 1, so we need to map [0, 1] to [1, e] and then calculate the logarithm
-               //
-               float fMappedT = 1.0f + t * (GE_E - 1.0f);
-               return log(fMappedT);
-            }
-         }
-
-         return t;
       }
 
    public:
@@ -367,6 +309,38 @@ namespace GE { namespace Core
       void animate(const T& tValue, float fDuration)
       {
          Interpolator<T>::animate(tValue, fDuration, nullptr);
+      }
+   };
+
+
+   class CurvePropertyInterpolator : public Interpolator<float>
+   {
+   private:
+      float fCurveLength;
+
+   public:
+      CurvePropertyInterpolator(Curve* cCurve, Serializable* cSerializable, const ObjectName& cPropertyName)
+         : Interpolator<float>(cCurve->getInterpolationMode())
+         , fCurveLength(cCurve->getLength())
+      {
+         GEAssert(cCurve);
+         GEAssert(cSerializable);
+
+         const Property* cProperty = cSerializable->getProperty(cPropertyName);
+         GEAssert(cProperty);
+         GEAssert(cProperty->Type == ValueType::Vector3);
+         GEAssert(cProperty->Setter);
+
+         Interpolator<float>::attachSetter([cCurve, cProperty](const float& t)
+         {
+            Value cValue = cCurve->getValue(t);
+            cProperty->Setter(cValue);
+         });
+      }
+
+      void animate()
+      {
+         Interpolator<float>::animate(0.0f, fCurveLength, fCurveLength, nullptr);
       }
    };
 

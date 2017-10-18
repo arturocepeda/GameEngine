@@ -231,7 +231,7 @@ void ComponentSkeleton::setAnimationSet(AnimationSet* Set)
 #if defined (GE_EDITOR_SUPPORT)
    Property* cDefaultAnimationNameProperty = const_cast<Property*>(getProperty("DefaultAnimationName"));
    cDefaultAnimationNameProperty->DataPtr = Set ? (void*)Set->getObjectRegistry() : 0;
-   cOwner->triggerEvent(Events::PropertiesUpdated);
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
 #endif
 }
 

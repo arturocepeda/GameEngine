@@ -185,13 +185,7 @@ void ScriptInstance::registerScriptProperties()
       registerProperty(cGlobalVariableName, ePropertyValue, setter, getter);
    }
 
-   if(cOwner)
-   {
-      Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
-      EventArgs sEventArgs;
-      sEventArgs.Sender = cEntity;
-      cEntity->triggerEvent(Events::PropertiesUpdated, &sEventArgs);
-   }
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
 }
 
 void ScriptInstance::registerScriptActions()

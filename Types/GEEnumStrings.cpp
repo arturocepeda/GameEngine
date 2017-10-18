@@ -12,6 +12,14 @@
 
 namespace GE
 {
+   const char* strInterpolationMode[] =
+   {
+      "Linear",
+      "Quadratic",
+      "QuadraticInverse",
+      "Logarithmic"
+   };
+
    const char* strAlignment[] =
    {
       "None",

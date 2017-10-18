@@ -219,6 +219,9 @@
     <ClCompile Include="Entities\GEComponentDataContainer.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
+    <ClCompile Include="Types\GECurve.cpp">
+      <Filter>Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\GEAudioSystem.h">
@@ -451,6 +454,9 @@
     </ClInclude>
     <ClInclude Include="Entities\GEComponentDataContainer.h">
       <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GECurve.h">
+      <Filter>Types</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

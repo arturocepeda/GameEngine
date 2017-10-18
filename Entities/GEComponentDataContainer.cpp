@@ -22,8 +22,8 @@ using namespace GE::Core;
 //
 //  DataContainerVariable
 //
-ObjectName ValuePropertyName = ObjectName("Value");
-uint ValuePropertyIndex = 2;
+const ObjectName ValuePropertyName = ObjectName("Value");
+const uint ValuePropertyIndex = 2;
 
 DataContainerVariable::DataContainerVariable()
    : SerializableArrayElement("DataContainerVariable")
@@ -72,11 +72,7 @@ void DataContainerVariable::setType(Core::ValueType Type)
       [this](const GE::Core::Value& v) { cValue = v; },
       [this]()->GE::Core::Value { return cValue; });
 
-   if(cOwner)
-   {
-      Entity* cEntity = static_cast<ComponentDataContainer*>(cOwner)->getOwner();
-      cEntity->triggerEvent(Events::PropertiesUpdated);
-   }
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
 }
 
 void DataContainerVariable::setValue(const Value& Val)

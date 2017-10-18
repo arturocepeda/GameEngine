@@ -42,29 +42,14 @@ const Vector3& BezierCurveRefPoint::getValue() const
 //
 //  BezierCurve
 //
-BezierCurve::BezierCurve()
-   : Serializable("BezierCurve")
+BezierCurve::BezierCurve(const ObjectName& Name, const ObjectName& GroupName)
+   : SerializableResource(Name, GroupName, "BezierCurve")
 {
    GERegisterPropertyArray(RefPoint);
 }
 
 BezierCurve::~BezierCurve()
 {
-}
-
-void BezierCurve::loadFromFile(const char* FileName)
-{
-   char sFileName[64];
-   sprintf(sFileName, "%s.curve", FileName);
-
-   ContentData cData;
-   Device::readContentFile(ContentType::GenericTextData, "Curves", sFileName, "xml", &cData);
-
-   pugi::xml_document xml;
-   xml.load_buffer(cData.getData(), cData.getDataSize());
-   const pugi::xml_node& xmlRoot = xml.child("Curve");
-
-   loadFromXml(xmlRoot);
 }
 
 int BezierCurve::getBinomialCoefficient(int n, int k)
