@@ -33,6 +33,8 @@ ResourcesManager::ResourcesManager()
    registerObjectManager<Skeleton>("Skeleton", &mSkeletons);
    registerObjectManager<AnimationSet>("AnimationSet", &mAnimationSets);
 
+   registerSerializableResourceTypes();
+
    loadBuiltInMeshes();
    loadBuiltInSkeleton();
 }
@@ -42,6 +44,12 @@ ResourcesManager::~ResourcesManager()
    mMeshes.clear();
    mSkeletons.clear();
    mAnimationSets.clear();
+}
+
+void ResourcesManager::registerSerializableResourceTypes()
+{
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType("Curve", &mCurves);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType("BezierCurve", &mBezierCurves);
 }
 
 void ResourcesManager::loadBuiltInMeshes()

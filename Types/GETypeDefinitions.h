@@ -18,7 +18,7 @@
 
 #define GESerializableEnum(EnumType) \
    extern const char* str##EnumType[]; \
-   enum class EnumType
+   enum class EnumType : unsigned char
 
 namespace GE
 {

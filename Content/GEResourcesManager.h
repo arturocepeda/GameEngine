@@ -14,6 +14,8 @@
 
 #include "Core/GEObjectManager.h"
 #include "Core/GESingleton.h"
+#include "Types/GECurve.h"
+#include "Types/GEBezierCurve.h"
 
 #include "GEResource.h"
 #include "GEMesh.h"
@@ -26,11 +28,15 @@ namespace GE { namespace Content
    {
    private:
       GESTLMap(uint, const Core::ObjectRegistry*) mResourcesRegistry;
+      Core::ObjectManager<Curve> mCurves;
+      Core::ObjectManager<BezierCurve> mBezierCurves;
 
       GESTLMap(ResourceType, void*) mSimpleResourceManagersRegistry;
       Core::ObjectManager<Mesh> mMeshes;
       Core::ObjectManager<Skeleton> mSkeletons;
       Core::ObjectManager<AnimationSet> mAnimationSets;
+
+      void registerSerializableResourceTypes();
 
       void loadBuiltInMeshes();
       void loadBuiltInSkeleton();
@@ -61,7 +67,7 @@ namespace GE { namespace Content
 
          return cContentInstance;
       }
-
+      
       template<typename T>
       bool unload(const char* FileName)
       {

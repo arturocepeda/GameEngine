@@ -56,11 +56,11 @@ void Application::startUp()
    InputSystem* cInputSystem = Allocator::alloc<InputSystem>();
    GEInvokeCtor(InputSystem, cInputSystem);
 
-   ResourcesManager* cResourcesManager = Allocator::alloc<ResourcesManager>();
-   GEInvokeCtor(ResourcesManager, cResourcesManager);
-
    SerializableResourcesManager* cSerializableResourcesManager = Allocator::alloc<SerializableResourcesManager>();
    GEInvokeCtor(SerializableResourcesManager, cSerializableResourcesManager);
+
+   ResourcesManager* cResourcesManager = Allocator::alloc<ResourcesManager>();
+   GEInvokeCtor(ResourcesManager, cResourcesManager);
 
    LocalizedStringsManager* cLocaStringsManager = Allocator::alloc<LocalizedStringsManager>();
    GEInvokeCtor(LocalizedStringsManager, cLocaStringsManager);

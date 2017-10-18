@@ -58,7 +58,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    GERegisterPropertyEnum(SpriteLayer, Layer);
    GERegisterPropertyEnum(UVMode, UVMode);
    GERegisterPropertyEnum(FullScreenSizeMode, FullScreenSizeMode);
-   GERegisterPropertyEditorOnly(UInt, TextureAtlasIndex);
+   GERegisterProperty(UInt, TextureAtlasIndex);
    GERegisterProperty(ObjectName, TextureAtlasName);
 
 #if defined (GE_EDITOR_SUPPORT)
