@@ -328,7 +328,7 @@ namespace GE { namespace Core
 
          const Property* cProperty = cSerializable->getProperty(cPropertyName);
          GEAssert(cProperty);
-         GEAssert(cProperty->Type == ValueType::Vector3);
+         GEAssert(cProperty->Type == cCurve->getValueType());
          GEAssert(cProperty->Setter);
 
          Interpolator<float>::attachSetter([cCurve, cProperty](const float& t)
