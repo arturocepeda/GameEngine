@@ -570,8 +570,7 @@ void Script::registerTypes()
    (
       "ComponentSprite"
       , "isOver", &ComponentSprite::isOver
-      , "getTextureAtlasIndex", &ComponentSprite::getTextureAtlasIndex
-      , "setTextureAtlasIndex", &ComponentSprite::setTextureAtlasIndex
+      , "getTextureAtlasName", &ComponentSprite::getTextureAtlasName
       , "setTextureAtlasName", &ComponentSprite::setTextureAtlasName
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );

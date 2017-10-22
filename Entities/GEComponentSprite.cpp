@@ -28,7 +28,6 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    : ComponentRenderable(Owner, RenderableType::Sprite)
    , vCenter(0.0f, 0.0f)
    , vSize(1.0f, 1.0f)
-   , iTextureAtlasIndex(0)
    , iLayer(SpriteLayer::GUI)
    , eUVMode(UVMode::Normal)
    , eFullScreenSizeMode(FullScreenSizeMode::None)
@@ -58,7 +57,6 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    GERegisterPropertyEnum(SpriteLayer, Layer);
    GERegisterPropertyEnum(UVMode, UVMode);
    GERegisterPropertyEnum(FullScreenSizeMode, FullScreenSizeMode);
-   GERegisterProperty(UInt, TextureAtlasIndex);
    GERegisterProperty(ObjectName, TextureAtlasName);
 
 #if defined (GE_EDITOR_SUPPORT)
@@ -72,10 +70,10 @@ ComponentSprite::ComponentSprite(Entity* Owner)
       if(!cTexture)
          return;
 
-      const TextureAtlasEntry& sAtlasEntry = cTexture->AtlasUV[iTextureAtlasIndex];
+      TextureAtlasEntry* cAtlasEntry = cTexture->AtlasUVManager.get(cTextureAtlasName);
 
       const float fTextureRatio = (float)cTexture->getHeight() / cTexture->getWidth();
-      const float fAtlasRatio = (sAtlasEntry.UV.V1 - sAtlasEntry.UV.V0) / (sAtlasEntry.UV.U1 - sAtlasEntry.UV.U0);
+      const float fAtlasRatio = (cAtlasEntry->UV.V1 - cAtlasEntry->UV.V0) / (cAtlasEntry->UV.U1 - cAtlasEntry->UV.U0);
       const float fRatio = fTextureRatio * fAtlasRatio;
 
       vSize.Y = vSize.X * fRatio;
@@ -92,10 +90,10 @@ ComponentSprite::ComponentSprite(Entity* Owner)
       if(!cTexture)
          return;
 
-      const TextureAtlasEntry& sAtlasEntry = cTexture->AtlasUV[iTextureAtlasIndex];
+      TextureAtlasEntry* cAtlasEntry = cTexture->AtlasUVManager.get(cTextureAtlasName);
 
       const float fTextureRatio = (float)cTexture->getWidth() / cTexture->getHeight();
-      const float fAtlasRatio = (sAtlasEntry.UV.U1 - sAtlasEntry.UV.U0) / (sAtlasEntry.UV.V1 - sAtlasEntry.UV.V0);
+      const float fAtlasRatio = (cAtlasEntry->UV.U1 - cAtlasEntry->UV.U0) / (cAtlasEntry->UV.V1 - cAtlasEntry->UV.V0);
       const float fRatio = fTextureRatio * fAtlasRatio;
 
       vSize.X = vSize.Y * fRatio;
@@ -139,11 +137,13 @@ void ComponentSprite::updateVertexData()
 #endif
 
    Material* cMaterial = getMaterialPass(0)->getMaterial();
+   const Texture* cDiffuseTexture = cMaterial->getDiffuseTexture();
 
-   if(!cMaterial->getDiffuseTexture())
+   if(!cDiffuseTexture)
       return;
 
-   const TextureCoordinates& UV = cMaterial->getDiffuseTexture()->AtlasUV[iTextureAtlasIndex].UV;
+   TextureAtlasEntry* cAtlasEntry = cDiffuseTexture->AtlasUVManager.get(cTextureAtlasName);
+   const TextureCoordinates& UV = cAtlasEntry ? cAtlasEntry->UV : cDiffuseTexture->AtlasUV[0].UV;
 
    switch(eUVMode)
    {
@@ -186,9 +186,6 @@ void ComponentSprite::updateVertexData()
    {
       EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
    }
-
-   Property* cTextureAtlasIndexProperty = const_cast<Property*>(getProperty("TextureAtlasIndex"));
-   cTextureAtlasIndexProperty->MaxValue = (float)(cMaterial->getDiffuseTexture()->AtlasUV.size() - 1);
 #endif
 }
 
@@ -211,11 +208,6 @@ const Vector2& ComponentSprite::getSize() const
    return vSize;
 }
 
-unsigned int ComponentSprite::getTextureAtlasIndex() const
-{
-   return iTextureAtlasIndex;
-}
-
 SpriteLayer ComponentSprite::getLayer() const
 {
    return iLayer;
@@ -233,14 +225,7 @@ FullScreenSizeMode ComponentSprite::getFullScreenSizeMode() const
 
 const Core::ObjectName& ComponentSprite::getTextureAtlasName() const
 {
-   if(vMaterialPassList.empty())
-      return ObjectName::Empty;
-
-   Material* cMaterial = static_cast<MaterialPass*>(vMaterialPassList[0])->getMaterial();
-
-   return cMaterial && cMaterial->getDiffuseTexture()
-      ? cMaterial->getDiffuseTexture()->AtlasUV[iTextureAtlasIndex].getName()
-      : ObjectName::Empty;
+   return cTextureAtlasName;
 }
 
 void ComponentSprite::setCenter(const Vector2& Center)
@@ -252,12 +237,6 @@ void ComponentSprite::setCenter(const Vector2& Center)
 void ComponentSprite::setSize(const Vector2& Size)
 {
    vSize = Size;
-   bVertexDataDirty = true;
-}
-
-void ComponentSprite::setTextureAtlasIndex(uint TextureAtlasIndex)
-{
-   iTextureAtlasIndex = TextureAtlasIndex;
    bVertexDataDirty = true;
 }
 
@@ -331,31 +310,8 @@ void ComponentSprite::setFullScreenSizeMode(FullScreenSizeMode Mode)
 
 void ComponentSprite::setTextureAtlasName(const Core::ObjectName& AtlasName)
 {
-   GEAssert(!vMaterialPassList.empty());
-
-   Material* cMaterial = getMaterialPass(0)->getMaterial();
-
-   if(!cMaterial)
-   {
-      Device::log("No material found in '%s'. The entity will not be rendered.", cOwner->getFullName().getString().c_str());
-      hide();
-      return;
-   }
-
-   const GESTLVector(TextureAtlasEntry)& vTextureAtlasArray = cMaterial->getDiffuseTexture()->AtlasUV;
-
-   for(uint i = 0; i < vTextureAtlasArray.size(); i++)
-   {
-      if(vTextureAtlasArray[i].getName() == AtlasName)
-      {
-         setTextureAtlasIndex(i);
-         return;
-      }
-   }
-
-   Device::log("Texture atlas not found ('%s') in the '%s' texture.",
-      AtlasName.getString().c_str(),
-      cMaterial->getDiffuseTextureName().getString().c_str());
+   cTextureAtlasName = AtlasName;
+   bVertexDataDirty = true;
 }
 
 bool ComponentSprite::isOver(const Vector2& ScreenPosition) const

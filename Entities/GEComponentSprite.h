@@ -52,7 +52,7 @@ namespace GE { namespace Entities
    private:
       Vector2 vCenter;
       Vector2 vSize;
-      uint iTextureAtlasIndex;
+      Core::ObjectName cTextureAtlasName;
       SpriteLayer iLayer;
       UVMode eUVMode;
       FullScreenSizeMode eFullScreenSizeMode;
@@ -68,7 +68,6 @@ namespace GE { namespace Entities
 
       const Vector2& getCenter() const;
       const Vector2& getSize() const;
-      uint getTextureAtlasIndex() const;
       SpriteLayer getLayer() const;
       UVMode getUVMode() const;
       FullScreenSizeMode getFullScreenSizeMode() const;
@@ -76,7 +75,6 @@ namespace GE { namespace Entities
 
       void setCenter(const Vector2& Center);
       void setSize(const Vector2& Size);
-      void setTextureAtlasIndex(uint TextureAtlasIndex);
       void setLayer(SpriteLayer Layer);
       void setUVMode(UVMode Mode);
       void setFullScreenSizeMode(FullScreenSizeMode Mode);
@@ -89,7 +87,6 @@ namespace GE { namespace Entities
       GEPropertyEnum(SpriteLayer, Layer)
       GEPropertyEnum(UVMode, UVMode)
       GEPropertyEnum(FullScreenSizeMode, FullScreenSizeMode)
-      GEProperty(UInt, TextureAtlasIndex)
       GEProperty(ObjectName, TextureAtlasName)
    };
 }}

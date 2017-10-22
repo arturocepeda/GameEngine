@@ -240,21 +240,6 @@ void Serializable::copy(Serializable* cSource)
 
 void Serializable::loadFromXml(const pugi::xml_node& XmlNode)
 {
-   for(uint i = 0; i < vPropertyArrays.size(); i++)
-   {
-      const PropertyArray& sPropertyArray = vPropertyArrays[i];
-      const char* sPropertyArrayElementName = sPropertyArray.Name.getString().c_str();
-      uint iPropertyArrayElementsCount = 0;
-
-      for(const pugi::xml_node& xmlPropertyArrayElement : XmlNode.children(sPropertyArrayElementName))
-      {
-         sPropertyArray.Add();
-         SerializableArrayElement* cPropertyArrayElement = sPropertyArray.Entries->at(iPropertyArrayElementsCount);
-         cPropertyArrayElement->loadFromXml(xmlPropertyArrayElement);
-         iPropertyArrayElementsCount++;
-      }
-   }
-
    for(const pugi::xml_node& xmlProperty : XmlNode.children("Property"))
    {
       const char* sName = xmlProperty.attribute("name").value();
@@ -279,23 +264,25 @@ void Serializable::loadFromXml(const pugi::xml_node& XmlNode)
       Value cPropertyValue = Value(cProperty->Type, sValue);
       cProperty->Setter(cPropertyValue);
    }
-}
 
-void Serializable::saveToXml(pugi::xml_node& XmlNode) const
-{
    for(uint i = 0; i < vPropertyArrays.size(); i++)
    {
       const PropertyArray& sPropertyArray = vPropertyArrays[i];
       const char* sPropertyArrayElementName = sPropertyArray.Name.getString().c_str();
-      
-      for(uint j = 0; j < sPropertyArray.Entries->size(); j++)
+      uint iPropertyArrayElementsCount = 0;
+
+      for(const pugi::xml_node& xmlPropertyArrayElement : XmlNode.children(sPropertyArrayElementName))
       {
-         SerializableArrayElement* cPropertyArrayElement = sPropertyArray.Entries->at(j);
-         pugi::xml_node xmlPropertyArrayElement = XmlNode.append_child(sPropertyArrayElementName);
-         cPropertyArrayElement->saveToXml(xmlPropertyArrayElement);
+         sPropertyArray.Add();
+         SerializableArrayElement* cPropertyArrayElement = sPropertyArray.Entries->at(iPropertyArrayElementsCount);
+         cPropertyArrayElement->loadFromXml(xmlPropertyArrayElement);
+         iPropertyArrayElementsCount++;
       }
    }
+}
 
+void Serializable::saveToXml(pugi::xml_node& XmlNode) const
+{
    for(uint i = 0; i < vProperties.size(); i++)
    {
       const Property& sProperty = vProperties[i];
@@ -321,10 +308,34 @@ void Serializable::saveToXml(pugi::xml_node& XmlNode) const
       xmlProperty.append_attribute("name").set_value(sProperty.Name.getString().c_str());
       xmlProperty.append_attribute("value").set_value(sValueBuffer);
    }
+
+   for(uint i = 0; i < vPropertyArrays.size(); i++)
+   {
+      const PropertyArray& sPropertyArray = vPropertyArrays[i];
+      const char* sPropertyArrayElementName = sPropertyArray.Name.getString().c_str();
+
+      for(uint j = 0; j < sPropertyArray.Entries->size(); j++)
+      {
+         SerializableArrayElement* cPropertyArrayElement = sPropertyArray.Entries->at(j);
+         pugi::xml_node xmlPropertyArrayElement = XmlNode.append_child(sPropertyArrayElementName);
+         cPropertyArrayElement->saveToXml(xmlPropertyArrayElement);
+      }
+   }
 }
 
 void Serializable::loadFromStream(std::istream& Stream)
 {
+   for(uint i = 0; i < vProperties.size(); i++)
+   {
+      const Property& sProperty = vProperties[i];
+
+      if(sProperty.Setter)
+      {
+         Value cPropertyValue = Value::fromStream(sProperty.Type, Stream);
+         sProperty.Setter(cPropertyValue);
+      }
+   }
+
    for(uint i = 0; i < vPropertyArrays.size(); i++)
    {
       const PropertyArray& sPropertyArray = vPropertyArrays[i];
@@ -337,21 +348,20 @@ void Serializable::loadFromStream(std::istream& Stream)
          cPropertyArrayElement->loadFromStream(Stream);
       }
    }
+}
 
+void Serializable::saveToStream(std::ostream& Stream) const
+{
    for(uint i = 0; i < vProperties.size(); i++)
    {
       const Property& sProperty = vProperties[i];
 
       if(sProperty.Setter)
       {
-         Value cPropertyValue = Value::fromStream(sProperty.Type, Stream);
-         sProperty.Setter(cPropertyValue);
+         sProperty.Getter().writeToStream(Stream);
       }
    }
-}
 
-void Serializable::saveToStream(std::ostream& Stream) const
-{
    for(uint i = 0; i < vPropertyArrays.size(); i++)
    {
       const PropertyArray& sPropertyArray = vPropertyArrays[i];
@@ -362,38 +372,11 @@ void Serializable::saveToStream(std::ostream& Stream) const
          cArrayElement->saveToStream(Stream);
       }
    }
-
-   for(uint i = 0; i < vProperties.size(); i++)
-   {
-      const Property& sProperty = vProperties[i];
-
-      if(sProperty.Setter)
-      {
-         sProperty.Getter().writeToStream(Stream);
-      }
-   }
 }
 
 void Serializable::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream)
 {
 #if defined (GE_EDITOR_SUPPORT)
-   for(uint i = 0; i < vPropertyArrays.size(); i++)
-   {
-      const PropertyArray& sPropertyArray = vPropertyArrays[i];
-      const char* sPropertyArrayElementName = sPropertyArray.Name.getString().c_str();
-
-      pugi::xml_object_range<pugi::xml_named_node_iterator> xmlPropertyArrayElement = XmlNode.children(sPropertyArrayElementName);
-      GE::byte iPropertyArrayElementsCount = 0;
-
-      for(const pugi::xml_node& xmlPropertyArrayElement : xmlPropertyArrayElement)
-         iPropertyArrayElementsCount++;
-
-      Value(iPropertyArrayElementsCount).writeToStream(Stream);
-
-      for(const pugi::xml_node& xmlPropertyArrayElement : xmlPropertyArrayElement)
-         sPropertyArray.XmlToStream(xmlPropertyArrayElement, Stream);
-   }
-
    for(uint i = 0; i < vProperties.size(); i++)
    {
       const Property& sProperty = vProperties[i];
@@ -425,6 +408,23 @@ void Serializable::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stre
       {
          sProperty.DefaultValue.writeToStream(Stream);
       }
+   }
+
+   for(uint i = 0; i < vPropertyArrays.size(); i++)
+   {
+      const PropertyArray& sPropertyArray = vPropertyArrays[i];
+      const char* sPropertyArrayElementName = sPropertyArray.Name.getString().c_str();
+
+      pugi::xml_object_range<pugi::xml_named_node_iterator> xmlPropertyArrayElement = XmlNode.children(sPropertyArrayElementName);
+      GE::byte iPropertyArrayElementsCount = 0;
+
+      for(const pugi::xml_node& xmlPropertyArrayElement : xmlPropertyArrayElement)
+         iPropertyArrayElementsCount++;
+
+      Value(iPropertyArrayElementsCount).writeToStream(Stream);
+
+      for(const pugi::xml_node& xmlPropertyArrayElement : xmlPropertyArrayElement)
+         sPropertyArray.XmlToStream(xmlPropertyArrayElement, Stream);
    }
 #endif
 }
