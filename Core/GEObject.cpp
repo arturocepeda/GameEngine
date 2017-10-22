@@ -71,14 +71,14 @@ bool ObjectName::isEmpty() const
    return iID == 0;
 }
 
-bool GE::Core::operator==(const ObjectName& lhs, const ObjectName& rhs)
+bool ObjectName::operator==(const ObjectName& Other) const
 {
-   return lhs.getID() == rhs.getID();
+   return iID == Other.iID;
 }
 
-bool GE::Core::operator!=(const ObjectName& lhs, const ObjectName& rhs)
+bool ObjectName::operator!=(const ObjectName& Other) const
 {
-   return lhs.getID() != rhs.getID();
+   return iID != Other.iID;
 }
 
 

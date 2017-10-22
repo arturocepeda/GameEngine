@@ -40,10 +40,10 @@ namespace GE { namespace Core
       const GESTLString& getString() const;
 
       bool isEmpty() const;
-   };
 
-   bool operator==(const ObjectName& lhs, const ObjectName& rhs);
-   bool operator!=(const ObjectName& lhs, const ObjectName& rhs);
+      bool operator==(const ObjectName& Other) const;
+      bool operator!=(const ObjectName& Other) const;
+   };
 
 
    class Object

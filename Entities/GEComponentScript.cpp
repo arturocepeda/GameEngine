@@ -328,6 +328,9 @@ ComponentScript::~ComponentScript()
 
 void ComponentScript::update()
 {
+   if(Time::getClock(cOwner->getClockIndex()).getDelta() < GE_EPSILON)
+      return;
+
    for(uint i = 0; i < vScriptInstanceList.size(); i++)
    {
       getScriptInstance(i)->update();

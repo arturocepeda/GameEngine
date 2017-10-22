@@ -381,6 +381,7 @@ void Script::registerTypes()
    (
       "ObjectName"
       , sol::constructors<sol::types<>, sol::types<const char*>>()
+      , sol::meta_method::equal_to, &ObjectName::operator==
    );
    lua.new_usertype<Value>
    (
@@ -490,6 +491,8 @@ void Script::registerTypes()
    lua.new_usertype<Entity>
    (
       "Entity"
+      , "getName", &Entity::getName
+      , "getFullName", &Entity::getFullName
       , "getActive", &Entity::getActive
       , "setActive", &Entity::setActive
       , "addComponent", (Component* (Entity::*)(const Core::ObjectName&))&Entity::addComponent
@@ -664,11 +667,25 @@ void Script::registerTypes()
       , "getInstance", &RenderSystem::getInstance
       , "getActiveCamera", &RenderSystem::getActiveCamera
    );
+   lua.new_usertype<Texture>
+   (
+      "Texture"
+      , "getAtlasSize", &Texture::getAtlasSize
+      , "getAtlasName", &Texture::getAtlasName
+   );
+   lua.new_usertype<Material>
+   (
+      "Material"
+      , "getDiffuseColor", &Material::getDiffuseColor
+      , "getDiffuseTexture", &Material::getDiffuseTexture
+      , "getBlendingMode", &Material::getBlendingMode
+   );
    lua.new_usertype<MaterialPass>
    (
       "MaterialPass"
       , "getActive", &MaterialPass::getActive
       , "getMaterialName", &MaterialPass::getMaterialName
+      , "getMaterial", &MaterialPass::getMaterial
       , "setActive", &MaterialPass::setActive
       , "setMaterialName", &MaterialPass::setMaterialName
       , sol::base_classes, sol::bases<Serializable>()

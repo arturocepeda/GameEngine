@@ -57,6 +57,9 @@ namespace GE { namespace Rendering
       uint getWidth() const;
       uint getHeight() const;
 
+      uint getAtlasSize() const;
+      const Core::ObjectName& getAtlasName(uint Index) const;
+
       void setHandler(void* HandlePtr);
       const void* getHandler() const;
 

@@ -38,6 +38,17 @@ uint Texture::getHeight() const
    return iHeight;
 }
 
+uint Texture::getAtlasSize() const
+{
+   return (uint)AtlasUV.size();
+}
+
+const ObjectName& Texture::getAtlasName(uint Index) const
+{
+   GEAssert(Index < AtlasUV.size());
+   return AtlasUV[Index].getName();
+}
+
 void Texture::setHandler(void* HandlePtr)
 {
    pHandlePtr = HandlePtr;
