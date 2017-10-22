@@ -43,6 +43,11 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    sGeometryData.Indices = QuadIndices;
 
 #if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::connectStaticEventCallback(Events::PropertiesUpdated, this, [this](const EventArgs* args) -> bool
+   {
+      updateVertexData();
+      return false;
+   });
    EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
    {
       if(eFullScreenSizeMode != FullScreenSizeMode::None)
@@ -105,6 +110,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
 ComponentSprite::~ComponentSprite()
 {
 #if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::disconnectStaticEventCallback(Events::PropertiesUpdated, this);
    EventHandlingObject::disconnectStaticEventCallback(Events::RenderingSurfaceChanged, this);
 #endif
 

@@ -15,6 +15,7 @@
 #include "GERenderSystem.h"
 #include "Content/GEResourcesManager.h"
 #include "Core/GEDevice.h"
+#include "Core/GEEvents.h"
 
 using namespace GE;
 using namespace GE::Core;
@@ -148,11 +149,8 @@ void Material::setBatchRendering(bool Value)
 const ObjectName ShadersObjectRegistryName = ObjectName("ShaderProgram");
 const ObjectName MaterialObjectRegistryName = ObjectName("Material");
 
-const ObjectName MaterialPass::EventMaterialSet = ObjectName("EventMaterialSet");
-
 MaterialPass::MaterialPass()
-   : EventHandlingObject("MaterialPass")
-   , SerializableArrayElement("MaterialPass")
+   : SerializableArrayElement("MaterialPass")
    , cMaterial(0)
    , bActive(true)
    , sConstantBufferDataVertex(0)
@@ -205,9 +203,7 @@ void MaterialPass::setMaterial(Material* M)
       }
    }
 
-   EventArgs sEventArgs;
-   sEventArgs.Sender = this;
-   triggerEvent(EventMaterialSet, &sEventArgs);
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
 }
 
 void MaterialPass::registerShaderProperties(char* sBuffer, const ShaderProgram::ParameterList& vParameterList)
@@ -326,7 +322,5 @@ void MaterialPass::reload()
       registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->FragmentParameters);
    }
 
-   EventArgs sEventArgs;
-   sEventArgs.Sender = this;
-   triggerEvent(EventMaterialSet, &sEventArgs);
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
 }

@@ -68,7 +68,7 @@ namespace GE { namespace Rendering
    };
 
 
-   class MaterialPass : public Core::EventHandlingObject, public Core::SerializableArrayElement
+   class MaterialPass : public Core::SerializableArrayElement
    {
    private:
       Material* cMaterial;
@@ -83,8 +83,6 @@ namespace GE { namespace Rendering
       void releaseConstantBufferData();
 
    public:
-      static const Core::ObjectName EventMaterialSet;
-
       MaterialPass();
       ~MaterialPass();
 
