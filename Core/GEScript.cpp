@@ -381,6 +381,8 @@ void Script::registerTypes()
    (
       "ObjectName"
       , sol::constructors<sol::types<>, sol::types<const char*>>()
+      , "getID", &ObjectName::getID
+      , "getString", &ObjectName::getCString
       , sol::meta_method::equal_to, &ObjectName::operator==
    );
    lua.new_usertype<Value>

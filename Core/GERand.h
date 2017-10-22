@@ -108,7 +108,8 @@ namespace GE { namespace Core
    public:
       void addNumber(int Number);
       int extractNumber();
-      uint getSize();
+      void clear();
+      uint getSize() const;
    };
 
 

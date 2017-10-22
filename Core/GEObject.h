@@ -38,6 +38,7 @@ namespace GE { namespace Core
 
       uint getID() const;
       const GESTLString& getString() const;
+      const char* getCString() const;
 
       bool isEmpty() const;
 

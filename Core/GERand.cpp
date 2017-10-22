@@ -138,7 +138,12 @@ int RandUniform::extractNumber()
    return (iValues[cRandomDist(cRandomEngine)]);
 }
 
-uint RandUniform::getSize()
+void RandUniform::clear()
+{
+   iValues.clear();
+}
+
+uint RandUniform::getSize() const
 {
    return (uint)iValues.size();
 }

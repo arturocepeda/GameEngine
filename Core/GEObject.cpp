@@ -66,6 +66,11 @@ const GESTLString& ObjectName::getString() const
    return sName;
 }
 
+const char* ObjectName::getCString() const
+{
+   return sName.c_str();
+}
+
 bool ObjectName::isEmpty() const
 {
    return iID == 0;
