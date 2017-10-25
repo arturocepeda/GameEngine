@@ -30,8 +30,6 @@
 #include "Input/GEInputSystem.h"
 
 #pragma comment(lib, "GameEngine.DX11.lib")
-#pragma comment(lib, "pugixml.Windows.lib")
-#pragma comment(lib, "stb.Windows.lib")
 #pragma comment(lib, "AppModule.lib")
 
 #if defined (_M_X64)

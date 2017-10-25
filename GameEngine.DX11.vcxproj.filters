@@ -28,6 +28,18 @@
     <Filter Include="Input">
       <UniqueIdentifier>{33e5d4a8-66d1-43f2-9bdb-63c2a4f830e6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Externals">
+      <UniqueIdentifier>{a22658c7-09c5-4bb4-93f6-618acee93e53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\tlsf">
+      <UniqueIdentifier>{18b5ceb8-93ae-4156-a0a7-1da1a1a0702c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\pugixml">
+      <UniqueIdentifier>{ef237242-3081-4d7a-aa79-dc037f80db46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\stb">
+      <UniqueIdentifier>{359a951f-0d2b-4445-bc27-ce1744fb2b3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
@@ -221,6 +233,15 @@
     </ClCompile>
     <ClCompile Include="Types\GECurve.cpp">
       <Filter>Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\tlsf\tlsf.c">
+      <Filter>Externals\tlsf</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\pugixml\pugixml.cpp">
+      <Filter>Externals\pugixml</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\stblib\stb_image.c">
+      <Filter>Externals\stb</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -457,6 +478,33 @@
     </ClInclude>
     <ClInclude Include="Types\GECurve.h">
       <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\tlsf\tlsf.h">
+      <Filter>Externals\tlsf</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\pugixml\pugiconfig.hpp">
+      <Filter>Externals\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\pugixml\pugixml.hpp">
+      <Filter>Externals\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb_divide.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb_dxt.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb_image.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb_image_write.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb_perlin.h">
+      <Filter>Externals\stb</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

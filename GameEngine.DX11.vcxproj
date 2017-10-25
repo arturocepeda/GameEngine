@@ -71,6 +71,9 @@
     <ClCompile Include="Entities\GEComponentUIElement.cpp" />
     <ClCompile Include="Entities\GEEntity.cpp" />
     <ClCompile Include="Entities\GEScene.cpp" />
+    <ClCompile Include="Externals\pugixml\pugixml.cpp" />
+    <ClCompile Include="Externals\stblib\stb_image.c" />
+    <ClCompile Include="Externals\tlsf\tlsf.c" />
     <ClCompile Include="Input\GEInputSystem.cpp" />
     <ClCompile Include="Rendering\DX11\GEFontDX11.cpp" />
     <ClCompile Include="Rendering\DX11\GERenderingShadersDX11.cpp" />
@@ -146,6 +149,15 @@
     <ClInclude Include="Entities\GEComponentUIElement.h" />
     <ClInclude Include="Entities\GEEntity.h" />
     <ClInclude Include="Entities\GEScene.h" />
+    <ClInclude Include="Externals\pugixml\pugiconfig.hpp" />
+    <ClInclude Include="Externals\pugixml\pugixml.hpp" />
+    <ClInclude Include="Externals\stblib\stb.h" />
+    <ClInclude Include="Externals\stblib\stb_divide.h" />
+    <ClInclude Include="Externals\stblib\stb_dxt.h" />
+    <ClInclude Include="Externals\stblib\stb_image.h" />
+    <ClInclude Include="Externals\stblib\stb_image_write.h" />
+    <ClInclude Include="Externals\stblib\stb_perlin.h" />
+    <ClInclude Include="Externals\tlsf\tlsf.h" />
     <ClInclude Include="Input\GEInputSystem.h" />
     <ClInclude Include="Rendering\DX11\GERenderingShadersDX11.h" />
     <ClInclude Include="Rendering\DX11\GERenderSystemDX11.h" />

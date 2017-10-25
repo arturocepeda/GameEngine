@@ -24,6 +24,7 @@
 #endif
 
 #include "Externals/sol2/sol.hpp"
+#include "Externals/tlsf/tlsf.h"
 
 namespace GE { namespace Core
 {
@@ -45,6 +46,9 @@ namespace GE { namespace Core
 
       GESTLMap(uint32_t, ScriptFunction) mFunctions;
 
+      static void* pAllocatorBuffer;
+      static tlsf_t pAllocator;
+
       static GESTLSet(uint) sDefaultGlobalNames;
       static GESTLVector(registerTypesExtension) vRegisterTypesExtensions;
 
@@ -57,6 +61,9 @@ namespace GE { namespace Core
    public:
       Script();
       ~Script();
+
+      static void initStaticData();
+      static void releaseStaticData();
 
       static void addRegisterTypesExtension(registerTypesExtension Extension);
 

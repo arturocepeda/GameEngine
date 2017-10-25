@@ -70,39 +70,65 @@ void luaLog(const char* sMessage)
 //
 //  Script
 //
+const size_t MemoryPoolSize = 16 * 1024 * 1024;
+
+void* Script::pAllocatorBuffer = 0;
+tlsf_t Script::pAllocator = 0;
+
 GESTLSet(uint) Script::sDefaultGlobalNames;
 GESTLVector(Script::registerTypesExtension) Script::vRegisterTypesExtensions;
 
 Script::Script()
 {
    reset();
-
-   if(sDefaultGlobalNames.empty())
-   {
-      lua_State* luaState = lua.lua_state();
-
-      lua_pushglobaltable(luaState);
-      lua_pushnil(luaState);
-
-      while(lua_next(luaState, -2) != 0)
-      {
-         const char* sVariableName = lua_tostring(luaState, -2);
-         ObjectName cVariableName = ObjectName(sVariableName);
-         sDefaultGlobalNames.insert(cVariableName.getID());
-         lua_pop(luaState, 1);
-      }
-
-      lua_pop(luaState, 1);
-
-      // add GE variable names
-      sDefaultGlobalNames.insert(ObjectName("deltaTime").getID());
-      sDefaultGlobalNames.insert(ObjectName("entity").getID());
-      sDefaultGlobalNames.insert(ObjectName("this").getID());
-   }
 }
 
 Script::~Script()
 {
+}
+
+void Script::initStaticData()
+{
+   GEAssert(!pAllocatorBuffer);
+   GEAssert(!pAllocator);
+
+   // initialize allocator
+   pAllocatorBuffer = Allocator::alloc<char>(MemoryPoolSize, AllocationCategory::Scripting);
+   pAllocator = tlsf_create_with_pool(pAllocatorBuffer, MemoryPoolSize);
+
+   // collect default global names
+   Script cDefaultScript;
+   lua_State* luaState = cDefaultScript.lua.lua_state();
+
+   lua_pushglobaltable(luaState);
+   lua_pushnil(luaState);
+
+   while(lua_next(luaState, -2) != 0)
+   {
+      const char* sVariableName = lua_tostring(luaState, -2);
+      ObjectName cVariableName = ObjectName(sVariableName);
+      sDefaultGlobalNames.insert(cVariableName.getID());
+      lua_pop(luaState, 1);
+   }
+
+   lua_pop(luaState, 1);
+
+   // add GE variable names
+   sDefaultGlobalNames.insert(ObjectName("deltaTime").getID());
+   sDefaultGlobalNames.insert(ObjectName("entity").getID());
+   sDefaultGlobalNames.insert(ObjectName("this").getID());
+}
+
+void Script::releaseStaticData()
+{
+   // clear default global names
+   sDefaultGlobalNames.clear();
+
+   // release allocator
+   tlsf_destroy(pAllocator);
+   pAllocator = 0;
+   Allocator::free(pAllocatorBuffer);
+   pAllocatorBuffer = 0;
 }
 
 void Script::addRegisterTypesExtension(registerTypesExtension Extension)
@@ -248,15 +274,15 @@ void* Script::customAlloc(void*, void* ptr, size_t, size_t nsize)
    {
       if(ptr)
       {
-         Allocator::free(ptr);
+         tlsf_free(pAllocator, ptr);
       }
 
       return 0;
    }
 
    return ptr
-      ? Allocator::realloc<char>(ptr, (uint)nsize, AllocationCategory::Scripting)
-      : Allocator::alloc<char>((uint)nsize, AllocationCategory::Scripting);
+      ? tlsf_realloc(pAllocator, ptr, nsize)
+      : tlsf_malloc(pAllocator, nsize);
 }
 
 bool Script::alphabeticalComparison(const ObjectName& l, const ObjectName& r)
