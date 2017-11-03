@@ -55,6 +55,8 @@ namespace GE { namespace Core
       static void* customAlloc(void*, void* ptr, size_t, size_t nsize);
       static bool alphabeticalComparison(const ObjectName& l, const ObjectName& r);
 
+      bool loadModule(const char* sModuleName);
+
       void collectGlobalSymbols();
       void registerTypes();
 

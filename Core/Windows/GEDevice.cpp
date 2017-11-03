@@ -313,7 +313,7 @@ void Device::getUserFileName(const char* SubDir, const char* Extension, uint Ind
 void Device::log(const char* Message, ...)
 {
 #if defined(GE_EDITOR_SUPPORT)
-  char sBuffer[512];
+  char sBuffer[1024];
 
   va_list vArguments;
   va_start(vArguments, Message);

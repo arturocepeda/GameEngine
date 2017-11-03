@@ -173,71 +173,16 @@ void Script::reset()
 
 void Script::loadFromCode(const GESTLString& Code)
 {
-   try
-   {
-      lua.script(Code.c_str());
-      collectGlobalSymbols();
-   }
-   catch(...)
-   {
-      handleScriptError("<code>");
-   }
+   lua.script(Code.c_str());
+   collectGlobalSymbols();
 }
 
 bool Script::loadFromFile(const char* FileName)
 {
-   try
-   {
-      ContentData cContentData;
-
-      if(Application::ContentType == ApplicationContentType::Xml)
-      {
-         if(!Device::contentFileExists("Scripts", FileName, "lua"))
-            return false;
-
-         Device::readContentFile(ContentType::GenericTextData, "Scripts", FileName, "lua", &cContentData);
-#if defined (GE_EDITOR_SUPPORT)
-         sol::protected_function_result luaResult = lua.do_string(cContentData.getData());
-
-         if(!luaResult.valid())
-         {
-            sol::error luaError = luaResult;
-            handleScriptError(FileName, luaError.what());
-            return false;
-         }
-#else
-         lua.script(cContentData.getData());
-#endif
-      }
-      else
-      {
-#if defined (GE_64_BIT)
-         char sFileNamex64[64];
-         sprintf(sFileNamex64, "x64_%s", FileName);
-
-         if(!Device::contentFileExists("Scripts", sFileNamex64, "luabc"))
-            return false;
-
-         Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sFileNamex64, "luabc", &cContentData);
-#else
-         if(!Device::contentFileExists("Scripts", FileName, "luabc"))
-            return false;
-
-         Device::readContentFile(ContentType::GenericBinaryData, "Scripts", FileName, "luabc", &cContentData);
-#endif
-         lua_State* luaState = lua.lua_state();
-         luaL_loadbuffer(luaState, cContentData.getData(), cContentData.getDataSize(), 0);
-         lua_pcall(luaState, 0, LUA_MULTRET, 0);
-      }
-
-      collectGlobalSymbols();
-   }
-   catch(...)
-   {
-      handleScriptError(FileName);
+   if(!loadModule(FileName))
       return false;
-   }
 
+   collectGlobalSymbols();
    return true;
 }
 
@@ -290,6 +235,66 @@ bool Script::alphabeticalComparison(const ObjectName& l, const ObjectName& r)
    return strcmp(l.getString().c_str(), r.getString().c_str()) < 0;
 }
 
+bool Script::loadModule(const char* sModuleName)
+{
+   ContentData cContentData;
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      if(!Device::contentFileExists("Scripts", sModuleName, "lua"))
+         return false;
+
+      Device::readContentFile(ContentType::GenericTextData, "Scripts", sModuleName, "lua", &cContentData);
+
+#if defined (GE_EDITOR_SUPPORT)
+      lua_State* luaState = lua.lua_state();
+      int iResult = luaL_loadstring(luaState, cContentData.getData());
+
+      if(iResult != 0)
+      {
+         const char* sErrorMsg = lua_tostring(luaState, -1);
+         handleScriptError(sModuleName, sErrorMsg);
+         lua_pop(luaState, 1);
+
+         return false;
+      }
+
+      sol::protected_function_result luaResult = lua.do_string(cContentData.getData());
+
+      if(!luaResult.valid())
+      {
+         sol::error luaError = luaResult;
+         handleScriptError(sModuleName, luaError.what());
+         return false;
+      }
+#else
+      lua.script(cContentData.getData());
+#endif
+   }
+   else
+   {
+#if defined (GE_64_BIT)
+      char sFileNamex64[64];
+      sprintf(sFileNamex64, "x64_%s", sModuleName);
+
+      if(!Device::contentFileExists("Scripts", sFileNamex64, "luabc"))
+         return false;
+
+      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sFileNamex64, "luabc", &cContentData);
+#else
+      if(!Device::contentFileExists("Scripts", FileName, "luabc"))
+         return false;
+
+      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", FileName, "luabc", &cContentData);
+#endif
+      lua_State* luaState = lua.lua_state();
+      luaL_loadbuffer(luaState, cContentData.getData(), cContentData.getDataSize(), 0);
+      lua_pcall(luaState, 0, LUA_MULTRET, 0);
+   }
+
+   return true;
+}
+
 void Script::collectGlobalSymbols()
 {
    // collect all global user symbols
@@ -339,6 +344,21 @@ void Script::collectGlobalSymbols()
 
 void Script::registerTypes()
 {
+   //
+   //  Module loading
+   //
+   lua["packageSearcher"] = [this](const char* sModuleName)
+   {
+      char moduleLoaderName[64];
+      sprintf(moduleLoaderName, "%sLoader", sModuleName);
+      lua[moduleLoaderName] = [this, sModuleName]() { loadModule(sModuleName); };
+
+      char codeBuffer[256];
+      sprintf(codeBuffer, "package.preload['%s'] = %s", sModuleName, moduleLoaderName);
+      lua.script(codeBuffer);
+   };
+   lua.script("table.insert(package.searchers, 1, packageSearcher)");
+
    //
    //  Global functions
    //
