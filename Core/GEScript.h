@@ -49,7 +49,7 @@ namespace GE { namespace Core
       static void* pAllocatorBuffer;
       static tlsf_t pAllocator;
 
-      static GESTLSet(uint) sDefaultGlobalNames;
+      static GESTLSet(uint) sPredefinedGlobalSymbols;
       static GESTLVector(registerTypesExtension) vRegisterTypesExtensions;
 
       static void* customAlloc(void*, void* ptr, size_t, size_t nsize);
@@ -67,6 +67,7 @@ namespace GE { namespace Core
       static void initStaticData();
       static void releaseStaticData();
 
+      static void addPredefinedGlobalSymbol(const ObjectName& Symbol);
       static void addRegisterTypesExtension(registerTypesExtension Extension);
 
       static void handleScriptError(const char* ScriptName, const char* Msg = 0);

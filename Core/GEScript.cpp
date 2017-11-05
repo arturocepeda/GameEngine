@@ -75,7 +75,7 @@ const size_t MemoryPoolSize = 16 * 1024 * 1024;
 void* Script::pAllocatorBuffer = 0;
 tlsf_t Script::pAllocator = 0;
 
-GESTLSet(uint) Script::sDefaultGlobalNames;
+GESTLSet(uint) Script::sPredefinedGlobalSymbols;
 GESTLVector(Script::registerTypesExtension) Script::vRegisterTypesExtensions;
 
 Script::Script()
@@ -96,7 +96,7 @@ void Script::initStaticData()
    pAllocatorBuffer = Allocator::alloc<char>(MemoryPoolSize, AllocationCategory::Scripting);
    pAllocator = tlsf_create_with_pool(pAllocatorBuffer, MemoryPoolSize);
 
-   // collect default global names
+   // collect predefined global symbols
    Script cDefaultScript;
    lua_State* luaState = cDefaultScript.lua.lua_state();
 
@@ -107,28 +107,33 @@ void Script::initStaticData()
    {
       const char* sVariableName = lua_tostring(luaState, -2);
       ObjectName cVariableName = ObjectName(sVariableName);
-      sDefaultGlobalNames.insert(cVariableName.getID());
+      addPredefinedGlobalSymbol(cVariableName);
       lua_pop(luaState, 1);
    }
 
    lua_pop(luaState, 1);
 
    // add GE variable names
-   sDefaultGlobalNames.insert(ObjectName("deltaTime").getID());
-   sDefaultGlobalNames.insert(ObjectName("entity").getID());
-   sDefaultGlobalNames.insert(ObjectName("this").getID());
+   addPredefinedGlobalSymbol(ObjectName("deltaTime"));
+   addPredefinedGlobalSymbol(ObjectName("entity"));
+   addPredefinedGlobalSymbol(ObjectName("this"));
 }
 
 void Script::releaseStaticData()
 {
-   // clear default global names
-   sDefaultGlobalNames.clear();
+   // clear predefined global symbols
+   sPredefinedGlobalSymbols.clear();
 
    // release allocator
    tlsf_destroy(pAllocator);
    pAllocator = 0;
    Allocator::free(pAllocatorBuffer);
    pAllocatorBuffer = 0;
+}
+
+void Script::addPredefinedGlobalSymbol(const ObjectName& Symbol)
+{
+   sPredefinedGlobalSymbols.insert(Symbol.getID());
 }
 
 void Script::addRegisterTypesExtension(registerTypesExtension Extension)
@@ -310,7 +315,7 @@ void Script::collectGlobalSymbols()
       const char* sVariableName = lua_tostring(luaState, -2);
       ObjectName cVariableName = ObjectName(sVariableName);
 
-      if(sDefaultGlobalNames.find(cVariableName.getID()) == sDefaultGlobalNames.end())
+      if(sPredefinedGlobalSymbols.find(cVariableName.getID()) == sPredefinedGlobalSymbols.end())
       {
          vGlobalUserSymbols.push_back(cVariableName);
       }
@@ -660,7 +665,9 @@ void Script::registerTypes()
    (
       "ComponentUIElement"
       , "getAlpha", &ComponentUIElement::getAlpha
+      , "getRenderPriority", &ComponentUIElement::getRenderPriority
       , "setAlpha", &ComponentUIElement::setAlpha
+      , "setRenderPriority", &ComponentUIElement::setRenderPriority
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_usertype<ComponentSkeleton>
