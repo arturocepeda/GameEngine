@@ -570,6 +570,7 @@ void Script::registerTypes()
       , "getComponentCollider", &Entity::getComponent<ComponentCollider>
       , "getComponentUIElement", &Entity::getComponent<ComponentUIElement>
       , "getComponentUI2DElement", &Entity::getComponent<ComponentUI2DElement>
+      , "getComponentUI3DElement", &Entity::getComponent<ComponentUI3DElement>
       , "getComponentSkeleton", &Entity::getComponent<ComponentSkeleton>
       , "getComponentScript", &Entity::getComponent<ComponentScript>
       , "getChildByIndex", &Entity::getChildByIndex
@@ -665,10 +666,15 @@ void Script::registerTypes()
    (
       "ComponentUIElement"
       , "getAlpha", &ComponentUIElement::getAlpha
-      , "getRenderPriority", &ComponentUIElement::getRenderPriority
       , "setAlpha", &ComponentUIElement::setAlpha
-      , "setRenderPriority", &ComponentUIElement::setRenderPriority
       , sol::base_classes, sol::bases<Component, Serializable>()
+   );
+   lua.new_usertype<ComponentUI3DElement>
+   (
+      "ComponentUI3DElement"
+      , "getCanvasIndex", &ComponentUI3DElement::getCanvasIndex
+      , "setCanvasIndex", &ComponentUI3DElement::setCanvasIndex
+      , sol::base_classes, sol::bases<ComponentUIElement, Component, Serializable>()
    );
    lua.new_usertype<ComponentSkeleton>
    (

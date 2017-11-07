@@ -81,6 +81,8 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
 
    GEMutexInit(mTextureLoadMutex);
    calculate2DViewProjectionMatrix();
+
+   clearRenderingQueues();
 }
 
 RenderSystem::~RenderSystem()
@@ -829,9 +831,32 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 #endif
       {
          if(cSprite->getLayer() == SpriteLayer::GUI)
-            vUIElementsToRender.push_back(sRenderOperation);
+         {
+            ComponentUIElement* cUIElement = cRenderable->getOwner()->getComponent<ComponentUIElement>();
+
+            if(!cUIElement || cUIElement->getUIElementType() == UIElementType::_2D)
+            {
+               vUIElementsToRender.push_back(sRenderOperation);
+            }
+            else
+            {
+               ComponentUI3DElement* cUI3DElement = static_cast<ComponentUI3DElement*>(cUIElement);
+               GEAssert(cUI3DElement->getCanvasIndex() < ComponentUI3DElement::CanvasCount);
+
+               v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push_back(sRenderOperation);
+
+               if(!cRenderable->getOwner()->getParent() ||
+                  !cRenderable->getOwner()->getParent()->getComponent<ComponentUIElement>())
+               {
+                  const Vector3& vWorldPosition = cUI3DElement->getOwner()->getComponent<ComponentTransform>()->getWorldPosition();
+                  s3DUICanvasEntries[cUI3DElement->getCanvasIndex()].WorldPosition = vWorldPosition;
+               }
+            }
+         }
          else
+         {
             vPre3DSpritesToRender.push_back(sRenderOperation);
+         }
       }
 
       if(cSprite->getGeometryType() == GeometryType::Static)
@@ -864,10 +889,28 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       else
 #endif
       {
-         if(cRenderable->getRenderingMode() == RenderingMode::_2D ||
-            cRenderable->getOwner()->getComponent<ComponentUIElement>())
+         ComponentUIElement* cUIElement = cRenderable->getOwner()->getComponent<ComponentUIElement>();
+
+         if(cUIElement)
          {
-            vUIElementsToRender.push_back(sRenderOperation);
+            if(cUIElement->getUIElementType() == UIElementType::_2D)
+            {
+               vUIElementsToRender.push_back(sRenderOperation);
+            }
+            else
+            {
+               ComponentUI3DElement* cUI3DElement = static_cast<ComponentUI3DElement*>(cUIElement);
+               GEAssert(cUI3DElement->getCanvasIndex() < ComponentUI3DElement::CanvasCount);
+
+               v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push_back(sRenderOperation);
+
+               if(!cRenderable->getOwner()->getParent() ||
+                  !cRenderable->getOwner()->getParent()->getComponent<ComponentUIElement>())
+               {
+                  const Vector3& vWorldPosition = cUI3DElement->getOwner()->getComponent<ComponentTransform>()->getWorldPosition();
+                  s3DUICanvasEntries[cUI3DElement->getCanvasIndex()].WorldPosition = vWorldPosition;
+               }
+            }
          }
          else
          {
@@ -894,7 +937,9 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          else
          {
             if(cParticleSystem->getDynamicShadows())
+            {
                vShadowedParticlesToRender.push_back(sRenderOperation);
+            }
 
             vTransparentMeshesToRender.push_back(sRenderOperation);
          }
@@ -999,6 +1044,13 @@ void RenderSystem::clearRenderingQueues()
    vDebugGeometryToRender.clear();
    vLightsToRender.clear();
 
+   for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
+   {
+      v3DUIElementsToRender[i].clear();
+      s3DUICanvasEntries[i].Index = i;
+      s3DUICanvasEntries[i].WorldPosition = Vector3::Zero;
+   }
+
    for(GESTLMap(uint, RenderOperation)::iterator it = mBatches.begin(); it != mBatches.end(); it++)
    {
       RenderOperation& sBatch = (*it).second;
@@ -1020,7 +1072,22 @@ void RenderSystem::clearGeometryRenderInfoEntries()
    mBatches.clear();
 
    for(uint i = 0; i < GeometryGroup::Count; i++)
+   {
       sGPUBufferPairs[i].clear();
+   }
+}
+
+int canvasSortComparer(const void* pCanvas1, const void* pCanvas2)
+{
+   const _3DUICanvasEntry* sCanvas1 = static_cast<const _3DUICanvasEntry*>(pCanvas1);
+   const _3DUICanvasEntry* sCanvas2 = static_cast<const _3DUICanvasEntry*>(pCanvas2);
+
+   ComponentCamera* cActiveCamera = RenderSystem::getInstance()->getActiveCamera();
+   const Vector3& vCameraPosition = cActiveCamera->getTransform()->getWorldPosition();
+
+   return vCameraPosition.getSquaredDistanceTo(sCanvas1->WorldPosition) < vCameraPosition.getSquaredDistanceTo(sCanvas2->WorldPosition)
+      ? 1
+      : -1;
 }
 
 void RenderSystem::renderFrame()
@@ -1034,7 +1101,9 @@ void RenderSystem::renderFrame()
          const RenderOperation& sBatch = it->second;
 
          if(sBatch.Data.NumVertices > 0)
+         {
             prepareBatchForRendering(sBatch);
+         }
       }
    }
 
@@ -1055,7 +1124,9 @@ void RenderSystem::renderFrame()
       !vTransparentMeshesToRender.empty())
    {
       if(!vShadowedMeshesToRender.empty() || !vShadowedParticlesToRender.empty())
+      {
          renderShadowMap();
+      }
 
       if(!vOpaqueMeshesToRender.empty())
       {
@@ -1081,13 +1152,12 @@ void RenderSystem::renderFrame()
          }
       }
 
-      if(!vTransparentMeshesToRender.empty())
+      if(cActiveCamera && !vTransparentMeshesToRender.empty())
       {
          std::sort(vTransparentMeshesToRender.begin(), vTransparentMeshesToRender.end(),
-         [](const RenderOperation& sRO1, const RenderOperation& sRO2) -> bool
+         [this](const RenderOperation& sRO1, const RenderOperation& sRO2) -> bool
          {
-            const Vector3& vCameraWorldPosition =
-               RenderSystem::getInstance()->getActiveCamera()->getTransform()->getWorldPosition();
+            const Vector3& vCameraWorldPosition = cActiveCamera->getTransform()->getWorldPosition();
 
             Vector3 vP1ToCamera = vCameraWorldPosition - sRO1.Renderable->getTransform()->getWorldPosition();
             Vector3 vP2ToCamera = vCameraWorldPosition - sRO2.Renderable->getTransform()->getWorldPosition();
@@ -1106,20 +1176,30 @@ void RenderSystem::renderFrame()
       }
    }
 
+   if(cActiveCamera)
+   {
+      qsort(s3DUICanvasEntries, ComponentUI3DElement::CanvasCount, sizeof(_3DUICanvasEntry), canvasSortComparer);
+
+      for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
+      {
+         uint iIndex = s3DUICanvasEntries[i].Index;
+
+         if(!v3DUIElementsToRender[iIndex].empty())
+         {
+            GESTLVector(RenderOperation)::const_iterator it = v3DUIElementsToRender[iIndex].begin();
+
+            for(; it != v3DUIElementsToRender[iIndex].end(); it++)
+            {
+               const RenderOperation& sRenderOperation = *it;
+               useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+               render(sRenderOperation);
+            }
+         }
+      }
+   }
+
    if(!vUIElementsToRender.empty())
    {
-      std::sort(vUIElementsToRender.begin(), vUIElementsToRender.end(),
-         [](const RenderOperation& sRO1, const RenderOperation& sRO2) -> bool
-      {
-         ComponentUIElement* cUIElement = sRO1.Renderable->getOwner()->getComponent<ComponentUIElement>();
-         uint8_t iRenderPriority1 = cUIElement ? cUIElement->getRenderPriority() : 0;
-
-         cUIElement = sRO2.Renderable->getOwner()->getComponent<ComponentUIElement>();
-         uint8_t iRenderPriority2 = cUIElement ? cUIElement->getRenderPriority() : 0;
-
-         return iRenderPriority1 > iRenderPriority2;
-      });
-
       GESTLVector(RenderOperation)::const_iterator it = vUIElementsToRender.begin();
 
       for(; it != vUIElementsToRender.end(); it++)

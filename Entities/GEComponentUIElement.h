@@ -16,12 +16,19 @@
 
 namespace GE { namespace Entities
 {
+   enum class UIElementType : unsigned char
+   {
+      _2D,
+      _3D
+   };
+
+
    class ComponentUIElement : public Component
    {
    protected:
       ComponentTransform* cTransform;
       float fAlpha;
-      uint8_t iRenderPriority;
+      UIElementType eUIElementType;
 
       ComponentUIElement(Entity* Owner);
 
@@ -30,16 +37,13 @@ namespace GE { namespace Entities
 
       virtual ~ComponentUIElement();
 
+      UIElementType getUIElementType() const;
       float getAlpha() const;
       float getAlphaInHierarchy() const;
-      uint8_t getRenderPriority() const;
 
       void setAlpha(float Alpha);
-      void setRenderPriority(uint8_t Value);
-      void changeRenderPriority(int8_t Delta);
 
       GEProperty(Float, Alpha)
-      GEProperty(Byte, RenderPriority)
    };
 
 
@@ -68,8 +72,18 @@ namespace GE { namespace Entities
 
    class ComponentUI3DElement : public ComponentUIElement
    {
+   private:
+      uint8_t iCanvasIndex;
+
    public:
+      static const uint32_t CanvasCount = 8;
+
       ComponentUI3DElement(Entity* Owner);
       virtual ~ComponentUI3DElement();
+
+      uint8_t getCanvasIndex() const;
+      void setCanvasIndex(uint8_t Index);
+
+      GEProperty(Byte, CanvasIndex)
    };
 }}

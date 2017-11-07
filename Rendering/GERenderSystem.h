@@ -27,6 +27,7 @@
 #include "Entities/GEComponentMesh.h"
 #include "Entities/GEComponentSprite.h"
 #include "Entities/GEComponentLabel.h"
+#include "Entities/GEComponentUIElement.h"
 
 #include <vector>
 #include <set>
@@ -56,6 +57,13 @@ namespace GE { namespace Rendering
          CurrentVertexBufferOffset = 0;
          CurrentIndexBufferOffset = 0;
       }
+   };
+
+
+   struct _3DUICanvasEntry
+   {
+      uint Index;
+      Vector3 WorldPosition;
    };
 
 
@@ -116,6 +124,10 @@ namespace GE { namespace Rendering
       GESTLVector(RenderOperation) vOpaqueMeshesToRender;
       GESTLVector(RenderOperation) vTransparentMeshesToRender;
       GESTLVector(RenderOperation) vDebugGeometryToRender;
+
+      GESTLVector(RenderOperation) v3DUIElementsToRender[Entities::ComponentUI3DElement::CanvasCount];
+      _3DUICanvasEntry s3DUICanvasEntries[Entities::ComponentUI3DElement::CanvasCount];
+
       GESTLVector(Entities::ComponentLight*) vLightsToRender;
 
       GPUBufferPair sGPUBufferPairs[GeometryGroup::Count];

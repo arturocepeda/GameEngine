@@ -25,7 +25,7 @@ using namespace GE::Entities;
 ComponentUIElement::ComponentUIElement(Entity* Owner)
    : Component(Owner)
    , fAlpha(1.0f)
-   , iRenderPriority(128)
+   , eUIElementType(UIElementType::_2D)
 {
    cClassName = ObjectName("UIElement");
 
@@ -33,11 +33,15 @@ ComponentUIElement::ComponentUIElement(Entity* Owner)
    GEAssert(cTransform);
 
    GERegisterPropertyMinMax(Float, Alpha, 0.0f, 1.0f);
-   GERegisterPropertyMinMax(Byte, RenderPriority, 0, 255);
 }
 
 ComponentUIElement::~ComponentUIElement()
 {
+}
+
+UIElementType ComponentUIElement::getUIElementType() const
+{
+   return eUIElementType;
 }
 
 float ComponentUIElement::getAlpha() const
@@ -63,34 +67,9 @@ float ComponentUIElement::getAlphaInHierarchy() const
    return fAlphaInHierarchy;
 }
 
-uint8_t ComponentUIElement::getRenderPriority() const
-{
-   return iRenderPriority;
-}
-
 void ComponentUIElement::setAlpha(float Alpha)
 {
    fAlpha = Alpha;
-}
-
-void ComponentUIElement::setRenderPriority(uint8_t Value)
-{
-   iRenderPriority = Value;
-}
-
-void ComponentUIElement::changeRenderPriority(int8_t Delta)
-{
-   iRenderPriority += Delta;
-
-   for(uint i = 0; i < cOwner->getChildrenCount(); i++)
-   {
-      ComponentUIElement* cChildUIElement = cOwner->getChildByIndex(i)->getComponent<ComponentUIElement>();
-
-      if(cChildUIElement)
-      {
-         cChildUIElement->changeRenderPriority(Delta);
-      }
-   }
 }
 
 
@@ -103,6 +82,7 @@ ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
    , vOffset(Vector2::Zero)
 {
    cClassName = ObjectName("UI2DElement");
+   eUIElementType = UIElementType::_2D;
 
 #if defined (GE_EDITOR_SUPPORT)
    EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
@@ -197,10 +177,34 @@ void ComponentUI2DElement::setOffset(const Vector2& Offset)
 //
 ComponentUI3DElement::ComponentUI3DElement(Entity* Owner)
    : ComponentUIElement(Owner)
+   , iCanvasIndex(0)
 {
    cClassName = ObjectName("UI3DElement");
+   eUIElementType = UIElementType::_3D;
+
+   GERegisterPropertyMinMax(Byte, CanvasIndex, 0, CanvasCount - 1);
 }
 
 ComponentUI3DElement::~ComponentUI3DElement()
 {
+}
+
+uint8_t ComponentUI3DElement::getCanvasIndex() const
+{
+   return iCanvasIndex;
+}
+
+void ComponentUI3DElement::setCanvasIndex(uint8_t Index)
+{
+   iCanvasIndex = Index;
+
+   for(uint i = 0; i < cOwner->getChildrenCount(); i++)
+   {
+      ComponentUIElement* cUIElement = cOwner->getChildByIndex(i)->getComponent<ComponentUIElement>();
+
+      if(cUIElement && cUIElement->getClassName() == cClassName)
+      {
+         static_cast<ComponentUI3DElement*>(cUIElement)->setCanvasIndex(Index);
+      }
+   }
 }
