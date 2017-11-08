@@ -39,7 +39,7 @@ namespace GE { namespace Core
    class Value
    {
    public:
-      static const int BufferSize = 44;
+      static const int BufferSize = 47;
 
       static Value getDefaultValue(ValueType Type);
       static ValueType getValueType(const char* TypeAsString);
