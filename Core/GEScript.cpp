@@ -450,6 +450,7 @@ void Script::registerTypes()
       "Serializable"
       , "get", &Serializable::get
       , "set", &Serializable::set
+      , "executeAction", &Serializable::executeAction
    );
    lua.new_enum
    (

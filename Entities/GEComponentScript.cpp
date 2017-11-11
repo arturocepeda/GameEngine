@@ -56,7 +56,6 @@ ScriptInstance::ScriptInstance()
    GERegisterPropertySpecialEditor(ObjectName, ScriptName, PropertyEditor::Script);
    GERegisterProperty(Bool, Active);
 
-#if defined (GE_EDITOR_SUPPORT)
    registerAction("Reload", [this]
    {
       const uint iNumProperties = getPropertiesCount() - iBasePropertiesCount;
@@ -71,7 +70,6 @@ ScriptInstance::ScriptInstance()
 
       setScriptName(getScriptName());
    });
-#endif
 
    iBasePropertiesCount = getPropertiesCount();
    iBaseActionsCount = getActionsCount();
