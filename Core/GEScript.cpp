@@ -491,6 +491,7 @@ void Script::registerTypes()
       "CurvePropertyInterpolator"
       , sol::constructors<sol::types<Curve*, Serializable*, const ObjectName&>>()
       , "animate", &CurvePropertyInterpolator::animate
+      , "animateInverse", &CurvePropertyInterpolator::animateInverse
       , "update", &CurvePropertyInterpolator::update
    );
    lua.new_usertype<BezierCurve>
@@ -503,6 +504,7 @@ void Script::registerTypes()
       "BezierPropertyInterpolator"
       , sol::constructors<sol::types<BezierCurve*, Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &BezierPropertyInterpolator::animate
+      , "animateInverse", &BezierPropertyInterpolator::animateInverse
       , "update", &BezierPropertyInterpolator::update
    );
    lua.new_usertype<Physics::Ray>

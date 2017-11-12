@@ -342,6 +342,11 @@ namespace GE { namespace Core
       {
          Interpolator<float>::animate(0.0f, fCurveLength, fCurveLength, nullptr);
       }
+
+      void animateInverse()
+      {
+         Interpolator<float>::animate(fCurveLength, 0.0f, fCurveLength, nullptr);
+      }
    };
 
 
@@ -369,6 +374,11 @@ namespace GE { namespace Core
       void animate(float fDuration)
       {
          Interpolator<float>::animate(0.0f, 1.0f, fDuration, nullptr);
+      }
+
+      void animateInverse(float fDuration)
+      {
+         Interpolator<float>::animate(1.0f, 0.0f, fDuration, nullptr);
       }
    };
 }}
