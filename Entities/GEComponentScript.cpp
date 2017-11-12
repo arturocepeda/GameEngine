@@ -26,6 +26,7 @@ const ObjectName cInitFunctionName = ObjectName("init");
 const ObjectName cActivateFunctionName = ObjectName("activate");
 const ObjectName cDeactivateFunctionName = ObjectName("deactivate");
 const ObjectName cUpdateFunctionName = ObjectName("update");
+const ObjectName cInputMouseFunctionName = ObjectName("inputMouse");
 const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
 const ObjectName cInputTouchMoveFunctionName = ObjectName("inputTouchMove");
 const ObjectName cInputTouchEndFunctionName = ObjectName("inputTouchEnd");
@@ -36,6 +37,7 @@ const ObjectName* cInternalFunctionNames[] =
    &cActivateFunctionName,
    &cDeactivateFunctionName,
    &cUpdateFunctionName,
+   &cInputMouseFunctionName,
    &cInputTouchBeginFunctionName,
    &cInputTouchMoveFunctionName,
    &cInputTouchEndFunctionName,
@@ -265,6 +267,20 @@ void ScriptInstance::update()
    }
 }
 
+bool ScriptInstance::inputMouse(const Vector2& Point)
+{
+   if(!bActive)
+      return false;
+
+   if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputMouseFunctionName))
+   {
+      if(cScript->runFunction<bool>(cInputMouseFunctionName, Point))
+         return true;
+   }
+
+   return false;
+}
+
 bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 {
    if(!bActive)
@@ -333,6 +349,17 @@ void ComponentScript::update()
    {
       getScriptInstance(i)->update();
    }
+}
+
+bool ComponentScript::inputMouse(const Vector2& Point)
+{
+   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   {
+      if(getScriptInstance(i)->inputMouse(Point))
+         return true;
+   }
+
+   return false;
 }
 
 bool ComponentScript::inputTouchBegin(int ID, const Vector2& Point)

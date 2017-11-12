@@ -57,6 +57,8 @@ namespace GE { namespace Entities
 
       void update();
 
+      bool inputMouse(const Vector2& Point);
+
       bool inputTouchBegin(int ID, const Vector2& Point);
       bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
       bool inputTouchEnd(int ID, const Vector2& Point);
@@ -75,6 +77,8 @@ namespace GE { namespace Entities
       ~ComponentScript();
 
       void update();
+
+      bool inputMouse(const Vector2& Point);
 
       bool inputTouchBegin(int ID, const Vector2& Point);
       bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);

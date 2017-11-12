@@ -51,6 +51,22 @@ void InputSystem::inputKeyRelease(char Key)
 
 void InputSystem::inputMouse(const Vector2& Point)
 {
+   Scene* cActiveScene = Scene::getActiveScene();
+
+   if(cActiveScene)
+   {
+      GESTLVector(Component*) cComponents = cActiveScene->getComponents<ComponentScript>();
+
+      for(uint i = 0; i < cComponents.size(); i++)
+      {
+         if(cComponents[i]->getOwner()->isActiveInHierarchy())
+         {
+            if(static_cast<ComponentScript*>(cComponents[i])->inputMouse(Point))
+               return;
+         }
+      }
+   }
+
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
    if(cCurrentState && cCurrentState->getInputEnabled())
