@@ -197,6 +197,7 @@ ValueType Script::getVariableType(const ObjectName& VariableName) const
    lua_getglobal(luaState, VariableName.getString().c_str());
 
    ValueType eValueType = ValueType::Count;
+   bool bUserDataType = false;
    int iIndex = lua_gettop(luaState);
 
    if(lua_isboolean(luaState, iIndex))
@@ -207,8 +208,22 @@ ValueType Script::getVariableType(const ObjectName& VariableName) const
       eValueType = ValueType::Float;
    else if(lua_isstring(luaState, iIndex))
       eValueType = ValueType::String;
+   else if(lua_isuserdata(luaState, iIndex))
+      bUserDataType = true;
    
    lua_pop(luaState, 1);
+
+   if(bUserDataType)
+   {
+      const sol::object& cVariableRef = lua[VariableName.getCString()];
+
+      if(cVariableRef.is<Vector3>())
+         eValueType = ValueType::Vector3;
+      else if(cVariableRef.is<Vector2>())
+         eValueType = ValueType::Vector2;
+      else if(cVariableRef.is<Color>())
+         eValueType = ValueType::Color;
+   }
 
    return eValueType;
 }

@@ -169,6 +169,15 @@ void ScriptInstance::registerScriptProperties()
          case ValueType::String:
             cScript->setVariable<const char*>(sGlobalVariableName, cValue.getAsString());
             break;
+         case ValueType::Vector3:
+            cScript->setVariable<Vector3>(sGlobalVariableName, cValue.getAsVector3());
+            break;
+         case ValueType::Vector2:
+            cScript->setVariable<Vector2>(sGlobalVariableName, cValue.getAsVector2());
+            break;
+         case ValueType::Color:
+            cScript->setVariable<Color>(sGlobalVariableName, cValue.getAsColor());
+            break;
          }
       };
       PropertyGetter getter = [this, sGlobalVariableName, ePropertyValue]() -> Value
@@ -177,6 +186,12 @@ void ScriptInstance::registerScriptProperties()
          {
          case ValueType::Bool:
             return Value(cScript->getVariable<bool>(sGlobalVariableName));
+         case ValueType::Vector3:
+            return Value(cScript->getVariable<Vector3>(sGlobalVariableName));
+         case ValueType::Vector2:
+            return Value(cScript->getVariable<Vector2>(sGlobalVariableName));
+         case ValueType::Color:
+            return Value(cScript->getVariable<Color>(sGlobalVariableName));
          default:
             return Value(ePropertyValue, cScript->getVariable<const char*>(sGlobalVariableName));
          }
