@@ -180,9 +180,6 @@ const ObjectName& ComponentColliderMesh::getMeshName() const
 void ComponentColliderMesh::setMeshName(const ObjectName& MeshName)
 {
    cMesh = ResourcesManager::getInstance()->get<Mesh>(MeshName);
-
-   if(!cMesh)
-      cMesh = ResourcesManager::getInstance()->load<Mesh>(MeshName.getString().c_str());
 }
 
 bool ComponentColliderMesh::checkCollision(const Physics::Ray& R, Physics::HitInfo* OutHitInfo) const

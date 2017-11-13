@@ -126,15 +126,19 @@ void ComponentSprite::updateVertexData()
 
    float* fVertexData = sGeometryData.VertexData;
 
-   fVertexData[ 0] = -fHalfSizeX + vCenter.X;  fVertexData[ 1] = -fHalfSizeY + vCenter.Y;  fVertexData[ 2] = 0.0f;
-   fVertexData[ 5] =  fHalfSizeX + vCenter.X;  fVertexData[ 6] = -fHalfSizeY + vCenter.Y;  fVertexData[ 7] = 0.0f;
-   fVertexData[10] = -fHalfSizeX + vCenter.X;  fVertexData[11] =  fHalfSizeY + vCenter.Y;  fVertexData[12] = 0.0f;
-   fVertexData[15] =  fHalfSizeX + vCenter.X;  fVertexData[16] =  fHalfSizeY + vCenter.Y;  fVertexData[17] = 0.0f;
+   fVertexData[ 0] = -fHalfSizeX - vCenter.X;  fVertexData[ 1] = -fHalfSizeY - vCenter.Y;  fVertexData[ 2] = 0.0f;
+   fVertexData[ 5] =  fHalfSizeX - vCenter.X;  fVertexData[ 6] = -fHalfSizeY - vCenter.Y;  fVertexData[ 7] = 0.0f;
+   fVertexData[10] = -fHalfSizeX - vCenter.X;  fVertexData[11] =  fHalfSizeY - vCenter.Y;  fVertexData[12] = 0.0f;
+   fVertexData[15] =  fHalfSizeX - vCenter.X;  fVertexData[16] =  fHalfSizeY - vCenter.Y;  fVertexData[17] = 0.0f;
 
    // texture coordinates
-   GEAssert(!vMaterialPassList.empty());
-   GEAssert(getMaterialPass(0));
-   GEAssert(getMaterialPass(0)->getMaterial());
+   if(vMaterialPassList.empty() || !getMaterialPass(0))
+      return;
+
+   Material* cMaterial = getMaterialPass(0)->getMaterial();
+
+   if(!cMaterial)
+      return;
 
 #if defined (GE_EDITOR_SUPPORT)
    Property* cTextureAtlasNameProperty = const_cast<Property*>(getProperty("TextureAtlasName"));
@@ -142,13 +146,18 @@ void ComponentSprite::updateVertexData()
    cTextureAtlasNameProperty->DataPtr = 0;
 #endif
 
-   Material* cMaterial = getMaterialPass(0)->getMaterial();
    const Texture* cDiffuseTexture = cMaterial->getDiffuseTexture();
 
    if(!cDiffuseTexture)
       return;
 
    TextureAtlasEntry* cAtlasEntry = cDiffuseTexture->AtlasUVManager.get(cTextureAtlasName);
+
+   if(!cAtlasEntry)
+   {
+      cTextureAtlasName = ObjectName::Empty;
+   }
+
    const TextureCoordinates& UV = cAtlasEntry ? cAtlasEntry->UV : cDiffuseTexture->AtlasUV[0].UV;
 
    switch(eUVMode)
