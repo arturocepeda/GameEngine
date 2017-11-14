@@ -20,7 +20,6 @@ State::State(const ObjectName& Name, void* GlobalData)
    : Object(Name)
    , pGlobalData(GlobalData)
    , eStateType(StateType::Exclusive)
-   , bInputEnabled(true)
 {
 }
 
@@ -31,11 +30,6 @@ State::~State()
 StateType State::getStateType() const
 {
    return eStateType;
-}
-
-bool State::getInputEnabled() const
-{
-   return bInputEnabled;
 }
 
 void State::pause()

@@ -21,6 +21,7 @@
 #include "Core/GEInterpolator.h"
 #include "Core/GEPhysics.h"
 #include "Content/GEContentData.h"
+#include "Input/GEInputSystem.h"
 #include "Entities/GEScene.h"
 #include "Entities/GEComponentTransform.h"
 #include "Entities/GEComponentSprite.h"
@@ -56,6 +57,7 @@ using namespace GE::Core;
 using namespace GE::Content;
 using namespace GE::Entities;
 using namespace GE::Rendering;
+using namespace GE::Input;
 
 
 //
@@ -556,6 +558,16 @@ void Script::registerTypes()
    (
       "Skeleton"
       , "getBonesCount", &Skeleton::getBonesCount
+   );
+
+   //
+   //  GE::Input
+   //
+   lua.new_usertype<InputSystem>
+   (
+      "InputSystem"
+      , "getInstance", &InputSystem::getInstance
+      , "setInputEnabled", &InputSystem::setInputEnabled
    );
 
    //

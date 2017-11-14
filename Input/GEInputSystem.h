@@ -19,9 +19,14 @@ namespace GE { namespace Input
 {
    class InputSystem : public Core::Singleton<InputSystem>
    {
+   private:
+      bool bInputEnabled;
+
    public:
       InputSystem();
       ~InputSystem();
+
+      void setInputEnabled(bool Enabled);
 
       void inputKeyPress(char Key);
       void inputKeyRelease(char Key);

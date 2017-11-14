@@ -22,6 +22,7 @@ using namespace GE::Core;
 using namespace GE::Entities;
 
 InputSystem::InputSystem()
+   : bInputEnabled(true)
 {
 }
 
@@ -29,11 +30,19 @@ InputSystem::~InputSystem()
 {
 }
 
+void InputSystem::setInputEnabled(bool Enabled)
+{
+   bInputEnabled = Enabled;
+}
+
 void InputSystem::inputKeyPress(char Key)
 {
+   if(!bInputEnabled)
+      return;
+
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState && cCurrentState->getInputEnabled())
+   if(cCurrentState)
    {
       cCurrentState->inputKeyPress(Key);
    }
@@ -41,9 +50,12 @@ void InputSystem::inputKeyPress(char Key)
 
 void InputSystem::inputKeyRelease(char Key)
 {
+   if(!bInputEnabled)
+      return;
+
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState && cCurrentState->getInputEnabled())
+   if(cCurrentState)
    {
       cCurrentState->inputKeyRelease(Key);
    }
@@ -51,6 +63,9 @@ void InputSystem::inputKeyRelease(char Key)
 
 void InputSystem::inputMouse(const Vector2& Point)
 {
+   if(!bInputEnabled)
+      return;
+
    Scene* cActiveScene = Scene::getActiveScene();
 
    if(cActiveScene)
@@ -69,7 +84,7 @@ void InputSystem::inputMouse(const Vector2& Point)
 
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState && cCurrentState->getInputEnabled())
+   if(cCurrentState)
    {
       cCurrentState->inputMouse(Point);
    }
@@ -77,9 +92,12 @@ void InputSystem::inputMouse(const Vector2& Point)
 
 void InputSystem::inputMouseLeftButton()
 {
+   if(!bInputEnabled)
+      return;
+
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState && cCurrentState->getInputEnabled())
+   if(cCurrentState)
    {
       cCurrentState->inputMouseLeftButton();
    }
@@ -87,9 +105,12 @@ void InputSystem::inputMouseLeftButton()
 
 void InputSystem::inputMouseRightButton()
 {
+   if(!bInputEnabled)
+      return;
+
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState && cCurrentState->getInputEnabled())
+   if(cCurrentState)
    {
       cCurrentState->inputMouseRightButton();
    }
@@ -97,9 +118,12 @@ void InputSystem::inputMouseRightButton()
 
 void InputSystem::inputMouseWheel(int Delta)
 {
+   if(!bInputEnabled)
+      return;
+
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState && cCurrentState->getInputEnabled())
+   if(cCurrentState)
    {
       cCurrentState->inputMouseWheel(Delta);
    }
@@ -107,6 +131,9 @@ void InputSystem::inputMouseWheel(int Delta)
 
 void InputSystem::inputTouchBegin(int ID, const Vector2& Point)
 {
+   if(!bInputEnabled)
+      return;
+
    Scene* cActiveScene = Scene::getActiveScene();
 
    if(cActiveScene)
@@ -125,7 +152,7 @@ void InputSystem::inputTouchBegin(int ID, const Vector2& Point)
 
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState && cCurrentState->getInputEnabled())
+   if(cCurrentState)
    {
       cCurrentState->inputTouchBegin(ID, Point);
    }
@@ -133,6 +160,9 @@ void InputSystem::inputTouchBegin(int ID, const Vector2& Point)
 
 void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
 {
+   if(!bInputEnabled)
+      return;
+
    Scene* cActiveScene = Scene::getActiveScene();
 
    if(cActiveScene)
@@ -151,7 +181,7 @@ void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vec
 
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState && cCurrentState->getInputEnabled())
+   if(cCurrentState)
    {
       cCurrentState->inputTouchMove(ID, PreviousPoint, CurrentPoint);
    }
@@ -159,6 +189,9 @@ void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vec
 
 void InputSystem::inputTouchEnd(int ID, const Vector2& Point)
 {
+   if(!bInputEnabled)
+      return;
+
    Scene* cActiveScene = Scene::getActiveScene();
 
    if(cActiveScene)
@@ -177,7 +210,7 @@ void InputSystem::inputTouchEnd(int ID, const Vector2& Point)
 
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState && cCurrentState->getInputEnabled())
+   if(cCurrentState)
    {
       cCurrentState->inputTouchEnd(ID, Point);
    }
@@ -185,9 +218,12 @@ void InputSystem::inputTouchEnd(int ID, const Vector2& Point)
 
 void InputSystem::updateAccelerometerStatus(const Vector3& Status)
 {
+   if(!bInputEnabled)
+      return;
+
    State* cCurrentState = StateManager::getInstance()->getActiveState();
 
-   if(cCurrentState && cCurrentState->getInputEnabled())
+   if(cCurrentState)
    {
       cCurrentState->updateAccelerometerStatus(Status);
    }

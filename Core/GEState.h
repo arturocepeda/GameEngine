@@ -51,14 +51,12 @@ namespace GE { namespace Core
    protected:
       void* pGlobalData;
       StateType eStateType;
-      bool bInputEnabled;
 
    public:
       State(const ObjectName& Name, void* GlobalData);
       virtual ~State();
 
       StateType getStateType() const;
-      bool getInputEnabled() const;
 
       virtual void activate() = 0;
       virtual void update() = 0;
