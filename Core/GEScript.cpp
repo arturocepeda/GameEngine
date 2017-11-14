@@ -438,6 +438,7 @@ void Script::registerTypes()
       , "Green", &Color::Green
       , "Blue", &Color::Blue
       , "Alpha", &Color::Alpha
+      , sol::meta_method::equal_to, &Color::operator==
    );
 
    //
@@ -454,11 +455,15 @@ void Script::registerTypes()
    lua.new_usertype<Value>
    (
       "Value"
-      , sol::constructors<sol::types<bool>, sol::types<int>, sol::types<float>, sol::types<const char*>>()
+      , sol::constructors<sol::types<bool>, sol::types<int>, sol::types<float>, sol::types<const char*>,
+         sol::types<Vector2>, sol::types<Vector3>, sol::types<Color>>()
       , "getAsBool", &Value::getAsBool
       , "getAsInt", &Value::getAsInt
       , "getAsFloat", &Value::getAsFloat
       , "getAsString", &Value::getAsString
+      , "getAsVector2", &Value::getAsVector2
+      , "getAsVector3", &Value::getAsVector3
+      , "getAsColor", &Value::getAsColor
    );
    lua.new_usertype<Serializable>
    (
@@ -495,6 +500,13 @@ void Script::registerTypes()
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &PropertyInterpolator<Vector3>::animate
       , "update", &PropertyInterpolator<Vector3>::update
+   );
+   lua.new_usertype<PropertyInterpolator<Color>>
+   (
+      "PropertyInterpolatorColor"
+      , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "animate", &PropertyInterpolator<Color>::animate
+      , "update", &PropertyInterpolator<Color>::update
    );
    lua.new_usertype<Curve>
    (
@@ -557,6 +569,7 @@ void Script::registerTypes()
       , "addEntity", (Entity* (Scene::*)(const ObjectName&, Entity*))&Scene::addEntity
       , "addPrefab", (Entity* (Scene::*)(const char*, const ObjectName&, Entity*))&Scene::addPrefab
       , "removeEntity", (bool (Scene::*)(const ObjectName&))&Scene::removeEntity
+      , "renameEntity", &Scene::renameEntity
       , sol::base_classes, sol::bases<Serializable>()
    );
    lua.new_usertype<Entity>

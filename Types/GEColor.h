@@ -67,6 +67,20 @@ namespace GE
          Alpha = Opacity;
       }
 
+      bool operator==(const Color& Other) const
+      {
+         return
+            fabsf(Other.Red - Red) < GE_EPSILON &&
+            fabsf(Other.Green - Green) < GE_EPSILON &&
+            fabsf(Other.Blue - Blue) < GE_EPSILON &&
+            fabsf(Other.Alpha - Alpha) < GE_EPSILON;
+      }
+
+      bool operator!=(const Color& Other) const
+      {
+         return !operator==(Other);
+      }
+
       Color operator+(const Color& Other)
       {
          return Color(Red + Other.Red, Green + Other.Green, Blue + Other.Blue, Alpha + Other.Alpha);
