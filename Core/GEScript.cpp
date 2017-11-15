@@ -304,10 +304,10 @@ bool Script::loadModule(const char* sModuleName)
 
       Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sFileNamex64, "luabc", &cContentData);
 #else
-      if(!Device::contentFileExists("Scripts", FileName, "luabc"))
+      if(!Device::contentFileExists("Scripts", sModuleName, "luabc"))
          return false;
 
-      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", FileName, "luabc", &cContentData);
+      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sModuleName, "luabc", &cContentData);
 #endif
       lua_State* luaState = lua.lua_state();
       luaL_loadbuffer(luaState, cContentData.getData(), cContentData.getDataSize(), 0);
