@@ -235,6 +235,60 @@ bool Script::isFunctionDefined(const ObjectName& FunctionName) const
    return mFunctions.find(FunctionName.getID()) != mFunctions.end();
 }
 
+#if defined (GE_EDITOR_SUPPORT)
+void Script::enableDebugger()
+{
+   lua["debugger"] = [this](int iEvent, int iLine)
+   {
+      std::string sCodeStr = lua.script("return debug.getinfo(3).source");
+      size_t iCodeLength = sCodeStr.length();
+
+      char sCodeLine[256];
+      int iCurrentLine = 1;
+
+      size_t iCodeGlobalCharIndex = 0;
+      size_t iCodeLineCharIndex = 0;
+
+      printf("\n");
+
+      while(iCodeGlobalCharIndex < iCodeLength)
+      {
+         while(sCodeStr[iCodeGlobalCharIndex] != '\n' && sCodeStr[iCodeGlobalCharIndex] != '\0')
+         {
+            sCodeLine[iCodeLineCharIndex++] = sCodeStr[iCodeGlobalCharIndex++];
+         }
+
+         sCodeLine[iCodeLineCharIndex] = '\0';
+         iCodeLineCharIndex = 0;
+
+         if(abs(iCurrentLine - iLine) < 10)
+         {
+            printf("%c%4d: %s\n", iCurrentLine == iLine ? '>' : ' ', iCurrentLine, sCodeLine);
+         }
+
+         iCurrentLine++;
+         iCodeGlobalCharIndex++;
+      }
+
+      char sCommandBuffer[256];
+      printf("\nDebugger> ");
+      std::cin >> sCommandBuffer;
+
+      if(strcmp(sCommandBuffer, "exit") == 0)
+      {
+         disableDebugger();
+      }
+   };
+   lua.script("debug.sethook(debugger, \"l\")");
+}
+
+void Script::disableDebugger()
+{
+   lua.script("debug.sethook()");
+   lua["debugger"] = nullptr;
+}
+#endif
+
 void* Script::customAlloc(void*, void* ptr, size_t, size_t nsize)
 {
    if(nsize == 0)

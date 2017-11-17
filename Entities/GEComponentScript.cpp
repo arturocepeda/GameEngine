@@ -73,6 +73,13 @@ ScriptInstance::ScriptInstance()
       setScriptName(getScriptName());
    });
 
+#if defined (GE_EDITOR_SUPPORT)
+   registerAction("Debug", [this]
+   {
+      cScript->enableDebugger();
+   });
+#endif
+
    iBasePropertiesCount = getPropertiesCount();
    iBaseActionsCount = getActionsCount();
 }

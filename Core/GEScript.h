@@ -115,5 +115,10 @@ namespace GE { namespace Core
          return (ReturnType)luaFunction(ParameterList...);
 #endif
       }
+
+#if defined (GE_EDITOR_SUPPORT)
+      void enableDebugger();
+      void disableDebugger();
+#endif
    };
 }}
