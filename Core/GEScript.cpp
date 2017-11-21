@@ -35,6 +35,8 @@
 #include "Types/GECurve.h"
 #include "Types/GEBezierCurve.h"
 
+#include <cstring>
+
 #if defined (GE_PLATFORM_WINDOWS)
 # if defined (GE_64_BIT)
 #  if defined (_DEBUG)
@@ -189,6 +191,10 @@ bool Script::loadFromFile(const char* FileName)
    if(!loadModule(FileName))
       return false;
 
+#if defined (GE_EDITOR_SUPPORT)
+   loadModule("_ed_debug");
+#endif
+
    collectGlobalSymbols();
    return true;
 }
@@ -270,14 +276,30 @@ void Script::enableDebugger()
          iCodeGlobalCharIndex++;
       }
 
-      char sCommandBuffer[256];
-      printf("\nDebugger> ");
-      std::cin >> sCommandBuffer;
+      std::string sCommandBuffer;
+      bool bContinue = false;
 
-      if(strcmp(sCommandBuffer, "exit") == 0)
+      do
       {
-         disableDebugger();
+         printf("\nDebugger> ");
+         std::getline(std::cin, sCommandBuffer);
+
+         if(strcmp(sCommandBuffer.c_str(), "exit") == 0)
+         {
+            disableDebugger();
+            bContinue = true;
+         }
+         else if(strcmp(sCommandBuffer.c_str(), "s") == 0)
+         {
+            bContinue = true;
+         }
+         else
+         {
+            lua.script(sCommandBuffer);
+            bContinue = false;
+         }
       }
+      while(!bContinue);
    };
    lua.script("debug.sethook(debugger, \"l\")");
 }
