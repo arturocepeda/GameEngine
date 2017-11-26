@@ -51,6 +51,9 @@ ScriptInstance::ScriptInstance()
    : SerializableArrayElement("ScriptInstance")
    , bActive(true)
    , bInitialized(false)
+#if defined (GE_EDITOR_SUPPORT)
+   , iDebugBreakpointLine(0)
+#endif
 {
    cScript = Allocator::alloc<Script>();
    GEInvokeCtor(Script, cScript);
@@ -74,6 +77,8 @@ ScriptInstance::ScriptInstance()
    });
 
 #if defined (GE_EDITOR_SUPPORT)
+   GERegisterProperty(UInt, DebugBreakpointLine);
+
    registerAction("Debug", [this]
    {
       cScript->enableDebugger();
@@ -146,6 +151,19 @@ bool ScriptInstance::getActive() const
 {
    return bActive;
 }
+
+#if defined (GE_EDITOR_SUPPORT)
+void ScriptInstance::setDebugBreakpointLine(uint Line)
+{
+   iDebugBreakpointLine = Line;
+   cScript->setDebugBreakpointLine(Line);
+}
+
+uint ScriptInstance::getDebugBreakpointLine() const
+{
+   return iDebugBreakpointLine;
+}
+#endif
 
 void ScriptInstance::registerScriptProperties()
 {

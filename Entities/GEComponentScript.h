@@ -42,6 +42,10 @@ namespace GE { namespace Entities
       };
       GESTLVector(CachedPropertyValue) vCachedPropertyValues;
 
+#if defined (GE_EDITOR_SUPPORT)
+      uint iDebugBreakpointLine;
+#endif
+
       void registerScriptProperties();
       void registerScriptActions();
 
@@ -55,6 +59,11 @@ namespace GE { namespace Entities
       void setActive(bool Value);
       bool getActive() const;
 
+#if defined (GE_EDITOR_SUPPORT)
+      void setDebugBreakpointLine(uint Line);
+      uint getDebugBreakpointLine() const;
+#endif
+
       void update();
 
       bool inputMouse(const Vector2& Point);
@@ -65,6 +74,9 @@ namespace GE { namespace Entities
 
       GEProperty(ObjectName, ScriptName);
       GEProperty(Bool, Active);
+#if defined (GE_EDITOR_SUPPORT)
+      GEProperty(UInt, DebugBreakpointLine);
+#endif
    };
 
 

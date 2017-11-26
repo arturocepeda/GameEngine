@@ -46,6 +46,10 @@ namespace GE { namespace Core
 
       GESTLMap(uint32_t, ScriptFunction) mFunctions;
 
+#if defined (GE_EDITOR_SUPPORT)
+      uint iDebugBreakpointLine;
+      bool bDebuggerActive;
+#endif
       static void* pAllocatorBuffer;
       static tlsf_t pAllocator;
 
@@ -118,6 +122,7 @@ namespace GE { namespace Core
       }
 
 #if defined (GE_EDITOR_SUPPORT)
+      void setDebugBreakpointLine(uint Line);
       void enableDebugger();
       void disableDebugger();
 #endif

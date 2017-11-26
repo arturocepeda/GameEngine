@@ -83,6 +83,10 @@ GESTLSet(uint) Script::sPredefinedGlobalSymbols;
 GESTLVector(Script::registerTypesExtension) Script::vRegisterTypesExtensions;
 
 Script::Script()
+#if defined (GE_EDITOR_SUPPORT)
+   : iDebugBreakpointLine(0)
+   , bDebuggerActive(false)
+#endif
 {
    reset();
 }
@@ -253,10 +257,27 @@ uint Script::getFunctionParametersCount(const ObjectName& FunctionName) const
 }
 
 #if defined (GE_EDITOR_SUPPORT)
+void Script::setDebugBreakpointLine(uint Line)
+{
+   iDebugBreakpointLine = Line;
+}
+
 void Script::enableDebugger()
 {
    lua["debugger"] = [this](int iEvent, int iLine)
    {
+      if(!bDebuggerActive)
+      {
+         if(iDebugBreakpointLine == 0 || iDebugBreakpointLine == (uint)iLine)
+         {
+            bDebuggerActive = true;
+         }
+         else
+         {
+            return;
+         }
+      }
+
       std::string sCodeStr = lua.script("return debug.getinfo(3).source");
       size_t iCodeLength = sCodeStr.length();
 
@@ -319,6 +340,7 @@ void Script::disableDebugger()
 {
    lua.script("debug.sethook()");
    lua["debugger"] = nullptr;
+   bDebuggerActive = false;
 }
 #endif
 
