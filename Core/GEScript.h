@@ -95,6 +95,7 @@ namespace GE { namespace Core
       const GESTLVector(ObjectName)& getGlobalFunctionNames() const { return vGlobalFunctionNames; }
 
       bool isFunctionDefined(const ObjectName& FunctionName) const;
+      uint getFunctionParametersCount(const ObjectName& FunctionName) const;
 
       template<typename ReturnType, typename... Parameters>
       ReturnType runFunction(const ObjectName& FunctionName, Parameters&&... ParameterList)

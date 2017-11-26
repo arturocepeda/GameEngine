@@ -241,6 +241,17 @@ bool Script::isFunctionDefined(const ObjectName& FunctionName) const
    return mFunctions.find(FunctionName.getID()) != mFunctions.end();
 }
 
+uint Script::getFunctionParametersCount(const ObjectName& FunctionName) const
+{
+   lua_State* luaState = lua.lua_state();
+   lua_Debug luaDebug;
+
+   lua_getglobal(luaState, FunctionName.getCString());
+   lua_getinfo(luaState, ">u", &luaDebug);
+
+   return (uint)luaDebug.nparams;
+}
+
 #if defined (GE_EDITOR_SUPPORT)
 void Script::enableDebugger()
 {

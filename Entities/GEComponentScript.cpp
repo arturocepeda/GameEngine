@@ -231,6 +231,9 @@ void ScriptInstance::registerScriptActions()
       if(bInternalFunction)
          continue;
 
+      if(cScript->getFunctionParametersCount(cGlobalFunctionName) > 0)
+         continue;
+
       const char* sGlobalFunctionName = cGlobalFunctionName.getString().c_str();
 
       registerAction(sGlobalFunctionName, [this, cGlobalFunctionName]
