@@ -15,9 +15,9 @@
 #include "GEComponent.h"
 #include "GEComponentType.h"
 
-namespace GE { namespace Core
+namespace GE { namespace Scripting
 {
-   class Script;
+   class ScriptingEnvironment;
 }}
 
 namespace GE { namespace Entities
@@ -25,7 +25,7 @@ namespace GE { namespace Entities
    class ScriptInstance : public Core::SerializableArrayElement
    {
    private:
-      Core::Script* cScript;
+      Scripting::ScriptingEnvironment* cEnv;
       Core::ObjectName cScriptName;
 
       uint iBasePropertiesCount;

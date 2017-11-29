@@ -11,8 +11,8 @@
 //////////////////////////////////////////////////////////////////
 
 #include "GEComponentScript.h"
+#include "Scripting/GEScriptingEnvironment.h"
 #include "Content/GEContentData.h"
-#include "Core/GEScript.h"
 #include "Core/GETime.h"
 #include "Core/GEEvents.h"
 #include "Entities/GEScene.h"
@@ -21,6 +21,7 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Entities;
 using namespace GE::Content;
+using namespace GE::Scripting;
 
 const ObjectName cInitFunctionName = ObjectName("init");
 const ObjectName cActivateFunctionName = ObjectName("activate");
@@ -55,8 +56,8 @@ ScriptInstance::ScriptInstance()
    , iDebugBreakpointLine(0)
 #endif
 {
-   cScript = Allocator::alloc<Script>();
-   GEInvokeCtor(Script, cScript);
+   cEnv = Allocator::alloc<ScriptingEnvironment>();
+   GEInvokeCtor(ScriptingEnvironment, cEnv);
 
    GERegisterPropertySpecialEditor(ObjectName, ScriptName, PropertyEditor::Script);
    GERegisterProperty(Bool, Active);
@@ -81,7 +82,7 @@ ScriptInstance::ScriptInstance()
 
    registerAction("Debug", [this]
    {
-      cScript->enableDebugger();
+      cEnv->enableDebugger();
    });
 #endif
 
@@ -91,8 +92,8 @@ ScriptInstance::ScriptInstance()
 
 ScriptInstance::~ScriptInstance()
 {
-   GEInvokeDtor(Script, cScript);
-   Allocator::free(cScript);
+   GEInvokeDtor(ScriptingEnvironment, cEnv);
+   Allocator::free(cEnv);
 }
 
 void ScriptInstance::setScriptName(const ObjectName& Name)
@@ -102,9 +103,9 @@ void ScriptInstance::setScriptName(const ObjectName& Name)
 
    bInitialized = false;
 
-   cScript->reset();
+   cEnv->reset();
 
-   if(!cScript->loadFromFile(Name.getString().c_str()))
+   if(!cEnv->loadFromFile(Name.getString().c_str()))
       return;
 
    cScriptName = Name;
@@ -133,16 +134,16 @@ void ScriptInstance::setActive(bool Value)
 
    if(bActive)
    {
-      if(cScript->isFunctionDefined(cActivateFunctionName))
+      if(cEnv->isFunctionDefined(cActivateFunctionName))
       {
-         cScript->runFunction<void>(cActivateFunctionName);
+         cEnv->runFunction<void>(cActivateFunctionName);
       }
    }
    else
    {
-      if(cScript->isFunctionDefined(cDeactivateFunctionName))
+      if(cEnv->isFunctionDefined(cDeactivateFunctionName))
       {
-         cScript->runFunction<void>(cDeactivateFunctionName);
+         cEnv->runFunction<void>(cDeactivateFunctionName);
       }
    }
 }
@@ -156,7 +157,7 @@ bool ScriptInstance::getActive() const
 void ScriptInstance::setDebugBreakpointLine(uint Line)
 {
    iDebugBreakpointLine = Line;
-   cScript->setDebugBreakpointLine(Line);
+   cEnv->setDebugBreakpointLine(Line);
 }
 
 uint ScriptInstance::getDebugBreakpointLine() const
@@ -167,13 +168,13 @@ uint ScriptInstance::getDebugBreakpointLine() const
 
 void ScriptInstance::registerScriptProperties()
 {
-   const GESTLVector(ObjectName)& vGlobalVariableNames = cScript->getGlobalVariableNames();
+   const GESTLVector(ObjectName)& vGlobalVariableNames = cEnv->getGlobalVariableNames();
 
    for(uint i = 0; i < vGlobalVariableNames.size(); i++)
    {
       const ObjectName& cGlobalVariableName = vGlobalVariableNames[i];
       const char* sGlobalVariableName = cGlobalVariableName.getString().c_str();
-      ValueType ePropertyValue = cScript->getVariableType(sGlobalVariableName);
+      ValueType ePropertyValue = cEnv->getVariableType(sGlobalVariableName);
 
       if(ePropertyValue == ValueType::Count)
          continue;
@@ -183,25 +184,25 @@ void ScriptInstance::registerScriptProperties()
          switch(cValue.getType())
          {
          case ValueType::Bool:
-            cScript->setVariable<bool>(sGlobalVariableName, cValue.getAsBool());
+            cEnv->setVariable<bool>(sGlobalVariableName, cValue.getAsBool());
             break;
          case ValueType::Int:
-            cScript->setVariable<int>(sGlobalVariableName, cValue.getAsInt());
+            cEnv->setVariable<int>(sGlobalVariableName, cValue.getAsInt());
             break;
          case ValueType::Float:
-            cScript->setVariable<float>(sGlobalVariableName, cValue.getAsFloat());
+            cEnv->setVariable<float>(sGlobalVariableName, cValue.getAsFloat());
             break;
          case ValueType::String:
-            cScript->setVariable<const char*>(sGlobalVariableName, cValue.getAsString());
+            cEnv->setVariable<const char*>(sGlobalVariableName, cValue.getAsString());
             break;
          case ValueType::Vector3:
-            cScript->setVariable<Vector3>(sGlobalVariableName, cValue.getAsVector3());
+            cEnv->setVariable<Vector3>(sGlobalVariableName, cValue.getAsVector3());
             break;
          case ValueType::Vector2:
-            cScript->setVariable<Vector2>(sGlobalVariableName, cValue.getAsVector2());
+            cEnv->setVariable<Vector2>(sGlobalVariableName, cValue.getAsVector2());
             break;
          case ValueType::Color:
-            cScript->setVariable<Color>(sGlobalVariableName, cValue.getAsColor());
+            cEnv->setVariable<Color>(sGlobalVariableName, cValue.getAsColor());
             break;
          }
       };
@@ -210,15 +211,15 @@ void ScriptInstance::registerScriptProperties()
          switch(ePropertyValue)
          {
          case ValueType::Bool:
-            return Value(cScript->getVariable<bool>(sGlobalVariableName));
+            return Value(cEnv->getVariable<bool>(sGlobalVariableName));
          case ValueType::Vector3:
-            return Value(cScript->getVariable<Vector3>(sGlobalVariableName));
+            return Value(cEnv->getVariable<Vector3>(sGlobalVariableName));
          case ValueType::Vector2:
-            return Value(cScript->getVariable<Vector2>(sGlobalVariableName));
+            return Value(cEnv->getVariable<Vector2>(sGlobalVariableName));
          case ValueType::Color:
-            return Value(cScript->getVariable<Color>(sGlobalVariableName));
+            return Value(cEnv->getVariable<Color>(sGlobalVariableName));
          default:
-            return Value(ePropertyValue, cScript->getVariable<const char*>(sGlobalVariableName));
+            return Value(ePropertyValue, cEnv->getVariable<const char*>(sGlobalVariableName));
          }
       };
 
@@ -230,7 +231,7 @@ void ScriptInstance::registerScriptProperties()
 
 void ScriptInstance::registerScriptActions()
 {
-   const GESTLVector(ObjectName)& vGlobalFunctionNames = cScript->getGlobalFunctionNames();
+   const GESTLVector(ObjectName)& vGlobalFunctionNames = cEnv->getGlobalFunctionNames();
 
    for(uint i = 0; i < vGlobalFunctionNames.size(); i++)
    {
@@ -249,14 +250,14 @@ void ScriptInstance::registerScriptActions()
       if(bInternalFunction)
          continue;
 
-      if(cScript->getFunctionParametersCount(cGlobalFunctionName) > 0)
+      if(cEnv->getFunctionParametersCount(cGlobalFunctionName) > 0)
          continue;
 
       const char* sGlobalFunctionName = cGlobalFunctionName.getString().c_str();
 
       registerAction(sGlobalFunctionName, [this, cGlobalFunctionName]
       {
-         cScript->runFunction<void>(cGlobalFunctionName);
+         cEnv->runFunction<void>(cGlobalFunctionName);
       });
    }
 }
@@ -287,26 +288,26 @@ void ScriptInstance::update()
 
    if(!bInitialized)
    {
-      cScript->setVariable<Entity*>("entity", cEntity);
-      cScript->setVariable<ScriptInstance*>("this", this);
+      cEnv->setVariable<Entity*>("entity", cEntity);
+      cEnv->setVariable<ScriptInstance*>("this", this);
 
-      if(cScript->isFunctionDefined(cInitFunctionName))
+      if(cEnv->isFunctionDefined(cInitFunctionName))
       {
-         cScript->runFunction<void>(cInitFunctionName);
+         cEnv->runFunction<void>(cInitFunctionName);
       }
 
-      if(cScript->isFunctionDefined(cActivateFunctionName))
+      if(cEnv->isFunctionDefined(cActivateFunctionName))
       {
-         cScript->runFunction<void>(cActivateFunctionName);
+         cEnv->runFunction<void>(cActivateFunctionName);
       }
 
       bInitialized = true;
    }
 
-   if(cScript->isFunctionDefined(cUpdateFunctionName))
+   if(cEnv->isFunctionDefined(cUpdateFunctionName))
    {
-      cScript->setVariable<float>("deltaTime", Time::getClock(cEntity->getClockIndex()).getDelta());
-      cScript->runFunction<void>(cUpdateFunctionName);
+      cEnv->setVariable<float>("deltaTime", Time::getClock(cEntity->getClockIndex()).getDelta());
+      cEnv->runFunction<void>(cUpdateFunctionName);
    }
 }
 
@@ -315,9 +316,9 @@ bool ScriptInstance::inputMouse(const Vector2& Point)
    if(!bActive)
       return false;
 
-   if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputMouseFunctionName))
+   if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputMouseFunctionName))
    {
-      if(cScript->runFunction<bool>(cInputMouseFunctionName, Point))
+      if(cEnv->runFunction<bool>(cInputMouseFunctionName, Point))
          return true;
    }
 
@@ -329,9 +330,9 @@ bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
    if(!bActive)
       return false;
 
-   if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputTouchBeginFunctionName))
+   if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputTouchBeginFunctionName))
    {
-      if(cScript->runFunction<bool>(cInputTouchBeginFunctionName, ID, Point))
+      if(cEnv->runFunction<bool>(cInputTouchBeginFunctionName, ID, Point))
          return true;
    }
 
@@ -343,9 +344,9 @@ bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const 
    if(!bActive)
       return false;
 
-   if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputTouchMoveFunctionName))
+   if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputTouchMoveFunctionName))
    {
-      if(cScript->runFunction<bool>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint))
+      if(cEnv->runFunction<bool>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint))
          return true;
    }
 
@@ -357,9 +358,9 @@ bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
    if(!bActive)
       return false;
 
-   if(!cScriptName.isEmpty() && cScript->isFunctionDefined(cInputTouchEndFunctionName))
+   if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputTouchEndFunctionName))
    {
-      if(cScript->runFunction<bool>(cInputTouchEndFunctionName, ID, Point))
+      if(cEnv->runFunction<bool>(cInputTouchEndFunctionName, ID, Point))
          return true;
    }
 

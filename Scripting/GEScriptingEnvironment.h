@@ -4,9 +4,9 @@
 //  Arturo Cepeda Pérez
 //  Game Engine
 //
-//  Core
+//  Scripting
 //
-//  --- GEScript.h ---
+//  --- GEScriptingEnvironment.h ---
 //
 //////////////////////////////////////////////////////////////////
 
@@ -26,9 +26,9 @@
 #include "Externals/sol2/sol.hpp"
 #include "Externals/tlsf/tlsf.h"
 
-namespace GE { namespace Core
+namespace GE { namespace Scripting
 {
-   class Script
+   class ScriptingEnvironment
    {
    public:
       typedef std::function<void(sol::state&)> registerTypesExtension;
@@ -41,8 +41,8 @@ namespace GE { namespace Core
 #endif
       sol::state lua;
 
-      GESTLVector(ObjectName) vGlobalVariableNames;
-      GESTLVector(ObjectName) vGlobalFunctionNames;
+      GESTLVector(Core::ObjectName) vGlobalVariableNames;
+      GESTLVector(Core::ObjectName) vGlobalFunctionNames;
 
       GESTLMap(uint32_t, ScriptFunction) mFunctions;
 
@@ -57,7 +57,7 @@ namespace GE { namespace Core
       static GESTLVector(registerTypesExtension) vRegisterTypesExtensions;
 
       static void* customAlloc(void*, void* ptr, size_t, size_t nsize);
-      static bool alphabeticalComparison(const ObjectName& l, const ObjectName& r);
+      static bool alphabeticalComparison(const Core::ObjectName& l, const Core::ObjectName& r);
 
       bool loadModule(const char* sModuleName);
 
@@ -65,13 +65,13 @@ namespace GE { namespace Core
       void registerTypes();
 
    public:
-      Script();
-      ~Script();
+      ScriptingEnvironment();
+      ~ScriptingEnvironment();
 
       static void initStaticData();
       static void releaseStaticData();
 
-      static void addPredefinedGlobalSymbol(const ObjectName& Symbol);
+      static void addPredefinedGlobalSymbol(const Core::ObjectName& Symbol);
       static void addRegisterTypesExtension(registerTypesExtension Extension);
 
       static void handleScriptError(const char* ScriptName, const char* Msg = 0);
@@ -83,26 +83,26 @@ namespace GE { namespace Core
       bool loadFromFile(const char* FileName);
 
       template<typename T>
-      void setVariable(const ObjectName& VariableName, T Value)
+      void setVariable(const Core::ObjectName& VariableName, T Value)
       {
          lua[VariableName.getString().c_str()] = Value;
       }
       template<typename T>
-      T getVariable(const ObjectName& VariableName)
+      T getVariable(const Core::ObjectName& VariableName)
       {
          return lua.get<T>(VariableName.getString().c_str());
       }
 
-      ValueType getVariableType(const ObjectName& VariableName) const;
+      Core::ValueType getVariableType(const Core::ObjectName& VariableName) const;
 
-      const GESTLVector(ObjectName)& getGlobalVariableNames() const { return vGlobalVariableNames; }
-      const GESTLVector(ObjectName)& getGlobalFunctionNames() const { return vGlobalFunctionNames; }
+      const GESTLVector(Core::ObjectName)& getGlobalVariableNames() const { return vGlobalVariableNames; }
+      const GESTLVector(Core::ObjectName)& getGlobalFunctionNames() const { return vGlobalFunctionNames; }
 
-      bool isFunctionDefined(const ObjectName& FunctionName) const;
-      uint getFunctionParametersCount(const ObjectName& FunctionName) const;
+      bool isFunctionDefined(const Core::ObjectName& FunctionName) const;
+      uint getFunctionParametersCount(const Core::ObjectName& FunctionName) const;
 
       template<typename ReturnType, typename... Parameters>
-      ReturnType runFunction(const ObjectName& FunctionName, Parameters&&... ParameterList)
+      ReturnType runFunction(const Core::ObjectName& FunctionName, Parameters&&... ParameterList)
       {
          ScriptFunction& luaFunction = mFunctions.find(FunctionName.getID())->second;
 #if defined (GE_EDITOR_SUPPORT)

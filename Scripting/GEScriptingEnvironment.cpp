@@ -4,9 +4,9 @@
 //  Arturo Cepeda Pérez
 //  Game Engine
 //
-//  Core
+//  Scripting
 //
-//  --- GEScript.cpp ---
+//  --- GEScriptingEnvironment.cpp ---
 //
 //////////////////////////////////////////////////////////////////
 
@@ -14,7 +14,8 @@
 # pragma warning(disable : 4503)
 #endif
 
-#include "Core/GEScript.h"
+#include "GEScriptingEnvironment.h"
+
 #include "Core/GEPlatform.h"
 #include "Core/GEApplication.h"
 #include "Core/GEDevice.h"
@@ -55,6 +56,7 @@
 
 
 using namespace GE;
+using namespace GE::Scripting;
 using namespace GE::Core;
 using namespace GE::Content;
 using namespace GE::Entities;
@@ -72,17 +74,17 @@ void luaLog(const char* sMessage)
 
 
 //
-//  Script
+//  ScriptingEnvironment
 //
 const size_t MemoryPoolSize = 16 * 1024 * 1024;
 
-void* Script::pAllocatorBuffer = 0;
-tlsf_t Script::pAllocator = 0;
+void* ScriptingEnvironment::pAllocatorBuffer = 0;
+tlsf_t ScriptingEnvironment::pAllocator = 0;
 
-GESTLSet(uint) Script::sPredefinedGlobalSymbols;
-GESTLVector(Script::registerTypesExtension) Script::vRegisterTypesExtensions;
+GESTLSet(uint) ScriptingEnvironment::sPredefinedGlobalSymbols;
+GESTLVector(ScriptingEnvironment::registerTypesExtension) ScriptingEnvironment::vRegisterTypesExtensions;
 
-Script::Script()
+ScriptingEnvironment::ScriptingEnvironment()
 #if defined (GE_EDITOR_SUPPORT)
    : iDebugBreakpointLine(0)
    , bDebuggerActive(false)
@@ -91,11 +93,11 @@ Script::Script()
    reset();
 }
 
-Script::~Script()
+ScriptingEnvironment::~ScriptingEnvironment()
 {
 }
 
-void Script::initStaticData()
+void ScriptingEnvironment::initStaticData()
 {
    GEAssert(!pAllocatorBuffer);
    GEAssert(!pAllocator);
@@ -105,8 +107,8 @@ void Script::initStaticData()
    pAllocator = tlsf_create_with_pool(pAllocatorBuffer, MemoryPoolSize);
 
    // collect predefined global symbols
-   Script cDefaultScript;
-   lua_State* luaState = cDefaultScript.lua.lua_state();
+   ScriptingEnvironment cDefaultEnv;
+   lua_State* luaState = cDefaultEnv.lua.lua_state();
 
    lua_pushglobaltable(luaState);
    lua_pushnil(luaState);
@@ -127,7 +129,7 @@ void Script::initStaticData()
    addPredefinedGlobalSymbol(ObjectName("this"));
 }
 
-void Script::releaseStaticData()
+void ScriptingEnvironment::releaseStaticData()
 {
    // clear predefined global symbols
    sPredefinedGlobalSymbols.clear();
@@ -139,17 +141,17 @@ void Script::releaseStaticData()
    pAllocatorBuffer = 0;
 }
 
-void Script::addPredefinedGlobalSymbol(const ObjectName& Symbol)
+void ScriptingEnvironment::addPredefinedGlobalSymbol(const ObjectName& Symbol)
 {
    sPredefinedGlobalSymbols.insert(Symbol.getID());
 }
 
-void Script::addRegisterTypesExtension(registerTypesExtension Extension)
+void ScriptingEnvironment::addRegisterTypesExtension(registerTypesExtension Extension)
 {
    vRegisterTypesExtensions.push_back(Extension);
 }
 
-void Script::handleScriptError(const char* ScriptName, const char* Msg)
+void ScriptingEnvironment::handleScriptError(const char* ScriptName, const char* Msg)
 {
    if(Msg)
    {
@@ -161,7 +163,7 @@ void Script::handleScriptError(const char* ScriptName, const char* Msg)
    }
 }
 
-void Script::handleFunctionError(const char* FunctionName, const char* Msg)
+void ScriptingEnvironment::handleFunctionError(const char* FunctionName, const char* Msg)
 {
    if(Msg)
    {
@@ -173,7 +175,7 @@ void Script::handleFunctionError(const char* FunctionName, const char* Msg)
    }
 }
 
-void Script::reset()
+void ScriptingEnvironment::reset()
 {
    vGlobalVariableNames.clear();
    vGlobalFunctionNames.clear();
@@ -184,13 +186,13 @@ void Script::reset()
    registerTypes();
 }
 
-void Script::loadFromCode(const GESTLString& Code)
+void ScriptingEnvironment::loadFromCode(const GESTLString& Code)
 {
    lua.script(Code.c_str());
    collectGlobalSymbols();
 }
 
-bool Script::loadFromFile(const char* FileName)
+bool ScriptingEnvironment::loadFromFile(const char* FileName)
 {
    if(!loadModule(FileName))
       return false;
@@ -203,7 +205,7 @@ bool Script::loadFromFile(const char* FileName)
    return true;
 }
 
-ValueType Script::getVariableType(const ObjectName& VariableName) const
+ValueType ScriptingEnvironment::getVariableType(const ObjectName& VariableName) const
 {
    lua_State* luaState = lua.lua_state();
    lua_getglobal(luaState, VariableName.getString().c_str());
@@ -240,12 +242,12 @@ ValueType Script::getVariableType(const ObjectName& VariableName) const
    return eValueType;
 }
 
-bool Script::isFunctionDefined(const ObjectName& FunctionName) const
+bool ScriptingEnvironment::isFunctionDefined(const ObjectName& FunctionName) const
 {
    return mFunctions.find(FunctionName.getID()) != mFunctions.end();
 }
 
-uint Script::getFunctionParametersCount(const ObjectName& FunctionName) const
+uint ScriptingEnvironment::getFunctionParametersCount(const ObjectName& FunctionName) const
 {
    lua_State* luaState = lua.lua_state();
    lua_Debug luaDebug;
@@ -257,12 +259,12 @@ uint Script::getFunctionParametersCount(const ObjectName& FunctionName) const
 }
 
 #if defined (GE_EDITOR_SUPPORT)
-void Script::setDebugBreakpointLine(uint Line)
+void ScriptingEnvironment::setDebugBreakpointLine(uint Line)
 {
    iDebugBreakpointLine = Line;
 }
 
-void Script::enableDebugger()
+void ScriptingEnvironment::enableDebugger()
 {
    lua["debugger"] = [this](int iEvent, int iLine)
    {
@@ -336,7 +338,7 @@ void Script::enableDebugger()
    lua.script("debug.sethook(debugger, \"l\")");
 }
 
-void Script::disableDebugger()
+void ScriptingEnvironment::disableDebugger()
 {
    lua.script("debug.sethook()");
    lua["debugger"] = nullptr;
@@ -344,7 +346,7 @@ void Script::disableDebugger()
 }
 #endif
 
-void* Script::customAlloc(void*, void* ptr, size_t, size_t nsize)
+void* ScriptingEnvironment::customAlloc(void*, void* ptr, size_t, size_t nsize)
 {
    if(nsize == 0)
    {
@@ -361,12 +363,12 @@ void* Script::customAlloc(void*, void* ptr, size_t, size_t nsize)
       : tlsf_malloc(pAllocator, nsize);
 }
 
-bool Script::alphabeticalComparison(const ObjectName& l, const ObjectName& r)
+bool ScriptingEnvironment::alphabeticalComparison(const ObjectName& l, const ObjectName& r)
 {
    return strcmp(l.getString().c_str(), r.getString().c_str()) < 0;
 }
 
-bool Script::loadModule(const char* sModuleName)
+bool ScriptingEnvironment::loadModule(const char* sModuleName)
 {
    ContentData cContentData;
 
@@ -426,7 +428,7 @@ bool Script::loadModule(const char* sModuleName)
    return true;
 }
 
-void Script::collectGlobalSymbols()
+void ScriptingEnvironment::collectGlobalSymbols()
 {
    // collect all global user symbols
    GESTLVector(ObjectName) vGlobalUserSymbols;
@@ -473,7 +475,7 @@ void Script::collectGlobalSymbols()
    std::sort(vGlobalFunctionNames.begin(), vGlobalFunctionNames.end(), alphabeticalComparison);
 }
 
-void Script::registerTypes()
+void ScriptingEnvironment::registerTypes()
 {
    //
    //  Module loading

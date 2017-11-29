@@ -13,7 +13,6 @@
 #include "GEApplication.h"
 #include "GEAllocator.h"
 #include "GETaskManager.h"
-#include "GEScript.h"
 
 #include "Input/GEInputSystem.h"
 
@@ -33,11 +32,14 @@
 #include "Entities/GEComponentDataContainer.h"
 #include "Entities/GEComponentScript.h"
 
+#include "Scripting/GEScriptingEnvironment.h"
+
 using namespace GE;
 using namespace GE::Core;
 using namespace GE::Input;
 using namespace GE::Content;
 using namespace GE::Entities;
+using namespace GE::Scripting;
 
 const char* Application::Name = 0;
 const char* Application::ID = 0;
@@ -66,14 +68,14 @@ void Application::startUp()
    LocalizedStringsManager* cLocaStringsManager = Allocator::alloc<LocalizedStringsManager>();
    GEInvokeCtor(LocalizedStringsManager, cLocaStringsManager);
 
-   Script::initStaticData();
+   ScriptingEnvironment::initStaticData();
 
    registerComponentFactories();
 }
 
 void Application::shutDown()
 {
-   Script::releaseStaticData();
+   ScriptingEnvironment::releaseStaticData();
 
    GEInvokeDtor(LocalizedStringsManager, LocalizedStringsManager::getInstance());
    Allocator::free(LocalizedStringsManager::getInstance());

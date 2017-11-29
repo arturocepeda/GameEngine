@@ -39,12 +39,6 @@
     <ClCompile Include="Core\GEParser.cpp" />
     <ClCompile Include="Core\GEPhysics.cpp" />
     <ClCompile Include="Core\GERand.cpp" />
-    <ClCompile Include="Core\GEScript.cpp">
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
     <ClCompile Include="Core\GESerializable.cpp" />
     <ClCompile Include="Core\GEState.cpp" />
     <ClCompile Include="Core\GEStateManager.cpp" />
@@ -86,6 +80,12 @@
     <ClCompile Include="Rendering\GERenderSystem.cpp" />
     <ClCompile Include="Rendering\GEShaderProgram.cpp" />
     <ClCompile Include="Rendering\GETexture.cpp" />
+    <ClCompile Include="Scripting\GEScriptingEnvironment.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="Types\GEBezierCurve.cpp" />
     <ClCompile Include="Types\GECurve.cpp" />
     <ClCompile Include="Types\GEEnumStrings.cpp" />
@@ -120,7 +120,6 @@
     <ClInclude Include="Core\GEPlatform.h" />
     <ClInclude Include="Core\GEProfiler.h" />
     <ClInclude Include="Core\GERand.h" />
-    <ClInclude Include="Core\GEScript.h" />
     <ClInclude Include="Core\GESerializable.h" />
     <ClInclude Include="Core\GESingleton.h" />
     <ClInclude Include="Core\GEState.h" />
@@ -170,6 +169,7 @@
     <ClInclude Include="Rendering\GERenderSystem.h" />
     <ClInclude Include="Rendering\GEShaderProgram.h" />
     <ClInclude Include="Rendering\GETexture.h" />
+    <ClInclude Include="Scripting\GEScriptingEnvironment.h" />
     <ClInclude Include="Types\GEBezierCurve.h" />
     <ClInclude Include="Types\GEColor.h" />
     <ClInclude Include="Types\GECurve.h" />

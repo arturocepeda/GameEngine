@@ -40,6 +40,9 @@
     <Filter Include="Externals\stb">
       <UniqueIdentifier>{359a951f-0d2b-4445-bc27-ce1744fb2b3a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{819324f0-e519-4172-870f-6f4f7bbbe372}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
@@ -210,9 +213,6 @@
     <ClCompile Include="Entities\GEComponentScript.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
-    <ClCompile Include="Core\GEScript.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Rendering\GEShaderProgram.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -242,6 +242,9 @@
     </ClCompile>
     <ClCompile Include="Externals\stblib\stb_image.c">
       <Filter>Externals\stb</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripting\GEScriptingEnvironment.cpp">
+      <Filter>Scripting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -452,9 +455,6 @@
     <ClInclude Include="Entities\GEComponentScript.h">
       <Filter>Entities</Filter>
     </ClInclude>
-    <ClInclude Include="Core\GEScript.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Types\GESTLTypes.h">
       <Filter>Types</Filter>
     </ClInclude>
@@ -505,6 +505,9 @@
     </ClInclude>
     <ClInclude Include="Externals\stblib\stb_perlin.h">
       <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripting\GEScriptingEnvironment.h">
+      <Filter>Scripting</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
