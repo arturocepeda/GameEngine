@@ -486,7 +486,7 @@ void RenderSystem::loadMaterials(const char* FileName)
 
       pugi::xml_document xml;
       xml.load_buffer(cMaterialsData.getData(), cMaterialsData.getDataSize());
-      const pugi::xml_node& xmlMaterials = xml.child("Materials");
+      const pugi::xml_node& xmlMaterials = xml.child("MaterialList");
 
       for(const pugi::xml_node& xmlMaterial : xmlMaterials.children("Material"))
       {
@@ -528,7 +528,7 @@ void RenderSystem::unloadMaterials(const char* FileName)
 
       pugi::xml_document xml;
       xml.load_buffer(cMaterialsData.getData(), cMaterialsData.getDataSize());
-      const pugi::xml_node& xmlMaterials = xml.child("Materials");
+      const pugi::xml_node& xmlMaterials = xml.child("MaterialList");
 
       for(const pugi::xml_node& xmlMaterial : xmlMaterials.children("Material"))
       {
