@@ -126,7 +126,7 @@ void Font::loadFontData(std::istream& sStream)
 
    uint iCharsCount = (uint)Value::fromStream(ValueType::Short, sStream).getAsShort();
 
-   for(uint i = 0; i <= iCharsCount; i++)
+   for(uint i = 0; i < iCharsCount; i++)
    {
       byte iCharId = Value::fromStream(ValueType::Byte, sStream).getAsByte();
 

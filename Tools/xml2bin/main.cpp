@@ -12,8 +12,7 @@
 #include "Core/GEValue.h"
 #include "Core/GEParser.h"
 #include "Core/GEObject.h"
-#include "Rendering/GEMaterial.h"
-#include "Rendering/GEFont.h"
+#include "Rendering/GERenderSystem.h"
 #include "Entities/GEEntity.h"
 #include "Entities/GEComponent.h"
 #include "Content/GEResourcesManager.h"
@@ -25,8 +24,6 @@
 #include <fstream>
 
 #pragma comment(lib, "./../GameEngine.DX11.lib")
-#pragma comment(lib, "./../pugixml.Windows.lib")
-#pragma comment(lib, "./../stb.Windows.lib")
 
 #pragma comment(lib, "D3DCompiler.lib")
 
@@ -58,6 +55,7 @@ int main(int argc, char* argv[])
    std::cout << "\n Game Engine\n Arturo Cepeda\n Tools\n";
 
    Application::startUp();
+   RenderSystem* cDummyRenderSystem = new RenderSystem(0, true, 0, 0);
    
    registerObjectManagers();
 
@@ -75,6 +73,7 @@ int main(int argc, char* argv[])
    packScenes();
    compileScripts();
 
+   delete cDummyRenderSystem;
    Application::shutDown();
 
    std::cout << "\n\n";
@@ -263,7 +262,7 @@ void packShaders(RenderingAPI eRenderingAPI)
                }
             }
 
-            iShaderByteCodeSize = sShaderSource.size();
+            iShaderByteCodeSize = (uint)sShaderSource.size();
             pShaderByteCodeData = &sShaderSource[0];
          }
 
@@ -434,7 +433,7 @@ void packMaterials()
 
       pugi::xml_document xml;
       xml.load_file(sInputPath);
-      const pugi::xml_node& xmlMaterials = xml.child("Materials");
+      const pugi::xml_node& xmlMaterials = xml.child("MaterialList");
       GE::byte iMaterialsCount = 0;
 
       for(const pugi::xml_node& xmlMaterial : xmlMaterials.children("Material"))
@@ -539,7 +538,11 @@ void packFontFile(const char* XmlFileName)
       Value((short)Parser::parseInt(xmlCommon.attribute("scaleH").value())).writeToStream(sOutputFile);
 
       const pugi::xml_node& xmlChars = xmlFontDescRoot.child("chars");
-      short iFontCharsCount = (short)Parser::parseUInt(xmlChars.attribute("count").value());
+      short iFontCharsCount = 0;
+
+      for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
+         iFontCharsCount++;
+
       Value(iFontCharsCount).writeToStream(sOutputFile);
 
       for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
