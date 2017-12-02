@@ -28,6 +28,8 @@
 #define GESTLList(T) std::list<T, GE::Core::STLAllocator<T>>
 #define GESTLDeque(T) std::deque<T, GE::Core::STLAllocator<T>>
 #define GESTLQueue(T) std::queue<T, GESTLDeque(T)>
+#define GESTLPriorityQueue(T) std::priority_queue<T, GESTLVector(T)>
+#define GESTLPriorityQueueCustom(T, Comparator) std::priority_queue<T, GESTLVector(T), Comparator>
 #define GESTLSet(T) std::set<T, std::less<T>, GE::Core::STLAllocator<T>>
 #define GESTLSetCustom(T, Comparator) std::set<T, Comparator, GE::Core::STLAllocator<T>>
 #define GESTLMultiset(T) std::multiset<T, std::less<T>, GE::Core::STLAllocator<T>>

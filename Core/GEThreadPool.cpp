@@ -27,14 +27,16 @@ ThreadPool::ThreadPool(uint WorkersCount)
    iWorkersCount = WorkersCount;
    sWorkers = Allocator::alloc<Worker>(iWorkersCount);
 
-   GEMutexInit(mThreadPoolMutex);
+   GEMutexInit(mQueueMutex);
+   GEConditionVariableInit(cvJobsPending);
+   GEConditionVariableInit(cvJobsCompleted);
+
+   iWorkersActiveMask = 0;
 
    for(uint i = 0; i < iWorkersCount; i++)
    {
       sWorkers[i] = Worker(this, i);
-
-      GEMutexInit(sWorkers[i].Mutex);
-      GEMutexLock(sWorkers[i].Mutex);
+      GEThreadCreate(sWorkers[i].Thread, workerFunction, &sWorkers[i]);
    }
 }
 
@@ -43,21 +45,83 @@ ThreadPool::~ThreadPool()
    for(uint i = 0; i < iWorkersCount; i++)
    {
       GEThreadClose(sWorkers[i].Thread);
-      GEMutexDestroy(sWorkers[i].Mutex);
    }
 
    Allocator::free(sWorkers);
 
-   GEMutexDestroy(mThreadPoolMutex);
+   GEConditionVariableDestroy(cvJobsPending);
+   GEConditionVariableDestroy(cvJobsCompleted);
+   GEMutexDestroy(mQueueMutex);
+}
+
+void ThreadPool::kickJobsProtected()
+{
+   GEMutexLock(mQueueMutex);
+
+   for(uint i = 0; i < iWorkersCount; i++)
+   {
+      iWorkersActiveMask |= 1 << i;
+   }
+
+   GEMutexUnlock(mQueueMutex);
+
+   GEConditionVariableSignal(cvJobsPending);
+}
+
+GEThreadFunction(ThreadPool::workerFunction)
+{
+   GEProfilerThreadID("Worker");
+
+   Worker* sWorker = static_cast<Worker*>(pData);
+   ThreadPool* cPool = sWorker->Pool;
+   std::function<void()> task;
+
+   while(sWorker->Alive)
+   {
+      GEMutexLock(cPool->mQueueMutex);
+      GEConditionVariableWait(cPool->cvJobsPending, cPool->mQueueMutex, (cPool->iWorkersActiveMask & (1 << sWorker->ID)) > 0);
+      GEMutexUnlock(cPool->mQueueMutex);
+
+      do
+      {
+         task = nullptr;
+
+         GEMutexLock(cPool->mQueueMutex);
+
+         GESTLQueue(Job)& vJobsQueue = cPool->getJobsQueue();
+
+         if(!vJobsQueue.empty())
+         {
+            task = vJobsQueue.front().Desc.Task;
+            vJobsQueue.pop();
+         }
+
+         GEMutexUnlock(cPool->mQueueMutex);
+
+         if(task)
+         {
+            task();
+         }
+      }
+      while(task);
+
+      GEMutexLock(cPool->mQueueMutex);
+      cPool->iWorkersActiveMask &= ~(1 << sWorker->ID);
+      GEMutexUnlock(cPool->mQueueMutex);
+
+      GEConditionVariableSignal(cPool->cvJobsCompleted);
+   }
+
+   return 0;
 }
 
 void ThreadPool::queueJob(const JobDesc& Desc)
 {
    GEAssert(Desc.Task);
 
-   GEMutexLock(mThreadPoolMutex);
+   GEMutexLock(mQueueMutex);
    vJobsQueue.push(Job(Desc));
-   GEMutexUnlock(mThreadPoolMutex);
+   GEMutexUnlock(mQueueMutex);
 }
 
 
@@ -67,8 +131,6 @@ void ThreadPool::queueJob(const JobDesc& Desc)
 ThreadPoolSync::ThreadPoolSync(uint WorkersCount)
    : ThreadPool(WorkersCount)
 {
-   for(uint i = 0; i < iWorkersCount; i++)
-      GEThreadCreate(sWorkers[i].Thread, workerFunction, &sWorkers[i]);
 }
 
 ThreadPoolSync::~ThreadPoolSync()
@@ -77,56 +139,16 @@ ThreadPoolSync::~ThreadPoolSync()
 
 void ThreadPoolSync::kickJobs()
 {
-   for(uint i = 0; i < iWorkersCount; i++)
-      GEMutexUnlock(sWorkers[i].Mutex);
+   kickJobsProtected();
 }
 
 void ThreadPoolSync::waitForJobsCompletion()
 {
-   for(uint i = 0; i < iWorkersCount; i++)
-      GEMutexLock(sWorkers[i].Mutex);
+   GEMutexLock(mQueueMutex);
+   GEConditionVariableWait(cvJobsCompleted, mQueueMutex, iWorkersActiveMask == 0);
+   GEMutexUnlock(mQueueMutex);
 }
 
-GEThreadFunction(ThreadPoolSync::workerFunction)
-{
-   GEProfilerThreadID("Worker");
-
-   Worker* sWorker = static_cast<Worker*>(pData);
-   ThreadPool* cPool = sWorker->Pool;
-   std::function<void()> task;
-
-   while(sWorker->Alive)
-   {
-      GEMutexLock(sWorker->Mutex);
-
-      do
-      {
-         task = nullptr;
-
-         cPool->lock();
-
-         GESTLQueue(Job)& vJobsQueue = cPool->getJobsQueue();
-
-         if(!vJobsQueue.empty())
-         {
-            task = vJobsQueue.front().Desc.Task;
-            vJobsQueue.pop();
-         }
-
-         cPool->unlock();
-
-         if(task)
-         {
-            task();
-         }
-      }
-      while(task);
-
-      GEMutexUnlock(sWorker->Mutex);
-   }
-
-   return 0;
-}
 
 
 //
@@ -135,54 +157,14 @@ GEThreadFunction(ThreadPoolSync::workerFunction)
 ThreadPoolAsync::ThreadPoolAsync(uint WorkersCount)
    : ThreadPool(WorkersCount)
 {
-   for(uint i = 0; i < iWorkersCount; i++)
-      GEThreadCreate(sWorkers[i].Thread, workerFunction, &sWorkers[i]);
 }
 
 ThreadPoolAsync::~ThreadPoolAsync()
 {
-   for(uint i = 0; i < iWorkersCount; i++)
-   {
-      sWorkers[i].Alive = false;
-      GEThreadWait(sWorkers[i].Thread);
-   }
 }
 
-GEThreadFunction(ThreadPoolAsync::workerFunction)
+void ThreadPoolAsync::queueJob(const JobDesc& Desc)
 {
-   GEProfilerThreadID("Worker");
-
-   Worker* sWorker = static_cast<Worker*>(pData);
-   ThreadPool* cPool = sWorker->Pool;
-   std::function<void()> task;
-
-   while(sWorker->Alive)
-   {
-      do
-      {
-         task = nullptr;
-
-         cPool->lock();
-
-         GESTLQueue(Job)& vJobsQueue = cPool->getJobsQueue();
-
-         if(!vJobsQueue.empty())
-         {
-            task = vJobsQueue.front().Desc.Task;
-            vJobsQueue.pop();
-         }
-
-         cPool->unlock();
-
-         if(task)
-         {
-            task();
-         }
-      }
-      while(task);
-
-      GESleep(1);
-   }
-
-   return 0;
+   ThreadPool::queueJob(Desc);
+   kickJobsProtected();
 }

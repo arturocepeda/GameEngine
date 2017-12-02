@@ -34,12 +34,20 @@
 # define GEThreadAffinity(Thread, CoreIndex)  SetThreadAffinityMask(Thread, 1 << CoreIndex)
 
 
-# define GEMutex  HANDLE
+# define GEMutex  CRITICAL_SECTION
 
-# define GEMutexInit(Mutex)  Mutex = CreateMutex(NULL, FALSE, NULL)
-# define GEMutexLock(Mutex)  WaitForSingleObject(Mutex, INFINITE)
-# define GEMutexUnlock(Mutex)  ReleaseMutex(Mutex)
-# define GEMutexDestroy(Mutex)  CloseHandle(Mutex)
+# define GEMutexInit(Mutex)  InitializeCriticalSection(&Mutex)
+# define GEMutexLock(Mutex)  EnterCriticalSection(&Mutex)
+# define GEMutexUnlock(Mutex)  LeaveCriticalSection(&Mutex)
+# define GEMutexDestroy(Mutex)  DeleteCriticalSection(&Mutex)
+
+
+# define GEConditionVariable  CONDITION_VARIABLE
+
+# define GEConditionVariableInit(CV)  InitializeConditionVariable(&CV)
+# define GEConditionVariableWait(CV, Mutex, Condition)  while(!(Condition)) SleepConditionVariableCS(&CV, &Mutex, INFINITE)
+# define GEConditionVariableSignal(CV)  WakeAllConditionVariable(&CV)
+# define GEConditionVariableDestroy(CV)
 
 
 # define GESleep(Milliseconds)  Sleep(Milliseconds)

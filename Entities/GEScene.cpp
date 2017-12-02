@@ -31,9 +31,7 @@
 
 #include <algorithm>
 
-#if !defined (GE_PLATFORM_ANDROID)
-# define GE_SCENE_JOBIFIED_UPDATE
-#endif
+#define GE_SCENE_JOBIFIED_UPDATE
 
 using namespace GE;
 using namespace GE::Content;

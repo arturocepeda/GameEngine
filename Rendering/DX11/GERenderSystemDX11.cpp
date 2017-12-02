@@ -827,6 +827,8 @@ void RenderSystem::renderShadowMap()
 
 void RenderSystem::renderBegin()
 {
+   GEProfilerMarker("RenderSystem::renderBegin()");
+
    dxContext->ClearRenderTargetView(dxRenderTargetView.Get(), &cBackgroundColor.Red);
    dxContext->ClearDepthStencilView(dxDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
    iDrawCalls = 0;
@@ -841,6 +843,8 @@ void RenderSystem::renderBegin()
 
 void RenderSystem::render(const RenderOperation& sRenderOperation)
 {
+   GEProfilerMarker("RenderSystem::render()");
+
    MaterialPass* cMaterialPass = sRenderOperation.RenderMaterialPass;
    ComponentRenderable* cRenderable = sRenderOperation.Renderable;
 
@@ -993,6 +997,8 @@ void RenderSystemDX11Helper::handleDeviceLost()
 
 void RenderSystem::renderEnd()
 {
+   GEProfilerMarker("RenderSystem::renderEnd()");
+
    HRESULT hr = dxSwapChain->Present(1, 0);
 
    dxContext->DiscardView(dxRenderTargetView.Get());

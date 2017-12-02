@@ -34,30 +34,12 @@ namespace GE { namespace Core
    };
 
 
-   enum class JobState
-   {
-      Unassigned,
-      Assigned,
-      Done
-   };
-
-
    struct Job
    {
       JobDesc Desc;
-      JobState State;
 
       Job(const JobDesc& sDesc)
-         : Desc(sDesc)
-         , State(JobState::Unassigned) {}
-   };
-
-
-   enum class WorkerState
-   {
-      Free,
-      Working,
-      Idle
+         : Desc(sDesc) {}
    };
 
    
@@ -70,16 +52,13 @@ namespace GE { namespace Core
 
       uint ID;
       GEThread Thread;
-      GEMutex Mutex;
 
-      WorkerState State;
       Job* CurrentJob;
       bool Alive;
 
       Worker(ThreadPool* cPool, uint iID)
          : Pool(cPool)
          , ID(iID)
-         , State(WorkerState::Free)
          , CurrentJob(0)
          , Alive(true) {}
    };
@@ -88,29 +67,31 @@ namespace GE { namespace Core
    class ThreadPool
    {
    protected:
-      uint iThreadsCount;
       Worker* sWorkers;
       uint iWorkersCount;
       GESTLQueue(Job) vJobsQueue;
-      GEMutex mThreadPoolMutex;
 
       ThreadPool(uint WorkersCount);
       ~ThreadPool();
 
-   public:
-      void queueJob(const JobDesc& Desc);
+      void kickJobsProtected();
 
-      void lock() { GEMutexLock(mThreadPoolMutex); }
+      static GEThreadFunction(workerFunction);
+
+   public:
+      GEMutex mQueueMutex;
+      GEConditionVariable cvJobsPending;
+      GEConditionVariable cvJobsCompleted;
+      uint iWorkersActiveMask;
+
+      virtual void queueJob(const JobDesc& Desc);
+
       GESTLQueue(Job)& getJobsQueue() { return vJobsQueue; }
-      void unlock() { GEMutexUnlock(mThreadPoolMutex); }
    };
 
 
    class ThreadPoolSync : public ThreadPool
    {
-   private:
-      static GEThreadFunction(workerFunction);
-
    public:
       ThreadPoolSync(uint WorkersCount);
       ~ThreadPoolSync();
@@ -122,11 +103,10 @@ namespace GE { namespace Core
 
    class ThreadPoolAsync : public ThreadPool
    {
-   private:
-      static GEThreadFunction(workerFunction);
-
    public:
       ThreadPoolAsync(uint WorkersCount);
       ~ThreadPoolAsync();
+
+      virtual void queueJob(const JobDesc& Desc) override;
    };
 }}

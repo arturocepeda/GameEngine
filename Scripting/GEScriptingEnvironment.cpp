@@ -21,6 +21,7 @@
 #include "Core/GEDevice.h"
 #include "Core/GEInterpolator.h"
 #include "Core/GEPhysics.h"
+#include "Core/GEProfiler.h"
 #include "Content/GEContentData.h"
 #include "Input/GEInputSystem.h"
 #include "Entities/GEScene.h"
@@ -177,6 +178,8 @@ void ScriptingEnvironment::handleFunctionError(const char* FunctionName, const c
 
 void ScriptingEnvironment::reset()
 {
+   GEProfilerMarker("ScriptingEnvironment::reset()");
+
    vGlobalVariableNames.clear();
    vGlobalFunctionNames.clear();
    mFunctions.clear();
@@ -194,6 +197,8 @@ void ScriptingEnvironment::loadFromCode(const GESTLString& Code)
 
 bool ScriptingEnvironment::loadFromFile(const char* FileName)
 {
+   GEProfilerMarker("ScriptingEnvironment::loadFromFile()");
+
    if(!loadModule(FileName))
       return false;
 
@@ -370,6 +375,8 @@ bool ScriptingEnvironment::alphabeticalComparison(const ObjectName& l, const Obj
 
 bool ScriptingEnvironment::loadModule(const char* sModuleName)
 {
+   GEProfilerMarker("ScriptingEnvironment::loadModule()");
+
    ContentData cContentData;
 
    if(Application::ContentType == ApplicationContentType::Xml)
@@ -430,6 +437,8 @@ bool ScriptingEnvironment::loadModule(const char* sModuleName)
 
 void ScriptingEnvironment::collectGlobalSymbols()
 {
+   GEProfilerMarker("ScriptingEnvironment::collectGlobalSymbols()");
+
    // collect all global user symbols
    GESTLVector(ObjectName) vGlobalUserSymbols;
 
@@ -477,6 +486,8 @@ void ScriptingEnvironment::collectGlobalSymbols()
 
 void ScriptingEnvironment::registerTypes()
 {
+   GEProfilerMarker("ScriptingEnvironment::registerTypes()");
+
    //
    //  Module loading
    //
