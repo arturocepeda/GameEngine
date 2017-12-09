@@ -825,6 +825,7 @@ void ScriptingEnvironment::registerTypes()
    (
       "ComponentCamera"
       , "getScreenRay", &ComponentCamera::getScreenRay
+      , "worldToScreen", &ComponentCamera::worldToScreen
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_usertype<ComponentCollider>
