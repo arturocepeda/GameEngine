@@ -605,12 +605,16 @@ void Scene::update()
    GESTLVector(Component*)& vCameras = vComponents[(uint)ComponentType::Camera];
 
    for(uint i = 0; i < vCameras.size(); i++)
+   {
       static_cast<ComponentCamera*>(vCameras[i])->update();
+   }
 
    GESTLVector(Component*)& vLights = vComponents[(uint)ComponentType::Light];
 
    for(uint i = 0; i < vLights.size(); i++)
+   {
       RenderSystem::getInstance()->queueForRendering(static_cast<ComponentLight*>(vLights[i]));
+   }
 
    GESTLVector(Component*)& vSkeletons = vComponents[(uint)ComponentType::Skeleton];
 
@@ -624,6 +628,18 @@ void Scene::update()
 #else
       cSkeleton->update();
 #endif
+   }
+
+   GESTLVector(Component*)& vScripts = vComponents[(uint)ComponentType::Script];
+
+   for(uint i = 0; i < vScripts.size(); i++)
+   {
+      ComponentScript* cScript = static_cast<ComponentScript*>(vScripts[i]);
+
+      if(cScript->getOwner()->getActive())
+      {
+         cScript->update();
+      }
    }
 
    GESTLVector(Component*)& vRenderables = vComponents[(uint)ComponentType::Renderable];
@@ -651,16 +667,6 @@ void Scene::update()
          cParticleSystem->update();
 #endif
       }
-   }
-
-   GESTLVector(Component*)& vScripts = vComponents[(uint)ComponentType::Script];
-
-   for(uint i = 0; i < vScripts.size(); i++)
-   {
-      ComponentScript* cScript = static_cast<ComponentScript*>(vScripts[i]);
-
-      if(cScript->getOwner()->getActive())
-         cScript->update();
    }
 }
 
