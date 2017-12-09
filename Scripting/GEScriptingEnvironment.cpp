@@ -189,6 +189,11 @@ void ScriptingEnvironment::reset()
    registerTypes();
 }
 
+void ScriptingEnvironment::collectGarbage()
+{
+   lua.collect_garbage();
+}
+
 void ScriptingEnvironment::loadFromCode(const GESTLString& Code)
 {
    lua.script(Code.c_str());

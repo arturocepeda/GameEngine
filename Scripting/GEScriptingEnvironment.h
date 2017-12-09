@@ -78,6 +78,7 @@ namespace GE { namespace Scripting
       static void handleFunctionError(const char* FunctionName, const char* Msg = 0);
 
       void reset();
+      void collectGarbage();
 
       void loadFromCode(const GESTLString& Code);
       bool loadFromFile(const char* FileName);

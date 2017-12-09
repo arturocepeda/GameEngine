@@ -308,6 +308,7 @@ void ScriptInstance::update()
    {
       cEnv->setVariable<float>("deltaTime", Time::getClock(cEntity->getClockIndex()).getDelta());
       cEnv->runFunction<void>(cUpdateFunctionName);
+      cEnv->collectGarbage();
    }
 }
 
