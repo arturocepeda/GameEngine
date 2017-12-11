@@ -744,8 +744,10 @@ void ScriptingEnvironment::registerTypes()
       , "getComponentUI3DElement", &Entity::getComponent<ComponentUI3DElement>
       , "getComponentSkeleton", &Entity::getComponent<ComponentSkeleton>
       , "getComponentScript", &Entity::getComponent<ComponentScript>
+      , "getChildrenCount", &Entity::getChildrenCount
       , "getChildByIndex", &Entity::getChildByIndex
       , "getChildByName", &Entity::getChildByName
+      , "getParent", &Entity::getParent
       , "init", &Entity::init
       , sol::base_classes, sol::bases<Serializable>()
    );
@@ -797,6 +799,8 @@ void ScriptingEnvironment::registerTypes()
       , "isOver", &ComponentSprite::isOver
       , "getTextureAtlasName", &ComponentSprite::getTextureAtlasName
       , "setTextureAtlasName", &ComponentSprite::setTextureAtlasName
+      , "getSize", &ComponentSprite::getSize
+      , "setSize", &ComponentSprite::setSize
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
    lua.new_usertype<ComponentLabel>
