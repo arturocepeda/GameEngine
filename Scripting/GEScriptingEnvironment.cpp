@@ -86,12 +86,14 @@ GESTLSet(uint) ScriptingEnvironment::sPredefinedGlobalSymbols;
 GESTLVector(ScriptingEnvironment::registerTypesExtension) ScriptingEnvironment::vRegisterTypesExtensions;
 
 ScriptingEnvironment::ScriptingEnvironment()
+   : bReset(true)
 #if defined (GE_EDITOR_SUPPORT)
-   : iDebugBreakpointLine(0)
+   , iDebugBreakpointLine(0)
    , bDebuggerActive(false)
 #endif
 {
-   reset();
+   lua.open_libraries();
+   registerTypes();
 }
 
 ScriptingEnvironment::~ScriptingEnvironment()
@@ -178,6 +180,9 @@ void ScriptingEnvironment::handleFunctionError(const char* FunctionName, const c
 
 void ScriptingEnvironment::reset()
 {
+   if(bReset)
+      return;
+
    GEProfilerMarker("ScriptingEnvironment::reset()");
 
    vGlobalVariableNames.clear();
@@ -187,6 +192,8 @@ void ScriptingEnvironment::reset()
    lua = sol::state(sol::default_at_panic, customAlloc);
    lua.open_libraries();
    registerTypes();
+
+   bReset = true;
 }
 
 void ScriptingEnvironment::collectGarbage()
@@ -198,6 +205,7 @@ void ScriptingEnvironment::loadFromCode(const GESTLString& Code)
 {
    lua.script(Code.c_str());
    collectGlobalSymbols();
+   bReset = false;
 }
 
 bool ScriptingEnvironment::loadFromFile(const char* FileName)
@@ -212,6 +220,8 @@ bool ScriptingEnvironment::loadFromFile(const char* FileName)
 #endif
 
    collectGlobalSymbols();
+   bReset = false;
+
    return true;
 }
 
@@ -485,8 +495,10 @@ void ScriptingEnvironment::collectGlobalSymbols()
       lua_pop(luaState, 1);
    }
 
+#if defined (GE_EDITOR_SUPPORT)
    std::sort(vGlobalVariableNames.begin(), vGlobalVariableNames.end(), alphabeticalComparison);
    std::sort(vGlobalFunctionNames.begin(), vGlobalFunctionNames.end(), alphabeticalComparison);
+#endif
 }
 
 void ScriptingEnvironment::registerTypes()

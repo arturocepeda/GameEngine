@@ -40,6 +40,7 @@ namespace GE { namespace Scripting
       typedef sol::function ScriptFunction;
 #endif
       sol::state lua;
+      bool bReset;
 
       GESTLVector(Core::ObjectName) vGlobalVariableNames;
       GESTLVector(Core::ObjectName) vGlobalFunctionNames;
