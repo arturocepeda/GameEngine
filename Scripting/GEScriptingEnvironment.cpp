@@ -650,10 +650,20 @@ void ScriptingEnvironment::registerTypes()
       , "animate", &PropertyInterpolator<Color>::animate
       , "update", &PropertyInterpolator<Color>::update
    );
+   lua.new_usertype<CurveKey>
+   (
+      "CurveKey"
+      , "getTimePosition", &CurveKey::getTimePosition
+      , "getValue", &CurveKey::getValue
+      , "setTimePosition", &CurveKey::setTimePosition
+      , "setValue", &CurveKey::setValue
+   );
    lua.new_usertype<Curve>
    (
       "Curve"
       , "getValue", &Curve::getValue
+      , "getCurveKeyCount", &Curve::getCurveKeyCount
+      , "getCurveKey", &Curve::getCurveKey
    );
    lua.new_usertype<CurvePropertyInterpolator>
    (
