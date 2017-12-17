@@ -206,7 +206,7 @@ void RenderSystem::loadMaterial(Material* cMaterial)
 {
    mMaterials.add(cMaterial);
 
-   if(cMaterial->getBatchRendering())
+   if(GEHasFlag(cMaterial->getFlags(), MaterialFlagsBitMask::BatchRendering))
    {
       const uint iMaterialID = cMaterial->getName().getID();
       mBatches[iMaterialID] = RenderOperation();
@@ -228,7 +228,7 @@ void RenderSystem::unloadMaterial(const ObjectName& cMaterialName)
    Material* cMaterial = mMaterials.get(cMaterialName);
    GEAssert(cMaterial);
 
-   if(cMaterial->getBatchRendering())
+   if(GEHasFlag(cMaterial->getFlags(), MaterialFlagsBitMask::BatchRendering))
    {
       GESTLMap(uint, RenderOperation)::iterator it = mBatches.find(cMaterial->getName().getID());
       RenderOperation& sRenderBatch = it->second;
@@ -686,7 +686,7 @@ void RenderSystem::queueForRendering(ComponentRenderable* Renderable)
       if(!cMaterialPass->getMaterial() || !cMaterialPass->getActive())
          continue;
 
-      if(cMaterialPass->getMaterial()->getBatchRendering())
+      if(GEHasFlag(cMaterialPass->getMaterial()->getFlags(), MaterialFlagsBitMask::BatchRendering))
       {
          GEMutexLock(mTextureLoadMutex);
 

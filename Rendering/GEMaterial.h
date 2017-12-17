@@ -21,6 +21,16 @@
 namespace GE { namespace Rendering
 {
    class Texture;
+
+
+   GESerializableEnum(MaterialFlagsBitMask)
+   {
+      RenderOncePerLight = 1 << 0,
+      BatchRendering     = 1 << 1,
+
+      Count = 2
+   };
+
    
    class Material : public Content::SerializableResource
    {
@@ -34,7 +44,7 @@ namespace GE { namespace Rendering
       Core::ObjectName cDiffuseTextureName;
       Texture* cDiffuseTexture;
       BlendingMode eBlendingMode;
-      bool bBatchRendering;
+      uint8_t eFlags;
 
    public:
       Material(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
@@ -48,7 +58,7 @@ namespace GE { namespace Rendering
       const Texture* getDiffuseTexture() const;
       const Core::ObjectName& getDiffuseTextureName() const;
       const BlendingMode getBlendingMode() const;
-      bool getBatchRendering() const;
+      uint8_t getFlags() const;
 
       void setShaderProgram(const Core::ObjectName& Name);
       void setDiffuseColor(const Color& DiffuseColor);
@@ -57,23 +67,14 @@ namespace GE { namespace Rendering
       void setDiffuseTexture(Texture* DiffuseTexture);
       void setDiffuseTextureName(const Core::ObjectName& Name);
       void setBlendingMode(BlendingMode Mode);
-      void setBatchRendering(bool Value);
+      void setFlags(uint8_t Flags);
 
       GEPropertyReadonly(ObjectName, Name)
       GEProperty(ObjectName, ShaderProgram)
       GEProperty(Color, DiffuseColor)
       GEProperty(ObjectName, DiffuseTextureName)
       GEPropertyEnum(BlendingMode, BlendingMode)
-      GEProperty(Bool, BatchRendering)
-   };
-
-
-   GESerializableEnum(MaterialPassFlagsBitMask)
-   {
-      Active              = 1 << 0,
-      RenderOncePerLight  = 1 << 1,
-
-      Count = 2
+      GEPropertyBitMask(MaterialFlagsBitMask, Flags)
    };
 
 
@@ -81,7 +82,7 @@ namespace GE { namespace Rendering
    {
    private:
       Material* cMaterial;
-      uint8_t eFlags;
+      bool bActive;
 
       uint iBasePropertiesCount;
 
@@ -98,12 +99,10 @@ namespace GE { namespace Rendering
       Material* getMaterial();
       const Core::ObjectName& getMaterialName() const;
       bool getActive() const;
-      uint8_t getFlags() const;
 
       void setMaterial(Material* M);
       void setMaterialName(const Core::ObjectName& Name);
       void setActive(bool Active);
-      void setFlags(uint8_t Flags);
 
       bool hasVertexParameters() const;
       bool hasFragmentParameters() const;
@@ -114,6 +113,6 @@ namespace GE { namespace Rendering
       void reload();
 
       GEProperty(ObjectName, MaterialName);
-      GEPropertyBitMask(MaterialPassFlagsBitMask, Flags);
+      GEProperty(Bool, Active);
    };
 }}

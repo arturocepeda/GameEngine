@@ -33,14 +33,14 @@ Material::Material(const ObjectName& Name, const ObjectName& GroupName)
    , cSpecularColor(1.0f, 1.0f, 1.0f)
    , cDiffuseTexture(0)
    , eBlendingMode(BlendingMode::None)
-   , bBatchRendering(false)
+   , eFlags(0)
 {
    GERegisterPropertyReadonly(ObjectName, Name);
    GERegisterPropertyResource(ObjectName, ShaderProgram, ShaderProgram);
    GERegisterProperty(Color, DiffuseColor);
    GERegisterPropertyResource(ObjectName, DiffuseTextureName, Texture);
    GERegisterPropertyEnum(BlendingMode, BlendingMode);
-   GERegisterProperty(Bool, BatchRendering);
+   GERegisterPropertyBitMask(MaterialFlagsBitMask, Flags);
 }
 
 uint Material::getSizeInBytes() const
@@ -83,9 +83,9 @@ const BlendingMode Material::getBlendingMode() const
    return eBlendingMode;
 }
 
-bool Material::getBatchRendering() const
+uint8_t Material::getFlags() const
 {
-   return bBatchRendering;
+   return eFlags;
 }
 
 void Material::setShaderProgram(const ObjectName& Name)
@@ -137,9 +137,9 @@ void Material::setBlendingMode(BlendingMode Mode)
    eBlendingMode = Mode;
 }
 
-void Material::setBatchRendering(bool Value)
+void Material::setFlags(uint8_t Flags)
 {
-   bBatchRendering = Value;
+   eFlags = Flags;
 }
 
 
@@ -152,12 +152,12 @@ const ObjectName MaterialObjectRegistryName = ObjectName("Material");
 MaterialPass::MaterialPass()
    : SerializableArrayElement("MaterialPass")
    , cMaterial(0)
-   , eFlags((uint8_t)MaterialPassFlagsBitMask::Active)
+   , bActive(true)
    , sConstantBufferDataVertex(0)
    , sConstantBufferDataFragment(0)
 {
    GERegisterPropertyResource(ObjectName, MaterialName, Material);
-   GERegisterPropertyBitMask(MaterialPassFlagsBitMask, Flags);
+   GERegisterProperty(Bool, Active);
 
    iBasePropertiesCount = getPropertiesCount();
 }
@@ -249,12 +249,7 @@ const Core::ObjectName& MaterialPass::getMaterialName() const
 
 bool MaterialPass::getActive() const
 {
-   return GEHasFlag(eFlags, MaterialPassFlagsBitMask::Active);
-}
-
-uint8_t MaterialPass::getFlags() const
-{
-   return eFlags;
+   return bActive;
 }
 
 void MaterialPass::setMaterialName(const Core::ObjectName& Name)
@@ -279,19 +274,7 @@ void MaterialPass::setMaterialName(const Core::ObjectName& Name)
 
 void MaterialPass::setActive(bool Active)
 {
-   if(Active)
-   {
-      GESetFlag(eFlags, MaterialPassFlagsBitMask::Active);
-   }
-   else
-   {
-      GEResetFlag(eFlags, MaterialPassFlagsBitMask::Active);
-   }
-}
-
-void MaterialPass::setFlags(uint8_t Flags)
-{
-   eFlags = Flags;
+   bActive = Active;
 }
 
 bool MaterialPass::hasVertexParameters() const

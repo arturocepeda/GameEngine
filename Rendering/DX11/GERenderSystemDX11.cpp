@@ -933,7 +933,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    }
 
    bool bRenderOncePerLight =
-      GEHasFlag(cMaterialPass->getFlags(), MaterialPassFlagsBitMask::RenderOncePerLight) &&
+      GEHasFlag(cMaterialPass->getMaterial()->getFlags(), MaterialFlagsBitMask::RenderOncePerLight) &&
       vLightsToRender.size() > 1;
 
    if(cMesh)

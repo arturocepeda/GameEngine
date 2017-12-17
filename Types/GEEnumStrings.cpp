@@ -175,9 +175,9 @@ namespace GE { namespace Rendering
       "Receive"
    };
 
-   const char* strMaterialPassFlagsBitMask[] =
+   const char* strMaterialFlagsBitMask[] =
    {
-      "Active",
-      "RenderOncePerLight"
+      "RenderOncePerLight",
+      "BatchRendering"
    };
 }}
