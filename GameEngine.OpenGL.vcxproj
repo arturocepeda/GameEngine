@@ -39,12 +39,6 @@
     <ClCompile Include="Core\GEParser.cpp" />
     <ClCompile Include="Core\GEPhysics.cpp" />
     <ClCompile Include="Core\GERand.cpp" />
-    <ClCompile Include="Core\GEScript.cpp">
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
     <ClCompile Include="Core\GESerializable.cpp" />
     <ClCompile Include="Core\GEState.cpp" />
     <ClCompile Include="Core\GEStateManager.cpp" />
@@ -58,7 +52,7 @@
     <ClCompile Include="Entities\GEComponent.cpp" />
     <ClCompile Include="Entities\GEComponentCamera.cpp" />
     <ClCompile Include="Entities\GEComponentCollider.cpp" />
-    <ClCompile Include="Entities\GEComponentGenericData.cpp" />
+    <ClCompile Include="Entities\GEComponentDataContainer.cpp" />
     <ClCompile Include="Entities\GEComponentLight.cpp" />
     <ClCompile Include="Entities\GEComponentMesh.cpp" />
     <ClCompile Include="Entities\GEComponentParticleSystem.cpp" />
@@ -71,6 +65,9 @@
     <ClCompile Include="Entities\GEComponentUIElement.cpp" />
     <ClCompile Include="Entities\GEEntity.cpp" />
     <ClCompile Include="Entities\GEScene.cpp" />
+    <ClCompile Include="Externals\pugixml\pugixml.cpp" />
+    <ClCompile Include="Externals\stblib\stb_image.c" />
+    <ClCompile Include="Externals\tlsf\tlsf.c" />
     <ClCompile Include="Input\GEInputSystem.cpp" />
     <ClCompile Include="Rendering\GEFont.cpp" />
     <ClCompile Include="Rendering\GEGraphicsDevice.cpp" />
@@ -82,7 +79,14 @@
     <ClCompile Include="Rendering\OpenGL\GEFontES20.cpp" />
     <ClCompile Include="Rendering\OpenGL\GERenderingShadersES20.cpp" />
     <ClCompile Include="Rendering\OpenGL\GERenderSystemES20.cpp" />
+    <ClCompile Include="Scripting\GEScriptingEnvironment.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="Types\GEBezierCurve.cpp" />
+    <ClCompile Include="Types\GECurve.cpp" />
     <ClCompile Include="Types\GEEnumStrings.cpp" />
     <ClCompile Include="Types\GERotation.cpp" />
     <ClCompile Include="Types\GEVector.cpp" />
@@ -115,7 +119,6 @@
     <ClInclude Include="Core\GEPlatform.h" />
     <ClInclude Include="Core\GEProfiler.h" />
     <ClInclude Include="Core\GERand.h" />
-    <ClInclude Include="Core\GEScript.h" />
     <ClInclude Include="Core\GESerializable.h" />
     <ClInclude Include="Core\GESingleton.h" />
     <ClInclude Include="Core\GEState.h" />
@@ -130,7 +133,7 @@
     <ClInclude Include="Entities\GEComponent.h" />
     <ClInclude Include="Entities\GEComponentCamera.h" />
     <ClInclude Include="Entities\GEComponentCollider.h" />
-    <ClInclude Include="Entities\GEComponentGenericData.h" />
+    <ClInclude Include="Entities\GEComponentDataContainer.h" />
     <ClInclude Include="Entities\GEComponentLight.h" />
     <ClInclude Include="Entities\GEComponentMesh.h" />
     <ClInclude Include="Entities\GEComponentParticleSystem.h" />
@@ -144,6 +147,15 @@
     <ClInclude Include="Entities\GEComponentUIElement.h" />
     <ClInclude Include="Entities\GEEntity.h" />
     <ClInclude Include="Entities\GEScene.h" />
+    <ClInclude Include="Externals\pugixml\pugiconfig.hpp" />
+    <ClInclude Include="Externals\pugixml\pugixml.hpp" />
+    <ClInclude Include="Externals\stblib\stb.h" />
+    <ClInclude Include="Externals\stblib\stb_divide.h" />
+    <ClInclude Include="Externals\stblib\stb_dxt.h" />
+    <ClInclude Include="Externals\stblib\stb_image.h" />
+    <ClInclude Include="Externals\stblib\stb_image_write.h" />
+    <ClInclude Include="Externals\stblib\stb_perlin.h" />
+    <ClInclude Include="Externals\tlsf\tlsf.h" />
     <ClInclude Include="Input\GEInputSystem.h" />
     <ClInclude Include="Rendering\GEFont.h" />
     <ClInclude Include="Rendering\GEGraphicsDevice.h" />
@@ -156,8 +168,10 @@
     <ClInclude Include="Rendering\OpenGL\GEOpenGLES20.h" />
     <ClInclude Include="Rendering\OpenGL\GERenderingShadersES20.h" />
     <ClInclude Include="Rendering\OpenGL\GERenderSystemES20.h" />
+    <ClInclude Include="Scripting\GEScriptingEnvironment.h" />
     <ClInclude Include="Types\GEBezierCurve.h" />
     <ClInclude Include="Types\GEColor.h" />
+    <ClInclude Include="Types\GECurve.h" />
     <ClInclude Include="Types\GEMatrix.h" />
     <ClInclude Include="Types\GEQuaternion.h" />
     <ClInclude Include="Types\GERotation.h" />

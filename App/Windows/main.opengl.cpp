@@ -24,6 +24,8 @@
 #include "Core/GETaskManager.h"
 #include "Core/GEAllocator.h"
 
+#define FREEGLUT_LIB_PRAGMAS 0
+
 #include "Externals/glew/include/GL/glew.h"
 #include "Externals/freeglut/include/GL/glut.h"
 
@@ -32,8 +34,6 @@
 #include "Input/GEInputSystem.h"
 
 #pragma comment(lib, "GameEngine.OpenGL.lib")
-#pragma comment(lib, "pugixml.Windows.lib")
-#pragma comment(lib, "stb.Windows.lib")
 #pragma comment(lib, "AppModule.lib")
 
 #if defined (_M_X64)
@@ -162,11 +162,14 @@ int main(int argc, char* argv[])
     
     // create and register the states
     StateManager cStateManager;
-    registerStates(cStateManager);
+    registerStates();
 
     // create the task manager
     TaskManager* cTaskManager = Allocator::alloc<TaskManager>();
     GEInvokeCtor(TaskManager, cTaskManager);
+
+    // initialize app module
+    initAppModule();
 
     // game loop
     glutDisplayFunc(render);
@@ -216,8 +219,6 @@ void render()
          fTimeDelta = 1.0f / GE_FPS;
 
       Time::setDelta(fTimeDelta);
-
-      InputSystem::getInstance()->inputMouse(pMouse.x, pMouse.y);
 
       TaskManager::getInstance()->update();
       TaskManager::getInstance()->render();
@@ -285,7 +286,8 @@ void mouseMove(int x, int y)
    pMouse.x = x;
    pMouse.y = y;
 
-   InputSystem::getInstance()->inputMouse(x, y);
+   GE::Vector2 vMouseCurrentPosition = getMouseScreenPosition();
+   InputSystem::getInstance()->inputMouse(vMouseCurrentPosition);
 
    if(bMouseLeftButton)
    {
@@ -297,9 +299,9 @@ void mouseMove(int x, int y)
       else
 #endif
       {
-         GE::Vector2 vMouseCurrentPosition = getMouseScreenPosition();
          InputSystem::getInstance()->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
-         vMouseLastPosition = vMouseCurrentPosition;      
       }
    }
+
+   vMouseLastPosition = vMouseCurrentPosition;
 }

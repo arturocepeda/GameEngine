@@ -32,6 +32,21 @@
     <Filter Include="Input">
       <UniqueIdentifier>{0e1b7e80-b6cd-4901-9627-0ed6c5c632b6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Externals">
+      <UniqueIdentifier>{82dabf85-1cad-4626-815e-dc5cccb65cbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\pugixml">
+      <UniqueIdentifier>{f6200700-cfc7-4418-b249-a8fd2dfcc19f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\stb">
+      <UniqueIdentifier>{e1f61516-fea9-4428-a4c2-f9babd194d1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\tlsf">
+      <UniqueIdentifier>{fc521fab-3162-4765-8821-4e858230fe40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{193f1fab-894e-4584-8bad-2743c78c6b22}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
@@ -154,9 +169,6 @@
     <ClCompile Include="Core\GEAllocator.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Entities\GEComponentGenericData.cpp">
-      <Filter>Entities</Filter>
-    </ClCompile>
     <ClCompile Include="Core\GESerializable.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -202,9 +214,6 @@
     <ClCompile Include="Entities\GEComponentScript.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
-    <ClCompile Include="Core\GEScript.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Rendering\GEShaderProgram.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -219,6 +228,24 @@
     </ClCompile>
     <ClCompile Include="Core\GEEvents.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\pugixml\pugixml.cpp">
+      <Filter>Externals\pugixml</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\stblib\stb_image.c">
+      <Filter>Externals\stb</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\tlsf\tlsf.c">
+      <Filter>Externals\tlsf</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripting\GEScriptingEnvironment.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentDataContainer.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Types\GECurve.cpp">
+      <Filter>Types</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -381,9 +408,6 @@
     <ClInclude Include="Core\GEAllocator.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Entities\GEComponentGenericData.h">
-      <Filter>Entities</Filter>
-    </ClInclude>
     <ClInclude Include="Core\GEInterpolator.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -432,9 +456,6 @@
     <ClInclude Include="Entities\GEComponentScript.h">
       <Filter>Entities</Filter>
     </ClInclude>
-    <ClInclude Include="Core\GEScript.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Types\GESTLTypes.h">
       <Filter>Types</Filter>
     </ClInclude>
@@ -452,6 +473,42 @@
     </ClInclude>
     <ClInclude Include="Core\GEEvents.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\pugixml\pugiconfig.hpp">
+      <Filter>Externals\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\pugixml\pugixml.hpp">
+      <Filter>Externals\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb_divide.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb_dxt.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb_image.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb_image_write.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\stblib\stb_perlin.h">
+      <Filter>Externals\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\tlsf\tlsf.h">
+      <Filter>Externals\tlsf</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripting\GEScriptingEnvironment.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentDataContainer.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GECurve.h">
+      <Filter>Types</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
