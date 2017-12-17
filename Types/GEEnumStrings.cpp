@@ -174,4 +174,10 @@ namespace GE { namespace Rendering
       "Cast",
       "Receive"
    };
+
+   const char* strMaterialPassFlagsBitMask[] =
+   {
+      "Active",
+      "RenderOncePerLight"
+   };
 }}

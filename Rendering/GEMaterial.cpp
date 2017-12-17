@@ -152,12 +152,12 @@ const ObjectName MaterialObjectRegistryName = ObjectName("Material");
 MaterialPass::MaterialPass()
    : SerializableArrayElement("MaterialPass")
    , cMaterial(0)
-   , bActive(true)
+   , eFlags((uint8_t)MaterialPassFlagsBitMask::Active)
    , sConstantBufferDataVertex(0)
    , sConstantBufferDataFragment(0)
 {
    GERegisterPropertyResource(ObjectName, MaterialName, Material);
-   GERegisterProperty(Bool, Active);
+   GERegisterPropertyBitMask(MaterialPassFlagsBitMask, Flags);
 
    iBasePropertiesCount = getPropertiesCount();
 }
@@ -249,7 +249,12 @@ const Core::ObjectName& MaterialPass::getMaterialName() const
 
 bool MaterialPass::getActive() const
 {
-   return bActive;
+   return GEHasFlag(eFlags, MaterialPassFlagsBitMask::Active);
+}
+
+uint8_t MaterialPass::getFlags() const
+{
+   return eFlags;
 }
 
 void MaterialPass::setMaterialName(const Core::ObjectName& Name)
@@ -274,7 +279,19 @@ void MaterialPass::setMaterialName(const Core::ObjectName& Name)
 
 void MaterialPass::setActive(bool Active)
 {
-   bActive = Active;
+   if(Active)
+   {
+      GESetFlag(eFlags, MaterialPassFlagsBitMask::Active);
+   }
+   else
+   {
+      GEResetFlag(eFlags, MaterialPassFlagsBitMask::Active);
+   }
+}
+
+void MaterialPass::setFlags(uint8_t Flags)
+{
+   eFlags = Flags;
 }
 
 bool MaterialPass::hasVertexParameters() const

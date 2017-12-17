@@ -932,6 +932,10 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       bindTexture(TextureSlot::Diffuse, cMaterialPass->getMaterial()->getDiffuseTexture());
    }
 
+   bool bRenderOncePerLight =
+      GEHasFlag(cMaterialPass->getFlags(), MaterialPassFlagsBitMask::RenderOncePerLight) &&
+      vLightsToRender.size() > 1;
+
    if(cMesh)
    {
       // if the renderable is a shadowed 3D mesh, bind shadow map
@@ -943,24 +947,27 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       }
 
       // individual light
-      if(vLightsToRender.empty())
+      if(!bRenderOncePerLight)
       {
-         sShaderConstantsLighting.LightType = 0;
-         sShaderConstantsLighting.LightColor = Color(0.0f, 0.0f, 0.0f);
-      }
-      else
-      {
-         ComponentLight* cLight = vLightsToRender[0];
+         if(vLightsToRender.empty())
+         {
+            sShaderConstantsLighting.LightType = 0;
+            sShaderConstantsLighting.LightColor = Color(0.0f, 0.0f, 0.0f);
+         }
+         else
+         {
+            ComponentLight* cLight = vLightsToRender[0];
 
-         sShaderConstantsLighting.LightType = (GE::uint)cLight->getLightType();
-         sShaderConstantsLighting.LightColor = cLight->getColor();
-         sShaderConstantsLighting.LightPosition = cLight->getTransform()->getPosition();
-         sShaderConstantsLighting.LightDirection = cLight->getDirection();
-         sShaderConstantsLighting.Attenuation = cLight->getLinearAttenuation();
-         sShaderConstantsLighting.ShadowIntensity = cLight->getShadowIntensity();
-      }
+            sShaderConstantsLighting.LightType = (GE::uint)cLight->getLightType();
+            sShaderConstantsLighting.LightColor = cLight->getColor();
+            sShaderConstantsLighting.LightPosition = cLight->getTransform()->getPosition();
+            sShaderConstantsLighting.LightDirection = cLight->getDirection();
+            sShaderConstantsLighting.Attenuation = cLight->getLinearAttenuation();
+            sShaderConstantsLighting.ShadowIntensity = cLight->getShadowIntensity();
+         }
 
-      dxContext->UpdateSubresource(dxConstantBufferLighting, 0, NULL, &sShaderConstantsLighting, 0, 0);
+         dxContext->UpdateSubresource(dxConstantBufferLighting, 0, NULL, &sShaderConstantsLighting, 0, 0);
+      }
    }
 
    // draw
@@ -975,7 +982,37 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    uint iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / sRenderOperation.Data.VertexStride;
 
    dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-   dxContext->DrawIndexed(sRenderOperation.Data.NumIndices, iStartIndexLocation, iBaseVertexLocation);
+
+   if(bRenderOncePerLight)
+   {
+      setDepthBufferMode(DepthBufferMode::TestOnly);
+
+      for(uint i = 0; i < vLightsToRender.size(); i++)
+      {
+         ComponentLight* cLight = vLightsToRender[i];
+
+         sShaderConstantsLighting.LightType = (GE::uint)cLight->getLightType();
+         sShaderConstantsLighting.LightColor = cLight->getColor();
+         sShaderConstantsLighting.LightPosition = cLight->getTransform()->getPosition();
+         sShaderConstantsLighting.LightDirection = cLight->getDirection();
+         sShaderConstantsLighting.Attenuation = cLight->getLinearAttenuation();
+         sShaderConstantsLighting.ShadowIntensity = cLight->getShadowIntensity();
+
+         dxContext->UpdateSubresource(dxConstantBufferLighting, 0, NULL, &sShaderConstantsLighting, 0, 0);
+
+         if(i == (vLightsToRender.size() - 1))
+         {
+            // make sure that the last pass writes on the depth buffer
+            setDepthBufferMode(DepthBufferMode::TestAndWrite);
+         }
+
+         dxContext->DrawIndexed(sRenderOperation.Data.NumIndices, iStartIndexLocation, iBaseVertexLocation);
+      }
+   }
+   else
+   {
+      dxContext->DrawIndexed(sRenderOperation.Data.NumIndices, iStartIndexLocation, iBaseVertexLocation);
+   }
 
    if(!cRenderable || !GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
    {

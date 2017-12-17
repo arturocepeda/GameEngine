@@ -68,11 +68,20 @@ namespace GE { namespace Rendering
    };
 
 
+   GESerializableEnum(MaterialPassFlagsBitMask)
+   {
+      Active              = 1 << 0,
+      RenderOncePerLight  = 1 << 1,
+
+      Count = 2
+   };
+
+
    class MaterialPass : public Core::SerializableArrayElement
    {
    private:
       Material* cMaterial;
-      bool bActive;
+      uint8_t eFlags;
 
       uint iBasePropertiesCount;
 
@@ -89,10 +98,12 @@ namespace GE { namespace Rendering
       Material* getMaterial();
       const Core::ObjectName& getMaterialName() const;
       bool getActive() const;
+      uint8_t getFlags() const;
 
       void setMaterial(Material* M);
       void setMaterialName(const Core::ObjectName& Name);
       void setActive(bool Active);
+      void setFlags(uint8_t Flags);
 
       bool hasVertexParameters() const;
       bool hasFragmentParameters() const;
@@ -103,6 +114,6 @@ namespace GE { namespace Rendering
       void reload();
 
       GEProperty(ObjectName, MaterialName);
-      GEProperty(Bool, Active);
+      GEPropertyBitMask(MaterialPassFlagsBitMask, Flags);
    };
 }}
