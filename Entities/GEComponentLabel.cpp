@@ -94,7 +94,7 @@ void ComponentLabel::generateVertexData()
    if(!cFont)
       return;
 
-   const uint iTextLength = (uint)strlen(sText.c_str());
+   const uint iTextLength = (uint)sText.length();
 
    fCharacterSize = (fFontSize * FontSizeScale);
 
@@ -305,6 +305,8 @@ void ComponentLabel::generateVertexData()
 
 float ComponentLabel::measureCharacter(uint iCharIndex)
 {
+   GEAssert(iCharIndex < sText.length());
+
    unsigned char cChar = sText[iCharIndex];
    const Glyph& sGlyph = cFont->getGlyph(cChar);
 
@@ -313,6 +315,8 @@ float ComponentLabel::measureCharacter(uint iCharIndex)
 
 float ComponentLabel::getKerning(uint iCharIndex)
 {
+   GEAssert(iCharIndex < sText.length());
+
    unsigned char cChar = sText[iCharIndex];
    float fKerning = 0.0f;
 
@@ -352,7 +356,7 @@ const char* ComponentLabel::getText() const
 
 const ObjectName& ComponentLabel::getStringID() const
 {
-    return cStringID;
+   return cStringID;
 }
 
 float ComponentLabel::getHorizontalSpacing() const

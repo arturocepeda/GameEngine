@@ -828,6 +828,8 @@ void ScriptingEnvironment::registerTypes()
    lua.new_usertype<ComponentLabel>
    (
       "ComponentLabel"
+      , "getText", &ComponentLabel::getText
+      , "getStringID", &ComponentLabel::getStringID
       , "setText", &ComponentLabel::setText
       , "setStringID", &ComponentLabel::setStringID
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
