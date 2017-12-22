@@ -774,11 +774,13 @@ void RenderSystem::setDepthBufferMode(DepthBufferMode Mode)
    case DepthBufferMode::TestOnly:
       glEnable(GL_DEPTH_TEST);
       glDepthMask(GL_FALSE);
+      glDepthFunc(GL_LEQUAL);
       break;
 
    case DepthBufferMode::TestAndWrite:
       glEnable(GL_DEPTH_TEST);
       glDepthMask(GL_TRUE);
+      glDepthFunc(GL_LESS);
       break;
 
    default:

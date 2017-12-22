@@ -19,7 +19,7 @@
 #elif defined (GE_PLATFORM_ANDROID)
 # include <GLES2/gl2.h>
 #else
-# include "glew/include/GL/glew.h"
+# include "Externals/glew/include/GL/glew.h"
 #endif
 
 #if defined (GE_64_BIT)

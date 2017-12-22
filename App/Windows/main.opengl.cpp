@@ -24,17 +24,17 @@
 #include "Core/GETaskManager.h"
 #include "Core/GEAllocator.h"
 
-#define FREEGLUT_LIB_PRAGMAS 0
-
-#include "Externals/glew/include/GL/glew.h"
-#include "Externals/freeglut/include/GL/glut.h"
-
+#include "Rendering/OpenGL/GEOpenGLES20.h"
 #include "Rendering/OpenGL/GERenderSystemES20.h"
 #include "Audio/FMOD/GEAudioSystemFMOD.h"
 #include "Input/GEInputSystem.h"
 
+#define FREEGLUT_LIB_PRAGMAS 0
+#include "Externals/freeglut/include/GL/freeglut.h"
+
 #pragma comment(lib, "GameEngine.OpenGL.lib")
 #pragma comment(lib, "AppModule.lib")
+#pragma comment(lib, "opengl32.lib")
 
 #if defined (_M_X64)
 # pragma comment(lib, "../../../GameEngine/Externals/glew/lib/Release/x64/glew32.lib")
