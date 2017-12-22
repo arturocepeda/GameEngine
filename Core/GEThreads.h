@@ -117,6 +117,14 @@
 # define GEMutexDestroy(Mutex)  pthread_mutex_destroy(&Mutex)
 
 
+# define GEConditionVariable  pthread_cond_t
+
+# define GEConditionVariableInit(CV)  pthread_cond_init(&CV, NULL);
+# define GEConditionVariableWait(CV, Mutex, Condition)  while(!(Condition)) pthread_cond_wait(&CV, &Mutex);
+# define GEConditionVariableSignal(CV)  pthread_cond_broadcast(&CV);
+# define GEConditionVariableDestroy(CV)  pthread_cond_destroy(&CV);
+
+
 # define GESleep(Milliseconds)  usleep(Milliseconds * 1000)
 
 

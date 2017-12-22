@@ -34,8 +34,8 @@
 #define GESTLSetCustom(T, Comparator) std::set<T, Comparator, GE::Core::STLAllocator<T>>
 #define GESTLMultiset(T) std::multiset<T, std::less<T>, GE::Core::STLAllocator<T>>
 #define GESTLMultisetCustom(T, Comparator) std::multiset<T, Comparator, GE::Core::STLAllocator<T>>
-#define GESTLMap(T, U) std::map<T, U, std::less<T>, GE::Core::STLAllocator<std::pair<T, U>>>
-#define GESTLMapCustom(T, U, Comparator) std::map<T, U, Comparator, GE::Core::STLAllocator<std::pair<T, U>>>
+#define GESTLMap(T, U) std::map<T, U, std::less<T>, GE::Core::STLAllocator<std::pair<const T, U>>>
+#define GESTLMapCustom(T, U, Comparator) std::map<T, U, Comparator, GE::Core::STLAllocator<std::pair<const T, U>>>
 
 
 //

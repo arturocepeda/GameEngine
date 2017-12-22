@@ -173,7 +173,7 @@ namespace GE { namespace Content
       void registerSerializableResourceType(const Core::ObjectName& ResourceTypeName, const Core::ObjectManager<T>* Manager)
       {
          SerializableResourceManagerObjects sManagerObjects;
-         sManagerObjects.Registry = const_cast<ObjectRegistry*>(Manager->getObjectRegistry());
+         sManagerObjects.Registry = const_cast<Core::ObjectRegistry*>(Manager->getObjectRegistry());
          sManagerObjects.Factory = Core::Allocator::alloc<SerializableResourceFactory<T>>();
          GEInvokeCtor(SerializableResourceFactory<T>, sManagerObjects.Factory)(ResourceTypeName);
          vEntries.push_back(sManagerObjects);

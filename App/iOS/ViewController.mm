@@ -169,7 +169,7 @@ using namespace GE::Input;
    cAudio->init();
    
    // create and register the states
-   registerStates(cStateManager);
+   registerStates();
    
    // start the timer
    cTimer.start();
@@ -178,6 +178,9 @@ using namespace GE::Input;
    
    // create the task manager
    cTaskManager = new TaskManager();
+   
+   // init the application module
+   initAppModule();
 }
 
 -(void) viewDidUnload
