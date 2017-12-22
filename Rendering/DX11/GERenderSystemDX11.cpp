@@ -387,7 +387,7 @@ void RenderSystemDX11::createStates()
 
    dxDepthStencilDesc.DepthEnable = TRUE;
    dxDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-   dxDepthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+   dxDepthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
    dxDepthStencilDesc.StencilEnable = TRUE;
    dxDepthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
    dxDepthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
@@ -985,8 +985,6 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
    if(bRenderOncePerLight)
    {
-      setDepthBufferMode(DepthBufferMode::TestOnly);
-
       for(uint i = 0; i < vLightsToRender.size(); i++)
       {
          ComponentLight* cLight = vLightsToRender[i];
@@ -999,13 +997,6 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
          sShaderConstantsLighting.ShadowIntensity = cLight->getShadowIntensity();
 
          dxContext->UpdateSubresource(dxConstantBufferLighting, 0, NULL, &sShaderConstantsLighting, 0, 0);
-
-         if(i == (vLightsToRender.size() - 1))
-         {
-            // make sure that the last pass writes on the depth buffer
-            setDepthBufferMode(DepthBufferMode::TestAndWrite);
-         }
-
          dxContext->DrawIndexed(sRenderOperation.Data.NumIndices, iStartIndexLocation, iBaseVertexLocation);
       }
    }
