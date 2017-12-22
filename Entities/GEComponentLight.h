@@ -56,6 +56,7 @@ namespace GE { namespace Entities
 
       GEPropertyEnum(LightType, LightType)
       GEProperty(Color, Color)
+      GEProperty(Float, LinearAttenuation)
       GEProperty(Float, ShadowIntensity)
    };
 }}

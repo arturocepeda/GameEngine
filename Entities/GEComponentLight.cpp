@@ -33,6 +33,7 @@ ComponentLight::ComponentLight(Entity* Owner)
 
    GERegisterPropertyEnum(LightType, LightType);
    GERegisterProperty(Color, Color);
+   GERegisterProperty(Float, LinearAttenuation);
    GERegisterProperty(Float, ShadowIntensity);
 }
 
