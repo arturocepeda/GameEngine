@@ -309,6 +309,8 @@ void RenderSystem::preloadTextures(const char* FileName)
             sPreloadedTexture.Tex->populateAtlasUVManager();
          }
 
+         mTextures.add(sPreloadedTexture.Tex);
+
          GEMutexUnlock(mTextureLoadMutex);
       }
    }
@@ -368,6 +370,8 @@ void RenderSystem::preloadTextures(const char* FileName)
 
             sPreloadedTexture.Tex->populateAtlasUVManager();
          }
+
+         mTextures.add(sPreloadedTexture.Tex);
 
          GEMutexUnlock(mTextureLoadMutex);
       }

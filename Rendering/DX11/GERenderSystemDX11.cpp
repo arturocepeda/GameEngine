@@ -199,10 +199,9 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
 
    GEInvokeDtor(ImageData, cPreloadedTexture->Data);
    Allocator::free(cPreloadedTexture->Data);
-   cPreloadedTexture->Data = 0;
 
+   cPreloadedTexture->Data = 0;
    cPreloadedTexture->Tex->setHandler(dxTextureResourceView);
-   mTextures.add(cPreloadedTexture->Tex);
 }
 
 void RenderSystem::loadRenderingData(const GeometryData& sData, GPUBufferPair& sBuffers, GE::uint)
