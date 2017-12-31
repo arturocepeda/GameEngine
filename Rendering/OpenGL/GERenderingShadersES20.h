@@ -89,14 +89,9 @@ namespace GE { namespace Rendering
 
    class VertexShader : public Shader
    {
-   private:
-      int iVertexElements;
-
    public:
-      VertexShader(const char* Filename, int VertexElements, const ShaderProgram::PreprocessorMacroList& Macros);
-      VertexShader(const char* Data, int DataSize, int VertexElements);
-
-      int getVertexElements() const;
+      VertexShader(const char* Filename, const ShaderProgram::PreprocessorMacroList& Macros);
+      VertexShader(const char* Data, int DataSize);
    };
 
 

@@ -123,8 +123,7 @@ bool Shader::check()
 //
 //  VertexShader
 //
-VertexShader::VertexShader(const char* Filename, int VertexElements, const ShaderProgram::PreprocessorMacroList& Macros)
-   : iVertexElements(VertexElements)
+VertexShader::VertexShader(const char* Filename, const ShaderProgram::PreprocessorMacroList& Macros)
 {
    // get shader ID
    iID = glCreateShader(GL_VERTEX_SHADER);
@@ -134,8 +133,7 @@ VertexShader::VertexShader(const char* Filename, int VertexElements, const Shade
    load(Filename, "vsh", Macros);
 }
 
-VertexShader::VertexShader(const char* Data, int DataSize, int VertexElements)
-   : iVertexElements(VertexElements)
+VertexShader::VertexShader(const char* Data, int DataSize)
 {
    // get shader ID
    iID = glCreateShader(GL_VERTEX_SHADER);
@@ -143,11 +141,6 @@ VertexShader::VertexShader(const char* Data, int DataSize, int VertexElements)
 
    // load shader
    load(Data, DataSize);
-}
-
-int VertexShader::getVertexElements() const
-{
-   return iVertexElements;
 }
 
 

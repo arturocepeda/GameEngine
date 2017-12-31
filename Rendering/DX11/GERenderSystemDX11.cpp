@@ -563,16 +563,15 @@ void RenderSystem::loadShaders()
 
          const char* sVertexSource = xmlShader.attribute("vertexSource").value();
          const char* sFragmentSource = xmlShader.attribute("fragmentSource").value();
-         uint iVertexElementsMask = cShaderProgram->getVertexElementsMask(xmlShader);
+
          cShaderProgram->parsePreprocessorMacros(xmlShader);
-
-         cShaderProgram->VS = Allocator::alloc<VertexShader>();
-         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sVertexSource, iVertexElementsMask, cShaderProgram->PreprocessorMacros, dxDevice.Get());
-         cShaderProgram->PS = Allocator::alloc<PixelShader>();
-         GEInvokeCtor(PixelShader, cShaderProgram->PS)(sFragmentSource, cShaderProgram->PreprocessorMacros, dxDevice.Get());
-
          cShaderProgram->parseParameters(xmlShader);
          cShaderProgram->loadFromXml(xmlShader);
+
+         cShaderProgram->VS = Allocator::alloc<VertexShader>();
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sVertexSource, cShaderProgram->getVertexElements(), cShaderProgram->PreprocessorMacros, dxDevice.Get());
+         cShaderProgram->PS = Allocator::alloc<PixelShader>();
+         GEInvokeCtor(PixelShader, cShaderProgram->PS)(sFragmentSource, cShaderProgram->PreprocessorMacros, dxDevice.Get());
 
          if(!bReload)
          {
@@ -599,14 +598,12 @@ void RenderSystem::loadShaders()
          cShaderProgram->parseParameters(sStream);
          cShaderProgram->loadFromStream(sStream);
 
-         uint iVertexElementsMask = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
-
          uint iShaderByteCodeSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
          vShaderByteCode.resize(iShaderByteCodeSize);
          sStream.read(&vShaderByteCode[0], iShaderByteCodeSize);
 
          cShaderProgram->VS = Allocator::alloc<VertexShader>();
-         GEInvokeCtor(VertexShader, cShaderProgram->VS)(&vShaderByteCode[0], iShaderByteCodeSize, iVertexElementsMask, dxDevice.Get());
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(&vShaderByteCode[0], iShaderByteCodeSize, cShaderProgram->getVertexElements(), dxDevice.Get());
 
          iShaderByteCodeSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
          vShaderByteCode.resize(iShaderByteCodeSize);

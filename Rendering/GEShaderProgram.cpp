@@ -25,12 +25,23 @@ ShaderProgram::ShaderProgram(const ObjectName& Name, const ObjectName& GroupName
    , eCullingMode(CullingMode::Back)
 {
    GERegisterPropertyReadonly(ObjectName, Name);
+   GERegisterPropertyBitMask(VertexElementsBitMask, VertexElements);
    GERegisterPropertyEnum(DepthBufferMode, DepthBufferMode);
    GERegisterPropertyEnum(CullingMode, CullingMode);
 }
 
 ShaderProgram::~ShaderProgram()
 {
+}
+
+uint8_t ShaderProgram::getVertexElements() const
+{
+   return eVertexElements;
+}
+
+void ShaderProgram::setVertexElements(uint8_t VertexElements)
+{
+   eVertexElements = VertexElements;
 }
 
 const DepthBufferMode ShaderProgram::getDepthBufferMode() const
@@ -117,27 +128,4 @@ void ShaderProgram::parseParameters(std::istream& sStream)
 {
    parseParameters(sStream, &VertexParameters);
    parseParameters(sStream, &FragmentParameters);
-}
-
-uint ShaderProgram::getVertexElementsMask(const pugi::xml_node& xmlShader)
-{
-   uint iVertexElements = 0;
-
-   for(const pugi::xml_node& xmlVertexElement : xmlShader.children("VertexElement"))
-   {
-      const char* sVertexElement = xmlVertexElement.attribute("name").value();
-
-      if(strcmp(sVertexElement, "Position") == 0)
-         iVertexElements |= VE_Position;
-      else if(strcmp(sVertexElement, "Color") == 0)
-         iVertexElements |= VE_Color;
-      else if(strcmp(sVertexElement, "Normal") == 0)
-         iVertexElements |= VE_Normal;
-      else if(strcmp(sVertexElement, "TexCoord") == 0)
-         iVertexElements |= VE_TexCoord;
-      else if(strcmp(sVertexElement, "WorldViewProjection") == 0)
-         iVertexElements |= VE_WVP;
-   }
-
-   return iVertexElements;
 }

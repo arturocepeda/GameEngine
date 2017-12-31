@@ -56,16 +56,6 @@ namespace GE { namespace Rendering
    };
 
 
-   enum VertexElement
-   {
-      VE_Position = 1 << 0,
-      VE_Color    = 1 << 1,
-      VE_Normal   = 1 << 2,
-      VE_TexCoord = 1 << 3,
-      VE_WVP      = 1 << 4,
-   };
-
-
    class GeometryGroup
    {
    public:

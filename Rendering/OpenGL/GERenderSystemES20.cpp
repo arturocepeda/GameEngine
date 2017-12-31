@@ -257,20 +257,18 @@ void RenderSystem::loadShaders()
          ShaderProgramES20* cShaderProgram = Allocator::alloc<ShaderProgramES20>();
          GEInvokeCtor(ShaderProgramES20, cShaderProgram)(sShaderName);
 
-         uint iVertexElementsMask = cShaderProgram->getVertexElementsMask(xmlShader);
          cShaderProgram->parsePreprocessorMacros(xmlShader);
+         cShaderProgram->parseParameters(xmlShader);
+         cShaderProgram->loadFromXml(xmlShader);
 
          cShaderProgram->ID = glCreateProgram();
          cShaderProgram->Status = 0;
          cShaderProgram->VS = Allocator::alloc<VertexShader>();
-         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sShaderVertexSource, iVertexElementsMask, cShaderProgram->PreprocessorMacros);
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sShaderVertexSource, cShaderProgram->PreprocessorMacros);
          cShaderProgram->FS = Allocator::alloc<FragmentShader>();
          GEInvokeCtor(FragmentShader, cShaderProgram->FS)(sShaderFragmentSource, cShaderProgram->PreprocessorMacros);
 
          static_cast<RenderSystemES20*>(this)->attachShaders(cShaderProgram);
-
-         cShaderProgram->parseParameters(xmlShader);
-         cShaderProgram->loadFromXml(xmlShader);
 
          mShaderPrograms.add(cShaderProgram);
       }
@@ -294,8 +292,6 @@ void RenderSystem::loadShaders()
          cShaderProgram->parseParameters(sStream);
          cShaderProgram->loadFromStream(sStream);
 
-         uint iVertexElementsMask = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
-
          uint iShaderDataSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
          vShaderCode.resize(iShaderDataSize + 1);
          sStream.read(&vShaderCode[0], iShaderDataSize);
@@ -307,7 +303,7 @@ void RenderSystem::loadShaders()
          cShaderProgram->ID = glCreateProgram();
          cShaderProgram->Status = 0;
          cShaderProgram->VS = Allocator::alloc<VertexShader>();
-         GEInvokeCtor(VertexShader, cShaderProgram->VS)(&vShaderCode[0], iShaderDataSize, iVertexElementsMask);
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(&vShaderCode[0], iShaderDataSize);
 
          iShaderDataSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
          vShaderCode.resize(iShaderDataSize + 1);
@@ -334,19 +330,19 @@ void RenderSystemES20::attachShaders(ShaderProgramES20* cProgram)
    glAttachShader(cProgram->ID, cProgram->FS->getID());
    
    // bind attributes
-   if(cProgram->VS->getVertexElements() & VE_Position)
+   if(GEHasFlag(cProgram->getVertexElements(), VertexElementsBitMask::Position))
       glBindAttribLocation(cProgram->ID, (GLuint)VertexAttributes::Position, "aPosition");
 
-   if(cProgram->VS->getVertexElements() & VE_Normal)
+   if(GEHasFlag(cProgram->getVertexElements(), VertexElementsBitMask::Normal))
       glBindAttribLocation(cProgram->ID, (GLuint)VertexAttributes::Normal, "aNormal");
 
-   if(cProgram->VS->getVertexElements() & VE_TexCoord)
+   if(GEHasFlag(cProgram->getVertexElements(), VertexElementsBitMask::TexCoord))
       glBindAttribLocation(cProgram->ID, (GLuint)VertexAttributes::TextureCoord0, "aTextCoord0");
 
-   if(cProgram->VS->getVertexElements() & VE_Color)
+   if(GEHasFlag(cProgram->getVertexElements(), VertexElementsBitMask::Color))
       glBindAttribLocation(cProgram->ID, (GLuint)VertexAttributes::Color, "aColor");
 
-   if(cProgram->VS->getVertexElements() & VE_WVP)
+   if(GEHasFlag(cProgram->getVertexElements(), VertexElementsBitMask::WVP))
       glBindAttribLocation(cProgram->ID, (GLuint)VertexAttributes::WorldViewProjection0, "aWorldViewProjection");
    
    // link program
@@ -424,7 +420,7 @@ void RenderSystemES20::setVertexDeclaration(const RenderOperation& cRenderOperat
 
    uintPtrSize iOffset = 0;
 
-   if(cShaderProgram->VS->getVertexElements() & VE_WVP)
+   if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::WVP))
    {
       glVertexAttribPointer((GLuint)VertexAttributes::WorldViewProjection0, 4, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
       iOffset += 4 * sizeof(float);
@@ -435,22 +431,22 @@ void RenderSystemES20::setVertexDeclaration(const RenderOperation& cRenderOperat
       glVertexAttribPointer((GLuint)VertexAttributes::WorldViewProjection3, 4, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
       iOffset += 4 * sizeof(float);
    }
-   if(cShaderProgram->VS->getVertexElements() & VE_Position)
+   if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::Position))
    {
       glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
       iOffset += 3 * sizeof(float);
    }
-   if(cShaderProgram->VS->getVertexElements() & VE_Normal)
+   if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::Normal))
    {
       glVertexAttribPointer((GLuint)VertexAttributes::Normal, 3, GL_FLOAT, GL_TRUE, iVertexStride, (void*)iOffset);
       iOffset += 3 * sizeof(float);
    }
-   if(cShaderProgram->VS->getVertexElements() & VE_Color)
+   if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::Color))
    {
       glVertexAttribPointer((GLuint)VertexAttributes::Color, 4, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
       iOffset += 4 * sizeof(float);
    }
-   if(cShaderProgram->VS->getVertexElements() & VE_TexCoord)
+   if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::TexCoord))
    {
       glVertexAttribPointer((GLuint)VertexAttributes::TextureCoord0, 2, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
       iOffset += 2 * sizeof(float);

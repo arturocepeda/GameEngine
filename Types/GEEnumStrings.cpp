@@ -169,6 +169,17 @@ namespace GE { namespace Rendering
       "None"
    };
 
+   const char* strVertexElementsBitMask[] =
+   {
+      "Position",
+      "Color",
+      "Normal",
+      "Tangent",
+      "Binormal",
+      "TextureCoordinate",
+      "WorldViewProjection"
+   };
+
    const char* strDynamicShadowsBitMask[] =
    {
       "Cast",

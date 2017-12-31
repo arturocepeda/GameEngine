@@ -29,7 +29,7 @@ using namespace GE::Rendering;
 //
 //  VertexShader
 //
-VertexShader::VertexShader(const char* Filename, uint VertexElements, const ShaderProgram::PreprocessorMacroList& Macros, ID3D11Device1* DXDevice)
+VertexShader::VertexShader(const char* Filename, uint8_t VertexElements, const ShaderProgram::PreprocessorMacroList& Macros, ID3D11Device1* DXDevice)
    : dxInputLayout(0)
    , dxVertexShader(0)
 {
@@ -96,7 +96,7 @@ VertexShader::VertexShader(const char* ByteCode, uint ByteCodeSize, uint VertexE
    createInputLayout(ByteCode, ByteCodeSize, VertexElements, DXDevice);
 }
 
-void VertexShader::createInputLayout(const char* pByteCode, uint iByteCodeSize, uint iVertexElements, ID3D11Device1* dxDevice)
+void VertexShader::createInputLayout(const char* pByteCode, uint iByteCodeSize, uint8_t iVertexElements, ID3D11Device1* dxDevice)
 {
    GESTLVector(D3D11_INPUT_ELEMENT_DESC) dxVertexLayout;
 
@@ -109,7 +109,7 @@ void VertexShader::createInputLayout(const char* pByteCode, uint iByteCodeSize, 
 
    uint iByteOffset = 0;
 
-   if(iVertexElements & VE_WVP)
+   if(GEHasFlag(iVertexElements, VertexElementsBitMask::WVP))
    {
       dxInputElementDesc.SemanticName = "WORLDVIEWPROJECTION";
       dxInputElementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -125,7 +125,7 @@ void VertexShader::createInputLayout(const char* pByteCode, uint iByteCodeSize, 
       dxInputElementDesc.SemanticIndex = 0;
    }
 
-   if(iVertexElements & VE_Position)
+   if(GEHasFlag(iVertexElements, VertexElementsBitMask::Position))
    {
       dxInputElementDesc.SemanticName = "POSITION";
       dxInputElementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
@@ -135,7 +135,7 @@ void VertexShader::createInputLayout(const char* pByteCode, uint iByteCodeSize, 
       iByteOffset += 3 * sizeof(float);
    }
 
-   if(iVertexElements & VE_Color)
+   if(GEHasFlag(iVertexElements, VertexElementsBitMask::Color))
    {
       dxInputElementDesc.SemanticName = "COLOR";
       dxInputElementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -145,7 +145,7 @@ void VertexShader::createInputLayout(const char* pByteCode, uint iByteCodeSize, 
       iByteOffset += 4 * sizeof(float);
    }
 
-   if(iVertexElements & VE_Normal)
+   if(GEHasFlag(iVertexElements, VertexElementsBitMask::Normal))
    {
       dxInputElementDesc.SemanticName = "NORMAL";
       dxInputElementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
@@ -155,7 +155,7 @@ void VertexShader::createInputLayout(const char* pByteCode, uint iByteCodeSize, 
       iByteOffset += 3 * sizeof(float);
    }
 
-   if(iVertexElements & VE_TexCoord)
+   if(GEHasFlag(iVertexElements, VertexElementsBitMask::TexCoord))
    {
       dxInputElementDesc.SemanticName = "TEXCOORD";
       dxInputElementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;

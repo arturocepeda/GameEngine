@@ -24,6 +24,20 @@
 
 namespace GE { namespace Rendering
 {
+   GESerializableEnum(VertexElementsBitMask)
+   {
+      Position  = 1 << 0,
+      Color     = 1 << 1,
+      Normal    = 1 << 2,
+      Tangent   = 1 << 3,
+      Binormal  = 1 << 4,
+      TexCoord  = 1 << 5,
+      WVP       = 1 << 6,
+
+      Count = 7
+   };
+
+
    struct ShaderProgramPreprocessorMacro
    {
       char Name[64];
@@ -55,6 +69,7 @@ namespace GE { namespace Rendering
       typedef GESTLVector(ShaderProgramParameter) ParameterList;
 
    protected:
+      uint8_t eVertexElements;
       DepthBufferMode eDepthBufferMode;
       CullingMode eCullingMode;
 
@@ -70,18 +85,21 @@ namespace GE { namespace Rendering
       ShaderProgram(const Core::ObjectName& Name, const Core::ObjectName& GroupName = Core::ObjectName::Empty);
       virtual ~ShaderProgram();
 
+      uint8_t getVertexElements() const;
+      void setVertexElements(uint8_t VertexElements);
+
       const DepthBufferMode getDepthBufferMode() const;
       void setDepthBufferMode(DepthBufferMode Mode);
 
       const CullingMode getCullingMode() const;
       void setCullingMode(CullingMode Mode);
 
-      uint getVertexElementsMask(const pugi::xml_node& xmlShader);
       void parsePreprocessorMacros(const pugi::xml_node& xmlShader);
       void parseParameters(const pugi::xml_node& xmlShader);
       void parseParameters(std::istream& sStream);
 
       GEPropertyReadonly(ObjectName, Name)
+      GEPropertyBitMask(VertexElementsBitMask, VertexElements)
       GEPropertyEnum(DepthBufferMode, DepthBufferMode)
       GEPropertyEnum(CullingMode, CullingMode)
    };
