@@ -246,27 +246,23 @@ void RenderSystem::loadShaders()
 
       pugi::xml_document xml;
       xml.load_buffer(cShadersData.getData(), cShadersData.getDataSize());
-      const pugi::xml_node& xmlShaders = xml.child("Shaders");
+      const pugi::xml_node& xmlShaders = xml.child("ShaderProgramList");
 
-      for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
+      for(const pugi::xml_node& xmlShader : xmlShaders.children("ShaderProgram"))
       {
          const char* sShaderName = xmlShader.attribute("name").value();
-         const char* sShaderVertexSource = xmlShader.attribute("vertexSource").value();
-         const char* sShaderFragmentSource = xmlShader.attribute("fragmentSource").value();
 
          ShaderProgramES20* cShaderProgram = Allocator::alloc<ShaderProgramES20>();
          GEInvokeCtor(ShaderProgramES20, cShaderProgram)(sShaderName);
 
-         cShaderProgram->parsePreprocessorMacros(xmlShader);
-         cShaderProgram->parseParameters(xmlShader);
          cShaderProgram->loadFromXml(xmlShader);
 
          cShaderProgram->ID = glCreateProgram();
          cShaderProgram->Status = 0;
          cShaderProgram->VS = Allocator::alloc<VertexShader>();
-         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sShaderVertexSource, cShaderProgram->PreprocessorMacros);
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(cShaderProgram);
          cShaderProgram->FS = Allocator::alloc<FragmentShader>();
-         GEInvokeCtor(FragmentShader, cShaderProgram->FS)(sShaderFragmentSource, cShaderProgram->PreprocessorMacros);
+         GEInvokeCtor(FragmentShader, cShaderProgram->FS)(cShaderProgram);
 
          static_cast<RenderSystemES20*>(this)->attachShaders(cShaderProgram);
 
@@ -289,7 +285,6 @@ void RenderSystem::loadShaders()
          ShaderProgramES20* cShaderProgram = Allocator::alloc<ShaderProgramES20>();
          GEInvokeCtor(ShaderProgramES20, cShaderProgram)(cShaderName);
 
-         cShaderProgram->parseParameters(sStream);
          cShaderProgram->loadFromStream(sStream);
 
          uint iShaderDataSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();

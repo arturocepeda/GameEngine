@@ -15,30 +15,13 @@
 #include "GEComponent.h"
 #include "GEComponentType.h"
 #include "Core/GESerializable.h"
-#include "Core/GEValue.h"
 
 namespace GE { namespace Entities
 {
-   class DataContainerVariable : public Core::SerializableArrayElement
+   class DataContainerVariable : public Core::GenericVariable
    {
-   private:
-      Core::ObjectName cName;
-      Core::Value cValue;
-
    public:
-      DataContainerVariable();
-      ~DataContainerVariable();
-
-      const Core::ObjectName& getName() const;
-      Core::ValueType getType() const;
-      const Core::Value& getValue() const;
-
-      void setName(const Core::ObjectName& Name);
-      void setType(Core::ValueType Type);
-      void setValue(const Core::Value& Val);
-
-      GEProperty(ObjectName, Name)
-      GEPropertyEnum(Core::ValueType, Type)
+      DataContainerVariable() : Core::GenericVariable("DataContainerVariable") {}
    };
 
 

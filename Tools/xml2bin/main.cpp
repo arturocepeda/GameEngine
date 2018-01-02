@@ -131,36 +131,12 @@ void packShaders(RenderingAPI eRenderingAPI)
       if(!cShaderProgram)
       {
          cShaderProgram = new ShaderProgram(cShaderProgramName);
-         mManagerShaderPrograms.add(cShaderProgram);
-
-         cShaderProgram->parseParameters(xmlShader);
          cShaderProgram->loadFromXml(xmlShader);
-      }
 
-      Value((GE::byte)cShaderProgram->VertexParameters.size()).writeToStream(sOutputFile);
-
-      for(uint i = 0; i < cShaderProgram->VertexParameters.size(); i++)
-      {
-         const ShaderProgramParameter& sParameter = cShaderProgram->VertexParameters[i];
-         Value(sParameter.Name).writeToStream(sOutputFile);
-         Value((GE::byte)sParameter.Type).writeToStream(sOutputFile);
-         Value((GE::byte)sParameter.Offset).writeToStream(sOutputFile);
-      }
-
-      Value((GE::byte)cShaderProgram->FragmentParameters.size()).writeToStream(sOutputFile);
-
-      for(uint i = 0; i < cShaderProgram->FragmentParameters.size(); i++)
-      {
-         const ShaderProgramParameter& sParameter = cShaderProgram->FragmentParameters[i];
-         Value(sParameter.Name).writeToStream(sOutputFile);
-         Value((GE::byte)sParameter.Type).writeToStream(sOutputFile);
-         Value((GE::byte)sParameter.Offset).writeToStream(sOutputFile);
+         mManagerShaderPrograms.add(cShaderProgram);
       }
 
       cShaderProgram->saveToStream(sOutputFile);
-
-      uint iVertexElementsMask = cShaderProgram->getVertexElementsMask(xmlShader);
-      Value((GE::byte)iVertexElementsMask).writeToStream(sOutputFile);
 
       for(uint i = 0; i < 2; i++)
       {

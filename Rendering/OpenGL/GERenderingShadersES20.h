@@ -76,7 +76,7 @@ namespace GE { namespace Rendering
       GE::uint iID;
       int iStatus;
    
-      void load(const char* sFilename, const char* sExt, const ShaderProgram::PreprocessorMacroList& Macros);
+      void load(const char* sFilename, const char* sExt, ShaderProgram* cShaderProgram);
       void load(const char* sData, int iDataSize);
    
    public:
@@ -90,7 +90,7 @@ namespace GE { namespace Rendering
    class VertexShader : public Shader
    {
    public:
-      VertexShader(const char* Filename, const ShaderProgram::PreprocessorMacroList& Macros);
+      VertexShader(ShaderProgram* cShaderProgram);
       VertexShader(const char* Data, int DataSize);
    };
 
@@ -98,7 +98,7 @@ namespace GE { namespace Rendering
    class FragmentShader : public Shader
    {
    public:
-      FragmentShader(const char* Filename, const ShaderProgram::PreprocessorMacroList& Macros);
+      FragmentShader(ShaderProgram* cShaderProgram);
       FragmentShader(const char* Data, int DataSize);
    };
 

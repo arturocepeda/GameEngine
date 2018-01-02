@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////
 
 #include "GESerializable.h"
+#include "GEEvents.h"
 
 using namespace GE;
 using namespace GE::Core;
@@ -447,4 +448,73 @@ void SerializableArrayElement::setOwner(Serializable* Owner)
 {
    GEAssert(Owner);
    cOwner = Owner;
+}
+
+
+//
+//  GenericVariable
+//
+const ObjectName ValuePropertyName = ObjectName("Value");
+const uint ValuePropertyIndex = 2;
+
+GenericVariable::GenericVariable(const ObjectName& ClassName)
+   : SerializableArrayElement(ClassName)
+   , cValue(0.0f)
+{
+   GERegisterProperty(ObjectName, Name);
+   GERegisterPropertyEnum(ValueType, Type);
+
+   setType(ValueType::Float);
+}
+
+GenericVariable::~GenericVariable()
+{
+}
+
+const ObjectName& GenericVariable::getName() const
+{
+   return cName;
+}
+
+ValueType GenericVariable::getType() const
+{
+   return cValue.getType();
+}
+
+const Value& GenericVariable::getValue() const
+{
+   return cValue;
+}
+
+void GenericVariable::setName(const Core::ObjectName& Name)
+{
+   cName = Name;
+}
+
+void GenericVariable::setType(Core::ValueType Type)
+{
+   if(getPropertiesCount() > ValuePropertyIndex)
+   {
+      removeProperty(ValuePropertyIndex);
+   }
+
+   cValue = Value::getDefaultValue(Type);
+
+   registerProperty(ValuePropertyName, Type,
+      [this](const GE::Core::Value& v) { cValue = v; },
+      [this]()->GE::Core::Value { return cValue; });
+
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
+#endif
+}
+
+void GenericVariable::setValue(const Value& Val)
+{
+   if(cValue.getType() != Val.getType())
+   {
+      setType(Val.getType());
+   }
+
+   cValue = Val;
 }

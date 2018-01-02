@@ -12,13 +12,10 @@
 
 #pragma once
 
-#include <stdlib.h>
-#include <cmath>
-#include <string>
-
-#include "GEConstants.h"
+#include "Core/GEConstants.h"
 #include "Types/GETypes.h"
 #include "Types/GESTLTypes.h"
+
 #include "Externals/pugixml/pugixml.hpp"
 
 namespace GE { namespace Core
@@ -37,7 +34,7 @@ namespace GE { namespace Core
 
    private:
       NonCopyable(const NonCopyable&);
-      NonCopyable& operator = (const NonCopyable&);
+      NonCopyable& operator=(const NonCopyable&);
    };
 
 

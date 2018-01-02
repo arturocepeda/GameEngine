@@ -190,40 +190,45 @@ void MaterialPass::setMaterial(Material* M)
       ShaderProgram* cShaderProgram = static_cast<ShaderProgram*>(cShadersObjectRegistry->find(cMaterial->getShaderProgram().getID())->second);
       GEAssert(cShaderProgram);
 
-      if(cShaderProgram->VertexParameters.size() > 0)
+      if(cShaderProgram->getShaderProgramVertexParameterCount() > 0)
       {
          sConstantBufferDataVertex = Allocator::alloc<char>(Material::ConstantBufferSize);
-         registerShaderProperties(sConstantBufferDataVertex, cShaderProgram->VertexParameters);
+         registerShaderProperties(sConstantBufferDataVertex, cShaderProgram->vShaderProgramVertexParameterList);
       }
 
-      if(cShaderProgram->FragmentParameters.size() > 0)
+      if(cShaderProgram->getShaderProgramFragmentParameterCount() > 0)
       {
          sConstantBufferDataFragment = Allocator::alloc<char>(Material::ConstantBufferSize);
-         registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->FragmentParameters);
+         registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->vShaderProgramFragmentParameterList);
       }
    }
 
    EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
 }
 
-void MaterialPass::registerShaderProperties(char* sBuffer, const ShaderProgram::ParameterList& vParameterList)
+void MaterialPass::registerShaderProperties(char* sBuffer, const PropertyArrayEntries& vParameterList)
 {
+   uint iParameterOffset = 0;
+
    for(uint i = 0; i < vParameterList.size(); i++)
    {
-      const ShaderProgramParameter& sParameter = vParameterList[i];
+      const ShaderProgramParameter* cParameter = static_cast<const ShaderProgramParameter*>(vParameterList[i]);
+      const ValueType eParameterType = cParameter->getType();
 
-      PropertySetter setter = [sBuffer, &sParameter](const Value& cValue)
+      PropertySetter setter = [sBuffer, iParameterOffset](const Value& cValue)
       {
-         memcpy(sBuffer + sParameter.Offset, cValue.getRawData(), cValue.getSize());
+         memcpy(sBuffer + iParameterOffset, cValue.getRawData(), cValue.getSize());
       };
-      PropertyGetter getter = [sBuffer, &sParameter]() -> Value
+      PropertyGetter getter = [sBuffer, eParameterType, iParameterOffset]() -> Value
       {
-         const uint iValueSize = Value::getDefaultValue(sParameter.Type).getSize();
-         return Value::fromRawData(sParameter.Type, sBuffer + sParameter.Offset, iValueSize);
+         const uint iValueSize = Value::getDefaultValue(eParameterType).getSize();
+         return Value::fromRawData(eParameterType, sBuffer + iParameterOffset, iValueSize);
       };
 
-      registerProperty(sParameter.Name, sParameter.Type, setter, getter);
-      set(sParameter.Name, sParameter.DefaultValue);
+      registerProperty(cParameter->getName(), cParameter->getType(), setter, getter);
+      set(cParameter->getName(), cParameter->getValue());
+
+      iParameterOffset += Value::getDefaultValue(eParameterType).getSize();
    }
 }
 
@@ -312,14 +317,14 @@ void MaterialPass::reload()
    ShaderProgram* cShaderProgram = static_cast<ShaderProgram*>(cShadersObjectRegistry->find(cMaterial->getShaderProgram().getID())->second);
    GEAssert(cShaderProgram);
 
-   if(cShaderProgram->VertexParameters.size() > 0)
+   if(cShaderProgram->getShaderProgramVertexParameterCount() > 0)
    {
-      registerShaderProperties(sConstantBufferDataVertex, cShaderProgram->VertexParameters);
+      registerShaderProperties(sConstantBufferDataVertex, cShaderProgram->vShaderProgramVertexParameterList);
    }
 
-   if(cShaderProgram->FragmentParameters.size() > 0)
+   if(cShaderProgram->getShaderProgramFragmentParameterCount() > 0)
    {
-      registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->FragmentParameters);
+      registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->vShaderProgramFragmentParameterList);
    }
 
    EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);

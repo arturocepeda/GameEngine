@@ -89,7 +89,7 @@ namespace GE { namespace Rendering
       char* sConstantBufferDataVertex;
       char* sConstantBufferDataFragment;
 
-      void registerShaderProperties(char* sBuffer, const ShaderProgram::ParameterList& vParameterList);
+      void registerShaderProperties(char* sBuffer, const Core::PropertyArrayEntries& vParameterList);
       void releaseConstantBufferData();
 
    public:

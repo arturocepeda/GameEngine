@@ -542,9 +542,9 @@ void RenderSystem::loadShaders()
 
       pugi::xml_document xml;
       xml.load_buffer(cShadersData.getData(), cShadersData.getDataSize());
-      const pugi::xml_node& xmlShaders = xml.child("Shaders");
+      const pugi::xml_node& xmlShaders = xml.child("ShaderProgramList");
 
-      for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
+      for(const pugi::xml_node& xmlShader : xmlShaders.children("ShaderProgram"))
       {
          const char* sShaderProgramName = xmlShader.attribute("name").value();
          ShaderProgramDX11* cShaderProgram = static_cast<ShaderProgramDX11*>(mShaderPrograms.get(sShaderProgramName));
@@ -561,17 +561,12 @@ void RenderSystem::loadShaders()
 
          GEInvokeCtor(ShaderProgramDX11, cShaderProgram)(sShaderProgramName);
 
-         const char* sVertexSource = xmlShader.attribute("vertexSource").value();
-         const char* sFragmentSource = xmlShader.attribute("fragmentSource").value();
-
-         cShaderProgram->parsePreprocessorMacros(xmlShader);
-         cShaderProgram->parseParameters(xmlShader);
          cShaderProgram->loadFromXml(xmlShader);
 
          cShaderProgram->VS = Allocator::alloc<VertexShader>();
-         GEInvokeCtor(VertexShader, cShaderProgram->VS)(sVertexSource, cShaderProgram->getVertexElements(), cShaderProgram->PreprocessorMacros, dxDevice.Get());
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(cShaderProgram, dxDevice.Get());
          cShaderProgram->PS = Allocator::alloc<PixelShader>();
-         GEInvokeCtor(PixelShader, cShaderProgram->PS)(sFragmentSource, cShaderProgram->PreprocessorMacros, dxDevice.Get());
+         GEInvokeCtor(PixelShader, cShaderProgram->PS)(cShaderProgram, dxDevice.Get());
 
          if(!bReload)
          {
@@ -595,7 +590,6 @@ void RenderSystem::loadShaders()
          ShaderProgramDX11* cShaderProgram = Allocator::alloc<ShaderProgramDX11>();
          GEInvokeCtor(ShaderProgramDX11, cShaderProgram)(cShaderProgramName);
 
-         cShaderProgram->parseParameters(sStream);
          cShaderProgram->loadFromStream(sStream);
 
          uint iShaderByteCodeSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
@@ -603,7 +597,7 @@ void RenderSystem::loadShaders()
          sStream.read(&vShaderByteCode[0], iShaderByteCodeSize);
 
          cShaderProgram->VS = Allocator::alloc<VertexShader>();
-         GEInvokeCtor(VertexShader, cShaderProgram->VS)(&vShaderByteCode[0], iShaderByteCodeSize, cShaderProgram->getVertexElements(), dxDevice.Get());
+         GEInvokeCtor(VertexShader, cShaderProgram->VS)(&vShaderByteCode[0], iShaderByteCodeSize, cShaderProgram, dxDevice.Get());
 
          iShaderByteCodeSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
          vShaderByteCode.resize(iShaderByteCodeSize);

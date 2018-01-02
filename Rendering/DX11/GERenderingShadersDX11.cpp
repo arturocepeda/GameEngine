@@ -29,37 +29,39 @@ using namespace GE::Rendering;
 //
 //  VertexShader
 //
-VertexShader::VertexShader(const char* Filename, uint8_t VertexElements, const ShaderProgram::PreprocessorMacroList& Macros, ID3D11Device1* DXDevice)
+VertexShader::VertexShader(ShaderProgram* cShaderProgram, ID3D11Device1* DXDevice)
    : dxInputLayout(0)
    , dxVertexShader(0)
 {
    char sBuffer[64];
-   sprintf(sBuffer, "Shaders\\hlsl\\%s.vsh.hlsl", Filename);
+   sprintf(sBuffer, "Shaders\\hlsl\\%s.vsh.hlsl", cShaderProgram->getVertexSource());
 
    wchar_t wsBuffer[64];
    mbstowcs(wsBuffer, sBuffer, strlen(sBuffer) + 1);
 
+   const PropertyArrayEntries& vMacros = cShaderProgram->vShaderProgramPreprocessorMacroList;
    D3D_SHADER_MACRO* dxDefines = 0;
 
-   if(!Macros.empty())
+   if(!vMacros.empty())
    {
-      dxDefines = new D3D_SHADER_MACRO[Macros.size() + 1];
+      dxDefines = new D3D_SHADER_MACRO[vMacros.size() + 1];
 
-      for(uint i = 0; i < Macros.size(); i++)
+      for(uint i = 0; i < vMacros.size(); i++)
       {
-         dxDefines[i].Name = Macros[i].Name;
-         dxDefines[i].Definition = Macros[i].Value;
+         const ShaderProgramPreprocessorMacro* cMacro = static_cast<const ShaderProgramPreprocessorMacro*>(vMacros[i]);
+         dxDefines[i].Name = cMacro->getName();
+         dxDefines[i].Definition = cMacro->getValue();
       }
 
-      dxDefines[Macros.size()].Name = 0;
-      dxDefines[Macros.size()].Definition = 0;
+      dxDefines[vMacros.size()].Name = 0;
+      dxDefines[vMacros.size()].Definition = 0;
    }
 
    ID3DBlob* dxCodeBlob = 0;
    ID3DBlob* dxErrorBlob = 0;
    HRESULT hr = D3DCompileFromFile(wsBuffer, dxDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", 0, 0, &dxCodeBlob, &dxErrorBlob);
 
-   if(!Macros.empty())
+   if(!vMacros.empty())
    {
       delete[] dxDefines;
       dxDefines = 0;
@@ -84,16 +86,16 @@ VertexShader::VertexShader(const char* Filename, uint8_t VertexElements, const S
 
    DXDevice->CreateVertexShader(pShaderByteCodeData, iShaderByteCodeSize, 0, &dxVertexShader);
 
-   createInputLayout(pShaderByteCodeData, iShaderByteCodeSize, VertexElements, DXDevice);
+   createInputLayout(pShaderByteCodeData, iShaderByteCodeSize, cShaderProgram->getVertexElements(), DXDevice);
 }
 
-VertexShader::VertexShader(const char* ByteCode, uint ByteCodeSize, uint VertexElements, ID3D11Device1* DXDevice)
+VertexShader::VertexShader(const char* ByteCode, uint ByteCodeSize, ShaderProgram* cShaderProgram, ID3D11Device1* DXDevice)
    : dxInputLayout(0)
    , dxVertexShader(0)
 {
    DXDevice->CreateVertexShader(ByteCode, ByteCodeSize, 0, &dxVertexShader);
 
-   createInputLayout(ByteCode, ByteCodeSize, VertexElements, DXDevice);
+   createInputLayout(ByteCode, ByteCodeSize, cShaderProgram->getVertexElements(), DXDevice);
 }
 
 void VertexShader::createInputLayout(const char* pByteCode, uint iByteCodeSize, uint8_t iVertexElements, ID3D11Device1* dxDevice)
@@ -182,36 +184,38 @@ ID3D11VertexShader* VertexShader::getShader() const
 //
 //  PixelShader
 //
-PixelShader::PixelShader(const char* Filename, const ShaderProgram::PreprocessorMacroList& Macros, ID3D11Device1* DXDevice)
+PixelShader::PixelShader(ShaderProgram* cShaderProgram, ID3D11Device1* DXDevice)
    : dxPixelShader(0)
 {
    char sBuffer[64];
-   sprintf(sBuffer, "Shaders\\hlsl\\%s.psh.hlsl", Filename);
+   sprintf(sBuffer, "Shaders\\hlsl\\%s.psh.hlsl", cShaderProgram->getFragmentSource());
 
    wchar_t wsBuffer[64];
    mbstowcs(wsBuffer, sBuffer, strlen(sBuffer) + 1);
 
+   const PropertyArrayEntries& vMacros = cShaderProgram->vShaderProgramPreprocessorMacroList;
    D3D_SHADER_MACRO* dxDefines = 0;
 
-   if(!Macros.empty())
+   if(!vMacros.empty())
    {
-      dxDefines = new D3D_SHADER_MACRO[Macros.size() + 1];
+      dxDefines = new D3D_SHADER_MACRO[vMacros.size() + 1];
 
-      for(uint i = 0; i < Macros.size(); i++)
+      for(uint i = 0; i < vMacros.size(); i++)
       {
-         dxDefines[i].Name = Macros[i].Name;
-         dxDefines[i].Definition = Macros[i].Value;
+         const ShaderProgramPreprocessorMacro* cMacro = static_cast<const ShaderProgramPreprocessorMacro*>(vMacros[i]);
+         dxDefines[i].Name = cMacro->getName();
+         dxDefines[i].Definition = cMacro->getValue();
       }
 
-      dxDefines[Macros.size()].Name = 0;
-      dxDefines[Macros.size()].Definition = 0;
+      dxDefines[vMacros.size()].Name = 0;
+      dxDefines[vMacros.size()].Definition = 0;
    }
 
    ID3DBlob* dxCodeBlob = 0;
    ID3DBlob* dxErrorBlob = 0;
    HRESULT hr = D3DCompileFromFile(wsBuffer, dxDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", 0, 0, &dxCodeBlob, &dxErrorBlob);
 
-   if(!Macros.empty())
+   if(!vMacros.empty())
    {
       delete[] dxDefines;
       dxDefines = 0;

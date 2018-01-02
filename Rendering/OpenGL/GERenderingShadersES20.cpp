@@ -30,7 +30,7 @@ Shader::~Shader()
    glDeleteShader(iID);
 }
 
-void Shader::load(const char* sFilename, const char* sExt, const ShaderProgram::PreprocessorMacroList& Macros)
+void Shader::load(const char* sFilename, const char* sExt, ShaderProgram* cShaderProgram)
 {
    // read source file
    ContentData cShader;
@@ -39,10 +39,13 @@ void Shader::load(const char* sFilename, const char* sExt, const ShaderProgram::
    GESTLString sShaderSource(cShader.getData(), cShader.getDataSize());
 
    // add preprocessor macros
-   for(uint i = 0; i < Macros.size(); i++)
+   const PropertyArrayEntries& vMacros = cShaderProgram->vShaderProgramPreprocessorMacroList;
+
+   for(uint i = 0; i < vMacros.size(); i++)
    {
+      const ShaderProgramPreprocessorMacro* cMacro = static_cast<const ShaderProgramPreprocessorMacro*>(vMacros[i]);
       char sBuffer[256];
-      sprintf(sBuffer, "#define %s %s\n", Macros[i].Name, Macros[i].Value);
+      sprintf(sBuffer, "#define %s %s\n", cMacro->getName(), cMacro->getValue());
       sShaderSource.insert(0, sBuffer);
    }
 
@@ -123,14 +126,14 @@ bool Shader::check()
 //
 //  VertexShader
 //
-VertexShader::VertexShader(const char* Filename, const ShaderProgram::PreprocessorMacroList& Macros)
+VertexShader::VertexShader(ShaderProgram* cShaderProgram)
 {
    // get shader ID
    iID = glCreateShader(GL_VERTEX_SHADER);
    iStatus = 0;
    
    // load shader
-   load(Filename, "vsh", Macros);
+   load(cShaderProgram->getVertexSource(), "vsh", cShaderProgram);
 }
 
 VertexShader::VertexShader(const char* Data, int DataSize)
@@ -147,14 +150,14 @@ VertexShader::VertexShader(const char* Data, int DataSize)
 //
 //  FragmentShader
 //
-FragmentShader::FragmentShader(const char* Filename, const ShaderProgram::PreprocessorMacroList& Macros)
+FragmentShader::FragmentShader(ShaderProgram* cShaderProgram)
 {
    // get shader ID
    iID = glCreateShader(GL_FRAGMENT_SHADER);
    iStatus = 0;
    
    // load shader
-   load(Filename, "fsh", Macros);
+   load(cShaderProgram->getFragmentSource(), "fsh", cShaderProgram);
 }
 
 FragmentShader::FragmentShader(const char* Data, int DataSize)

@@ -29,8 +29,8 @@ namespace GE { namespace Rendering
       void createInputLayout(const char* pByteCode, uint iByteCodeSize, uint8_t iVertexElements, ID3D11Device1* dxDevice);
 
    public:
-      VertexShader(const char* Filename, uint8_t VertexElements, const ShaderProgram::PreprocessorMacroList& Macros, ID3D11Device1* DXDevice);
-      VertexShader(const char* ByteCode, uint ByteCodeSize, uint VertexElements, ID3D11Device1* DXDevice);
+      VertexShader(ShaderProgram* cShaderProgram, ID3D11Device1* DXDevice);
+      VertexShader(const char* ByteCode, uint ByteCodeSize, ShaderProgram* cShaderProgram, ID3D11Device1* DXDevice);
 
       ID3D11InputLayout* getInputLayout() const;
       ID3D11VertexShader* getShader() const;
@@ -43,7 +43,7 @@ namespace GE { namespace Rendering
       ID3D11PixelShader* dxPixelShader;
 
    public:
-      PixelShader(const char* Filename, const ShaderProgram::PreprocessorMacroList& Macros, ID3D11Device1* DXDevice);
+      PixelShader(ShaderProgram* cShaderProgram, ID3D11Device1* DXDevice);
       PixelShader(const char* ByteCode, uint ByteCodeSize, ID3D11Device1* DXDevice);
 
       ID3D11PixelShader* getShader() const;

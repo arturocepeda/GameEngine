@@ -16,10 +16,9 @@
 #include "GEObject.h"
 #include "GEParser.h"
 #include "GEObjectManager.h"
+
 #include "Externals/pugixml/pugixml.hpp"
 
-#include <vector>
-#include <cstdlib>
 #include <functional>
 
 namespace GE { namespace Core
@@ -359,3 +358,33 @@ namespace GE { namespace Core
 
 #define GEReleasePropertyArray(ArrayElementName) \
    clear##ArrayElementName##List()
+
+
+//
+//  Generic array element
+//
+namespace GE { namespace Core
+{
+   class GenericVariable : public SerializableArrayElement
+   {
+   protected:
+      ObjectName cName;
+      Value cValue;
+
+      GenericVariable(const ObjectName& ClassName);
+
+   public:
+      ~GenericVariable();
+
+      const ObjectName& getName() const;
+      ValueType getType() const;
+      const Value& getValue() const;
+
+      void setName(const ObjectName& Name);
+      void setType(ValueType Type);
+      void setValue(const Value& Val);
+
+      GEProperty(ObjectName, Name)
+      GEPropertyEnum(ValueType, Type)
+   };
+}}

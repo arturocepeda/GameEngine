@@ -38,52 +38,73 @@ namespace GE { namespace Rendering
    };
 
 
-   struct ShaderProgramPreprocessorMacro
+   class ShaderProgramPreprocessorMacro : public Core::SerializableArrayElement
    {
-      char Name[64];
-      char Value[64];
+   private:
+      char sName[64];
+      char sValue[64];
+
+   public:
+      ShaderProgramPreprocessorMacro()
+         : Core::SerializableArrayElement("ShaderProgramPreprocessorMacro")
+      {
+         sName[0] = '\0';
+         sValue[0] = '\0';
+
+         GERegisterProperty(String, Name);
+         GERegisterProperty(String, Value);
+      }
+
+      const char* getName() const { return sName; }
+      void setName(const char* Value) { strcpy(sName, Value); }
+
+      const char* getValue() const { return sValue; }
+      void setValue(const char* Value) { strcpy(sValue, Value); }
+
+      GEProperty(String, Name)
+      GEProperty(String, Value)
    };
 
 
-   struct ShaderProgramParameter
+   class ShaderProgramParameter : public Core::GenericVariable
    {
-      Core::ObjectName Name;
-      Core::ValueType Type;
-      Core::Value DefaultValue;
-      uint Offset;
+   protected:
+      ShaderProgramParameter(const Core::ObjectName& ClassName) : Core::GenericVariable(ClassName) {}
+   };
 
-      ShaderProgramParameter(const Core::ObjectName& cName, Core::ValueType eType)
-         : Name(cName)
-         , Type(eType)
-         , DefaultValue(Core::Value::getDefaultValue(eType))
-         , Offset(0)
-      {
-      }
+
+   class ShaderProgramVertexParameter : public ShaderProgramParameter
+   {
+   public:
+      ShaderProgramVertexParameter() : ShaderProgramParameter("ShaderProgramVertexParameter") {}
+   };
+
+
+   class ShaderProgramFragmentParameter : public ShaderProgramParameter
+   {
+   public:
+      ShaderProgramFragmentParameter() : ShaderProgramParameter("ShaderProgramFragmentParameter") {}
    };
 
 
    class ShaderProgram : public Content::SerializableResource
    {
-   public:
-      typedef GESTLVector(ShaderProgramPreprocessorMacro) PreprocessorMacroList;
-      typedef GESTLVector(ShaderProgramParameter) ParameterList;
-
    protected:
+      char sVertexSource[32];
+      char sFragmentSource[32];
       uint8_t eVertexElements;
       DepthBufferMode eDepthBufferMode;
       CullingMode eCullingMode;
 
-      void parseParameters(const pugi::xml_node& xmlShader, const char* sTag, ParameterList* vParameterList);
-      void parseParameters(std::istream& sStream, ParameterList* vParameterList);
-
    public:
-      PreprocessorMacroList PreprocessorMacros;
-
-      ParameterList VertexParameters;
-      ParameterList FragmentParameters;
-
       ShaderProgram(const Core::ObjectName& Name, const Core::ObjectName& GroupName = Core::ObjectName::Empty);
       virtual ~ShaderProgram();
+
+      const char* getVertexSource() const { return sVertexSource; }
+      void setVertexSource(const char* Value) { strcpy(sVertexSource, Value); }
+
+      const char* getFragmentSource() const { return sFragmentSource; }
+      void setFragmentSource(const char* Value) { strcpy(sFragmentSource, Value); }
 
       uint8_t getVertexElements() const;
       void setVertexElements(uint8_t VertexElements);
@@ -94,13 +115,14 @@ namespace GE { namespace Rendering
       const CullingMode getCullingMode() const;
       void setCullingMode(CullingMode Mode);
 
-      void parsePreprocessorMacros(const pugi::xml_node& xmlShader);
-      void parseParameters(const pugi::xml_node& xmlShader);
-      void parseParameters(std::istream& sStream);
-
       GEPropertyReadonly(ObjectName, Name)
+      GEProperty(String, VertexSource)
+      GEProperty(String, FragmentSource)
       GEPropertyBitMask(VertexElementsBitMask, VertexElements)
       GEPropertyEnum(DepthBufferMode, DepthBufferMode)
       GEPropertyEnum(CullingMode, CullingMode)
+      GEPropertyArray(ShaderProgramPreprocessorMacro, ShaderProgramPreprocessorMacro)
+      GEPropertyArray(ShaderProgramVertexParameter, ShaderProgramVertexParameter)
+      GEPropertyArray(ShaderProgramFragmentParameter, ShaderProgramFragmentParameter)
    };
 }}
