@@ -43,6 +43,8 @@ using namespace pugi;
 const char ContentXmlDirName[] = ".";
 const char ContentBinDirName[] = "..\\contentBin";
 
+const bool StripLuaSymbols = true;
+
 ObjectManager<ShaderProgram> mManagerShaderPrograms;
 ObjectManager<Material> mManagerMaterials;
 ObjectManager<Texture> mManagerTextures;
@@ -1089,7 +1091,7 @@ void compileScripts()
       sprintf(sOutputPath, "%s\\%sbc", sOutputPath, sScriptFileName);
 
       char sParameters[1024];
-      sprintf(sParameters, "-o %s -s %s", sOutputPath, sInputPath);
+      sprintf(sParameters, "-o %s %s%s", sOutputPath, (StripLuaSymbols ? "-s " : ""), sInputPath);
 
       SHELLEXECUTEINFO sShellExecuteInfo;
       sShellExecuteInfo.cbSize = sizeof(SHELLEXECUTEINFO);
@@ -1107,7 +1109,7 @@ void compileScripts()
       sprintf(sOutputPath, "%s\\Scripts", sOutputPath);
       sprintf(sOutputPath, "%s\\x64_%sbc", sOutputPath, sScriptFileName);
 
-      sprintf(sParameters, "-o %s -s %s", sOutputPath, sInputPath);
+      sprintf(sParameters, "-o %s %s%s", sOutputPath, (StripLuaSymbols ? "-s " : ""), sInputPath);
 
       sShellExecuteInfo.lpFile = "..\\..\\..\\GameEngine\\Tools\\Externals\\lua53\\luac53_x64.exe";
       ShellExecuteEx(&sShellExecuteInfo);
