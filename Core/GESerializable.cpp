@@ -366,6 +366,7 @@ void Serializable::saveToStream(std::ostream& Stream) const
    for(uint i = 0; i < vPropertyArrays.size(); i++)
    {
       const PropertyArray& sPropertyArray = vPropertyArrays[i];
+      Value((GE::byte)sPropertyArray.Entries->size()).writeToStream(Stream);
 
       for(uint j = 0; j < sPropertyArray.Entries->size(); j++)
       {

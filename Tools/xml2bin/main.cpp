@@ -95,10 +95,10 @@ void packShaders(RenderingAPI eRenderingAPI)
 
    pugi::xml_document xml;
    xml.load_file(L"Shaders\\Shaders.xml");
-   const pugi::xml_node& xmlShaders = xml.child("Shaders");
+   const pugi::xml_node& xmlShaders = xml.child("ShaderProgramList");
    uint iShadersCount = 0;
 
-   for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
+   for(const pugi::xml_node& xmlShader : xmlShaders.children("ShaderProgram"))
       iShadersCount++;
 
    char sOutputPath[MAX_PATH];
@@ -115,14 +115,10 @@ void packShaders(RenderingAPI eRenderingAPI)
 
    Value((GE::byte)iShadersCount).writeToStream(sOutputFile);
 
-   for(const pugi::xml_node& xmlShader : xmlShaders.children("Shader"))
+   for(const pugi::xml_node& xmlShader : xmlShaders.children("ShaderProgram"))
    {
       const char* sShaderProgramName = xmlShader.attribute("name").value();
       ObjectName cShaderProgramName = ObjectName(sShaderProgramName);
-
-      const char* sShaderName[2];
-      sShaderName[0] = xmlShader.attribute("vertexSource").value();
-      sShaderName[1] = xmlShader.attribute("fragmentSource").value();
 
       Value(cShaderProgramName).writeToStream(sOutputFile);
 
@@ -137,6 +133,10 @@ void packShaders(RenderingAPI eRenderingAPI)
       }
 
       cShaderProgram->saveToStream(sOutputFile);
+
+      const char* sShaderName[2];
+      sShaderName[0] = cShaderProgram->getVertexSource();
+      sShaderName[1] = cShaderProgram->getFragmentSource();
 
       for(uint i = 0; i < 2; i++)
       {
@@ -157,9 +157,33 @@ void packShaders(RenderingAPI eRenderingAPI)
             wchar_t wsInputPath[MAX_PATH];
             mbstowcs(wsInputPath, sInputPath, strlen(sInputPath) + 1);
 
+            const PropertyArrayEntries& vMacros = cShaderProgram->vShaderProgramPreprocessorMacroList;
+            D3D_SHADER_MACRO* dxDefines = 0;
+
+            if(!vMacros.empty())
+            {
+               dxDefines = new D3D_SHADER_MACRO[vMacros.size() + 1];
+
+               for(uint i = 0; i < vMacros.size(); i++)
+               {
+                  const ShaderProgramPreprocessorMacro* cMacro = static_cast<const ShaderProgramPreprocessorMacro*>(vMacros[i]);
+                  dxDefines[i].Name = cMacro->getName();
+                  dxDefines[i].Definition = cMacro->getValue();
+               }
+
+               dxDefines[vMacros.size()].Name = 0;
+               dxDefines[vMacros.size()].Definition = 0;
+            }
+
             ID3DBlob* dxCodeBlob = 0;
             ID3DBlob* dxErrorBlob = 0;
-            HRESULT hr = D3DCompileFromFile(wsInputPath, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", sShaderTarget[i], 0, 0, &dxCodeBlob, &dxErrorBlob);
+            HRESULT hr = D3DCompileFromFile(wsInputPath, dxDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", sShaderTarget[i], 0, 0, &dxCodeBlob, &dxErrorBlob);
+
+            if(!vMacros.empty())
+            {
+               delete[] dxDefines;
+               dxDefines = 0;
+            }
 
             if(FAILED(hr))
             {
@@ -188,6 +212,17 @@ void packShaders(RenderingAPI eRenderingAPI)
             std::ifstream sShaderFile(sInputPath);
             sShaderSource = std::string((std::istreambuf_iterator<char>(sShaderFile)), std::istreambuf_iterator<char>());
             sShaderFile.close();
+
+            // add preprocessor macros
+            const PropertyArrayEntries& vMacros = cShaderProgram->vShaderProgramPreprocessorMacroList;
+
+            for(uint i = 0; i < vMacros.size(); i++)
+            {
+               const ShaderProgramPreprocessorMacro* cMacro = static_cast<const ShaderProgramPreprocessorMacro*>(vMacros[i]);
+               char sBuffer[256];
+               sprintf(sBuffer, "#define %s %s\n", cMacro->getName(), cMacro->getValue());
+               sShaderSource.insert(0, sBuffer);
+            }
 
             // process include directives
             const char* IncludeStr = "#include \"";
