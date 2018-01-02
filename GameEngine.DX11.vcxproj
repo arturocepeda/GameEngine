@@ -258,6 +258,7 @@
       <CompileAsWinRT>false</CompileAsWinRT>
       <MinimalRebuild>true</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -278,6 +279,7 @@
       </PrecompiledHeaderOutputFile>
       <CompileAsWinRT>false</CompileAsWinRT>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -300,6 +302,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -325,6 +328,7 @@
       <CompileAsWinRT>false</CompileAsWinRT>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
