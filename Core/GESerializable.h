@@ -265,7 +265,7 @@ namespace GE { namespace Core
    { \
       Class cEntry; \
       cEntry.loadFromXml(XmlNode); \
-      cEntry.xmlToStream(XmlNode, Stream); \
+      cEntry.saveToStream(Stream); \
    }
 
 
