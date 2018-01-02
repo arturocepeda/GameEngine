@@ -38,7 +38,6 @@ Entity::Entity(const ObjectName& Name, Entity* Parent, Scene* Owner)
    updateFullName();
    memset(vComponents, 0, sizeof(Component*) * (uint)ComponentType::Count);
 
-   GERegisterProperty(ObjectName, Name);
    GERegisterProperty(Bool, Active);
    GERegisterPropertyMinMax(UInt, ClockIndex, 0, Time::ClocksCount - 1);
    GERegisterProperty(ObjectName, PrefabName);
