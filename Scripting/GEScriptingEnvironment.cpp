@@ -627,6 +627,7 @@ void ScriptingEnvironment::registerTypes()
       "PropertyInterpolatorFloat"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &PropertyInterpolator<float>::animate
+      , "alternate", &PropertyInterpolator<float>::alternate
       , "update", &PropertyInterpolator<float>::update
    );
    lua.new_usertype<PropertyInterpolator<Vector2>>
@@ -634,6 +635,7 @@ void ScriptingEnvironment::registerTypes()
       "PropertyInterpolatorVector2"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &PropertyInterpolator<Vector2>::animate
+      , "alternate", &PropertyInterpolator<Vector2>::alternate
       , "update", &PropertyInterpolator<Vector2>::update
    );
    lua.new_usertype<PropertyInterpolator<Vector3>>
@@ -641,6 +643,7 @@ void ScriptingEnvironment::registerTypes()
       "PropertyInterpolatorVector3"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &PropertyInterpolator<Vector3>::animate
+      , "alternate", &PropertyInterpolator<Vector3>::alternate
       , "update", &PropertyInterpolator<Vector3>::update
    );
    lua.new_usertype<PropertyInterpolator<Color>>
@@ -648,6 +651,7 @@ void ScriptingEnvironment::registerTypes()
       "PropertyInterpolatorColor"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &PropertyInterpolator<Color>::animate
+      , "alternate", &PropertyInterpolator<Color>::alternate
       , "update", &PropertyInterpolator<Color>::update
    );
    lua.new_usertype<CurveKey>
