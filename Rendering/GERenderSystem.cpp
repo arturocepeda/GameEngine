@@ -1086,7 +1086,18 @@ int canvasSortComparer(const void* pCanvas1, const void* pCanvas2)
    const _3DUICanvasEntry* sCanvas1 = static_cast<const _3DUICanvasEntry*>(pCanvas1);
    const _3DUICanvasEntry* sCanvas2 = static_cast<const _3DUICanvasEntry*>(pCanvas2);
 
-   ComponentCamera* cActiveCamera = RenderSystem::getInstance()->getActiveCamera();
+   RenderSystem* cRender = RenderSystem::getInstance();
+
+   if(cRender->_3DUICanvasSortFunction)
+   {
+      return cRender->_3DUICanvasSortFunction(sCanvas1, sCanvas2) ? 1 : -1;
+   }
+
+   ComponentCamera* cActiveCamera = cRender->getActiveCamera();
+
+   if(!cActiveCamera)
+      return 1;
+
    const Vector3& vCameraPosition = cActiveCamera->getTransform()->getWorldPosition();
 
    return vCameraPosition.getSquaredDistanceTo(sCanvas1->WorldPosition) < vCameraPosition.getSquaredDistanceTo(sCanvas2->WorldPosition)

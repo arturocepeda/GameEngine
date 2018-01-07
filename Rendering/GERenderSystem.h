@@ -174,68 +174,70 @@ namespace GE { namespace Rendering
       void renderShadowMap();
 
    public:
-       RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint ScreenHeight);
-       ~RenderSystem();
+      std::function<bool(const _3DUICanvasEntry*, const _3DUICanvasEntry*)> _3DUICanvasSortFunction;
 
-       // info
-       const void* getWindowHandler() const;
-       bool getWindowedMode() const;
-       float getFPS() const;
-       uint getDrawCalls() const;
+      RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint ScreenHeight);
+      ~RenderSystem();
 
-       // background
-       void setBackgroundColor(const Color& Color);
+      // info
+      const void* getWindowHandler() const;
+      bool getWindowedMode() const;
+      float getFPS() const;
+      uint getDrawCalls() const;
+
+      // background
+      void setBackgroundColor(const Color& Color);
     
-       // textures
-       void preloadTextures(const char* FileName);
-       void unloadTextures(const char* FileName);
+      // textures
+      void preloadTextures(const char* FileName);
+      void unloadTextures(const char* FileName);
 
-       bool loadNextPreloadedTexture();
-       void loadAllPreloadedTextures();
-       bool preloadedTexturesPending();
+      bool loadNextPreloadedTexture();
+      void loadAllPreloadedTextures();
+      bool preloadedTexturesPending();
 
-       Texture* getTexture(const Core::ObjectName& Name);
+      Texture* getTexture(const Core::ObjectName& Name);
 
-       // cameras
-       Entities::ComponentCamera* getActiveCamera();
-       void setActiveCamera(Entities::ComponentCamera* Camera);
+      // cameras
+      Entities::ComponentCamera* getActiveCamera();
+      void setActiveCamera(Entities::ComponentCamera* Camera);
 
-       // lighting
-       const Color& getAmbientLightColor() const;
-       void setAmbientLightColor(const Color& Color);
+      // lighting
+      const Color& getAmbientLightColor() const;
+      void setAmbientLightColor(const Color& Color);
 
-       // materials
-       void loadMaterials(const char* FileName);
-       void unloadMaterials(const char* FileName);
-       Material* getMaterial(const Core::ObjectName& Name);
+      // materials
+      void loadMaterials(const char* FileName);
+      void unloadMaterials(const char* FileName);
+      Material* getMaterial(const Core::ObjectName& Name);
 
-       // shader programs
-       ShaderProgram* getShaderProgram(const Core::ObjectName& Name);
-       void requestShadersReload();
+      // shader programs
+      ShaderProgram* getShaderProgram(const Core::ObjectName& Name);
+      void requestShadersReload();
 
-       // fonts
-       void loadFonts(const char* FileName);
-       void unloadFonts(const char* FileName);
-       Font* getFont(const Core::ObjectName& Name);
+      // fonts
+      void loadFonts(const char* FileName);
+      void unloadFonts(const char* FileName);
+      Font* getFont(const Core::ObjectName& Name);
 
-       // blend mode
-       void setBlendingMode(BlendingMode Mode);
+      // blend mode
+      void setBlendingMode(BlendingMode Mode);
 
-       // depth buffer mode
-       void setDepthBufferMode(DepthBufferMode Mode);
+      // depth buffer mode
+      void setDepthBufferMode(DepthBufferMode Mode);
 
-       // culling mode
-       void setCullingMode(CullingMode Mode);
+      // culling mode
+      void setCullingMode(CullingMode Mode);
 
-       // components to render
-       void queueForRendering(Entities::ComponentRenderable* Renderable);
-       void queueForRendering(Entities::ComponentLight* Light);
-       void clearRenderingQueues();
-       void clearGeometryRenderInfoEntries();
+      // components to render
+      void queueForRendering(Entities::ComponentRenderable* Renderable);
+      void queueForRendering(Entities::ComponentLight* Light);
+      void clearRenderingQueues();
+      void clearGeometryRenderInfoEntries();
 
-       // rendering
-       void renderBegin();
-       void renderFrame();
-       void renderEnd();
+      // rendering
+      void renderBegin();
+      void renderFrame();
+      void renderEnd();
    };
 }}
