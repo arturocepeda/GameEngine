@@ -96,6 +96,8 @@ namespace GE { namespace Entities
       bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
       bool inputTouchEnd(int ID, const Vector2& Point);
 
+      ScriptInstance* getScriptInstanceByName(const Core::ObjectName& ScriptName);
+
       GEPropertyArray(ScriptInstance, ScriptInstance)
    };
 }}

@@ -908,6 +908,7 @@ void ScriptingEnvironment::registerTypes()
       "ComponentScript"
       , "getScriptInstanceCount", &ComponentScript::getScriptInstanceCount
       , "getScriptInstance", &ComponentScript::getScriptInstance
+      , "getScriptInstanceByName", &ComponentScript::getScriptInstanceByName
       , "addScriptInstance", &ComponentScript::addScriptInstance
       , "removeScriptInstance", &ComponentScript::removeScriptInstance
       , sol::base_classes, sol::bases<Component, Serializable>()

@@ -439,3 +439,16 @@ bool ComponentScript::inputTouchEnd(int ID, const Vector2& Point)
 
    return false;
 }
+
+ScriptInstance* ComponentScript::getScriptInstanceByName(const ObjectName& ScriptName)
+{
+   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   {
+      ScriptInstance* cScriptInstance = getScriptInstance(i);
+
+      if(cScriptInstance->getScriptName() == ScriptName)
+         return cScriptInstance;
+   }
+
+   return 0;
+}
