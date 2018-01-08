@@ -63,9 +63,6 @@ void InputSystem::inputKeyRelease(char Key)
 
 void InputSystem::inputMouse(const Vector2& Point)
 {
-   if(!bInputEnabled)
-      return;
-
    Scene* cActiveScene = Scene::getActiveScene();
 
    if(cActiveScene)

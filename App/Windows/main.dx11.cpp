@@ -168,7 +168,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
 
 #ifndef _DEBUG
     // hide the mouse pointer
-    //ShowCursor(false);
+    ShowCursor(false);
 #endif
 
     // timer
