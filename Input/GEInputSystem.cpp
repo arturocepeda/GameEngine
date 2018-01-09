@@ -70,6 +70,9 @@ void InputSystem::inputMouse(const Vector2& Point)
 {
    vMousePosition = Point;
 
+   if(!bInputEnabled)
+      return;
+
    Scene* cActiveScene = Scene::getActiveScene();
 
    if(cActiveScene)
