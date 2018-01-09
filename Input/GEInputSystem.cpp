@@ -35,6 +35,11 @@ void InputSystem::setInputEnabled(bool Enabled)
    bInputEnabled = Enabled;
 }
 
+const Vector2& InputSystem::getMousePosition() const
+{
+   return vMousePosition;
+}
+
 void InputSystem::inputKeyPress(char Key)
 {
    if(!bInputEnabled)
@@ -63,6 +68,8 @@ void InputSystem::inputKeyRelease(char Key)
 
 void InputSystem::inputMouse(const Vector2& Point)
 {
+   vMousePosition = Point;
+
    Scene* cActiveScene = Scene::getActiveScene();
 
    if(cActiveScene)

@@ -722,6 +722,7 @@ void ScriptingEnvironment::registerTypes()
       "InputSystem"
       , "getInstance", &InputSystem::getInstance
       , "setInputEnabled", &InputSystem::setInputEnabled
+      , "getMousePosition", &InputSystem::getMousePosition
    );
 
    //

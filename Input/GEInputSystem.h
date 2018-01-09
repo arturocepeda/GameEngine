@@ -21,12 +21,15 @@ namespace GE { namespace Input
    {
    private:
       bool bInputEnabled;
+      Vector2 vMousePosition;
 
    public:
       InputSystem();
       ~InputSystem();
 
       void setInputEnabled(bool Enabled);
+
+      const Vector2& getMousePosition() const;
 
       void inputKeyPress(char Key);
       void inputKeyRelease(char Key);
