@@ -12,6 +12,8 @@
 
 #include "GEAllocator.h"
 
+#include <cstring>
+
 using namespace GE;
 using namespace GE::Core;
 

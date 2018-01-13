@@ -18,6 +18,8 @@
 # include <OpenGLES/ES2/gl.h>
 #elif defined (GE_PLATFORM_ANDROID)
 # include <GLES2/gl2.h>
+#elif defined (GE_PLATFORM_MACOS)
+# include <GLUT/glut.h>
 #else
 # include "Externals/glew/include/GL/glew.h"
 #endif

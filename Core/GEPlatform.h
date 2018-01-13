@@ -25,6 +25,8 @@
 #else
 # if defined(ANDROID)
 #  define GE_PLATFORM_ANDROID
+# elif defined(__APPLE__) && defined(__MACH__)
+#  define GE_PLATFORM_MACOS
 # else
 #  define GE_PLATFORM_IOS
 # endif
