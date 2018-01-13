@@ -190,7 +190,6 @@ void Serializable::set(const ObjectName& PropertyName, const Value& PropertyValu
 
 void Serializable::executeAction(const ObjectName& ActionName)
 {
-#if defined (GE_EDITOR_SUPPORT)
    for(uint i = 0; i < vActions.size(); i++)
    {
       if(vActions[i].Name == ActionName)
@@ -199,7 +198,6 @@ void Serializable::executeAction(const ObjectName& ActionName)
          break;
       }
    }
-#endif
 }
 
 void Serializable::copy(Serializable* cSource)
