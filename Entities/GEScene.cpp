@@ -209,11 +209,7 @@ bool Scene::renameEntity(Entity* cEntity, const Core::ObjectName& NewName)
    cEntity->cName = NewName;
    cEntity->updateFullName();
    
-   GEMutexUnlock(mSceneMutex);
-
-   bool bNewNameIsUnique = getEntity(cEntity->getFullName()) == 0;
-
-   GEMutexLock(mSceneMutex);
+   bool bNewNameIsUnique = mRegistry.find(cEntity->getFullName().getID()) == mRegistry.end();
    
    if(bNewNameIsUnique)
    {
