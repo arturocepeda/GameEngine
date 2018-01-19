@@ -39,22 +39,6 @@
 
 #include <cstring>
 
-#if defined (GE_PLATFORM_WINDOWS)
-# if defined (GE_64_BIT)
-#  if defined (_DEBUG)
-#   pragma comment(lib, "../../../GameEngine/Externals/lua/lib/x64/luad.lib")
-#  else
-#   pragma comment(lib, "../../../GameEngine/Externals/lua/lib/x64/lua.lib")
-#  endif
-# else
-#  if defined (_DEBUG)
-#   pragma comment(lib, "../../../GameEngine/Externals/lua/lib/x86/luad.lib")
-#  else
-#   pragma comment(lib, "../../../GameEngine/Externals/lua/lib/x86/lua.lib")
-#  endif
-# endif
-#endif
-
 
 using namespace GE;
 using namespace GE::Scripting;
