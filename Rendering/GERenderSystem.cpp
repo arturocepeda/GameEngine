@@ -45,6 +45,7 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    , iScreenHeight(ScreenHeight)
    , cBackgroundColor(Color(0.0f, 0.0f, 0.0f))
    , cAmbientLightColor(Color(1.0f, 1.0f, 1.0f))
+   , bClearGeometryRenderInfoEntriesPending(false)
    , bShaderReloadPending(false)
    , iActiveProgram(-1)
    , iCurrentVertexStride(0)
@@ -1071,14 +1072,7 @@ void RenderSystem::clearRenderingQueues()
 
 void RenderSystem::clearGeometryRenderInfoEntries()
 {
-   mStaticGeometryToRender.clear();
-   mDynamicGeometryToRender.clear();
-   mBatches.clear();
-
-   for(uint i = 0; i < GeometryGroup::Count; i++)
-   {
-      sGPUBufferPairs[i].clear();
-   }
+   bClearGeometryRenderInfoEntriesPending = true;
 }
 
 int canvasSortComparer(const void* pCanvas1, const void* pCanvas2)
@@ -1242,6 +1236,20 @@ void RenderSystem::renderFrame()
    float fCurrentTime = Time::getElapsed();
    fFramesPerSecond = 1.0f / (fCurrentTime - fFrameTime);
    fFrameTime = fCurrentTime;
+
+   if(bClearGeometryRenderInfoEntriesPending)
+   {
+      mStaticGeometryToRender.clear();
+      mDynamicGeometryToRender.clear();
+      mBatches.clear();
+
+      for(uint i = 0; i < GeometryGroup::Count; i++)
+      {
+         sGPUBufferPairs[i].clear();
+      }
+
+      bClearGeometryRenderInfoEntriesPending = false;
+   }
 
    if(bShaderReloadPending)
    {

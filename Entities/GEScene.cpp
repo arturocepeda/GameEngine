@@ -137,6 +137,7 @@ void Scene::setActiveScene(Scene* S)
 {
    cActiveScene = S;
    triggerEventStatic(Events::ActiveSceneSet);
+   RenderSystem::getInstance()->clearGeometryRenderInfoEntries();
 }
 
 Scene* Scene::getActiveScene()

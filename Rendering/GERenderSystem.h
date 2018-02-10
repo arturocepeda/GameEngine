@@ -138,6 +138,7 @@ namespace GE { namespace Rendering
       GESTLMap(uint, RenderOperation) mBatches;
     
       Color cAmbientLightColor;
+      bool bClearGeometryRenderInfoEntriesPending;
       bool bShaderReloadPending;
 
       float fFrameTime;
