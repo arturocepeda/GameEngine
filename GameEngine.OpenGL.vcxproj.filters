@@ -47,6 +47,9 @@
     <Filter Include="Scripting">
       <UniqueIdentifier>{193f1fab-894e-4584-8bad-2743c78c6b22}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Externals\lua">
+      <UniqueIdentifier>{64a3d1fb-3687-4b52-8dc3-e711089e93eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
@@ -246,6 +249,108 @@
     </ClCompile>
     <ClCompile Include="Types\GECurve.cpp">
       <Filter>Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lapi.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lauxlib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lbaselib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lbitlib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lcode.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lcorolib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lctype.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\ldblib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\ldebug.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\ldo.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\ldump.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lfunc.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lgc.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\linit.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\liolib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\llex.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lmathlib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lmem.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\loadlib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lobject.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lopcodes.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\loslib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lparser.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lstate.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lstring.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lstrlib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\ltable.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\ltablib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\ltm.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lua.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lundump.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lutf8lib.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lvm.c">
+      <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\lua\src\lzio.c">
+      <Filter>Externals\lua</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -509,6 +614,84 @@
     </ClInclude>
     <ClInclude Include="Types\GECurve.h">
       <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lapi.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lauxlib.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lcode.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lctype.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\ldebug.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\ldo.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lfunc.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lgc.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\llex.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\llimits.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lmem.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lobject.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lopcodes.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lparser.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lprefix.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lstate.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lstring.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\ltable.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\ltm.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lua.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lua.hpp">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\luaconf.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lualib.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lundump.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lvm.h">
+      <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\lua\src\lzio.h">
+      <Filter>Externals\lua</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

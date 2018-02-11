@@ -587,6 +587,7 @@ void RenderSystem::renderShadowMap()
 
 void RenderSystem::renderBegin()
 {
+   glDepthMask(GL_TRUE);
    glClearColor(cBackgroundColor.Red, cBackgroundColor.Green, cBackgroundColor.Blue, 1.0f);
    glClearDepth(1.0);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -758,7 +759,7 @@ void RenderSystem::setDepthBufferMode(DepthBufferMode Mode)
    {
    case DepthBufferMode::NoDepth:
       glDisable(GL_DEPTH_TEST);
-      glDepthMask(GL_TRUE);
+      glDepthMask(GL_FALSE);
       break;
 
    case DepthBufferMode::TestOnly:
