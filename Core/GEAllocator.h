@@ -14,6 +14,8 @@
 
 #include "Types/GETypes.h"
 #include "Core/GEThreads.h"
+
+#include <cstdlib>
 #include <climits>
 
 #if defined (GE_DEVELOPMENT)

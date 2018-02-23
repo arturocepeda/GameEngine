@@ -121,9 +121,6 @@
     <ClCompile Include="Core\GEApplication.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Entities\GEComponentGenericData.cpp">
-      <Filter>Entities</Filter>
-    </ClCompile>
     <ClCompile Include="Core\GESerializable.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -166,9 +163,6 @@
     <ClCompile Include="Core\GEThreadPool.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Core\GEScript.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Entities\GEComponentScript.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
@@ -186,6 +180,18 @@
     </ClCompile>
     <ClCompile Include="Core\GEEvents.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripting\GEScriptingEnvironment.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentDataContainer.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Types\GECurve.cpp">
+      <Filter>Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\tlsf\tlsf.c">
+      <Filter>Externals\tlsf</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -348,9 +354,6 @@
     <ClInclude Include="Core\GEInterpolator.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Entities\GEComponentGenericData.h">
-      <Filter>Entities</Filter>
-    </ClInclude>
     <ClInclude Include="Types\GEBezierCurve.h">
       <Filter>Types</Filter>
     </ClInclude>
@@ -390,9 +393,6 @@
     <ClInclude Include="Core\GEThreadPool.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Core\GEScript.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Entities\GEComponentScript.h">
       <Filter>Entities</Filter>
     </ClInclude>
@@ -413,6 +413,18 @@
     </ClInclude>
     <ClInclude Include="Core\GEEvents.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripting\GEScriptingEnvironment.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentDataContainer.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\GECurve.h">
+      <Filter>Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\tlsf\tlsf.h">
+      <Filter>Externals\tlsf</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -442,6 +454,15 @@
     </Filter>
     <Filter Include="Input">
       <UniqueIdentifier>{ed515d6f-eaaf-488f-97b0-0eb0475151cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{406260b1-e4f2-4c1e-97c0-419b45d55fc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals">
+      <UniqueIdentifier>{7fab740b-6b59-4700-a613-928ee05a95f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\tlsf">
+      <UniqueIdentifier>{5b813f74-fbbf-4fb0-b396-e540f72a7f45}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

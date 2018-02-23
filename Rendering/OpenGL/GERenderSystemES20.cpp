@@ -496,7 +496,7 @@ void RenderSystem::renderShadowMap()
    glViewport(0, 0, ShadowMapSize, ShadowMapSize);
 
    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-   glClearDepth(1.0);
+   glClearDepthf(1.0f);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    calculateLightViewProjectionMatrix(cLight);
@@ -589,7 +589,7 @@ void RenderSystem::renderBegin()
 {
    glDepthMask(GL_TRUE);
    glClearColor(cBackgroundColor.Red, cBackgroundColor.Green, cBackgroundColor.Blue, 1.0f);
-   glClearDepth(1.0);
+   glClearDepthf(1.0f);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    iDrawCalls = 0;
 }
