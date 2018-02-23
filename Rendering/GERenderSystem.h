@@ -116,16 +116,16 @@ namespace GE { namespace Rendering
       CullingMode eCullingMode;
       Entities::ComponentCamera* cActiveCamera;
 
-      GESTLVector(RenderOperation) vUIElementsToRender;
-      GESTLVector(RenderOperation) vPre3DSpritesToRender;
-      GESTLVector(RenderOperation) v3DLabelsToRender;
+      GESTLPriorityQueue(RenderOperation) vUIElementsToRender;
+      GESTLPriorityQueue(RenderOperation) vPre3DSpritesToRender;
+      GESTLPriorityQueue(RenderOperation) v3DLabelsToRender;
       GESTLVector(RenderOperation) vShadowedMeshesToRender;
       GESTLVector(RenderOperation) vShadowedParticlesToRender;
-      GESTLVector(RenderOperation) vOpaqueMeshesToRender;
+      GESTLPriorityQueue(RenderOperation) vOpaqueMeshesToRender;
       GESTLVector(RenderOperation) vTransparentMeshesToRender;
-      GESTLVector(RenderOperation) vDebugGeometryToRender;
+      GESTLPriorityQueue(RenderOperation) vDebugGeometryToRender;
 
-      GESTLVector(RenderOperation) v3DUIElementsToRender[Entities::ComponentUI3DElement::CanvasCount];
+      GESTLPriorityQueue(RenderOperation) v3DUIElementsToRender[Entities::ComponentUI3DElement::CanvasCount];
       _3DUICanvasEntry s3DUICanvasEntries[Entities::ComponentUI3DElement::CanvasCount];
 
       GESTLVector(Entities::ComponentLight*) vLightsToRender;
@@ -231,7 +231,7 @@ namespace GE { namespace Rendering
       void setCullingMode(CullingMode Mode);
 
       // components to render
-      void queueForRendering(Entities::ComponentRenderable* Renderable);
+      void queueForRendering(Entities::ComponentRenderable* Renderable, uint RequestIndex);
       void queueForRendering(Entities::ComponentLight* Light);
       void clearRenderingQueues();
       void clearGeometryRenderInfoEntries();

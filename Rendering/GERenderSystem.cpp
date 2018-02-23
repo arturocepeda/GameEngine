@@ -665,7 +665,7 @@ Font* RenderSystem::getFont(const ObjectName& Name)
    return mFonts.get(Name);
 }
 
-void RenderSystem::queueForRendering(ComponentRenderable* Renderable)
+void RenderSystem::queueForRendering(ComponentRenderable* Renderable, uint RequestIndex)
 {
    GEProfilerMarker("RenderSystem::queueForRendering()");
 
@@ -718,6 +718,8 @@ void RenderSystem::queueForRendering(ComponentRenderable* Renderable)
       else
       {
          RenderOperation sRenderOperation;
+         sRenderOperation.Index = RequestIndex;
+         sRenderOperation.SubIndex = i;
          sRenderOperation.Renderable = Renderable;
          sRenderOperation.RenderMaterialPass = cMaterialPass;
 
@@ -788,7 +790,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 #if defined (GE_EDITOR_SUPPORT)
       if(GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
       {
-         vDebugGeometryToRender.push_back(sRenderOperation);
+         vDebugGeometryToRender.push(sRenderOperation);
       }
       else
 #endif
@@ -799,7 +801,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          }
          else
          {
-            vOpaqueMeshesToRender.push_back(sRenderOperation);
+            vOpaqueMeshesToRender.push(sRenderOperation);
          }
       }
 
@@ -830,7 +832,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 #if defined (GE_EDITOR_SUPPORT)
       if(GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
       {
-         vDebugGeometryToRender.push_back(sRenderOperation);
+         vDebugGeometryToRender.push(sRenderOperation);
       }
       else
 #endif
@@ -841,14 +843,14 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 
             if(!cUIElement || cUIElement->getUIElementType() == UIElementType::_2D)
             {
-               vUIElementsToRender.push_back(sRenderOperation);
+               vUIElementsToRender.push(sRenderOperation);
             }
             else
             {
                ComponentUI3DElement* cUI3DElement = static_cast<ComponentUI3DElement*>(cUIElement);
                GEAssert(cUI3DElement->getCanvasIndex() < ComponentUI3DElement::CanvasCount);
 
-               v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push_back(sRenderOperation);
+               v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push(sRenderOperation);
 
                if(!cRenderable->getOwner()->getParent() ||
                   !cRenderable->getOwner()->getParent()->getComponent<ComponentUIElement>())
@@ -860,7 +862,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          }
          else
          {
-            vPre3DSpritesToRender.push_back(sRenderOperation);
+            vPre3DSpritesToRender.push(sRenderOperation);
          }
       }
 
@@ -889,7 +891,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 #if defined (GE_EDITOR_SUPPORT)
       if(GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
       {
-         vDebugGeometryToRender.push_back(sRenderOperation);
+         vDebugGeometryToRender.push(sRenderOperation);
       }
       else
 #endif
@@ -900,14 +902,14 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          {
             if(cUIElement->getUIElementType() == UIElementType::_2D)
             {
-               vUIElementsToRender.push_back(sRenderOperation);
+               vUIElementsToRender.push(sRenderOperation);
             }
             else
             {
                ComponentUI3DElement* cUI3DElement = static_cast<ComponentUI3DElement*>(cUIElement);
                GEAssert(cUI3DElement->getCanvasIndex() < ComponentUI3DElement::CanvasCount);
 
-               v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push_back(sRenderOperation);
+               v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push(sRenderOperation);
 
                if(!cRenderable->getOwner()->getParent() ||
                   !cRenderable->getOwner()->getParent()->getComponent<ComponentUIElement>())
@@ -919,7 +921,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          }
          else
          {
-            v3DLabelsToRender.push_back(sRenderOperation);
+            v3DLabelsToRender.push(sRenderOperation);
          }
       }
 
@@ -937,7 +939,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 
          if(cRenderable->getRenderingMode() == RenderingMode::_2D)
          {
-            vUIElementsToRender.push_back(sRenderOperation);
+            vUIElementsToRender.push(sRenderOperation);
          }
          else
          {
@@ -1029,29 +1031,23 @@ void RenderSystem::prepareBatchForRendering(const RenderOperation& sBatch)
    {
    case RenderableType::Sprite:
    case RenderableType::Label:
-      vUIElementsToRender.push_back(sBatch);
+      vUIElementsToRender.push(sBatch);
       break;
    case RenderableType::Mesh:
-      vOpaqueMeshesToRender.push_back(sBatch);
+      vOpaqueMeshesToRender.push(sBatch);
       break;
    }
 }
 
 void RenderSystem::clearRenderingQueues()
 {
-   vUIElementsToRender.clear();
-   vPre3DSpritesToRender.clear();
-   v3DLabelsToRender.clear();
    vShadowedMeshesToRender.clear();
    vShadowedParticlesToRender.clear();
-   vOpaqueMeshesToRender.clear();
    vTransparentMeshesToRender.clear();
-   vDebugGeometryToRender.clear();
    vLightsToRender.clear();
 
    for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
    {
-      v3DUIElementsToRender[i].clear();
       s3DUICanvasEntries[i].Index = i;
       s3DUICanvasEntries[i].WorldPosition = Vector3::Zero;
    }
@@ -1116,16 +1112,12 @@ void RenderSystem::renderFrame()
       }
    }
 
-   if(!vPre3DSpritesToRender.empty())
+   while(!vPre3DSpritesToRender.empty())
    {
-      GESTLVector(RenderOperation)::const_iterator it = vPre3DSpritesToRender.begin();
-
-      for(; it != vPre3DSpritesToRender.end(); it++)
-      {
-         const RenderOperation& sRenderOperation = *it;
-         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-         render(sRenderOperation);
-      }
+      const RenderOperation& sRenderOperation = vPre3DSpritesToRender.top();
+      useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+      render(sRenderOperation);
+      vPre3DSpritesToRender.pop();
    }
 
    if(!vOpaqueMeshesToRender.empty() ||
@@ -1137,28 +1129,20 @@ void RenderSystem::renderFrame()
          renderShadowMap();
       }
 
-      if(!vOpaqueMeshesToRender.empty())
+      while(!vOpaqueMeshesToRender.empty())
       {
-         GESTLVector(RenderOperation)::const_iterator it = vOpaqueMeshesToRender.begin();
-
-         for(; it != vOpaqueMeshesToRender.end(); it++)
-         {
-            const RenderOperation& sRenderOperation = *it;
-            useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-            render(sRenderOperation);
-         }
+         const RenderOperation& sRenderOperation = vOpaqueMeshesToRender.top();
+         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+         render(sRenderOperation);
+         vOpaqueMeshesToRender.pop();
       }
 
-      if(!v3DLabelsToRender.empty())
+      while(!v3DLabelsToRender.empty())
       {
-         GESTLVector(RenderOperation)::const_iterator it = v3DLabelsToRender.begin();
-
-         for(; it != v3DLabelsToRender.end(); it++)
-         {
-            const RenderOperation& sRenderOperation = *it;
-            useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-            render(sRenderOperation);
-         }
+         const RenderOperation& sRenderOperation = v3DLabelsToRender.top();
+         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+         render(sRenderOperation);
+         v3DLabelsToRender.pop();
       }
 
       if(cActiveCamera && !vTransparentMeshesToRender.empty())
@@ -1193,43 +1177,31 @@ void RenderSystem::renderFrame()
       {
          uint iIndex = s3DUICanvasEntries[i].Index;
 
-         if(!v3DUIElementsToRender[iIndex].empty())
+         while(!v3DUIElementsToRender[iIndex].empty())
          {
-            GESTLVector(RenderOperation)::const_iterator it = v3DUIElementsToRender[iIndex].begin();
-
-            for(; it != v3DUIElementsToRender[iIndex].end(); it++)
-            {
-               const RenderOperation& sRenderOperation = *it;
-               useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-               render(sRenderOperation);
-            }
+            const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
+            useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+            render(sRenderOperation);
+            v3DUIElementsToRender[iIndex].pop();
          }
       }
    }
 
-   if(!vUIElementsToRender.empty())
+   while(!vUIElementsToRender.empty())
    {
-      GESTLVector(RenderOperation)::const_iterator it = vUIElementsToRender.begin();
-
-      for(; it != vUIElementsToRender.end(); it++)
-      {
-         const RenderOperation& sRenderOperation = *it;
-         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-         render(sRenderOperation);
-      }
+      const RenderOperation& sRenderOperation = vUIElementsToRender.top();
+      useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+      render(sRenderOperation);
+      vUIElementsToRender.pop();
    }
 
 #if defined (GE_EDITOR_SUPPORT)
-   if(!vDebugGeometryToRender.empty())
+   while(!vDebugGeometryToRender.empty())
    {
-      GESTLVector(RenderOperation)::const_iterator it = vDebugGeometryToRender.begin();
-
-      for(; it != vDebugGeometryToRender.end(); it++)
-      {
-         const RenderOperation& sRenderOperation = *it;
-         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-         render(sRenderOperation);
-      }
+      const RenderOperation& sRenderOperation = vDebugGeometryToRender.top();
+      useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+      render(sRenderOperation);
+      vDebugGeometryToRender.pop();
    }
 #endif
 
