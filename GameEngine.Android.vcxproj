@@ -25,18 +25,18 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Tegra-Android'">
     <AndroidStlType>gnustl_static</AndroidStlType>
-    <AndroidTargetAPI>android-24</AndroidTargetAPI>
+    <AndroidTargetAPI>android-21</AndroidTargetAPI>
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <AndroidNativeAPI>UseTarget</AndroidNativeAPI>
-    <AndroidMinAPI>android-15</AndroidMinAPI>
+    <AndroidMinAPI>android-21</AndroidMinAPI>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Tegra-Android'">
     <AndroidStlType>gnustl_static</AndroidStlType>
-    <AndroidTargetAPI>android-24</AndroidTargetAPI>
+    <AndroidTargetAPI>android-21</AndroidTargetAPI>
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <NdkToolchainVersion>Default</NdkToolchainVersion>
     <AndroidNativeAPI>UseTarget</AndroidNativeAPI>
-    <AndroidMinAPI>android-15</AndroidMinAPI>
+    <AndroidMinAPI>android-21</AndroidMinAPI>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Profile|Tegra-Android'">
     <AndroidStlType>gnustl_static</AndroidStlType>
@@ -59,13 +59,12 @@
     <ClCompile>
       <PreprocessorDefinitions>DISABLE_IMPORTGL;_GE_DEBUG_;_DEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\Externals</AdditionalIncludeDirectories>
-      <AdditionalOptions>-std=c++14 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-ftemplate-depth=1800</AdditionalOptions>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <GccExceptionHandling>true</GccExceptionHandling>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OmitFramePointer>false</OmitFramePointer>
-      <CppLanguageStandard>
-      </CppLanguageStandard>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
       <CLanguageStandard>
       </CLanguageStandard>
     </ClCompile>
@@ -81,7 +80,7 @@
     <ClCompile>
       <PreprocessorDefinitions>DISABLE_IMPORTGL</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\Externals</AdditionalIncludeDirectories>
-      <AdditionalOptions>-std=c++14 -ftemplate-depth=1800</AdditionalOptions>
+      <AdditionalOptions>-ftemplate-depth=1800</AdditionalOptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <GccExceptionHandling>true</GccExceptionHandling>
       <OptimizationLevel>O3</OptimizationLevel>
