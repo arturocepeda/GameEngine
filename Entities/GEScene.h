@@ -37,6 +37,7 @@ namespace GE { namespace Entities
    {
    private:
       static Scene* cActiveScene;
+      static Scene* cDebuggingScene;
 
       GESTLVector(Entity*) vEntities;
       GESTLMap(uint, Entity*) mRegistry;
@@ -69,6 +70,9 @@ namespace GE { namespace Entities
 
       static void setActiveScene(Scene* S);
       static Scene* getActiveScene();
+
+      static void setDebuggingScene(Scene* S);
+      static Scene* getDebuggingScene();
 
       Entity* addEntity(const Core::ObjectName& Name, Entity* cParent = 0);
       Entity* getEntity(const Core::ObjectName& FullName);
@@ -115,6 +119,7 @@ namespace GE { namespace Entities
       void setupBackground();
       void setupSkyBox(const char* MaterialName);
 
+      void queueUpdateJobs();
       void update();
       void queueForRendering();
 

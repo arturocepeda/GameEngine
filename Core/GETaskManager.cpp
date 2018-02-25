@@ -22,8 +22,6 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Entities;
 
-const uint AudioSystemUpdateFrames = 15;
-
 TaskManager::TaskManager()
    : iFrameCounter(0)
    , cCurrentState(0)
@@ -54,6 +52,11 @@ void TaskManager::queueJob(const JobDesc& sJobDesc, JobType eType)
       cFrameThreadPool->queueJob(sJobDesc);
 }
 
+uint TaskManager::getFrameCounter() const
+{
+   return iFrameCounter;
+}
+
 void TaskManager::update()
 {
    GEProfilerMarker("TaskManager::update()");
@@ -74,35 +77,47 @@ void TaskManager::update()
 
    // update current state
    if(cCurrentState)
+   {
       cCurrentState->update();
+   }
 
-   // update the active scene
+   // queue scene update jobs
+   Scene* cDebuggingScene = Scene::getDebuggingScene();
    Scene* cActiveScene = Scene::getActiveScene();
+
+   if(cDebuggingScene)
+   {
+      cDebuggingScene->queueUpdateJobs();
+   }
+
+   if(cActiveScene)
+   {
+      cActiveScene->queueUpdateJobs();
+   }
+
+   // kick scene update jobs
+   cFrameThreadPool->kickJobs();
+
+   // update scene
+   if(cDebuggingScene)
+   {
+      cDebuggingScene->update();
+   }
 
    if(cActiveScene)
    {
       cActiveScene->update();
    }
 
-   // kick scene update jobs
-   cFrameThreadPool->kickJobs();
-
-   // update audio system
-   if(cAudio)
-   {
-      iFrameCounter++;
-
-      if(iFrameCounter >= AudioSystemUpdateFrames)
-      {
-         cAudio->update();
-         iFrameCounter = 0;
-      }
-   }
-
    // wait for scene update jobs completion
    cFrameThreadPool->waitForJobsCompletion();
 
    // queue scene objects for rendering
+   if(cDebuggingScene)
+   {
+      cDebuggingScene->queueForRendering();
+   }
+
    if(cActiveScene)
    {
       cActiveScene->queueForRendering();
@@ -111,8 +126,17 @@ void TaskManager::update()
    // kick queue for rendering jobs
    cFrameThreadPool->kickJobs();
 
+   // update audio system
+   if(cAudio)
+   {
+      cAudio->update();
+   }
+
    // wait for queue for rendering jobs completion
    cFrameThreadPool->waitForJobsCompletion();
+
+   // increment the frame counter
+   iFrameCounter++;
 }
 
 void TaskManager::render()

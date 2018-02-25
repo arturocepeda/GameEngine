@@ -55,6 +55,8 @@ namespace GE { namespace Core
 
       void queueJob(const JobDesc& sJobDesc, JobType eType = JobType::General);
 
+      uint getFrameCounter() const;
+
       bool getExitPending() const;
       void exit();
    };

@@ -46,6 +46,7 @@ const ObjectName BackgroundEntityName = ObjectName("Background");
 //  Scene
 //
 Scene* Scene::cActiveScene = 0;
+Scene* Scene::cDebuggingScene = 0;
 
 Scene::Scene(const ObjectName& Name)
    : EventHandlingObject(Name)
@@ -143,6 +144,16 @@ void Scene::setActiveScene(Scene* S)
 Scene* Scene::getActiveScene()
 {
    return cActiveScene;
+}
+
+void Scene::setDebuggingScene(Scene* S)
+{
+   cDebuggingScene = S;
+}
+
+Scene* Scene::getDebuggingScene()
+{
+   return cDebuggingScene;
 }
 
 Entity* Scene::addEntity(const ObjectName& Name, Entity* cParent)
@@ -584,6 +595,61 @@ void Scene::setupSkyBox(const char* MaterialName)
    cBackgroundEntity->init();
 }
 
+void Scene::queueUpdateJobs()
+{
+   GEProfilerMarker("Scene::queueUpdateJobs()");
+
+   // cameras
+   GESTLVector(Component*)& vCameras = vComponents[(uint)ComponentType::Camera];
+
+   for(uint i = 0; i < vCameras.size(); i++)
+   {
+      ComponentCamera* cCamera = static_cast<ComponentCamera*>(vCameras[i]);
+#if defined (GE_SCENE_JOBIFIED_UPDATE)
+      JobDesc sJobDesc("UpdateCamera");
+      sJobDesc.Task = [cCamera] { cCamera->update(); };
+      TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
+#else
+      cCamera->update();
+#endif
+   }
+
+   // skeletons
+   GESTLVector(Component*)& vSkeletons = vComponents[(uint)ComponentType::Skeleton];
+
+   for(uint i = 0; i < vSkeletons.size(); i++)
+   {
+      ComponentSkeleton* cSkeleton = static_cast<ComponentSkeleton*>(vSkeletons[i]);
+#if defined (GE_SCENE_JOBIFIED_UPDATE)
+      JobDesc sJobDesc("UpdateSkeleton");
+      sJobDesc.Task = [cSkeleton] { cSkeleton->update(); };
+      TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
+#else
+      cSkeleton->update();
+#endif
+   }
+
+   // particle systems
+   GESTLVector(Component*)& vRenderables = vComponents[(uint)ComponentType::Renderable];
+
+   for(uint i = 0; i < vRenderables.size(); i++)
+   {
+      ComponentRenderable* cRenderable = static_cast<ComponentRenderable*>(vRenderables[i]);
+
+      if(cRenderable->getVisible() && cRenderable->getRenderableType() == RenderableType::ParticleSystem)
+      {
+         ComponentParticleSystem* cParticleSystem = static_cast<ComponentParticleSystem*>(cRenderable);
+#if defined (GE_SCENE_JOBIFIED_UPDATE)
+         JobDesc sJobDesc("UpdateParticleSystem");
+         sJobDesc.Task = [cParticleSystem] { cParticleSystem->update(); };
+         TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
+#else
+         cParticleSystem->update();
+#endif
+      }
+   }
+}
+
 void Scene::update()
 {
    GEProfilerMarker("Scene::update()");
@@ -603,32 +669,11 @@ void Scene::update()
       cBackgroundEntity->getComponent<ComponentTransform>()->setPosition(vActiveCameraPosition);
    }
 
-   GESTLVector(Component*)& vCameras = vComponents[(uint)ComponentType::Camera];
-
-   for(uint i = 0; i < vCameras.size(); i++)
-   {
-      static_cast<ComponentCamera*>(vCameras[i])->update();
-   }
-
    GESTLVector(Component*)& vLights = vComponents[(uint)ComponentType::Light];
 
    for(uint i = 0; i < vLights.size(); i++)
    {
       RenderSystem::getInstance()->queueForRendering(static_cast<ComponentLight*>(vLights[i]));
-   }
-
-   GESTLVector(Component*)& vSkeletons = vComponents[(uint)ComponentType::Skeleton];
-
-   for(uint i = 0; i < vSkeletons.size(); i++)
-   {
-      ComponentSkeleton* cSkeleton = static_cast<ComponentSkeleton*>(vSkeletons[i]);
-#if defined (GE_SCENE_JOBIFIED_UPDATE)
-      JobDesc sJobDesc("UpdateSkeleton");
-      sJobDesc.Task = [cSkeleton] { cSkeleton->update(); };
-      TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
-#else
-      cSkeleton->update();
-#endif
    }
 
    GESTLVector(Component*)& vScripts = vComponents[(uint)ComponentType::Script];
@@ -637,7 +682,7 @@ void Scene::update()
    {
       ComponentScript* cScript = static_cast<ComponentScript*>(vScripts[i]);
 
-      if(cScript->getOwner()->getActive())
+      if(cScript->getOwner()->isActiveInHierarchy())
       {
          cScript->update();
       }
@@ -649,24 +694,10 @@ void Scene::update()
    {
       ComponentRenderable* cRenderable = static_cast<ComponentRenderable*>(vRenderables[i]);
 
-      if(!cRenderable->getVisible())
-         continue;
-
-      if(cRenderable->getRenderableType() == RenderableType::Sprite)
+      if(cRenderable->getVisible() && cRenderable->getRenderableType() == RenderableType::Sprite)
       {
          ComponentSprite* cSprite = static_cast<ComponentSprite*>(cRenderable);
          cSprite->update();
-      }
-      else if(cRenderable->getRenderableType() == RenderableType::ParticleSystem)
-      {
-         ComponentParticleSystem* cParticleSystem = static_cast<ComponentParticleSystem*>(cRenderable);
-#if defined (GE_SCENE_JOBIFIED_UPDATE)
-         JobDesc sJobDesc("UpdateParticleSystem");
-         sJobDesc.Task = [cParticleSystem] { cParticleSystem->update(); };
-         TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
-#else
-         cParticleSystem->update();
-#endif
       }
    }
 }

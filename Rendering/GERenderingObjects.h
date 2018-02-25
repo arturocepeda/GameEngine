@@ -77,7 +77,6 @@ namespace GE { namespace Rendering
    struct RenderOperation
    {
       uint Index;
-      uint SubIndex;
       MaterialPass* RenderMaterialPass;
       Entities::ComponentRenderable* Renderable;
       Content::GeometryData Data;
@@ -85,7 +84,6 @@ namespace GE { namespace Rendering
 
       RenderOperation()
          : Index(0)
-         , SubIndex(0)
          , RenderMaterialPass(0)
          , Renderable(0)
          , Group(0)
@@ -94,9 +92,7 @@ namespace GE { namespace Rendering
 
       bool operator<(const RenderOperation& Other) const
       {
-         return Other.Index == Index
-            ? Other.SubIndex < SubIndex
-            : Other.Index < Index;
+         return Other.Index < Index;
       }
    };
 
