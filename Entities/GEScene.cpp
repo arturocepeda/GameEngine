@@ -648,6 +648,33 @@ void Scene::queueUpdateJobs()
 #endif
       }
    }
+
+   // thread-safe script instances
+   GESTLVector(Component*)& vScripts = vComponents[(uint)ComponentType::Script];
+
+   for(uint i = 0; i < vScripts.size(); i++)
+   {
+      ComponentScript* cScript = static_cast<ComponentScript*>(vScripts[i]);
+
+      if(cScript->getOwner()->isActiveInHierarchy())
+      {
+         for(uint j = 0; j < cScript->getScriptInstanceCount(); j++)
+         {
+            ScriptInstance* cScriptInstance = cScript->getScriptInstance(j);
+
+            if(cScriptInstance->getThreadSafe())
+            {
+#if defined (GE_SCENE_JOBIFIED_UPDATE)
+               JobDesc sJobDesc("UpdateScriptInstance");
+               sJobDesc.Task = [cScriptInstance] { cScriptInstance->update(); };
+               TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
+#else
+               cScriptInstance->update();
+#endif
+            }
+         }
+      }
+   }
 }
 
 void Scene::update()
@@ -666,6 +693,7 @@ void Scene::update()
 
    GEMutexUnlock(mSceneMutex);
 
+   // background
    if(cBackgroundEntity && RenderSystem::getInstance()->getActiveCamera())
    {
       ComponentCamera* cActiveCamera = RenderSystem::getInstance()->getActiveCamera();
@@ -673,6 +701,7 @@ void Scene::update()
       cBackgroundEntity->getComponent<ComponentTransform>()->setPosition(vActiveCameraPosition);
    }
 
+   // lights
    GESTLVector(Component*)& vLights = vComponents[(uint)ComponentType::Light];
 
    for(uint i = 0; i < vLights.size(); i++)
@@ -680,6 +709,7 @@ void Scene::update()
       RenderSystem::getInstance()->queueForRendering(static_cast<ComponentLight*>(vLights[i]));
    }
 
+   // non thread-safe script instances
    GESTLVector(Component*)& vScripts = vComponents[(uint)ComponentType::Script];
 
    for(uint i = 0; i < vScripts.size(); i++)
@@ -688,10 +718,19 @@ void Scene::update()
 
       if(cScript->getOwner()->isActiveInHierarchy())
       {
-         cScript->update();
+         for(uint j = 0; j < cScript->getScriptInstanceCount(); j++)
+         {
+            ScriptInstance* cScriptInstance = cScript->getScriptInstance(j);
+
+            if(!cScriptInstance->getThreadSafe())
+            {
+               cScriptInstance->update();
+            }
+         }
       }
    }
 
+   // sprites
    GESTLVector(Component*)& vRenderables = vComponents[(uint)ComponentType::Renderable];
 
    for(uint i = 0; i < vRenderables.size(); i++)

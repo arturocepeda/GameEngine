@@ -65,6 +65,7 @@ const size_t MemoryPoolSize = 16 * 1024 * 1024;
 
 void* ScriptingEnvironment::pAllocatorBuffer = 0;
 tlsf_t ScriptingEnvironment::pAllocator = 0;
+GEMutex mAllocatorMutex;
 
 GESTLSet(uint) ScriptingEnvironment::sPredefinedGlobalSymbols;
 GESTLVector(ScriptingEnvironment::registerTypesExtension) ScriptingEnvironment::vRegisterTypesExtensions;
@@ -92,6 +93,7 @@ void ScriptingEnvironment::initStaticData()
    // initialize allocator
    pAllocatorBuffer = Allocator::alloc<char>(MemoryPoolSize, AllocationCategory::Scripting);
    pAllocator = tlsf_create_with_pool(pAllocatorBuffer, MemoryPoolSize);
+   GEMutexInit(mAllocatorMutex);
 
    // collect predefined global symbols
    ScriptingEnvironment cDefaultEnv;
@@ -122,6 +124,7 @@ void ScriptingEnvironment::releaseStaticData()
    sPredefinedGlobalSymbols.clear();
 
    // release allocator
+   GEMutexDestroy(mAllocatorMutex);
    tlsf_destroy(pAllocator);
    pAllocator = 0;
    Allocator::free(pAllocatorBuffer);
@@ -352,6 +355,8 @@ void ScriptingEnvironment::disableDebugger()
 
 void* ScriptingEnvironment::customAlloc(void*, void* ptr, size_t, size_t nsize)
 {
+   GEMutexLock(mAllocatorMutex);
+
    if(nsize == 0)
    {
       if(ptr)
@@ -359,12 +364,18 @@ void* ScriptingEnvironment::customAlloc(void*, void* ptr, size_t, size_t nsize)
          tlsf_free(pAllocator, ptr);
       }
 
+      GEMutexUnlock(mAllocatorMutex);
+
       return 0;
    }
 
-   return ptr
+   void* pMemoryBlock = ptr
       ? tlsf_realloc(pAllocator, ptr, nsize)
       : tlsf_malloc(pAllocator, nsize);
+
+   GEMutexUnlock(mAllocatorMutex);
+
+   return pMemoryBlock;
 }
 
 bool ScriptingEnvironment::alphabeticalComparison(const ObjectName& l, const ObjectName& r)

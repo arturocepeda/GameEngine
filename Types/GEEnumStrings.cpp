@@ -132,6 +132,12 @@ namespace GE { namespace Entities
       "VaryColor",
       "VarySize"
    };
+
+   const char* strScriptSettingsBitMask[] =
+   {
+      "Active",
+      "ThreadSafe"
+   };
 }}
 
 namespace GE { namespace Rendering

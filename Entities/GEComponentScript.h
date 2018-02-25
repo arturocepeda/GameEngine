@@ -22,15 +22,25 @@ namespace GE { namespace Scripting
 
 namespace GE { namespace Entities
 {
+   GESerializableEnum(ScriptSettingsBitMask)
+   {
+      Active      = 1 << 0,
+      ThreadSafe  = 1 << 1,
+
+      Count = 2
+   };
+
+
    class ScriptInstance : public Core::SerializableArrayElement
    {
    private:
       Scripting::ScriptingEnvironment* cEnv;
       Core::ObjectName cScriptName;
+      uint8_t eScriptSettings;
 
       uint iBasePropertiesCount;
       uint iBaseActionsCount;
-      bool bActive;
+
       bool bInitialized;
 
       struct CachedPropertyValue
@@ -56,13 +66,17 @@ namespace GE { namespace Entities
       void setScriptName(const Core::ObjectName& Name);
       const Core::ObjectName& getScriptName() const;
 
-      void setActive(bool Value);
-      bool getActive() const;
+      void setScriptSettings(uint8_t BitMask);
+      uint8_t getScriptSettings() const;
 
 #if defined (GE_EDITOR_SUPPORT)
       void setDebugBreakpointLine(uint Line);
       uint getDebugBreakpointLine() const;
 #endif
+
+      void setActive();
+      bool getActive() const;
+      bool getThreadSafe() const;
 
       void update();
 
@@ -73,7 +87,7 @@ namespace GE { namespace Entities
       bool inputTouchEnd(int ID, const Vector2& Point);
 
       GEProperty(ObjectName, ScriptName);
-      GEProperty(Bool, Active);
+      GEPropertyBitMask(ScriptSettingsBitMask, ScriptSettings);
 #if defined (GE_EDITOR_SUPPORT)
       GEProperty(UInt, DebugBreakpointLine);
 #endif

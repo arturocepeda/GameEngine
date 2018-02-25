@@ -15,6 +15,7 @@
 #include "Content/GEContentData.h"
 #include "Core/GETime.h"
 #include "Core/GEEvents.h"
+#include "Core/GEProfiler.h"
 #include "Entities/GEScene.h"
 
 using namespace GE;
@@ -50,7 +51,7 @@ const uint iInternalFuncionNamesCount = sizeof(cInternalFunctionNames) / sizeof(
 //
 ScriptInstance::ScriptInstance()
    : SerializableArrayElement("ScriptInstance")
-   , bActive(true)
+   , eScriptSettings((uint8_t)ScriptSettingsBitMask::Active)
    , bInitialized(false)
 #if defined (GE_EDITOR_SUPPORT)
    , iDebugBreakpointLine(0)
@@ -60,7 +61,7 @@ ScriptInstance::ScriptInstance()
    GEInvokeCtor(ScriptingEnvironment, cEnv);
 
    GERegisterPropertySpecialEditor(ObjectName, ScriptName, PropertyEditor::Script);
-   GERegisterProperty(Bool, Active);
+   GERegisterPropertyBitMask(ScriptSettingsBitMask, ScriptSettings);
 
    registerAction("Reload", [this]
    {
@@ -125,32 +126,39 @@ const ObjectName& ScriptInstance::getScriptName() const
    return cScriptName;
 }
 
-void ScriptInstance::setActive(bool Value)
+void ScriptInstance::setScriptSettings(uint8_t BitMask)
 {
-   if(bActive == Value)
+   if(eScriptSettings == BitMask)
       return;
 
-   bActive = Value;
+   bool bScriptActiveBefore = GEHasFlag(eScriptSettings, ScriptSettingsBitMask::Active);
 
-   if(bActive)
+   eScriptSettings = BitMask;
+
+   bool bScriptActiveNow = GEHasFlag(eScriptSettings, ScriptSettingsBitMask::Active);
+
+   if(bScriptActiveBefore != bScriptActiveNow)
    {
-      if(cEnv->isFunctionDefined(cActivateFunctionName))
+      if(bScriptActiveNow)
       {
-         cEnv->runFunction<void>(cActivateFunctionName);
+         if(cEnv->isFunctionDefined(cActivateFunctionName))
+         {
+            cEnv->runFunction<void>(cActivateFunctionName);
+         }
       }
-   }
-   else
-   {
-      if(cEnv->isFunctionDefined(cDeactivateFunctionName))
+      else
       {
-         cEnv->runFunction<void>(cDeactivateFunctionName);
+         if(cEnv->isFunctionDefined(cDeactivateFunctionName))
+         {
+            cEnv->runFunction<void>(cDeactivateFunctionName);
+         }
       }
    }
 }
 
-bool ScriptInstance::getActive() const
+uint8_t ScriptInstance::getScriptSettings() const
 {
-   return bActive;
+   return eScriptSettings;
 }
 
 #if defined (GE_EDITOR_SUPPORT)
@@ -165,6 +173,21 @@ uint ScriptInstance::getDebugBreakpointLine() const
    return iDebugBreakpointLine;
 }
 #endif
+
+void ScriptInstance::setActive()
+{
+   setScriptSettings(eScriptSettings | (uint8_t)ScriptSettingsBitMask::Active);
+}
+
+bool ScriptInstance::getActive() const
+{
+   return GEHasFlag(eScriptSettings, ScriptSettingsBitMask::Active);
+}
+
+bool ScriptInstance::getThreadSafe() const
+{
+   return GEHasFlag(eScriptSettings, ScriptSettingsBitMask::ThreadSafe);
+}
 
 void ScriptInstance::registerScriptProperties()
 {
@@ -264,6 +287,8 @@ void ScriptInstance::registerScriptActions()
 
 void ScriptInstance::update()
 {
+   GEProfilerMarker("ScriptInstance::update()");
+
    if(!vCachedPropertyValues.empty())
    {
       for(uint i = 0; i < vCachedPropertyValues.size(); i++)
@@ -281,7 +306,7 @@ void ScriptInstance::update()
       vCachedPropertyValues.shrink_to_fit();
    }
 
-   if(!bActive || cScriptName.isEmpty())
+   if(!getActive() || cScriptName.isEmpty())
       return;
 
    Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
@@ -314,7 +339,7 @@ void ScriptInstance::update()
 
 bool ScriptInstance::inputMouse(const Vector2& Point)
 {
-   if(!bActive)
+   if(!getActive())
       return false;
 
    if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputMouseFunctionName))
@@ -328,7 +353,7 @@ bool ScriptInstance::inputMouse(const Vector2& Point)
 
 bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 {
-   if(!bActive)
+   if(!getActive())
       return false;
 
    if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputTouchBeginFunctionName))
@@ -342,7 +367,7 @@ bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 
 bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
 {
-   if(!bActive)
+   if(!getActive())
       return false;
 
    if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputTouchMoveFunctionName))
@@ -356,7 +381,7 @@ bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const 
 
 bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 {
-   if(!bActive)
+   if(!getActive())
       return false;
 
    if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputTouchEndFunctionName))
