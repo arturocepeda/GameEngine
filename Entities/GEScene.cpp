@@ -763,7 +763,7 @@ void Scene::queueForRendering()
       sJobDesc.Task = [cRenderable, i] { RenderSystem::getInstance()->queueForRendering(cRenderable, i); };
       TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
 #else
-      RenderSystem::getInstance()->queueForRendering(cRenderable);
+      RenderSystem::getInstance()->queueForRendering(cRenderable, i);
 #endif
    }
 }
