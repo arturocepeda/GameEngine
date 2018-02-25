@@ -654,6 +654,8 @@ void Scene::update()
 {
    GEProfilerMarker("Scene::update()");
 
+   GEMutexLock(mSceneMutex);
+
    if(!vEntitiesToRemove.empty())
    {
       for(uint i = 0; i < vEntitiesToRemove.size(); i++)
@@ -661,6 +663,8 @@ void Scene::update()
 
       vEntitiesToRemove.clear();
    }
+
+   GEMutexUnlock(mSceneMutex);
 
    if(cBackgroundEntity && RenderSystem::getInstance()->getActiveCamera())
    {
