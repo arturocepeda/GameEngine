@@ -174,9 +174,16 @@ uint ScriptInstance::getDebugBreakpointLine() const
 }
 #endif
 
-void ScriptInstance::setActive()
+void ScriptInstance::setActive(bool Value)
 {
-   setScriptSettings(eScriptSettings | (uint8_t)ScriptSettingsBitMask::Active);
+   if(Value)
+   {
+      setScriptSettings(eScriptSettings | (uint8_t)ScriptSettingsBitMask::Active);
+   }
+   else
+   {
+      setScriptSettings(eScriptSettings & ~((uint8_t)ScriptSettingsBitMask::Active));
+   }
 }
 
 bool ScriptInstance::getActive() const

@@ -74,7 +74,7 @@ namespace GE { namespace Entities
       uint getDebugBreakpointLine() const;
 #endif
 
-      void setActive();
+      void setActive(bool Value);
       bool getActive() const;
       bool getThreadSafe() const;
 
