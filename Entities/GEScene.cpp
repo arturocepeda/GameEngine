@@ -599,6 +599,18 @@ void Scene::queueUpdateJobs()
 {
    GEProfilerMarker("Scene::queueUpdateJobs()");
 
+   GEMutexLock(mSceneMutex);
+
+   if(!vEntitiesToRemove.empty())
+   {
+      for(uint i = 0; i < vEntitiesToRemove.size(); i++)
+         removeEntity(vEntitiesToRemove[i]);
+
+      vEntitiesToRemove.clear();
+   }
+
+   GEMutexUnlock(mSceneMutex);
+
    // cameras
    GESTLVector(Component*)& vCameras = vComponents[(uint)ComponentType::Camera];
 
@@ -680,18 +692,6 @@ void Scene::queueUpdateJobs()
 void Scene::update()
 {
    GEProfilerMarker("Scene::update()");
-
-   GEMutexLock(mSceneMutex);
-
-   if(!vEntitiesToRemove.empty())
-   {
-      for(uint i = 0; i < vEntitiesToRemove.size(); i++)
-         removeEntity(vEntitiesToRemove[i]);
-
-      vEntitiesToRemove.clear();
-   }
-
-   GEMutexUnlock(mSceneMutex);
 
    // background
    if(cBackgroundEntity && RenderSystem::getInstance()->getActiveCamera())
