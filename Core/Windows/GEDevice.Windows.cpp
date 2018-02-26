@@ -14,7 +14,6 @@
 #include <Shlobj.h>
 
 #include "Core/GEDevice.h"
-#include "Core/GEAllocator.h"
 #include "Core/GEApplication.h"
 #include "Content/GEImageData.h"
 #include "Content/GEAudioData.h"
@@ -26,32 +25,6 @@
 using namespace GE;
 using namespace GE::Core;
 using namespace GE::Content;
-
-int Device::ScreenWidth = 0;
-int Device::ScreenHeight = 0;
-
-SystemLanguage Device::Language = SystemLanguage::English;
-DeviceOrientation Device::Orientation = DeviceOrientation::Portrait;
-
-LogListener* Device::CurrentLogListener = 0;
-
-int Device::AudioSystemSampleRate = 0;
-int Device::AudioSystemFramesPerBuffer = 0;
-
-int Device::getScreenWidth()
-{
-   return ScreenWidth;
-}
-
-int Device::getScreenHeight()
-{
-   return ScreenHeight;
-}
-
-float Device::getAspectRatio()
-{
-   return (float)ScreenHeight / ScreenWidth;
-}
 
 int Device::getTouchPadWidth()
 {
@@ -146,8 +119,9 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
 
    GEAssert(iFileLength > 0);
 
-   byte* pFileData =
-      Allocator::alloc<byte>(Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength);
+   uint iRequiredSize = Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength;
+   IOBuffer* pBuffer = requestIOBuffer(iRequiredSize); 
+   byte* pFileData = &pBuffer->at(0);
    readFile(sFileName, pFileData, iFileLength);
 
    if(Type == ContentType::GenericTextData)
@@ -165,8 +139,6 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
    default:
       ContentData->load(Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength, (const char*)pFileData);
    }
-
-   Allocator::free(pFileData);
 }
 
 bool Device::userFileExists(const char* SubDir, const char* Name, const char* Extension)
@@ -213,12 +185,12 @@ void Device::readUserFile(const char* SubDir, const char* Name, const char* Exte
    uint iFileLength = (uint)file.tellg();
    file.seekg(0, std::ios::beg);
 
-   byte* pFileData = Allocator::alloc<byte>(iFileLength);
+   IOBuffer* pBuffer = requestIOBuffer(iFileLength); 
+   byte* pFileData = &pBuffer->at(0);
    file.read((char*)pFileData, iFileLength);
    file.close();
 
    ContentData->load(iFileLength, (const char*)pFileData);
-   Allocator::free(pFileData);
 }
 
 void Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension, const ContentData* ContentData)
@@ -308,26 +280,6 @@ void Device::getUserFileName(const char* SubDir, const char* Extension, uint Ind
       memcpy(Name, sFileData.cFileName, iLength);
       Name[iLength] = '\0';
    }
-}
-
-void Device::log(const char* Message, ...)
-{
-#if defined(GE_EDITOR_SUPPORT)
-  char sBuffer[1024];
-
-  va_list vArguments;
-  va_start(vArguments, Message);
-  vsprintf(sBuffer, Message, vArguments);
-  va_end(vArguments);
-
-  OutputDebugString(sBuffer);
-  OutputDebugString("\n");
-
-  if(CurrentLogListener)
-  {
-     CurrentLogListener->onLog(sBuffer);
-  }
-#endif
 }
 
 uint Device::getFileLength(const char* Filename)

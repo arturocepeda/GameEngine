@@ -13,6 +13,7 @@
 #include "GEApplication.h"
 #include "GEAllocator.h"
 #include "GETaskManager.h"
+#include "GEDevice.h"
 
 #include "Input/GEInputSystem.h"
 
@@ -55,6 +56,7 @@ ApplicationContentType Application::ContentType = ApplicationContentType::Xml;
 void Application::startUp()
 {
    Allocator::init();
+   Device::init();
 
    InputSystem* cInputSystem = Allocator::alloc<InputSystem>();
    GEInvokeCtor(InputSystem, cInputSystem);
@@ -89,6 +91,7 @@ void Application::shutDown()
    GEInvokeDtor(InputSystem, InputSystem::getInstance());
    Allocator::free(InputSystem::getInstance());
 
+   Device::release();
    Allocator::release();
 }
 

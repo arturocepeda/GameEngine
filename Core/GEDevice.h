@@ -13,6 +13,7 @@
 #pragma once
 
 #include "Types/GETypes.h"
+#include "Types/GESTLTypes.h"
 #include "Content/GEContentData.h"
 
 namespace GE { namespace Core
@@ -34,18 +35,19 @@ namespace GE { namespace Core
    };
 
 
-   class LogListener
-   {
-   public:
-      virtual void onLog(const char*) {}
-   };
-
-
    class Device
    {
    private:
-      static uint getFileLength(const char* Filename);
-      static uint readFile(const char* Filename, GE::byte* ReadBuffer, uint BufferSize);
+      typedef GESTLVector(GE::byte) IOBuffer;
+      typedef GESTLMap(GE::uint, IOBuffer) IOBuffersMap;
+
+      static GEMutex mIOMutex;
+      static IOBuffersMap* mIOBuffers;
+
+      static IOBuffer* requestIOBuffer(GE::uint iSize);
+
+      static GE::uint getFileLength(const char* Filename);
+      static GE::uint readFile(const char* Filename, GE::byte* ReadBuffer, GE::uint BufferSize);
 
    public:
       static int ScreenWidth;
@@ -56,10 +58,11 @@ namespace GE { namespace Core
       static DeviceOrientation Orientation;
       static Quaternion Rotation;
 
-      static LogListener* CurrentLogListener;
-
       static int AudioSystemSampleRate;
       static int AudioSystemFramesPerBuffer;
+
+      static void init();
+      static void release();
 
       static int getScreenWidth();
       static int getScreenHeight();
@@ -82,7 +85,5 @@ namespace GE { namespace Core
 
       static uint getUserFilesCount(const char* SubDir, const char* Extension);
       static void getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name);
-
-      static void log(const char* Message, ...);
    };
 }}

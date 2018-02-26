@@ -90,9 +90,6 @@
     <ClCompile Include="Rendering\DX11\GERenderSystemDX11.cpp">
       <Filter>Rendering.DX11</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Windows\GEDevice.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Core\GEValue.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -347,6 +344,15 @@
     </ClCompile>
     <ClCompile Include="Externals\lua\src\lzio.c">
       <Filter>Externals\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Windows\GEDevice.Windows.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Windows\GELog.Windows.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEDevice.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -688,6 +694,9 @@
     </ClInclude>
     <ClInclude Include="Externals\lua\src\lzio.h">
       <Filter>Externals\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GELog.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

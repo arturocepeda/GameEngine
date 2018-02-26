@@ -12,7 +12,7 @@
 
 
 #include "GERenderingShadersDX11.h"
-#include "Core/GEDevice.h"
+#include "Core/GELog.h"
 #include "Core/GEApplication.h"
 #include "Core/GEPlatform.h"
 
@@ -71,7 +71,7 @@ VertexShader::VertexShader(ShaderProgram* cShaderProgram, ID3D11Device1* DXDevic
    {
       if(dxErrorBlob)
       {
-         Device::log("ERROR: Vertex Shader could not be loaded\n%s", (char*)dxErrorBlob->GetBufferPointer());
+         Log::log(LogType::Error, "ERROR: Vertex Shader could not be loaded\n%s", (char*)dxErrorBlob->GetBufferPointer());
          dxErrorBlob->Release();
       }
 
@@ -225,7 +225,7 @@ PixelShader::PixelShader(ShaderProgram* cShaderProgram, ID3D11Device1* DXDevice)
    {
       if(dxErrorBlob)
       {
-         Device::log("ERROR: Pixel Shader could not be loaded\n%s", (char*)dxErrorBlob->GetBufferPointer());
+         Log::log(LogType::Error, "ERROR: Pixel Shader could not be loaded\n%s", (char*)dxErrorBlob->GetBufferPointer());
          dxErrorBlob->Release();
       }
 

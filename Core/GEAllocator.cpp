@@ -82,7 +82,7 @@ void Allocator::free(void* Ptr)
 
          if(bLoggingEnabled[(int)sAllocationInfo.Category])
          {
-            Device::log("Heap Release [%s]: %s --- %u bytes (total: %u bytes)",
+            Log::log(LogType::Info, "Heap Release [%s]: %s --- %u bytes (total: %u bytes)",
                strAllocationCategory[(int)sAllocationInfo.Category],
                sAllocationInfo.Description,
                sAllocationInfo.Size,

@@ -13,7 +13,7 @@
 #include "GEComponentLabel.h"
 #include "Rendering/GERenderSystem.h"
 #include "Core/GEAllocator.h"
-#include "Core/GEDevice.h"
+#include "Core/GELog.h"
 #include "Content/GELocalizedString.h"
 #include "Content/GEResourcesManager.h"
 
@@ -385,7 +385,7 @@ void ComponentLabel::setFontName(const Core::ObjectName& FontName)
 
    if(!cFont)
    {
-      Device::log("No font found in '%s'. The entity will not be rendered.", cOwner->getFullName().getString().c_str());
+      Log::log(LogType::Warning, "No font found in '%s'. The entity will not be rendered.", cOwner->getFullName().getCString());
       hide();
       return;
    }

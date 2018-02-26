@@ -12,6 +12,7 @@
 
 #include "GERenderSystemDX11.h"
 #include "Core/GEDevice.h"
+#include "Core/GELog.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEProfiler.h"
 #include "Core/GEApplication.h"
@@ -866,7 +867,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
             if(!cActiveCamera)
             {
                Entity* cOwner = cRenderable->getOwner();
-               Device::log("There is no active camera. The entity '%s' will be deactivated.", cOwner->getFullName().getString().c_str());
+               Log::log(LogType::Warning, "There is no active camera. The entity '%s' will be deactivated.", cOwner->getFullName().getCString());
                cOwner->setActive(false);
                return;
             }

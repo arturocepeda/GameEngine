@@ -19,7 +19,7 @@
 #include <climits>
 
 #if defined (GE_DEVELOPMENT)
-# include "Core/GEDevice.h"
+# include "Core/GELog.h"
 # include <map>
 # include <typeinfo>
 #endif
@@ -92,7 +92,7 @@ namespace GE { namespace Core
 
             if(bLoggingEnabled[(int)Category])
             {
-               Device::log("Heap Allocation [%s]: %s --- %u bytes (total: %u bytes)",
+               Log::log(LogType::Info, "Heap Allocation [%s]: %s --- %u bytes (total: %u bytes)",
                   strAllocationCategory[(int)Category],
                   sBuffer,
                   iSize,

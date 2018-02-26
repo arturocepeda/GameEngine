@@ -14,7 +14,7 @@
 #include "GETexture.h"
 #include "GERenderSystem.h"
 #include "Content/GEResourcesManager.h"
-#include "Core/GEDevice.h"
+#include "Core/GELog.h"
 #include "Core/GEEvents.h"
 
 using namespace GE;
@@ -126,8 +126,8 @@ void Material::setDiffuseTextureName(const ObjectName& Name)
 
       if(!cDiffuseTexture)
       {
-         Device::log("Texture not found: '%s' (Referenced in Material: '%s')",
-            Name.getString().c_str(), cName.getString().c_str());
+         Log::log(LogType::Warning, "Texture not found: '%s' (Referenced in Material: '%s')",
+            Name.getCString(), cName.getCString());
       }
    }
 }
@@ -271,7 +271,7 @@ void MaterialPass::setMaterialName(const Core::ObjectName& Name)
    }
    else
    {
-      Device::log("Material not found: '%s'", Name.getString().c_str());
+      Log::log(LogType::Warning, "Material not found: '%s'", Name.getString().c_str());
    }
 
    setMaterial(cNewMaterial);

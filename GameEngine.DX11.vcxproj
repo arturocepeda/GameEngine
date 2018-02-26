@@ -32,6 +32,7 @@
     <ClCompile Include="Content\GESkeleton.cpp" />
     <ClCompile Include="Core\GEAllocator.cpp" />
     <ClCompile Include="Core\GEApplication.cpp" />
+    <ClCompile Include="Core\GEDevice.cpp" />
     <ClCompile Include="Core\GEEvents.cpp" />
     <ClCompile Include="Core\GEGeometry.cpp" />
     <ClCompile Include="Core\GEMath.cpp" />
@@ -48,7 +49,8 @@
     <ClCompile Include="Core\GETimer.cpp" />
     <ClCompile Include="Core\GEUtils.cpp" />
     <ClCompile Include="Core\GEValue.cpp" />
-    <ClCompile Include="Core\Windows\GEDevice.cpp" />
+    <ClCompile Include="Core\Windows\GEDevice.Windows.cpp" />
+    <ClCompile Include="Core\Windows\GELog.Windows.cpp" />
     <ClCompile Include="Entities\GEComponent.cpp" />
     <ClCompile Include="Entities\GEComponentCamera.cpp" />
     <ClCompile Include="Entities\GEComponentCollider.cpp" />
@@ -145,6 +147,7 @@
     <ClInclude Include="Core\GEEvents.h" />
     <ClInclude Include="Core\GEGeometry.h" />
     <ClInclude Include="Core\GEInterpolator.h" />
+    <ClInclude Include="Core\GELog.h" />
     <ClInclude Include="Core\GEMath.h" />
     <ClInclude Include="Core\GEObject.h" />
     <ClInclude Include="Core\GEObjectManager.h" />

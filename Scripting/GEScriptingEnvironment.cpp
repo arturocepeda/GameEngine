@@ -18,6 +18,7 @@
 
 #include "Core/GEPlatform.h"
 #include "Core/GEApplication.h"
+#include "Core/GELog.h"
 #include "Core/GEDevice.h"
 #include "Core/GEInterpolator.h"
 #include "Core/GEPhysics.h"
@@ -54,7 +55,7 @@ using namespace GE::Input;
 //
 void luaLog(const char* sMessage)
 {
-   Device::log("[Lua] %s", sMessage);
+   Log::log(LogType::Info, "[Lua] %s", sMessage);
 }
 
 
@@ -145,11 +146,11 @@ void ScriptingEnvironment::handleScriptError(const char* ScriptName, const char*
 {
    if(Msg)
    {
-      Device::log("Lua error (the '%s' script could not be loaded): %s", ScriptName, Msg);
+      Log::log(LogType::Error, "Lua error (the '%s' script could not be loaded): %s", ScriptName, Msg);
    }
    else
    {
-      Device::log("Lua error (the '%s' script could not be loaded)", ScriptName);
+      Log::log(LogType::Error, "Lua error (the '%s' script could not be loaded)", ScriptName);
    }
 }
 
@@ -157,11 +158,11 @@ void ScriptingEnvironment::handleFunctionError(const char* FunctionName, const c
 {
    if(Msg)
    {
-      Device::log("Lua error ('%s' function): %s", FunctionName, Msg);
+      Log::log(LogType::Error, "Lua error ('%s' function): %s", FunctionName, Msg);
    }
    else
    {
-      Device::log("Lua error ('%s' function)", FunctionName);
+      Log::log(LogType::Error, "Lua error ('%s' function)", FunctionName);
    }
 }
 
