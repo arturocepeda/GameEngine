@@ -1212,7 +1212,6 @@ void RenderSystem::renderFrame()
    {
       mStaticGeometryToRender.clear();
       mDynamicGeometryToRender.clear();
-      mBatches.clear();
 
       for(uint i = 0; i < GeometryGroup::Count; i++)
       {
