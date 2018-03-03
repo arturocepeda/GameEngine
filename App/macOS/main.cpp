@@ -136,16 +136,13 @@ int main(int argc, char* argv[])
     dTimeInterval = 1000000.0 / GE_FPS;
     dTimeDelta = 0.0;
     dTimeBefore = 0.0;
-    
-    // create and register the states
-    StateManager cStateManager;
-    registerStates();
 
     // create the task manager
     TaskManager* cTaskManager = Allocator::alloc<TaskManager>();
     GEInvokeCtor(TaskManager, cTaskManager);
 
-    // initialize app module
+    // initialize the application module
+    StateManager cStateManager;
     initAppModule();
 
     // game loop

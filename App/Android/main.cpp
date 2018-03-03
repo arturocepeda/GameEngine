@@ -249,8 +249,8 @@ void onInitWindow()
    cAudio->init();
 #endif
 
-   // create and register the states
-   registerStates(cStateManager);
+   // initialize the application module
+   initAppModule();
 
    // start the timer
    cTimer.start();

@@ -138,10 +138,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
     // register the class
     RegisterClassExA(&wndClass);
 
-    // create and register the states
-    StateManager cStateManager;
-    registerStates();
-
     // create the main window
     GE::uint iWindowPositionX = (iFullscreenWidth / 2) - (iWindowWidth / 2);
     GE::uint iWindowPositionY = (iFullscreenHeight / 2) - (iWindowHeight / 2);
@@ -163,7 +159,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
     cAudio->init();
     cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
 
-    // initialize app module
+    // initialize the application module
+    StateManager cStateManager;
     initAppModule();
 
 #ifndef _DEBUG

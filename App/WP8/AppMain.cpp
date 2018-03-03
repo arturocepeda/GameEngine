@@ -114,8 +114,8 @@ void AppMain::SetWindow(CoreWindow^ window)
    cAudio = new AudioSystemXAudio2();
    cAudio->init();
 
-   // create and register the states
-   registerStates(cStateManager);
+   // initialize the application module
+   initAppModule();
 
    // create task manager
    cTaskManager = new TaskManager();

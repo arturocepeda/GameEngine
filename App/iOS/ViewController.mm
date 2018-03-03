@@ -168,9 +168,6 @@ using namespace GE::Input;
    cAudio = new AudioSystemOpenAL();
    cAudio->init();
    
-   // create and register the states
-   registerStates();
-   
    // start the timer
    cTimer.start();
    dTime = 0.0;
@@ -179,7 +176,7 @@ using namespace GE::Input;
    // create the task manager
    cTaskManager = new TaskManager();
    
-   // init the application module
+   // initialize the application module
    initAppModule();
 }
 

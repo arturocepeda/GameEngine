@@ -128,9 +128,6 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
    cAudio = new AudioSystemOpenSL();
    cAudio->init();
 #endif
-   
-   // create and register the states
-   registerStates();
 
    // initialize the application module
    initAppModule();
