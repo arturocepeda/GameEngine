@@ -106,11 +106,13 @@ Curve::Curve(const ObjectName& Name, const ObjectName& GroupName)
 {
    GERegisterPropertyEnum(ValueType, ValueType);
    GERegisterPropertyEnum(InterpolationMode, InterpolationMode);
+   GERegisterPropertyReadonly(Float, Length);
    GERegisterPropertyArray(CurveKey);
 }
 
 Curve::~Curve()
 {
+   GEReleasePropertyArray(CurveKey);
 }
 
 ValueType Curve::getValueType() const
@@ -144,13 +146,13 @@ void Curve::setInterpolationMode(InterpolationMode Mode)
    eInterpolationMode = Mode;
 }
 
-float Curve::getLength()
+float Curve::getLength() const
 {
    const uint iKeysCount = getCurveKeyCount();
 
    if(iKeysCount > 0)
    {
-      return getCurveKey(iKeysCount - 1)->getTimePosition();
+      return getCurveKeyConst(iKeysCount - 1)->getTimePosition();
    }
 
    return 0.0f;

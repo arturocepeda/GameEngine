@@ -50,6 +50,7 @@ BezierCurve::BezierCurve(const ObjectName& Name, const ObjectName& GroupName)
 
 BezierCurve::~BezierCurve()
 {
+   GEReleasePropertyArray(RefPoint);
 }
 
 int BezierCurve::getBinomialCoefficient(int n, int k)

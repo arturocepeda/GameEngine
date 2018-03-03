@@ -56,11 +56,12 @@ namespace GE
       void setValueType(Core::ValueType Type);
       void setInterpolationMode(InterpolationMode Mode);
 
-      float getLength();
+      float getLength() const;
       Core::Value getValue(float TimePosition);
 
       GEPropertyEnum(Core::ValueType, ValueType)
       GEPropertyEnum(InterpolationMode, InterpolationMode)
+      GEPropertyReadonly(Float, Length)
 
       GEPropertyArray(CurveKey, CurveKey)
    };

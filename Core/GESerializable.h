@@ -234,6 +234,11 @@ namespace GE { namespace Core
       GEAssert(Index < v##ClassName##List.size()); \
       return static_cast<Class*>(v##ClassName##List[Index]); \
    } \
+   const Class* get##ClassName##Const(uint Index) const \
+   { \
+      GEAssert(Index < v##ClassName##List.size()); \
+      return static_cast<Class*>(v##ClassName##List[Index]); \
+   } \
    void remove##ClassName(uint Index) \
    { \
       GEAssert(Index < v##ClassName##List.size()); \

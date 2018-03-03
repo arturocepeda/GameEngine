@@ -28,6 +28,7 @@ ComponentDataContainer::ComponentDataContainer(Entity* Owner)
 
 ComponentDataContainer::~ComponentDataContainer()
 {
+   GEReleasePropertyArray(DataContainerVariable);
 }
 
 const Value* ComponentDataContainer::getVariable(const ObjectName& VariableName)
