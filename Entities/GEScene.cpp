@@ -758,7 +758,7 @@ void Scene::queueForRendering()
       if(!cRenderable->getVisible())
          continue;
 
-#if defined (GE_SCENE_JOBIFIED_UPDATE)
+#if defined (GE_SCENE_JOBIFIED_UPDATE) && !defined (GE_RENDERING_API_OPENGL)
       JobDesc sJobDesc("queueForRendering");
       sJobDesc.Task = [cRenderable, i] { RenderSystem::getInstance()->queueForRendering(cRenderable, i); };
       TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
