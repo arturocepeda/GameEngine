@@ -13,6 +13,7 @@
 #include "GERenderSystemES20.h"
 #include "Rendering/GERenderingObjects.h"
 #include "Core/GEDevice.h"
+#include "Core/GELog.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEProfiler.h"
 #include "Core/GEApplication.h"
@@ -354,7 +355,7 @@ void RenderSystemES20::attachShaders(ShaderProgramES20* cProgram)
       glGetProgramInfoLog(cProgram->ID, iLogLength, NULL, sLog);
       
       // show info log
-      Device::log("Program '%s': linking error\n%s", cProgram->getName().getString().c_str(), sLog);
+      Log::log(LogType::Error, "Program '%s': linking error\n%s", cProgram->getName().getString().c_str(), sLog);
       
       Allocator::free(sLog);
       exit(1);

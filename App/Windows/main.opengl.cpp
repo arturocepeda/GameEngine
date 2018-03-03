@@ -160,13 +160,13 @@ int main(int argc, char* argv[])
     dTimeBefore = 0.0;
     dTimeNow;
 
-    // create the task manager
-    TaskManager* cTaskManager = Allocator::alloc<TaskManager>();
-    GEInvokeCtor(TaskManager, cTaskManager);
-    
     // initialize the application module
     StateManager cStateManager;
     initAppModule();
+
+    // create the task manager
+    TaskManager* cTaskManager = Allocator::alloc<TaskManager>();
+    GEInvokeCtor(TaskManager, cTaskManager);
 
     // game loop
     glutDisplayFunc(render);

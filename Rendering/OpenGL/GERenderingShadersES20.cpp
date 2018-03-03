@@ -13,8 +13,11 @@
 
 #include "GERenderingShadersES20.h"
 #include "Core/GEDevice.h"
+#include "Core/GELog.h"
 #include "Core/GEAllocator.h"
+
 #include <cstring>
+
 #include "GEOpenGLES20.h"
 
 using namespace GE;
@@ -94,7 +97,7 @@ void Shader::load(const char* sFilename, const char* sExt, ShaderProgram* cShade
       sLog[iLogLength] = '\0';
       
       // show info log
-      Device::log("Shader '%s.%s': compiling error\n%s", sFilename, sExt, sLog);
+      Log::log(LogType::Error, "Shader '%s.%s': compiling error\n%s", sFilename, sExt, sLog);
       
       Allocator::free(sLog);
    }
