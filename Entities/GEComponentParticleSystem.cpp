@@ -33,16 +33,12 @@ using namespace GE::Content;
 //
 //  ComponentParticleSystem
 //
-#if defined (GE_EDITOR_SUPPORT)
-const uint MaxParticles = 8192;
-#else
-const uint MaxParticles = 1024;
-#endif
-
 RandFloat cRandFloat01(0.0f, 1.0f);
 
 ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    : ComponentRenderable(Owner, RenderableType::ParticleSystem)
+   , iMaxParticles(256)
+   , bVertexDataReallocationPending(true)
    , fElapsedTimeSinceLastEmission(0.0f)
    , eEmitterType(ParticleEmitterType::Point)
    , fEmitterRadius(0.0f)
@@ -72,27 +68,8 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
       ? RenderingMode::_3D
       : RenderingMode::_2D;
 
-   sGeometryData.NumVertices = 4 * MaxParticles;
-   sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
-   sGeometryData.VertexData = Allocator::alloc<float>(sGeometryData.VertexStride * sGeometryData.NumVertices);
-
-   sGeometryData.NumIndices = 6 * MaxParticles;
-   sGeometryData.Indices = Allocator::alloc<ushort>(sGeometryData.NumIndices);
-
-   ushort* pIndices = sGeometryData.Indices;
-   ushort iCurrentVertexOffset = 0;
-
-   for(uint i = 0; i < MaxParticles; i++)
-   {
-      *pIndices++ = QuadIndices[0] + iCurrentVertexOffset;
-      *pIndices++ = QuadIndices[1] + iCurrentVertexOffset;
-      *pIndices++ = QuadIndices[2] + iCurrentVertexOffset;
-      *pIndices++ = QuadIndices[3] + iCurrentVertexOffset;
-      *pIndices++ = QuadIndices[4] + iCurrentVertexOffset;
-      *pIndices++ = QuadIndices[5] + iCurrentVertexOffset;
-
-      iCurrentVertexOffset += 4;
-   }
+   GERegisterProperty(UInt, MaxParticles);
+   GERegisterPropertyReadonly(UInt, ParticlesCount);
 
    GERegisterPropertyEnum(ParticleEmitterType, EmitterType);
 
@@ -144,6 +121,20 @@ ComponentParticleSystem::~ComponentParticleSystem()
 {
    Allocator::free(sGeometryData.VertexData);
    Allocator::free(sGeometryData.Indices);
+}
+
+uint ComponentParticleSystem::getMaxParticles() const
+{
+   return iMaxParticles;
+}
+
+void ComponentParticleSystem::setMaxParticles(uint MaxParticles)
+{
+   if(MaxParticles == iMaxParticles)
+      return;
+
+   iMaxParticles = MaxParticles;
+   bVertexDataReallocationPending = true;
 }
 
 void ComponentParticleSystem::setEmitterPointA(const Vector3& Point)
@@ -207,7 +198,8 @@ const ObjectName& ComponentParticleSystem::getEmitterMeshEntity() const
 
 void ComponentParticleSystem::emitParticle()
 {
-   GEAssert(lParticles.size() < MaxParticles);
+   if((uint)lParticles.size() == iMaxParticles)
+      return;
 
    Particle sParticle;
 
@@ -343,19 +335,26 @@ void ComponentParticleSystem::update()
 {
    GEProfilerMarker("ComponentParticleSystem::update()");
 
+   if(bVertexDataReallocationPending)
+   {
+      allocateVertexData();
+      bVertexDataReallocationPending = false;
+   }
+
    const float fDeltaTime = Time::getClock(cOwner->getClockIndex()).getDelta();
 
    // active particles
-   ParticleList::iterator it = lParticles.begin();
+   uint iParticleIndex = 0;
 
-   while(it != lParticles.end())
+   while(iParticleIndex < (uint)lParticles.size())
    {
-      Particle& sParticle = *it;
+      Particle& sParticle = lParticles[iParticleIndex];
       sParticle.RemainingLifeTime -= fDeltaTime;
 
       if(sParticle.RemainingLifeTime <= 0.0f)
       {
-         it = lParticles.erase(it);
+         sParticle = lParticles[lParticles.size() - 1];
+         lParticles.pop_back();
          continue;
       }
 
@@ -382,7 +381,7 @@ void ComponentParticleSystem::update()
       sParticle.Position += vConstantForce * fDeltaTime;
       sParticle.LinearVelocity += vConstantAcceleration * fDeltaTime;
 
-      it++;
+      iParticleIndex++;
    }
 
    // new particles
@@ -404,6 +403,39 @@ void ComponentParticleSystem::update()
    }
 
    composeVertexData();
+}
+
+void ComponentParticleSystem::allocateVertexData()
+{
+   sGeometryData.NumVertices = 4 * iMaxParticles;
+   sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
+   sGeometryData.VertexData =
+      Allocator::realloc<float>(sGeometryData.VertexData, sGeometryData.VertexStride * sGeometryData.NumVertices);
+
+   sGeometryData.NumIndices = 6 * iMaxParticles;
+   sGeometryData.Indices =
+      Allocator::realloc<ushort>(sGeometryData.Indices, sGeometryData.NumIndices);
+
+   ushort* pIndices = sGeometryData.Indices;
+   ushort iCurrentVertexOffset = 0;
+
+   for(uint i = 0; i < iMaxParticles; i++)
+   {
+      *pIndices++ = QuadIndices[0] + iCurrentVertexOffset;
+      *pIndices++ = QuadIndices[1] + iCurrentVertexOffset;
+      *pIndices++ = QuadIndices[2] + iCurrentVertexOffset;
+      *pIndices++ = QuadIndices[3] + iCurrentVertexOffset;
+      *pIndices++ = QuadIndices[4] + iCurrentVertexOffset;
+      *pIndices++ = QuadIndices[5] + iCurrentVertexOffset;
+
+      iCurrentVertexOffset += 4;
+   }
+
+   if(lParticles.size() > iMaxParticles)
+   {
+      lParticles.resize(iMaxParticles);
+      lParticles.shrink_to_fit();
+   }
 }
 
 void ComponentParticleSystem::composeVertexData()

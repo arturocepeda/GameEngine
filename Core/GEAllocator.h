@@ -108,8 +108,6 @@ namespace GE { namespace Core
       template<typename T>
       static T* realloc(void* Ptr, uint ElementsCount = 1, AllocationCategory Category = AllocationCategory::General)
       {
-         GEAssert(Ptr);
-
          uint iSize = sizeof(T) * ElementsCount;
          T* pPtr = (T*)::realloc(Ptr, iSize);
          GEAssert(pPtr);
@@ -126,10 +124,13 @@ namespace GE { namespace Core
 
             GEMutexLock(pMutex);
 
-            std::map<void*, AllocationInfo>::const_iterator it = mAllocationsRegistry.find(Ptr);
-            GEAssert(it != mAllocationsRegistry.end());
-            iTotalBytesAllocated[(int)Category] -= it->second.Size;
-            mAllocationsRegistry.erase(it);
+            if(Ptr)
+            {
+               std::map<void*, AllocationInfo>::const_iterator it = mAllocationsRegistry.find(Ptr);
+               GEAssert(it != mAllocationsRegistry.end());
+               iTotalBytesAllocated[(int)Category] -= it->second.Size;
+               mAllocationsRegistry.erase(it);
+            }
 
             mAllocationsRegistry[pPtr] = AllocationInfo(sBuffer, Category, iSize);;
             iTotalBytesAllocated[(int)Category] += iSize;

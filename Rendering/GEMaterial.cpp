@@ -263,11 +263,13 @@ void MaterialPass::setMaterialName(const Core::ObjectName& Name)
       return;
 
    Material* cNewMaterial = 0;
-   const ObjectRegistry* cMaterialObjectRegistry = ResourcesManager::getInstance()->getObjectRegistry(MaterialObjectRegistryName);
+   const ObjectRegistry* cMaterialObjectRegistry =
+      ResourcesManager::getInstance()->getObjectRegistry(MaterialObjectRegistryName);
+   ObjectRegistry::const_iterator it = cMaterialObjectRegistry->find(Name.getID());
    
-   if(cMaterialObjectRegistry->find(Name.getID()) != cMaterialObjectRegistry->end())
+   if(it != cMaterialObjectRegistry->end())
    {
-      cNewMaterial = static_cast<Material*>(cMaterialObjectRegistry->find(Name.getID())->second);
+      cNewMaterial = static_cast<Material*>(it->second);
    }
    else
    {

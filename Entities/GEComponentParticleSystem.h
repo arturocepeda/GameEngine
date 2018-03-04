@@ -64,6 +64,8 @@ namespace GE { namespace Entities
    private:
       typedef GESTLVector(Particle) ParticleList;
       ParticleList lParticles;
+      uint iMaxParticles;
+      bool bVertexDataReallocationPending;
       float fElapsedTimeSinceLastEmission;
 
       ParticleEmitterType eEmitterType;
@@ -106,6 +108,7 @@ namespace GE { namespace Entities
       Vector3 vConstantForce;
       Vector3 vConstantAcceleration;
 
+      void allocateVertexData();
       void composeVertexData();
 
       static float getRandomFloat(float fMin, float fMax);
@@ -117,6 +120,11 @@ namespace GE { namespace Entities
    public:
       ComponentParticleSystem(Entity* Owner);
       ~ComponentParticleSystem();
+
+      uint getMaxParticles() const;
+      void setMaxParticles(uint MaxParticles);
+
+      uint getParticlesCount() const { return (uint)lParticles.size(); }
 
       void setEmitterPointA(const Vector3& Point);
       void setEmitterPointB(const Vector3& Point);
@@ -202,6 +210,9 @@ namespace GE { namespace Entities
 
       void setConstantForce(const Vector3& Value) { vConstantForce = Value; }
       void setConstantAcceleration(const Vector3& Value) { vConstantAcceleration = Value; }
+
+      GEProperty(UInt, MaxParticles)
+      GEPropertyReadonly(UInt, ParticlesCount)
 
       GEPropertyEnum(ParticleEmitterType, EmitterType)
 
