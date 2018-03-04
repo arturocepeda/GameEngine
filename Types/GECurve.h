@@ -20,46 +20,38 @@ namespace GE
    {
    private:
       float fTimePosition;
-      Core::Value cValue;
-
-      void refreshValueProperty();
+      float fValue;
 
    public:
       CurveKey();
       ~CurveKey();
 
-      virtual void setOwner(Core::Serializable* Owner) override;
-
       float getTimePosition() const;
-      const Core::Value& getValue() const;
+      float getValue() const;
 
       void setTimePosition(float TimePosition);
-      void setValue(const Core::Value& Val);
+      void setValue(float Value);
 
       GEProperty(Float, TimePosition)
+      GEProperty(Float, Value)
    };
 
 
    class Curve : public Content::SerializableResource
    {
    private:
-      Core::ValueType eValueType;
       InterpolationMode eInterpolationMode;
 
    public:
       Curve(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
       ~Curve();
 
-      Core::ValueType getValueType() const;
       InterpolationMode getInterpolationMode() const;
-
-      void setValueType(Core::ValueType Type);
       void setInterpolationMode(InterpolationMode Mode);
 
       float getLength() const;
-      Core::Value getValue(float TimePosition);
+      float getValue(float TimePosition);
 
-      GEPropertyEnum(Core::ValueType, ValueType)
       GEPropertyEnum(InterpolationMode, InterpolationMode)
       GEPropertyReadonly(Float, Length)
 

@@ -313,72 +313,41 @@ namespace GE { namespace Core
    };
 
 
+   GESerializableEnum(PropertyValueComponent)
+   {
+      None,
+      X,
+      Y,
+      Z,
+      Red,
+      Green,
+      Blue,
+      Alpha
+   };
+
+
    class CurvePropertyInterpolator : public Interpolator<float>
    {
    private:
       float fCurveLength;
+      PropertyValueComponent eValueComponent;
 
    public:
-      CurvePropertyInterpolator(Curve* cCurve, Serializable* cSerializable, const ObjectName& cPropertyName)
-         : Interpolator<float>(cCurve->getInterpolationMode())
-         , fCurveLength(cCurve->getLength())
-      {
-         GEAssert(cCurve);
-         GEAssert(cSerializable);
+      CurvePropertyInterpolator(Curve* cCurve, Serializable* cSerializable,
+         const ObjectName& cPropertyName, PropertyValueComponent ePropertyValueComponent);
 
-         const Property* cProperty = cSerializable->getProperty(cPropertyName);
-         GEAssert(cProperty);
-         GEAssert(cProperty->Type == cCurve->getValueType());
-         GEAssert(cProperty->Setter);
-
-         Interpolator<float>::attachSetter([cCurve, cProperty](const float& t)
-         {
-            Value cValue = cCurve->getValue(t);
-            cProperty->Setter(cValue);
-         });
-      }
-
-      void animate()
-      {
-         Interpolator<float>::animate(0.0f, fCurveLength, fCurveLength, nullptr);
-      }
-
-      void animateInverse()
-      {
-         Interpolator<float>::animate(fCurveLength, 0.0f, fCurveLength, nullptr);
-      }
+      void animate();
+      void animateInverse();
    };
 
 
    class BezierPropertyInterpolator : public Interpolator<float>
    {
    public:
-      BezierPropertyInterpolator(BezierCurve* cBezierCurve, Serializable* cSerializable, const ObjectName& cPropertyName, InterpolationMode eMode)
-         : Interpolator<float>(eMode)
-      {
-         GEAssert(cBezierCurve);
-         GEAssert(cSerializable);
+      BezierPropertyInterpolator(BezierCurve* cBezierCurve, Serializable* cSerializable,
+         const ObjectName& cPropertyName, InterpolationMode eMode);
 
-         const Property* cProperty = cSerializable->getProperty(cPropertyName);
-         GEAssert(cProperty);
-         GEAssert(cProperty->Type == ValueType::Vector3);
-         GEAssert(cProperty->Setter);
-
-         Interpolator<float>::attachSetter([cBezierCurve, cProperty](const float& v)
-         {
-            Value cValue = Value(cBezierCurve->getPoint(v));
-            cProperty->Setter(cValue);
-         });
-      }
-
-      void animate(float fDuration)
-      {
-         Interpolator<float>::animate(0.0f, 1.0f, fDuration, nullptr);
-      }
-
-      void animateInverse(float fDuration)
-      {
-         Interpolator<float>::animate(1.0f, 0.0f, fDuration, nullptr);
-      }
+      void animate(float fDuration);
+      void animateInverse(float fDuration);
    };
 }}

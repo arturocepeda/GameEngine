@@ -59,6 +59,18 @@ namespace GE { namespace Core
       "Scripting"
    };
 
+   const char* strPropertyValueComponent[] =
+   {
+      "None",
+      "X",
+      "Y",
+      "Z",
+      "Red",
+      "Green",
+      "Blue",
+      "Alpha"
+   };
+
    const char* strSystemLanguage[] =
    {
       "en", // English

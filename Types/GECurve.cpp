@@ -22,35 +22,17 @@ using namespace GE::Core;
 //
 //  CurveKey
 //
-const ObjectName ValuePropertyName = ObjectName("Value");
-const uint ValuePropertyIndex = 1;
-const ValueType DefaultValueType = ValueType::Vector3;
-
 CurveKey::CurveKey()
    : SerializableArrayElement("CurveKey")
-   , cValue(Value::getDefaultValue(DefaultValueType))
    , fTimePosition(0.0f)
+   , fValue(0.0f)
 {
    GERegisterProperty(Float, TimePosition);
+   GERegisterProperty(Float, Value);
 }
 
 CurveKey::~CurveKey()
 {
-}
-
-void CurveKey::setOwner(Serializable* Owner)
-{
-   SerializableArrayElement::setOwner(Owner);
-
-   Curve* cCurve = static_cast<Curve*>(Owner);
-   ValueType eValueType = cCurve->getValueType();
-   bool bValueTypeChanged = eValueType != cValue.getType();
-   setValue(Value::getDefaultValue(eValueType));
-
-   if(!bValueTypeChanged)
-   {
-      refreshValueProperty();
-   }
 }
 
 float CurveKey::getTimePosition() const
@@ -58,9 +40,9 @@ float CurveKey::getTimePosition() const
    return fTimePosition;
 }
 
-const Value& CurveKey::getValue() const
+float CurveKey::getValue() const
 {
-   return cValue;
+   return fValue;
 }
 
 void CurveKey::setTimePosition(float TimePosition)
@@ -68,32 +50,10 @@ void CurveKey::setTimePosition(float TimePosition)
    fTimePosition = TimePosition;
 }
 
-void CurveKey::setValue(const Value& Val)
+void CurveKey::setValue(float Value)
 {
-   bool bValueTypeChanged = Val.getType() != cValue.getType();
-
-   cValue = Val;
-
-   if(bValueTypeChanged)
-   {
-      refreshValueProperty();
-   }
+   fValue = Value;
 }
-
-void CurveKey::refreshValueProperty()
-{
-   if(getPropertiesCount() > ValuePropertyIndex)
-   {
-      removeProperty(ValuePropertyIndex);
-   }
-
-   registerProperty(ValuePropertyName, cValue.getType(),
-      [this](const GE::Core::Value& v) { cValue = v; },
-      [this]()->GE::Core::Value { return cValue; });
-
-   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
-}
-
 
 
 //
@@ -101,10 +61,8 @@ void CurveKey::refreshValueProperty()
 //
 Curve::Curve(const ObjectName& Name, const ObjectName& GroupName)
    : SerializableResource(Name, GroupName, "Curve")
-   , eValueType(ValueType::Vector3)
    , eInterpolationMode(InterpolationMode::Linear)
 {
-   GERegisterPropertyEnum(ValueType, ValueType);
    GERegisterPropertyEnum(InterpolationMode, InterpolationMode);
    GERegisterPropertyReadonly(Float, Length);
    GERegisterPropertyArray(CurveKey);
@@ -115,30 +73,9 @@ Curve::~Curve()
    GEReleasePropertyArray(CurveKey);
 }
 
-ValueType Curve::getValueType() const
-{
-   return eValueType;
-}
-
 InterpolationMode Curve::getInterpolationMode() const
 {
    return eInterpolationMode;
-}
-
-void Curve::setValueType(ValueType Type)
-{
-   if(eValueType == Type)
-      return;
-
-   eValueType = Type;
-
-   if(getCurveKeyCount() > 0)
-   {
-      for(uint i = 0; i < getCurveKeyCount(); i++)
-      {
-         getCurveKey(i)->setValue(Value::getDefaultValue(eValueType));
-      }
-   }
 }
 
 void Curve::setInterpolationMode(InterpolationMode Mode)
@@ -158,13 +95,13 @@ float Curve::getLength() const
    return 0.0f;
 }
 
-Value Curve::getValue(float TimePosition)
+float Curve::getValue(float TimePosition)
 {
    const uint iKeysCount = getCurveKeyCount();
 
    if(iKeysCount == 0)
    {
-      return Value::getDefaultValue(eValueType);
+      return 0.0f;
    }
 
    if(TimePosition <= getCurveKey(0)->getTimePosition())
@@ -193,21 +130,9 @@ Value Curve::getValue(float TimePosition)
          const Value& cKeyAValue = cKeyA->getValue();
          const Value& cKeyBValue = cKeyB->getValue();
 
-         switch(eValueType)
-         {
-         case ValueType::Float:
-            return Value(Math::getInterpolatedValue(cKeyAValue.getAsFloat(), cKeyBValue.getAsFloat(), t));
-         case ValueType::Vector2:
-            return Value(Math::getInterpolatedValue(cKeyAValue.getAsVector2(), cKeyBValue.getAsVector2(), t));
-         case ValueType::Vector3:
-            return Value(Math::getInterpolatedValue(cKeyAValue.getAsVector3(), cKeyBValue.getAsVector3(), t));
-         case ValueType::Color:
-            return Value(Math::getInterpolatedValue(cKeyAValue.getAsColor(), cKeyBValue.getAsColor(), t));
-         default:
-            return Value::getDefaultValue(eValueType);
-         }
+         return Math::getInterpolatedValue(cKeyAValue.getAsFloat(), cKeyBValue.getAsFloat(), t);
       }
    }
 
-   return Value::getDefaultValue(eValueType);
+   return 0.0f;
 }

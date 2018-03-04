@@ -665,10 +665,22 @@ void ScriptingEnvironment::registerTypes()
       , "getCurveKeyCount", &Curve::getCurveKeyCount
       , "getCurveKey", &Curve::getCurveKey
    );
+   lua.new_enum
+   (
+      "PropertyValueComponent"
+      , "None", PropertyValueComponent::None
+      , "X", PropertyValueComponent::X
+      , "Y", PropertyValueComponent::Y
+      , "Z", PropertyValueComponent::Z
+      , "Red", PropertyValueComponent::Red
+      , "Green", PropertyValueComponent::Green
+      , "Blue", PropertyValueComponent::Blue
+      , "Alpha", PropertyValueComponent::Alpha
+   );
    lua.new_usertype<CurvePropertyInterpolator>
    (
       "CurvePropertyInterpolator"
-      , sol::constructors<sol::types<Curve*, Serializable*, const ObjectName&>>()
+      , sol::constructors<sol::types<Curve*, Serializable*, const ObjectName&, PropertyValueComponent>>()
       , "animate", &CurvePropertyInterpolator::animate
       , "animateInverse", &CurvePropertyInterpolator::animateInverse
       , "update", &CurvePropertyInterpolator::update
