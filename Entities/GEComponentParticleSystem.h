@@ -33,13 +33,15 @@ namespace GE { namespace Entities
    };
 
 
-   GESerializableEnum(ParticleSettingsBitMask)
+   enum class ParticleSettingsBitMask : unsigned char
    {
-      VaryAlpha  =  1 << 0,
-      VaryColor  =  1 << 1,
-      VarySize   =  1 << 2,
-
-      Count = 3
+      VaryColorR           =  1 << 0,
+      VaryColorG           =  1 << 1,
+      VaryColorB           =  1 << 2,
+      VaryAlpha            =  1 << 3,
+      VarySize             =  1 << 4,
+      VaryLinearVelocity   =  1 << 5,
+      VaryAngularVelocity  =  1 << 6,
    };
 
 
@@ -53,11 +55,12 @@ namespace GE { namespace Entities
 
       Vector3 LinearVelocity;
       float AngularVelocity;
-      float SizeVariation;
       Color DiffuseColorVariation;
 
       float LifeTime;
       float RemainingLifeTime;
+
+      uint8_t Settings;
    };
 
 
@@ -91,11 +94,13 @@ namespace GE { namespace Entities
          switch(e##PropertyBaseName##Type) \
          { \
          case ValueProviderType::Constant: \
+           c##PropertyBaseName##Curve = 0; \
            const_cast<Core::Property*>(getProperty(#PropertyBaseName"Value"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
            const_cast<Core::Property*>(getProperty(#PropertyBaseName"ValueMax"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
            const_cast<Core::Property*>(getProperty(#PropertyBaseName"Curve"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
            break; \
          case ValueProviderType::Random: \
+           c##PropertyBaseName##Curve = 0; \
            const_cast<Core::Property*>(getProperty(#PropertyBaseName"Value"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
            const_cast<Core::Property*>(getProperty(#PropertyBaseName"ValueMax"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
            const_cast<Core::Property*>(getProperty(#PropertyBaseName"Curve"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
@@ -119,7 +124,7 @@ namespace GE { namespace Entities
             c##PropertyBaseName##Curve = static_cast<Curve*>(it->second); \
          } \
       } \
-      float get##PropertyBaseName##(float TimePosition) \
+      float get##PropertyBaseName##(float LifeTime, float RemainingLifeTime) \
       { \
          switch(e##PropertyBaseName##Type) \
          { \
@@ -130,7 +135,12 @@ namespace GE { namespace Entities
          case ValueProviderType::Curve: \
             if(c##PropertyBaseName##Curve) \
             { \
-               return c##PropertyBaseName##Curve->getValue(TimePosition); \
+               const float fCurveLength = c##PropertyBaseName##Curve->getLength(); \
+               if(fCurveLength > GE_EPSILON) \
+               { \
+                  const float fRelativeTimePosition = (LifeTime - RemainingLifeTime) / LifeTime; \
+                  return c##PropertyBaseName##Curve->getValue(fRelativeTimePosition * fCurveLength); \
+               } \
             } \
             break; \
          } \
@@ -163,15 +173,9 @@ namespace GE { namespace Entities
       float fEmissionRate;
       uint iEmissionBurstCount;
 
-      uint8_t eParticleSettings;
-
       float fParticleLifeTimeMin;
       float fParticleLifeTimeMax;
 
-      float fParticleInitialSizeMin;
-      float fParticleInitialSizeMax;
-      Color cParticleInitialColorMin;
-      Color cParticleInitialColorMax;
       float fParticleInitialAngleMin;
       float fParticleInitialAngleMax;
 
@@ -179,11 +183,6 @@ namespace GE { namespace Entities
       Vector3 vParticleLinearVelocityMax;
       float fParticleAngularVelocityMin;
       float fParticleAngularVelocityMax;
-
-      float fParticleFinalSizeMin;
-      float fParticleFinalSizeMax;
-      Color cParticleFinalColorMin;
-      Color cParticleFinalColorMax;
 
       uint iParticleTextureAtlasIndexMin;
       uint iParticleTextureAtlasIndexMax;
@@ -232,15 +231,9 @@ namespace GE { namespace Entities
       float getEmissionRate() const { return fEmissionRate; }
       uint getEmissionBurstCount() const { return iEmissionBurstCount; }
 
-      uint8_t getParticleSettings() const { return eParticleSettings; }
-
       float getParticleLifeTimeMin() const { return fParticleLifeTimeMin; }
       float getParticleLifeTimeMax() const { return fParticleLifeTimeMax; }
 
-      float getParticleInitialSizeMin() const { return fParticleInitialSizeMin; }
-      float getParticleInitialSizeMax() const { return fParticleInitialSizeMax; }
-      const Color& getParticleInitialColorMin() const { return cParticleInitialColorMin; }
-      const Color& getParticleInitialColorMax() const { return cParticleInitialColorMax; }
       float getParticleInitialAngleMin() const { return fParticleInitialAngleMin; }
       float getParticleInitialAngleMax() const { return fParticleInitialAngleMax; }
 
@@ -248,11 +241,6 @@ namespace GE { namespace Entities
       const Vector3& getParticleLinearVelocityMax() const { return vParticleLinearVelocityMax; }
       float getParticleAngularVelocityMin() const { return fParticleAngularVelocityMin; }
       float getParticleAngularVelocityMax() const { return fParticleAngularVelocityMax; }
-
-      float getParticleFinalSizeMin() const { return fParticleFinalSizeMin; }
-      float getParticleFinalSizeMax() const { return fParticleFinalSizeMax; }
-      const Color& getParticleFinalColorMin() const { return cParticleFinalColorMin; }
-      const Color& getParticleFinalColorMax() const { return cParticleFinalColorMax; }
 
       uint getParticleTextureAtlasIndexMin() const { return iParticleTextureAtlasIndexMin; }
       uint getParticleTextureAtlasIndexMax() const { return iParticleTextureAtlasIndexMax; }
@@ -266,15 +254,9 @@ namespace GE { namespace Entities
       void setEmissionRate(float Rate) { fEmissionRate = Rate; }
       void setEmissionBurstCount(uint Value) { iEmissionBurstCount = Value; }
 
-      void setParticleSettings(uint8_t Value) { eParticleSettings = Value; }
-
       void setParticleLifeTimeMin(float Value) { fParticleLifeTimeMin = Value; }
       void setParticleLifeTimeMax(float Value) { fParticleLifeTimeMax = Value; }
 
-      void setParticleInitialSizeMin(float Value) { fParticleInitialSizeMin = Value; }
-      void setParticleInitialSizeMax(float Value) { fParticleInitialSizeMax = Value; }
-      void setParticleInitialColorMin(const Color& Value) { cParticleInitialColorMin = Value; }
-      void setParticleInitialColorMax(const Color& Value) { cParticleInitialColorMax = Value; }
       void setParticleInitialAngleMin(float Value) { fParticleInitialAngleMin = Value; }
       void setParticleInitialAngleMax(float Value) { fParticleInitialAngleMax = Value; }
 
@@ -282,11 +264,6 @@ namespace GE { namespace Entities
       void setParticleLinearVelocityMax(const Vector3& Value) { vParticleLinearVelocityMax = Value; }
       void setParticleAngularVelocityMin(float Value) { fParticleAngularVelocityMin = Value; }
       void setParticleAngularVelocityMax(float Value) { fParticleAngularVelocityMax = Value; }
-
-      void setParticleFinalSizeMin(float Value) { fParticleFinalSizeMin = Value; }
-      void setParticleFinalSizeMax(float Value) { fParticleFinalSizeMax = Value; }
-      void setParticleFinalColorMin(const Color& Value) { cParticleFinalColorMin = Value; }
-      void setParticleFinalColorMax(const Color& Value) { cParticleFinalColorMax = Value; }
 
       void setParticleTextureAtlasIndexMin(uint Value) { iParticleTextureAtlasIndexMin = Value; }
       void setParticleTextureAtlasIndexMax(uint Value) { iParticleTextureAtlasIndexMax = Value; }
@@ -313,15 +290,9 @@ namespace GE { namespace Entities
       GEProperty(Float, EmissionRate)
       GEProperty(UInt, EmissionBurstCount)
 
-      GEPropertyBitMask(ParticleSettingsBitMask, ParticleSettings)
-
       GEProperty(Float, ParticleLifeTimeMin)
       GEProperty(Float, ParticleLifeTimeMax)
 
-      GEProperty(Float, ParticleInitialSizeMin)
-      GEProperty(Float, ParticleInitialSizeMax)
-      GEProperty(Color, ParticleInitialColorMin)
-      GEProperty(Color, ParticleInitialColorMax)
       GEProperty(Float, ParticleInitialAngleMin)
       GEProperty(Float, ParticleInitialAngleMax)
 
@@ -330,18 +301,16 @@ namespace GE { namespace Entities
       GEProperty(Float, ParticleAngularVelocityMin)
       GEProperty(Float, ParticleAngularVelocityMax)
 
-      GEProperty(Float, ParticleFinalSizeMin)
-      GEProperty(Float, ParticleFinalSizeMax)
-      GEProperty(Color, ParticleFinalColorMin)
-      GEProperty(Color, ParticleFinalColorMax)
-
       GEProperty(UInt, ParticleTextureAtlasIndexMin)
       GEProperty(UInt, ParticleTextureAtlasIndexMax)
 
       GEProperty(Vector3, ConstantForce)
       GEProperty(Vector3, ConstantAcceleration)
 
-      GEValueProvider(Test)
-      GEValueProvider(Foo)
+      GEValueProvider(ParticleColorR)
+      GEValueProvider(ParticleColorG)
+      GEValueProvider(ParticleColorB)
+      GEValueProvider(ParticleAlpha)
+      GEValueProvider(ParticleSize)
    };
 }}

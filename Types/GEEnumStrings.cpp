@@ -138,13 +138,6 @@ namespace GE { namespace Entities
       "Mesh"
    };
 
-   const char* strParticleSettingsBitMask[] =
-   {
-      "VaryAlpha",
-      "VaryColor",
-      "VarySize"
-   };
-
    const char* strValueProviderType[] =
    {
       "Constant",

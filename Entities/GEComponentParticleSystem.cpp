@@ -63,17 +63,12 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , bDynamicShadows(false)
    , fEmissionRate(0.0f)
    , iEmissionBurstCount(1)
-   , eParticleSettings((1 << (uint8_t)ParticleSettingsBitMask::Count) - 1)
    , fParticleLifeTimeMin(0.0f)
    , fParticleLifeTimeMax(0.0f)
-   , fParticleInitialSizeMin(0.0f)
-   , fParticleInitialSizeMax(0.0f)
    , fParticleInitialAngleMin(0.0f)
    , fParticleInitialAngleMax(0.0f)
    , fParticleAngularVelocityMin(0.0f)
    , fParticleAngularVelocityMax(0.0f)
-   , fParticleFinalSizeMin(0.0f)
-   , fParticleFinalSizeMax(0.0f)
    , iParticleTextureAtlasIndexMin(0)
    , iParticleTextureAtlasIndexMax(0)
 {
@@ -99,15 +94,9 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(Float, EmissionRate);
    GERegisterPropertyMinMax(UInt, EmissionBurstCount, 1, 256);
 
-   GERegisterPropertyBitMask(ParticleSettingsBitMask, ParticleSettings);
-
    GERegisterProperty(Float, ParticleLifeTimeMin);
    GERegisterProperty(Float, ParticleLifeTimeMax);
 
-   GERegisterProperty(Float, ParticleInitialSizeMin);
-   GERegisterProperty(Float, ParticleInitialSizeMax);
-   GERegisterProperty(Color, ParticleInitialColorMin);
-   GERegisterProperty(Color, ParticleInitialColorMax);
    GERegisterProperty(Float, ParticleInitialAngleMin);
    GERegisterProperty(Float, ParticleInitialAngleMax);
 
@@ -116,16 +105,17 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(Float, ParticleAngularVelocityMin);
    GERegisterProperty(Float, ParticleAngularVelocityMax);
 
-   GERegisterProperty(Float, ParticleFinalSizeMin);
-   GERegisterProperty(Float, ParticleFinalSizeMax);
-   GERegisterProperty(Color, ParticleFinalColorMin);
-   GERegisterProperty(Color, ParticleFinalColorMax);
-
    GERegisterProperty(UInt, ParticleTextureAtlasIndexMin);
    GERegisterProperty(UInt, ParticleTextureAtlasIndexMax);
 
    GERegisterProperty(Vector3, ConstantForce);
    GERegisterProperty(Vector3, ConstantAcceleration);
+
+   GERegisterValueProvider(ParticleColorR, ParticleColor);
+   GERegisterValueProvider(ParticleColorG, ParticleColor);
+   GERegisterValueProvider(ParticleColorB, ParticleColor);
+   GERegisterValueProvider(ParticleAlpha, ParticleColor);
+   GERegisterValueProvider(ParticleSize, ParticleSize);
 
 #if defined (GE_EDITOR_SUPPORT)
    registerAction("Burst", [this] { burst(iEmissionBurstCount); });
@@ -313,8 +303,14 @@ void ComponentParticleSystem::emitParticle()
    sParticle.LifeTime = getRandomFloat(fParticleLifeTimeMin, fParticleLifeTimeMax);
    sParticle.RemainingLifeTime = sParticle.LifeTime;
 
-   sParticle.Size = getRandomFloat(fParticleInitialSizeMin, fParticleInitialSizeMax);
-   sParticle.DiffuseColor = getRandomColor(cParticleInitialColorMin, cParticleInitialColorMax);
+   sParticle.Size = getParticleSize(sParticle.LifeTime, 0.0f);
+   sParticle.DiffuseColor = Color
+   (
+      getParticleColorR(sParticle.LifeTime, 0.0),
+      getParticleColorG(sParticle.LifeTime, 0.0),
+      getParticleColorB(sParticle.LifeTime, 0.0),
+      getParticleAlpha(sParticle.LifeTime, 0.0)
+   );
    sParticle.Angle = getRandomFloat(fParticleInitialAngleMin * GE_DEG2RAD, fParticleInitialAngleMax * GE_DEG2RAD);
 
    if(iParticleTextureAtlasIndexMin > 0 || iParticleTextureAtlasIndexMax > 0)
@@ -330,12 +326,28 @@ void ComponentParticleSystem::emitParticle()
    sParticle.LinearVelocity = getRandomVector3(vParticleLinearVelocityMin, vParticleLinearVelocityMax);
    sParticle.AngularVelocity = getRandomFloat(fParticleAngularVelocityMin, fParticleAngularVelocityMax);
 
-   float fFinalSize = getRandomFloat(fParticleFinalSizeMin, fParticleFinalSizeMax);
-   Color cFinalColor = getRandomColor(cParticleFinalColorMin, cParticleFinalColorMax);
-   float fInverseLifeTime = 1.0f / sParticle.LifeTime;
+   sParticle.Settings = 0;
 
-   sParticle.SizeVariation = (fFinalSize - sParticle.Size) * fInverseLifeTime;
-   sParticle.DiffuseColorVariation = (cFinalColor - sParticle.DiffuseColor) * fInverseLifeTime;
+   if(eParticleSizeType == ValueProviderType::Curve)
+   {
+      GESetFlag(sParticle.Settings, ParticleSettingsBitMask::VarySize);
+   }
+   if(eParticleColorRType == ValueProviderType::Curve)
+   {
+      GESetFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorR);
+   }
+   if(eParticleColorGType == ValueProviderType::Curve)
+   {
+      GESetFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorG);
+   }
+   if(eParticleColorBType == ValueProviderType::Curve)
+   {
+      GESetFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorB);
+   }
+   if(eParticleAlphaType == ValueProviderType::Curve)
+   {
+      GESetFlag(sParticle.Settings, ParticleSettingsBitMask::VaryAlpha);
+   }
 
    lParticles.push_back(sParticle);
 }
@@ -376,21 +388,25 @@ void ComponentParticleSystem::update()
       sParticle.Position += sParticle.LinearVelocity * fDeltaTime;
       sParticle.Angle += sParticle.AngularVelocity * GE_DEG2RAD * fDeltaTime;
 
-      if(GEHasFlag(eParticleSettings, ParticleSettingsBitMask::VarySize))
+      if(GEHasFlag(sParticle.Settings, ParticleSettingsBitMask::VarySize))
       {
-         sParticle.Size += sParticle.SizeVariation * fDeltaTime;
+         sParticle.Size = getParticleSize(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
-
-      if(GEHasFlag(eParticleSettings, ParticleSettingsBitMask::VaryColor))
+      if(GEHasFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorR))
       {
-         sParticle.DiffuseColor.Red += sParticle.DiffuseColorVariation.Red * fDeltaTime;
-         sParticle.DiffuseColor.Green += sParticle.DiffuseColorVariation.Green * fDeltaTime;
-         sParticle.DiffuseColor.Blue += sParticle.DiffuseColorVariation.Blue * fDeltaTime;
+         sParticle.DiffuseColor.Red = getParticleColorR(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
-
-      if(GEHasFlag(eParticleSettings, ParticleSettingsBitMask::VaryAlpha))
+      if(GEHasFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorG))
       {
-         sParticle.DiffuseColor.Alpha += sParticle.DiffuseColorVariation.Alpha * fDeltaTime;
+         sParticle.DiffuseColor.Green = getParticleColorG(sParticle.LifeTime, sParticle.RemainingLifeTime);
+      }
+      if(GEHasFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorB))
+      {
+         sParticle.DiffuseColor.Blue = getParticleColorB(sParticle.LifeTime, sParticle.RemainingLifeTime);
+      }
+      if(GEHasFlag(sParticle.Settings, ParticleSettingsBitMask::VaryAlpha))
+      {
+         sParticle.DiffuseColor.Alpha = getParticleAlpha(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
 
       sParticle.Position += vConstantForce * fDeltaTime;
