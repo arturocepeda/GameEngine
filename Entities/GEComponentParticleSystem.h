@@ -14,8 +14,10 @@
 
 #include "GEComponentRenderable.h"
 #include "Content/GEMesh.h"
+#include "Content/GEResourcesManager.h"
 #include "Core/GEThreads.h"
-#include <list>
+#include "Core/GEEvents.h"
+#include "Types/GECurve.h"
 
 namespace GE { namespace Entities
 {
@@ -57,6 +59,87 @@ namespace GE { namespace Entities
       float LifeTime;
       float RemainingLifeTime;
    };
+
+
+   GESerializableEnum(ValueProviderType)
+   {
+      Constant,
+      Random,
+      Curve,
+
+      Count
+   };
+
+
+#define GEValueProvider(PropertyBaseName) \
+   private: \
+      ValueProviderType e##PropertyBaseName##Type; \
+      float f##PropertyBaseName##Value; \
+      float f##PropertyBaseName##ValueMax; \
+      Curve* c##PropertyBaseName##Curve; \
+   public: \
+      ValueProviderType get##PropertyBaseName##Type() const { return e##PropertyBaseName##Type; } \
+      float get##PropertyBaseName##Value() const { return f##PropertyBaseName##Value; } \
+      float get##PropertyBaseName##ValueMax() const { return f##PropertyBaseName##ValueMax; } \
+      const Core::ObjectName& get##PropertyBaseName##Curve() const \
+      { \
+         return c##PropertyBaseName##Curve ? c##PropertyBaseName##Curve->getName() : Core::ObjectName::Empty; \
+      } \
+      void set##PropertyBaseName##Type(ValueProviderType v) \
+      { \
+         e##PropertyBaseName##Type = v; \
+         switch(e##PropertyBaseName##Type) \
+         { \
+         case ValueProviderType::Constant: \
+           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Value"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
+           const_cast<Core::Property*>(getProperty(#PropertyBaseName"ValueMax"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
+           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Curve"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
+           break; \
+         case ValueProviderType::Random: \
+           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Value"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
+           const_cast<Core::Property*>(getProperty(#PropertyBaseName"ValueMax"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
+           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Curve"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
+           break; \
+         case ValueProviderType::Curve: \
+           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Value"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
+           const_cast<Core::Property*>(getProperty(#PropertyBaseName"ValueMax"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
+           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Curve"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
+           break; \
+         } \
+         Core::EventHandlingObject::triggerEventStatic(Core::Events::PropertiesUpdated); \
+      } \
+      void set##PropertyBaseName##Value(float v) { f##PropertyBaseName##Value = v; } \
+      void set##PropertyBaseName##ValueMax(float v) { f##PropertyBaseName##ValueMax = v; } \
+      void set##PropertyBaseName##Curve(const Core::ObjectName& v) \
+      { \
+         const Core::ObjectRegistry* cRegistry = Content::ResourcesManager::getInstance()->getObjectRegistry("Curve"); \
+         Core::ObjectRegistry::const_iterator it = cRegistry->find(v.getID()); \
+         if(it != cRegistry->end()) \
+         { \
+            c##PropertyBaseName##Curve = static_cast<Curve*>(it->second); \
+         } \
+      } \
+      float get##PropertyBaseName##(float TimePosition) \
+      { \
+         switch(e##PropertyBaseName##Type) \
+         { \
+         case ValueProviderType::Constant: \
+            return f##PropertyBaseName##Value; \
+         case ValueProviderType::Random: \
+            return getRandomFloat(f##PropertyBaseName##Value, f##PropertyBaseName##ValueMax); \
+         case ValueProviderType::Curve: \
+            if(c##PropertyBaseName##Curve) \
+            { \
+               return c##PropertyBaseName##Curve->getValue(TimePosition); \
+            } \
+            break; \
+         } \
+         return f##PropertyBaseName##Value; \
+      } \
+      GEPropertyEnum(ValueProviderType, PropertyBaseName##Type) \
+      GEProperty(Float, PropertyBaseName##Value) \
+      GEProperty(Float, PropertyBaseName##ValueMax) \
+      GEProperty(ObjectName, PropertyBaseName##Curve)
 
 
    class ComponentParticleSystem : public ComponentRenderable
@@ -257,5 +340,8 @@ namespace GE { namespace Entities
 
       GEProperty(Vector3, ConstantForce)
       GEProperty(Vector3, ConstantAcceleration)
+
+      GEValueProvider(Test)
+      GEValueProvider(Foo)
    };
 }}

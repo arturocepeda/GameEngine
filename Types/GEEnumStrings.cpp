@@ -145,6 +145,13 @@ namespace GE { namespace Entities
       "VarySize"
    };
 
+   const char* strValueProviderType[] =
+   {
+      "Constant",
+      "Random",
+      "Curve"
+   };
+
    const char* strScriptSettingsBitMask[] =
    {
       "Active",

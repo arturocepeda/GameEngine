@@ -30,6 +30,21 @@ using namespace GE::Rendering;
 using namespace GE::Content;
 
 
+#define GERegisterValueProvider(PropertyBaseName, CategoryName) \
+   f##PropertyBaseName##Value = 0.0f; \
+   f##PropertyBaseName##ValueMax = 0.0f; \
+   c##PropertyBaseName##Curve = 0; \
+   GERegisterPropertyEnum(ValueProviderType, PropertyBaseName##Type); \
+   const_cast<Property&>(getProperty(getPropertiesCount() - 1)).Class = ObjectName(#CategoryName); \
+   GERegisterProperty(Float, PropertyBaseName##Value); \
+   const_cast<Property&>(getProperty(getPropertiesCount() - 1)).Class = ObjectName(#CategoryName); \
+   GERegisterProperty(Float, PropertyBaseName##ValueMax); \
+   const_cast<Property&>(getProperty(getPropertiesCount() - 1)).Class = ObjectName(#CategoryName); \
+   GERegisterPropertyResource(ObjectName, PropertyBaseName##Curve, Curve); \
+   const_cast<Property&>(getProperty(getPropertiesCount() - 1)).Class = ObjectName(#CategoryName); \
+   set##PropertyBaseName##Type(ValueProviderType::Constant);
+
+
 //
 //  ComponentParticleSystem
 //
