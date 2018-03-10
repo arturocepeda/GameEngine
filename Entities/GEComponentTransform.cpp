@@ -18,6 +18,8 @@ using namespace GE;
 using namespace GE::Entities;
 using namespace GE::Core;
 
+const ObjectName ResetActionName = ObjectName("Reset");
+
 ComponentTransform::ComponentTransform(Entity* Owner)
    : Component(Owner)
    , vPosition(Vector3::Zero)
@@ -32,6 +34,8 @@ ComponentTransform::ComponentTransform(Entity* Owner)
    GERegisterProperty(Vector3, Position);
    GERegisterPropertySpecialEditor(Vector3, Orientation, PropertyEditor::Rotation);
    GERegisterProperty(Vector3, Scale);
+
+   registerAction(ResetActionName, [this]{ reset(); });
 }
 
 ComponentTransform::~ComponentTransform()
