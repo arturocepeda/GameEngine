@@ -296,25 +296,25 @@ void ComponentParticleSystem::emitParticle()
    sParticle.LifeTime = getRandomFloat(fParticleLifeTimeMin, fParticleLifeTimeMax);
    sParticle.RemainingLifeTime = sParticle.LifeTime;
 
-   sParticle.Size = getParticleSize(sParticle.LifeTime, 0.0f);
+   sParticle.Size = getParticleSize(sParticle.LifeTime, sParticle.RemainingLifeTime);
    sParticle.DiffuseColor = Color
    (
-      getParticleColorR(sParticle.LifeTime, 0.0),
-      getParticleColorG(sParticle.LifeTime, 0.0),
-      getParticleColorB(sParticle.LifeTime, 0.0),
-      getParticleAlpha(sParticle.LifeTime, 0.0)
+      getParticleColorR(sParticle.LifeTime, sParticle.RemainingLifeTime),
+      getParticleColorG(sParticle.LifeTime, sParticle.RemainingLifeTime),
+      getParticleColorB(sParticle.LifeTime, sParticle.RemainingLifeTime),
+      getParticleAlpha(sParticle.LifeTime, sParticle.RemainingLifeTime)
    );
    sParticle.Angle = getRandomFloat(fParticleInitialAngleMin * GE_DEG2RAD, fParticleInitialAngleMax * GE_DEG2RAD);
 
    sParticle.LinearVelocity = Vector3
    (
-      getParticleLinearVelocityX(sParticle.LifeTime, 0.0f),
-      getParticleLinearVelocityY(sParticle.LifeTime, 0.0f),
-      getParticleLinearVelocityZ(sParticle.LifeTime, 0.0f)
+      getParticleLinearVelocityX(sParticle.LifeTime, sParticle.RemainingLifeTime),
+      getParticleLinearVelocityY(sParticle.LifeTime, sParticle.RemainingLifeTime),
+      getParticleLinearVelocityZ(sParticle.LifeTime, sParticle.RemainingLifeTime)
    );
-   sParticle.AngularVelocity = getParticleAngularVelocity(sParticle.LifeTime, 0.0f);
+   sParticle.AngularVelocity = getParticleAngularVelocity(sParticle.LifeTime, sParticle.RemainingLifeTime);
 
-   sParticle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(sParticle.LifeTime, 0.0f);
+   sParticle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(sParticle.LifeTime, sParticle.RemainingLifeTime);
 
    lParticles.push_back(sParticle);
 }
