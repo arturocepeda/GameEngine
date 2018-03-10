@@ -33,18 +33,6 @@ namespace GE { namespace Entities
    };
 
 
-   enum class ParticleSettingsBitMask : unsigned char
-   {
-      VaryColorR           =  1 << 0,
-      VaryColorG           =  1 << 1,
-      VaryColorB           =  1 << 2,
-      VaryAlpha            =  1 << 3,
-      VarySize             =  1 << 4,
-      VaryLinearVelocity   =  1 << 5,
-      VaryAngularVelocity  =  1 << 6,
-   };
-
-
    struct Particle
    {
       Vector3 Position;
@@ -55,12 +43,9 @@ namespace GE { namespace Entities
 
       Vector3 LinearVelocity;
       float AngularVelocity;
-      Color DiffuseColorVariation;
 
       float LifeTime;
       float RemainingLifeTime;
-
-      uint8_t Settings;
    };
 
 
@@ -179,14 +164,6 @@ namespace GE { namespace Entities
       float fParticleInitialAngleMin;
       float fParticleInitialAngleMax;
 
-      Vector3 vParticleLinearVelocityMin;
-      Vector3 vParticleLinearVelocityMax;
-      float fParticleAngularVelocityMin;
-      float fParticleAngularVelocityMax;
-
-      uint iParticleTextureAtlasIndexMin;
-      uint iParticleTextureAtlasIndexMax;
-
       Vector3 vConstantForce;
       Vector3 vConstantAcceleration;
 
@@ -237,14 +214,6 @@ namespace GE { namespace Entities
       float getParticleInitialAngleMin() const { return fParticleInitialAngleMin; }
       float getParticleInitialAngleMax() const { return fParticleInitialAngleMax; }
 
-      const Vector3& getParticleLinearVelocityMin() const { return vParticleLinearVelocityMin; }
-      const Vector3& getParticleLinearVelocityMax() const { return vParticleLinearVelocityMax; }
-      float getParticleAngularVelocityMin() const { return fParticleAngularVelocityMin; }
-      float getParticleAngularVelocityMax() const { return fParticleAngularVelocityMax; }
-
-      uint getParticleTextureAtlasIndexMin() const { return iParticleTextureAtlasIndexMin; }
-      uint getParticleTextureAtlasIndexMax() const { return iParticleTextureAtlasIndexMax; }
-
       const Vector3& getConstantForce() const { return vConstantForce; }
       const Vector3& getConstantAcceleration() const { return vConstantAcceleration; }
 
@@ -259,14 +228,6 @@ namespace GE { namespace Entities
 
       void setParticleInitialAngleMin(float Value) { fParticleInitialAngleMin = Value; }
       void setParticleInitialAngleMax(float Value) { fParticleInitialAngleMax = Value; }
-
-      void setParticleLinearVelocityMin(const Vector3& Value) { vParticleLinearVelocityMin = Value; }
-      void setParticleLinearVelocityMax(const Vector3& Value) { vParticleLinearVelocityMax = Value; }
-      void setParticleAngularVelocityMin(float Value) { fParticleAngularVelocityMin = Value; }
-      void setParticleAngularVelocityMax(float Value) { fParticleAngularVelocityMax = Value; }
-
-      void setParticleTextureAtlasIndexMin(uint Value) { iParticleTextureAtlasIndexMin = Value; }
-      void setParticleTextureAtlasIndexMax(uint Value) { iParticleTextureAtlasIndexMax = Value; }
 
       void setConstantForce(const Vector3& Value) { vConstantForce = Value; }
       void setConstantAcceleration(const Vector3& Value) { vConstantAcceleration = Value; }
@@ -296,14 +257,6 @@ namespace GE { namespace Entities
       GEProperty(Float, ParticleInitialAngleMin)
       GEProperty(Float, ParticleInitialAngleMax)
 
-      GEProperty(Vector3, ParticleLinearVelocityMin)
-      GEProperty(Vector3, ParticleLinearVelocityMax)
-      GEProperty(Float, ParticleAngularVelocityMin)
-      GEProperty(Float, ParticleAngularVelocityMax)
-
-      GEProperty(UInt, ParticleTextureAtlasIndexMin)
-      GEProperty(UInt, ParticleTextureAtlasIndexMax)
-
       GEProperty(Vector3, ConstantForce)
       GEProperty(Vector3, ConstantAcceleration)
 
@@ -312,5 +265,10 @@ namespace GE { namespace Entities
       GEValueProvider(ParticleColorB)
       GEValueProvider(ParticleAlpha)
       GEValueProvider(ParticleSize)
+      GEValueProvider(ParticleLinearVelocityX)
+      GEValueProvider(ParticleLinearVelocityY)
+      GEValueProvider(ParticleLinearVelocityZ)
+      GEValueProvider(ParticleAngularVelocity)
+      GEValueProvider(ParticleTextureAtlasIndex)
    };
 }}

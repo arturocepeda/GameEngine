@@ -30,9 +30,9 @@ using namespace GE::Rendering;
 using namespace GE::Content;
 
 
-#define GERegisterValueProvider(PropertyBaseName, CategoryName) \
-   f##PropertyBaseName##Value = 0.0f; \
-   f##PropertyBaseName##ValueMax = 0.0f; \
+#define GERegisterValueProvider(PropertyBaseName, CategoryName, DefaultValue) \
+   f##PropertyBaseName##Value = DefaultValue; \
+   f##PropertyBaseName##ValueMax = DefaultValue; \
    c##PropertyBaseName##Curve = 0; \
    GERegisterPropertyEnum(ValueProviderType, PropertyBaseName##Type); \
    const_cast<Property&>(getProperty(getPropertiesCount() - 1)).Class = ObjectName(#CategoryName); \
@@ -67,10 +67,6 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , fParticleLifeTimeMax(0.0f)
    , fParticleInitialAngleMin(0.0f)
    , fParticleInitialAngleMax(0.0f)
-   , fParticleAngularVelocityMin(0.0f)
-   , fParticleAngularVelocityMax(0.0f)
-   , iParticleTextureAtlasIndexMin(0)
-   , iParticleTextureAtlasIndexMax(0)
 {
    cClassName = ObjectName("ParticleSystem");
 
@@ -100,22 +96,19 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(Float, ParticleInitialAngleMin);
    GERegisterProperty(Float, ParticleInitialAngleMax);
 
-   GERegisterProperty(Vector3, ParticleLinearVelocityMin);
-   GERegisterProperty(Vector3, ParticleLinearVelocityMax);
-   GERegisterProperty(Float, ParticleAngularVelocityMin);
-   GERegisterProperty(Float, ParticleAngularVelocityMax);
-
-   GERegisterProperty(UInt, ParticleTextureAtlasIndexMin);
-   GERegisterProperty(UInt, ParticleTextureAtlasIndexMax);
-
    GERegisterProperty(Vector3, ConstantForce);
    GERegisterProperty(Vector3, ConstantAcceleration);
 
-   GERegisterValueProvider(ParticleColorR, ParticleColor);
-   GERegisterValueProvider(ParticleColorG, ParticleColor);
-   GERegisterValueProvider(ParticleColorB, ParticleColor);
-   GERegisterValueProvider(ParticleAlpha, ParticleColor);
-   GERegisterValueProvider(ParticleSize, ParticleSize);
+   GERegisterValueProvider(ParticleColorR, ParticleColor, 1.0f);
+   GERegisterValueProvider(ParticleColorG, ParticleColor, 1.0f);
+   GERegisterValueProvider(ParticleColorB, ParticleColor, 1.0f);
+   GERegisterValueProvider(ParticleAlpha, ParticleColor, 1.0f);
+   GERegisterValueProvider(ParticleSize, ParticleSize, 1.0f);
+   GERegisterValueProvider(ParticleLinearVelocityX, ParticleVelocity, 0.0f);
+   GERegisterValueProvider(ParticleLinearVelocityY, ParticleVelocity, 0.0f);
+   GERegisterValueProvider(ParticleLinearVelocityZ, ParticleVelocity, 0.0f);
+   GERegisterValueProvider(ParticleAngularVelocity, ParticleVelocity, 0.0f);
+   GERegisterValueProvider(ParticleTextureAtlasIndex, ParticleTextureAtlas, 0.0f);
 
 #if defined (GE_EDITOR_SUPPORT)
    registerAction("Burst", [this] { burst(iEmissionBurstCount); });
@@ -313,41 +306,15 @@ void ComponentParticleSystem::emitParticle()
    );
    sParticle.Angle = getRandomFloat(fParticleInitialAngleMin * GE_DEG2RAD, fParticleInitialAngleMax * GE_DEG2RAD);
 
-   if(iParticleTextureAtlasIndexMin > 0 || iParticleTextureAtlasIndexMax > 0)
-   {
-      RandInt cRandInt(iParticleTextureAtlasIndexMin, iParticleTextureAtlasIndexMax);
-      sParticle.TextureAtlasIndex = cRandInt.generate();
-   }
-   else
-   {
-      sParticle.TextureAtlasIndex = 0;
-   }
+   sParticle.LinearVelocity = Vector3
+   (
+      getParticleLinearVelocityX(sParticle.LifeTime, 0.0f),
+      getParticleLinearVelocityY(sParticle.LifeTime, 0.0f),
+      getParticleLinearVelocityZ(sParticle.LifeTime, 0.0f)
+   );
+   sParticle.AngularVelocity = getParticleAngularVelocity(sParticle.LifeTime, 0.0f);
 
-   sParticle.LinearVelocity = getRandomVector3(vParticleLinearVelocityMin, vParticleLinearVelocityMax);
-   sParticle.AngularVelocity = getRandomFloat(fParticleAngularVelocityMin, fParticleAngularVelocityMax);
-
-   sParticle.Settings = 0;
-
-   if(eParticleSizeType == ValueProviderType::Curve)
-   {
-      GESetFlag(sParticle.Settings, ParticleSettingsBitMask::VarySize);
-   }
-   if(eParticleColorRType == ValueProviderType::Curve)
-   {
-      GESetFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorR);
-   }
-   if(eParticleColorGType == ValueProviderType::Curve)
-   {
-      GESetFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorG);
-   }
-   if(eParticleColorBType == ValueProviderType::Curve)
-   {
-      GESetFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorB);
-   }
-   if(eParticleAlphaType == ValueProviderType::Curve)
-   {
-      GESetFlag(sParticle.Settings, ParticleSettingsBitMask::VaryAlpha);
-   }
+   sParticle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(sParticle.LifeTime, 0.0f);
 
    lParticles.push_back(sParticle);
 }
@@ -355,7 +322,9 @@ void ComponentParticleSystem::emitParticle()
 void ComponentParticleSystem::burst(uint NumParticles)
 {
    for(uint i = 0; i < NumParticles; i++)
+   {
       emitParticle();
+   }
 }
 
 void ComponentParticleSystem::update()
@@ -388,25 +357,45 @@ void ComponentParticleSystem::update()
       sParticle.Position += sParticle.LinearVelocity * fDeltaTime;
       sParticle.Angle += sParticle.AngularVelocity * GE_DEG2RAD * fDeltaTime;
 
-      if(GEHasFlag(sParticle.Settings, ParticleSettingsBitMask::VarySize))
+      if(eParticleSizeType == ValueProviderType::Curve)
       {
          sParticle.Size = getParticleSize(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
-      if(GEHasFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorR))
+      if(eParticleColorRType == ValueProviderType::Curve)
       {
          sParticle.DiffuseColor.Red = getParticleColorR(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
-      if(GEHasFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorG))
+      if(eParticleColorGType == ValueProviderType::Curve)
       {
          sParticle.DiffuseColor.Green = getParticleColorG(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
-      if(GEHasFlag(sParticle.Settings, ParticleSettingsBitMask::VaryColorB))
+      if(eParticleColorBType == ValueProviderType::Curve)
       {
          sParticle.DiffuseColor.Blue = getParticleColorB(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
-      if(GEHasFlag(sParticle.Settings, ParticleSettingsBitMask::VaryAlpha))
+      if(eParticleAlphaType == ValueProviderType::Curve)
       {
          sParticle.DiffuseColor.Alpha = getParticleAlpha(sParticle.LifeTime, sParticle.RemainingLifeTime);
+      }
+      if(eParticleLinearVelocityXType == ValueProviderType::Curve)
+      {
+         sParticle.LinearVelocity.X = getParticleLinearVelocityX(sParticle.LifeTime, sParticle.RemainingLifeTime);
+      }
+      if(eParticleLinearVelocityYType == ValueProviderType::Curve)
+      {
+         sParticle.LinearVelocity.Y = getParticleLinearVelocityY(sParticle.LifeTime, sParticle.RemainingLifeTime);
+      }
+      if(eParticleLinearVelocityZType == ValueProviderType::Curve)
+      {
+         sParticle.LinearVelocity.Z = getParticleLinearVelocityZ(sParticle.LifeTime, sParticle.RemainingLifeTime);
+      }
+      if(eParticleAngularVelocityType == ValueProviderType::Curve)
+      {
+         sParticle.AngularVelocity = getParticleAngularVelocity(sParticle.LifeTime, sParticle.RemainingLifeTime);
+      }
+      if(eParticleTextureAtlasIndexType == ValueProviderType::Curve)
+      {
+         sParticle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
 
       sParticle.Position += vConstantForce * fDeltaTime;
