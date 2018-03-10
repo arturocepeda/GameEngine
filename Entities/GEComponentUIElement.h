@@ -42,8 +42,6 @@ namespace GE { namespace Entities
       float getAlphaInHierarchy() const;
 
       void setAlpha(float Alpha);
-
-      GEProperty(Float, Alpha)
    };
 
 
@@ -64,9 +62,6 @@ namespace GE { namespace Entities
 
       void setAnchor(Alignment Anchor);
       void setOffset(const Vector2& Offset);
-
-      GEPropertyEnum(Alignment, Anchor)
-      GEProperty(Vector2, Offset)
    };
 
 
@@ -83,7 +78,5 @@ namespace GE { namespace Entities
 
       uint8_t getCanvasIndex() const;
       void setCanvasIndex(uint8_t Index);
-
-      GEProperty(Byte, CanvasIndex)
    };
 }}

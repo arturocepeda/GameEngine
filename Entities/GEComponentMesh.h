@@ -43,8 +43,5 @@ namespace GE { namespace Entities
       Content::Mesh* getMesh() const;
 
       void updateSkinning();
-
-      GEProperty(ObjectName, MeshName)
-      GEPropertyBitMask(DynamicShadowsBitMask, DynamicShadows)
    };
 }}

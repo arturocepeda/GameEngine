@@ -33,6 +33,7 @@ ShaderProgram::ShaderProgram(const ObjectName& Name, const ObjectName& GroupName
    GERegisterPropertyBitMask(VertexElementsBitMask, VertexElements);
    GERegisterPropertyEnum(DepthBufferMode, DepthBufferMode);
    GERegisterPropertyEnum(CullingMode, CullingMode);
+
    GERegisterPropertyArray(ShaderProgramPreprocessorMacro);
    GERegisterPropertyArray(ShaderProgramVertexParameter);
    GERegisterPropertyArray(ShaderProgramFragmentParameter);

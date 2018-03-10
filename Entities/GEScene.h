@@ -125,10 +125,5 @@ namespace GE { namespace Entities
 
       void load(const char* FileName);
       void loadModel(Entity* cEntity, const char* FileName);
-
-      GEPropertyEnum(SceneBackgroundMode, BackgroundMode);
-      GEProperty(String, BackgroundMaterialName);
-      GEProperty(Color, AmbientLightColor);
-      GEProperty(Float, ShadowsMaxDistance);
    };
 }}

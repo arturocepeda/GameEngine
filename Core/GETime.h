@@ -34,8 +34,6 @@ namespace GE { namespace Core
 
       void setDelta(float Delta);
       void setTimeFactor(float TimeFactor);
-
-      GEProperty(Float, TimeFactor);
    };
 
 

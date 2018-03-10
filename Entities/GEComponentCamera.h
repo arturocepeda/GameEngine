@@ -67,9 +67,5 @@ namespace GE { namespace Entities
       void screenToWorld(const Vector2& PositionScreen, Vector3* OutWorldPointNear, Vector3* OutWorldPointFar) const;
 
       Core::Physics::Ray getScreenRay(const Vector2& PositionScreen) const;
-
-      GEProperty(Float, FOV);
-      GEProperty(Float, NearZ);
-      GEProperty(Float, FarZ);
    };
 }}

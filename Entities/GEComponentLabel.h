@@ -69,14 +69,5 @@ namespace GE { namespace Entities
       void setHorizontalSpacing(float HorizontalSpacing);
       void setVerticalSpacing(float VerticalSpacing);
       void setLineWidth(float LineWidth);
-
-      GEProperty(ObjectName, FontName)
-      GEProperty(Float, FontSize)
-      GEPropertyEnum(Alignment, Alignment)
-      GEProperty(Float, HorizontalSpacing)
-      GEProperty(Float, VerticalSpacing)
-      GEProperty(Float, LineWidth)
-      GEProperty(String, Text)
-      GEProperty(ObjectName, StringID)
    };
 }}

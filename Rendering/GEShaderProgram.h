@@ -60,9 +60,6 @@ namespace GE { namespace Rendering
 
       const char* getValue() const { return sValue; }
       void setValue(const char* Value) { strcpy(sValue, Value); }
-
-      GEProperty(String, Name)
-      GEProperty(String, Value)
    };
 
 
@@ -115,12 +112,6 @@ namespace GE { namespace Rendering
       const CullingMode getCullingMode() const;
       void setCullingMode(CullingMode Mode);
 
-      GEPropertyReadonly(ObjectName, Name)
-      GEProperty(String, VertexSource)
-      GEProperty(String, FragmentSource)
-      GEPropertyBitMask(VertexElementsBitMask, VertexElements)
-      GEPropertyEnum(DepthBufferMode, DepthBufferMode)
-      GEPropertyEnum(CullingMode, CullingMode)
       GEPropertyArray(ShaderProgramPreprocessorMacro, ShaderProgramPreprocessorMacro)
       GEPropertyArray(ShaderProgramVertexParameter, ShaderProgramVertexParameter)
       GEPropertyArray(ShaderProgramFragmentParameter, ShaderProgramFragmentParameter)

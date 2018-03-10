@@ -81,9 +81,5 @@ namespace GE { namespace Entities
       void setLocalWorldMatrix(const Matrix4& LocalWorldMatrix);
 
       void setForwardVector(const Vector3& Forward);
-
-      GEProperty(Vector3, Position)
-      GEProperty(Vector3, Orientation)
-      GEProperty(Vector3, Scale)
    };
 }}

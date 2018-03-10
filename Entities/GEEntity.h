@@ -183,9 +183,5 @@ namespace GE { namespace Entities
 
       uint8_t getInternalFlags() const;
       void setInternalFlags(uint8_t Flags);
-
-      GEProperty(Bool, Active);
-      GEProperty(UInt, ClockIndex);
-      GEProperty(ObjectName, PrefabName);
    };
 }}

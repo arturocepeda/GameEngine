@@ -26,8 +26,6 @@ namespace GE
 
       void setValue(const Vector3& Value);
       const Vector3& getValue() const;
-
-      GEProperty(Vector3, Value)
    };
 
 

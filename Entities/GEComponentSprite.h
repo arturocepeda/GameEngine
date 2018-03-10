@@ -81,12 +81,5 @@ namespace GE { namespace Entities
       void setTextureAtlasName(const Core::ObjectName& AtlasName);
 
       bool isOver(const Vector2& ScreenPosition) const;
-
-      GEProperty(Vector2, Center)
-      GEProperty(Vector2, Size)
-      GEPropertyEnum(SpriteLayer, Layer)
-      GEPropertyEnum(UVMode, UVMode)
-      GEPropertyEnum(FullScreenSizeMode, FullScreenSizeMode)
-      GEProperty(ObjectName, TextureAtlasName)
    };
 }}

@@ -53,10 +53,5 @@ namespace GE { namespace Entities
       void setColor(const Color& cColor);
       void setLinearAttenuation(float LinearAttenuation);
       void setShadowIntensity(float Intensity);
-
-      GEPropertyEnum(LightType, LightType)
-      GEProperty(Color, Color)
-      GEProperty(Float, LinearAttenuation)
-      GEProperty(Float, ShadowIntensity)
    };
 }}

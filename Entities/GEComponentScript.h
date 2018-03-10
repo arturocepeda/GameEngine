@@ -85,12 +85,6 @@ namespace GE { namespace Entities
       bool inputTouchBegin(int ID, const Vector2& Point);
       bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
       bool inputTouchEnd(int ID, const Vector2& Point);
-
-      GEProperty(ObjectName, ScriptName);
-      GEPropertyBitMask(ScriptSettingsBitMask, ScriptSettings);
-#if defined (GE_EDITOR_SUPPORT)
-      GEProperty(UInt, DebugBreakpointLine);
-#endif
    };
 
 

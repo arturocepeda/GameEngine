@@ -130,11 +130,7 @@ namespace GE { namespace Entities
             break; \
          } \
          return f##PropertyBaseName##Value; \
-      } \
-      GEPropertyEnum(ValueProviderType, PropertyBaseName##Type) \
-      GEProperty(Float, PropertyBaseName##Value) \
-      GEProperty(Float, PropertyBaseName##ValueMax) \
-      GEProperty(ObjectName, PropertyBaseName##Curve)
+      }
 
 
    class ComponentParticleSystem : public ComponentRenderable
@@ -231,34 +227,6 @@ namespace GE { namespace Entities
 
       void setConstantForce(const Vector3& Value) { vConstantForce = Value; }
       void setConstantAcceleration(const Vector3& Value) { vConstantAcceleration = Value; }
-
-      GEProperty(UInt, MaxParticles)
-      GEPropertyReadonly(UInt, ParticlesCount)
-
-      GEPropertyEnum(ParticleEmitterType, EmitterType)
-
-      // line emitters
-      GEProperty(Vector3, EmitterPointA)
-      GEProperty(Vector3, EmitterPointB)
-      // sphere emitters
-      GEProperty(Float, EmitterRadius)
-      // mesh emitters
-      GEProperty(ObjectName, EmitterMesh)
-      GEProperty(ObjectName, EmitterMeshEntity)
-
-      GEProperty(Bool, EmitterActive)
-      GEProperty(Bool, DynamicShadows)
-      GEProperty(Float, EmissionRate)
-      GEProperty(UInt, EmissionBurstCount)
-
-      GEProperty(Float, ParticleLifeTimeMin)
-      GEProperty(Float, ParticleLifeTimeMax)
-
-      GEProperty(Float, ParticleInitialAngleMin)
-      GEProperty(Float, ParticleInitialAngleMax)
-
-      GEProperty(Vector3, ConstantForce)
-      GEProperty(Vector3, ConstantAcceleration)
 
       GEValueProvider(ParticleColorR)
       GEValueProvider(ParticleColorG)

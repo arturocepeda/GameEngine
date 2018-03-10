@@ -163,11 +163,5 @@ namespace GE { namespace Entities
       void setCallbackOnAnimationInstancesUpdated(Callback fCallback);
 
       void update();
-
-      GEProperty(ObjectName, SkeletonName)
-      GEProperty(ObjectName, AnimationSetName)
-      GEProperty(ObjectName, DefaultAnimationName)
-      GEProperty(Float, DefaultBlendingTime)
-      GEProperty(Float, AnimationSpeedFactor)
    };
 }}

@@ -81,10 +81,6 @@ namespace GE { namespace Entities
       void setVisible(bool Visible);
       void setInternalFlags(uint8_t Flags);
 
-      GEProperty(Bool, Visible)
-      GEPropertyEnum(GeometryType, GeometryType)
-      GEPropertyEnum(RenderingMode, RenderingMode)
-      GEProperty(Color, Color)
       GEPropertyArray(MaterialPass, MaterialPass)
    };
 }}

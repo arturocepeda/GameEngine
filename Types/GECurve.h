@@ -31,9 +31,6 @@ namespace GE
 
       void setTimePosition(float TimePosition);
       void setValue(float Value);
-
-      GEProperty(Float, TimePosition)
-      GEProperty(Float, Value)
    };
 
 
@@ -51,9 +48,6 @@ namespace GE
 
       float getLength() const;
       float getValue(float TimePosition);
-
-      GEPropertyEnum(InterpolationMode, InterpolationMode)
-      GEPropertyReadonly(Float, Length)
 
       GEPropertyArray(CurveKey, CurveKey)
    };

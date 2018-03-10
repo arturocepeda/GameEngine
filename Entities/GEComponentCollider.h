@@ -45,8 +45,6 @@ namespace GE { namespace Entities
       void setCollisionGroup(uint Group);
 
       virtual bool checkCollision(const Core::Physics::Ray& R, Core::Physics::HitInfo* OutHitInfo) const = 0;
-
-      GEProperty(UInt, CollisionGroup)
    };
 
 
@@ -65,8 +63,6 @@ namespace GE { namespace Entities
       float getScaledRadius() const;
 
       virtual bool checkCollision(const Core::Physics::Ray& R, Core::Physics::HitInfo* OutHitInfo) const override;
-
-      GEProperty(Float, Radius)
    };
 
 
@@ -87,9 +83,6 @@ namespace GE { namespace Entities
       void setHeight(float Height);
 
       virtual bool checkCollision(const Core::Physics::Ray& R, Core::Physics::HitInfo* OutHitInfo) const override;
-
-      GEProperty(Float, Radius)
-      GEProperty(Float, Height)
    };
 
 
@@ -106,7 +99,5 @@ namespace GE { namespace Entities
       void setMeshName(const Core::ObjectName& MeshName);
 
       virtual bool checkCollision(const Core::Physics::Ray& R, Core::Physics::HitInfo* OutHitInfo) const override;
-
-      GEProperty(ObjectName, MeshName)
    };
 }}

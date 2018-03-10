@@ -68,13 +68,6 @@ namespace GE { namespace Rendering
       void setDiffuseTextureName(const Core::ObjectName& Name);
       void setBlendingMode(BlendingMode Mode);
       void setFlags(uint8_t Flags);
-
-      GEPropertyReadonly(ObjectName, Name)
-      GEProperty(ObjectName, ShaderProgram)
-      GEProperty(Color, DiffuseColor)
-      GEProperty(ObjectName, DiffuseTextureName)
-      GEPropertyEnum(BlendingMode, BlendingMode)
-      GEPropertyBitMask(MaterialFlagsBitMask, Flags)
    };
 
 
@@ -111,8 +104,5 @@ namespace GE { namespace Rendering
       const char* getConstantBufferDataFragment() const;
 
       void reload();
-
-      GEProperty(ObjectName, MaterialName);
-      GEProperty(Bool, Active);
    };
 }}
