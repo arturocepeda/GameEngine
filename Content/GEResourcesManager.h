@@ -14,6 +14,7 @@
 
 #include "Core/GEObjectManager.h"
 #include "Core/GESingleton.h"
+#include "Core/GEDevice.h"
 #include "Types/GECurve.h"
 #include "Types/GEBezierCurve.h"
 
@@ -183,5 +184,31 @@ namespace GE { namespace Content
 
       SerializableResourceManagerObjects* getEntry(uint Index);
       SerializableResourceManagerObjects* getEntry(const Core::ObjectName& ResourceTypeName);
+
+      template<typename T>
+      void loadFromXml(const Core::ObjectName& TypeName, const Core::ObjectName& GroupName,
+         const char* SubDir, const char* FileName, const char* FileExtension)
+      {
+         ContentData cContentData;
+         Core::Device::readContentFile(ContentType::GenericTextData, SubDir, FileName, FileExtension, &cContentData);
+
+         char sRootNode[32];
+         sprintf(sRootNode, "%sList", TypeName.getCString());
+
+         pugi::xml_document xml;
+         xml.load_buffer(cContentData.getData(), cContentData.getDataSize());
+         pugi::xml_node xmlEntries = xml.child(sRootNode);
+
+         SerializableResourceManagerObjects* cObjects =
+            SerializableResourcesManager::getInstance()->getEntry(TypeName.getCString());
+
+         for(const pugi::xml_node& xmlEntry : xmlEntries.children(TypeName.getCString()))
+         {
+            T* cInstance = Allocator::alloc<T>();
+            GEInvokeCtor(T, cInstance)(xmlEntry.attribute("name").value(), GroupName);
+            cInstance->loadFromXml(xmlEntry);
+            (*cObjects->Registry)[cInstance->getName().getID()] = cInstance;
+         }
+      }
    };
 }}
