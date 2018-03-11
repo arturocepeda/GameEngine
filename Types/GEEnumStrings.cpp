@@ -145,6 +145,12 @@ namespace GE { namespace Entities
       "Curve"
    };
 
+   const char* strLabelSettingsBitMask[] =
+   {
+      "Justify",
+      "VariableReplacement"
+   };
+
    const char* strScriptSettingsBitMask[] =
    {
       "Active",

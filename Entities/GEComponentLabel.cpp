@@ -34,6 +34,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    , cFont(0)
    , fFontSize(12.0f)
    , iAlignment(Alignment::MiddleCenter)
+   , eSettings(0)
    , fHorizontalSpacing(0.0f)
    , fVerticalSpacing(0.0f)
    , fLineWidth(0.0f)
@@ -49,6 +50,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    GERegisterProperty(Float, HorizontalSpacing);
    GERegisterProperty(Float, VerticalSpacing);
    GERegisterProperty(Float, LineWidth);
+   GERegisterPropertyBitMask(LabelSettingsBitMask, Settings);
    GERegisterProperty(String, Text);
    GERegisterPropertyResource(ObjectName, StringID, LocalizedString);
 }
@@ -100,6 +102,7 @@ void ComponentLabel::generateVertexData()
 
    vLineWidths.clear();
    vLineFeedIndices.clear();
+   vLineJustifySpaces.clear();
 
    float fCurrentLineWidth = 0.0f;
 
@@ -115,6 +118,7 @@ void ComponentLabel::generateVertexData()
       {
          vLineWidths.push_back(fCurrentLineWidth);
          vLineFeedIndices.push_back(i);
+         vLineJustifySpaces.push_back(0);
 
          fCurrentLineWidth = 0.0f;
          iLastSpaceIndex = -1;
@@ -138,6 +142,13 @@ void ComponentLabel::generateVertexData()
          vLineWidths.push_back(fLineWidthAtLastSpace);
          vLineFeedIndices.push_back((uint)iLastSpaceIndex);
 
+         const uint iLineIndex = (uint)vLineFeedIndices.size() - 1;
+         const uint iLineCharsCount = iLineIndex == 0
+            ? vLineFeedIndices[0]
+            : vLineFeedIndices[iLineIndex] - vLineFeedIndices[iLineIndex - 1] - 1;
+
+         vLineJustifySpaces.push_back(iLineCharsCount - 1);
+
          fCurrentLineWidth -= fLineWidthAtLastSpace + fLastSpaceCharWidth;
          iLastSpaceIndex = -1;
       }
@@ -145,9 +156,18 @@ void ComponentLabel::generateVertexData()
 
    vLineWidths.push_back(fCurrentLineWidth);
    vLineFeedIndices.push_back(iTextLength);
+   vLineJustifySpaces.push_back(0);
 
    float fPosX;
    float fPosY;
+
+   const bool bJustifyText = GEHasFlag(eSettings, LabelSettingsBitMask::Justify);
+   float fExtraLineWidth = 0.0f;
+
+   if(bJustifyText && fLineWidth > GE_EPSILON && vLineJustifySpaces[0] > 0)
+   {
+      fExtraLineWidth = fLineWidth - vLineWidths[0];
+   }
 
    switch(iAlignment)
    {
@@ -160,12 +180,12 @@ void ComponentLabel::generateVertexData()
    case Alignment::TopCenter:
    case Alignment::MiddleCenter:
    case Alignment::BottomCenter:
-      fPosX = -(vLineWidths[0] * 0.5f);
+      fPosX = -((vLineWidths[0] + fExtraLineWidth) * 0.5f);
       break;
    case Alignment::TopRight:
    case Alignment::MiddleRight:
    case Alignment::BottomRight:
-      fPosX = -vLineWidths[0];
+      fPosX = -(vLineWidths[0] + fExtraLineWidth);
       break;
    default:
       break;
@@ -213,6 +233,13 @@ void ComponentLabel::generateVertexData()
 
          fPosY -= fLineHeight;
 
+         fExtraLineWidth = 0.0f;
+
+         if(bJustifyText && fLineWidth > GE_EPSILON && vLineJustifySpaces[iCurrentLineIndex] > 0)
+         {
+            fExtraLineWidth = fLineWidth - vLineWidths[iCurrentLineIndex];
+         }
+
          switch(iAlignment)
          {
          case Alignment::TopLeft:
@@ -224,12 +251,12 @@ void ComponentLabel::generateVertexData()
          case Alignment::TopCenter:
          case Alignment::MiddleCenter:
          case Alignment::BottomCenter:
-            fPosX = -(vLineWidths[iCurrentLineIndex] * 0.5f);
+            fPosX = -((vLineWidths[iCurrentLineIndex] + fExtraLineWidth) * 0.5f);
             break;
          case Alignment::TopRight:
          case Alignment::MiddleRight:
          case Alignment::BottomRight:
-            fPosX = -vLineWidths[iCurrentLineIndex];
+            fPosX = -(vLineWidths[iCurrentLineIndex] + fExtraLineWidth);
             break;
          default:
             break;
@@ -284,6 +311,11 @@ void ComponentLabel::generateVertexData()
          vIndices.push_back(sGeometryData.NumVertices + 1);
 
          sGeometryData.NumVertices += 4;
+      }
+
+      if(bJustifyText && fLineWidth > GE_EPSILON && vLineJustifySpaces[iCurrentLineIndex] > 0)
+      {
+         fAdvanceX += (fLineWidth - vLineWidths[iCurrentLineIndex]) / vLineJustifySpaces[iCurrentLineIndex];
       }
 
       fPosX += fAdvanceX;
@@ -374,6 +406,11 @@ float ComponentLabel::getLineWidth() const
    return fLineWidth;
 }
 
+uint8_t ComponentLabel::getSettings() const
+{
+   return eSettings;
+}
+
 void ComponentLabel::setFont(Font* TextFont)
 {
    cFont = TextFont;
@@ -391,7 +428,9 @@ void ComponentLabel::setFontName(const Core::ObjectName& FontName)
    }
 
    if(!sText.empty())
+   {
       generateVertexData();
+   }
 }
 
 void ComponentLabel::setFontSize(float FontSize)
@@ -399,7 +438,9 @@ void ComponentLabel::setFontSize(float FontSize)
    fFontSize = FontSize;
 
    if(!sText.empty())
+   {
       generateVertexData();
+   }
 }
 
 void ComponentLabel::setAlignment(Alignment Align)
@@ -407,7 +448,9 @@ void ComponentLabel::setAlignment(Alignment Align)
    iAlignment = Align;
 
    if(!sText.empty())
+   {
       generateVertexData();
+   }
 }
 
 void ComponentLabel::setText(const char* Text)
@@ -430,7 +473,11 @@ void ComponentLabel::setText(const char* Text)
       }
    }
 
-   processVariables();
+   if(GEHasFlag(eSettings, LabelSettingsBitMask::VariableReplacement))
+   {
+      processVariables();
+   }
+
    generateVertexData();
 }
 
@@ -442,11 +489,11 @@ void ComponentLabel::setStringID(const ObjectName& StringID)
    if(!StringID.isEmpty())
    {
       cLocaString = LocalizedStringsManager::getInstance()->get(StringID);
-   }
 
-   if(cLocaString)
-   {
-      setText(cLocaString->getString().c_str());
+      if(cLocaString)
+      {
+         setText(cLocaString->getString().c_str());
+      }
    }
 }
 
@@ -455,7 +502,9 @@ void ComponentLabel::setHorizontalSpacing(float HorizontalSpacing)
    fHorizontalSpacing = HorizontalSpacing;
 
    if(!sText.empty())
+   {
       generateVertexData();
+   }
 }
 
 void ComponentLabel::setVerticalSpacing(float VerticalSpacing)
@@ -463,7 +512,9 @@ void ComponentLabel::setVerticalSpacing(float VerticalSpacing)
    fVerticalSpacing = VerticalSpacing;
 
    if(!sText.empty())
+   {
       generateVertexData();
+   }
 }
 
 void ComponentLabel::setLineWidth(float LineWidth)
@@ -471,5 +522,17 @@ void ComponentLabel::setLineWidth(float LineWidth)
    fLineWidth = LineWidth;
 
    if(!sText.empty())
+   {
       generateVertexData();
+   }
+}
+
+void ComponentLabel::setSettings(uint8_t Settings)
+{
+   eSettings = Settings;
+
+   if(!sText.empty())
+   {
+      generateVertexData();
+   }
 }
