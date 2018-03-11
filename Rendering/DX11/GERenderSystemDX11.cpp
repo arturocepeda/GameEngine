@@ -675,7 +675,9 @@ void RenderSystem::bindTexture(TextureSlot eSlot, const Texture* cTexture)
 
    pBoundTexture[(GE::uint)eSlot] = const_cast<Texture*>(cTexture);
 
-   ID3D11ShaderResourceView* dxShaderResourceView = (ID3D11ShaderResourceView*)cTexture->getHandler();
+   ID3D11ShaderResourceView* dxShaderResourceView = cTexture
+      ? (ID3D11ShaderResourceView*)cTexture->getHandler()
+      : 0;
    dxContext->PSSetShaderResources((UINT)eSlot, 1, &dxShaderResourceView);
    dxContext->PSSetSamplers(0, 1, &dxSamplerStateClamp);
 }
@@ -918,7 +920,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    {
       bindTexture(TextureSlot::Diffuse, static_cast<ComponentLabel*>(cRenderable)->getFont()->getTexture());
    }
-   else if(cMaterialPass->getMaterial()->getDiffuseTexture())
+   else
    {
       bindTexture(TextureSlot::Diffuse, cMaterialPass->getMaterial()->getDiffuseTexture());
    }
