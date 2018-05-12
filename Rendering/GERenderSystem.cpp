@@ -77,8 +77,8 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    sGPUBufferPairs[GeometryGroup::Particles].VertexStride = (3 + 4 + 2) * sizeof(float);
 
    // Batch buffers --> + WorldViewProjection (16)
-   sGPUBufferPairs[GeometryGroup::_2DBatch].VertexStride = sGPUBufferPairs[GeometryGroup::_2DStatic].VertexStride + (16 * sizeof(float));
-   sGPUBufferPairs[GeometryGroup::MeshBatch].VertexStride = sGPUBufferPairs[GeometryGroup::MeshStatic].VertexStride + (16 * sizeof(float));
+   sGPUBufferPairs[GeometryGroup::_2DBatch].VertexStride = sGPUBufferPairs[GeometryGroup::_2DStatic].VertexStride;
+   sGPUBufferPairs[GeometryGroup::MeshBatch].VertexStride = sGPUBufferPairs[GeometryGroup::MeshStatic].VertexStride;
 
    GEMutexInit(mTextureLoadMutex);
    calculate2DViewProjectionMatrix();
@@ -968,17 +968,12 @@ void RenderSystem::queueForRenderingBatch(RenderOperation& sBatch)
 
    ComponentTransform* cTransform = cRenderable->getTransform();
    const Matrix4& matModel = cTransform->getGlobalWorldMatrix();
-
-   if(cRenderable->getRenderingMode() == RenderingMode::_2D)
-      calculate2DTransformMatrix(matModel);
-   else
-      calculate3DTransformMatrix(matModel);
    
    const uint iRenderableNumVertices = cRenderable->getGeometryData().NumVertices;
    const uint iRenderableVertexStride = cRenderable->getGeometryData().VertexStride;
    const uint iBatchNumVertices = sBatch.Data.NumVertices;
 
-   sBatch.Data.VertexStride = iRenderableVertexStride + sizeof(Matrix4);
+   sBatch.Data.VertexStride = iRenderableVertexStride;
 
    GE::byte* pRenderableVertexData = reinterpret_cast<GE::byte*>(cRenderable->getGeometryData().VertexData);
    GE::byte* pBatchVertexData = reinterpret_cast<GE::byte*>(sBatch.Data.VertexData);
@@ -986,12 +981,17 @@ void RenderSystem::queueForRenderingBatch(RenderOperation& sBatch)
 
    for(uint i = 0; i < iRenderableNumVertices; i++)
    {
-      memcpy(pBatchVertexData, &matModelViewProjection.m[0], sizeof(Matrix4));
-      pBatchVertexData += sizeof(Matrix4);
+      Vector3 vVertexPosition = *(reinterpret_cast<Vector3*>(pRenderableVertexData));
+      pRenderableVertexData += sizeof(Vector3);
 
-      memcpy(pBatchVertexData, pRenderableVertexData, iRenderableVertexStride);
-      pRenderableVertexData += iRenderableVertexStride;
-      pBatchVertexData += iRenderableVertexStride;
+      Matrix4Transform(matModel, &vVertexPosition);
+
+      memcpy(pBatchVertexData, &vVertexPosition, sizeof(Vector3));
+      pBatchVertexData += sizeof(Vector3);
+
+      memcpy(pBatchVertexData, pRenderableVertexData, iRenderableVertexStride - sizeof(Vector3));
+      pRenderableVertexData += iRenderableVertexStride - sizeof(Vector3);
+      pBatchVertexData += iRenderableVertexStride - sizeof(Vector3);
    }
 
    const uint iRenderableNumIndices = cRenderable->getGeometryData().NumIndices;

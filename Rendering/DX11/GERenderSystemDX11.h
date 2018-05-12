@@ -35,6 +35,7 @@ namespace GE { namespace Rendering
       GE::Matrix4 WorldMatrix;                  // 128 bytes
       GE::Matrix4 InverseTransposeWorldMatrix;  // 192 bytes
       GE::Matrix4 LightWorldViewProjection;     // 256 bytes
+      GE::Matrix4 ViewProjectionMatrix;         // 320 bytes
    };
 
    struct ShaderConstantsMaterial

@@ -111,22 +111,6 @@ void VertexShader::createInputLayout(const char* pByteCode, uint iByteCodeSize, 
 
    uint iByteOffset = 0;
 
-   if(GEHasFlag(iVertexElements, VertexElementsBitMask::WVP))
-   {
-      dxInputElementDesc.SemanticName = "WORLDVIEWPROJECTION";
-      dxInputElementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-
-      for(uint i = 0; i < 4; i++)
-      {
-         dxInputElementDesc.AlignedByteOffset = iByteOffset;
-         dxInputElementDesc.SemanticIndex = i;
-         dxVertexLayout.push_back(dxInputElementDesc);
-         iByteOffset += 4 * sizeof(float);
-      }
-
-      dxInputElementDesc.SemanticIndex = 0;
-   }
-
    if(GEHasFlag(iVertexElements, VertexElementsBitMask::Position))
    {
       dxInputElementDesc.SemanticName = "POSITION";

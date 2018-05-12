@@ -66,10 +66,6 @@ RenderSystemES20::RenderSystemES20()
    glEnableVertexAttribArray((GLuint)VertexAttributes::Normal);
    glEnableVertexAttribArray((GLuint)VertexAttributes::TextureCoord0);
    glEnableVertexAttribArray((GLuint)VertexAttributes::Color);
-   glEnableVertexAttribArray((GLuint)VertexAttributes::WorldViewProjection0);
-   glEnableVertexAttribArray((GLuint)VertexAttributes::WorldViewProjection1);
-   glEnableVertexAttribArray((GLuint)VertexAttributes::WorldViewProjection2);
-   glEnableVertexAttribArray((GLuint)VertexAttributes::WorldViewProjection3);
    
    // load shaders
    loadShaders();
@@ -337,9 +333,6 @@ void RenderSystemES20::attachShaders(ShaderProgramES20* cProgram)
 
    if(GEHasFlag(cProgram->getVertexElements(), VertexElementsBitMask::Color))
       glBindAttribLocation(cProgram->ID, (GLuint)VertexAttributes::Color, "aColor");
-
-   if(GEHasFlag(cProgram->getVertexElements(), VertexElementsBitMask::WVP))
-      glBindAttribLocation(cProgram->ID, (GLuint)VertexAttributes::WorldViewProjection0, "aWorldViewProjection");
    
    // link program
    linkProgram(cProgram);
@@ -383,6 +376,7 @@ void RenderSystemES20::getUniformsLocation(ShaderProgramES20* cProgram)
    cProgram->setUniformLocation((uint)Uniforms::WorldMatrix, glGetUniformLocation(cProgram->ID, "uWorldMatrix"));
    cProgram->setUniformLocation((uint)Uniforms::InverseTransposeWorldMatrix, glGetUniformLocation(cProgram->ID, "uInverseTransposeWorldMatrix"));
    cProgram->setUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix, glGetUniformLocation(cProgram->ID, "uDepthMVP"));
+   cProgram->setUniformLocation((uint)Uniforms::ViewProjectionMatrix, glGetUniformLocation(cProgram->ID, "uViewProjectionMatrix"));
    
    // material uniforms
    cProgram->setUniformLocation((uint)Uniforms::DiffuseColor, glGetUniformLocation(cProgram->ID, "uDiffuseColor"));
@@ -416,17 +410,6 @@ void RenderSystemES20::setVertexDeclaration(const RenderOperation& cRenderOperat
 
    uintPtrSize iOffset = 0;
 
-   if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::WVP))
-   {
-      glVertexAttribPointer((GLuint)VertexAttributes::WorldViewProjection0, 4, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
-      iOffset += 4 * sizeof(float);
-      glVertexAttribPointer((GLuint)VertexAttributes::WorldViewProjection1, 4, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
-      iOffset += 4 * sizeof(float);
-      glVertexAttribPointer((GLuint)VertexAttributes::WorldViewProjection2, 4, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
-      iOffset += 4 * sizeof(float);
-      glVertexAttribPointer((GLuint)VertexAttributes::WorldViewProjection3, 4, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
-      iOffset += 4 * sizeof(float);
-   }
    if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::Position))
    {
       glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
@@ -602,11 +585,14 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    ComponentMesh* cMesh = 0;
 
    // set uniform values for the shaders
+   const Matrix4& mViewProjection = cRenderable->getRenderingMode() == RenderingMode::_3D
+      ? cActiveCamera->getViewProjectionMatrix()
+      : mat2DViewProjection;
+   glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::ViewProjectionMatrix), 1, 0, mViewProjection.m);
+
    if(cRenderable->getRenderableType() == RenderableType::ParticleSystem)
    {
-      matModelViewProjection = cRenderable->getRenderingMode() == RenderingMode::_3D
-         ? cActiveCamera->getViewProjectionMatrix()
-         : mat2DViewProjection;
+      matModelViewProjection = mViewProjection;
 
       glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::AmbientLightColor), 1, &cAmbientLightColor.Red);
    }

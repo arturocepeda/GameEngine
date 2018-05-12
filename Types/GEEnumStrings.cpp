@@ -200,8 +200,7 @@ namespace GE { namespace Rendering
       "Normal",
       "Tangent",
       "Binormal",
-      "TextureCoordinate",
-      "WorldViewProjection"
+      "TextureCoordinate"
    };
 
    const char* strDynamicShadowsBitMask[] =

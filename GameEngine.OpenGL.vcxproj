@@ -35,6 +35,7 @@
     <ClCompile Include="Core\GEDevice.cpp" />
     <ClCompile Include="Core\GEEvents.cpp" />
     <ClCompile Include="Core\GEGeometry.cpp" />
+    <ClCompile Include="Core\GEInterpolator.cpp" />
     <ClCompile Include="Core\GEMath.cpp" />
     <ClCompile Include="Core\GEObject.cpp" />
     <ClCompile Include="Core\GEParser.cpp" />

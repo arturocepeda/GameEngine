@@ -843,17 +843,14 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
    ComponentMesh* cMesh = 0;
 
+   const Matrix4& mViewProjection = cRenderable->getRenderingMode() == RenderingMode::_3D
+      ? cActiveCamera->getViewProjectionMatrix()
+      : mat2DViewProjection;
+   sShaderConstantsTransform.ViewProjectionMatrix = mViewProjection;
+
    if(cRenderable)
    {
-      if(cRenderable->getRenderableType() == RenderableType::ParticleSystem)
-      {
-         const Matrix4& mViewProjection = cRenderable->getRenderingMode() == RenderingMode::_3D
-            ? cActiveCamera->getViewProjectionMatrix()
-            : mat2DViewProjection;
-
-         matModelViewProjection = mViewProjection;
-      }
-      else
+      if(cRenderable->getRenderableType() != RenderableType::ParticleSystem)
       {
          // get model matrix from the renderable
          ComponentTransform* cTransform = cRenderable->getTransform();

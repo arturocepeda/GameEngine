@@ -32,9 +32,8 @@ namespace GE { namespace Rendering
       Tangent   = 1 << 3,
       Binormal  = 1 << 4,
       TexCoord  = 1 << 5,
-      WVP       = 1 << 6,
 
-      Count = 7
+      Count = 6
    };
 
 

@@ -26,10 +26,6 @@ namespace GE { namespace Rendering
       TextureCoord0,
       Normal,
       Color,
-      WorldViewProjection0,
-      WorldViewProjection1,
-      WorldViewProjection2,
-      WorldViewProjection3,
 
       Count
    };
@@ -41,6 +37,7 @@ namespace GE { namespace Rendering
       WorldMatrix,
       InverseTransposeWorldMatrix,
       LightWorldViewProjectionMatrix,
+      ViewProjectionMatrix,
 
       // Material
       DiffuseColor,
