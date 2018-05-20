@@ -321,6 +321,8 @@ void ComponentSkeleton::playAnimation(const AnimationPlayInfo& PlayInfo)
       for(uint i = 0; i < iInstanceLastIndex; i++)
          vActiveAnimationInstances.erase(vActiveAnimationInstances.begin());
    }
+
+   updateAnimationInstances();
 }
 
 void ComponentSkeleton::stopAllAnimations()
