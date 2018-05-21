@@ -322,7 +322,7 @@ void ComponentSkeleton::playAnimation(const AnimationPlayInfo& PlayInfo)
          vActiveAnimationInstances.erase(vActiveAnimationInstances.begin());
    }
 
-   updateAnimationInstances();
+   updateAnimationInstances(0.0f);
 }
 
 void ComponentSkeleton::stopAllAnimations()
@@ -346,7 +346,7 @@ void ComponentSkeleton::setCallbackOnAnimationInstancesUpdated(Callback fCallbac
    onAnimationInstancesUpdated = fCallback;
 }
 
-void ComponentSkeleton::updateAnimationInstances()
+void ComponentSkeleton::updateAnimationInstances(float fDeltaTime)
 {
    if(vActiveAnimationInstances.empty())
       return;
@@ -357,7 +357,7 @@ void ComponentSkeleton::updateAnimationInstances()
    memset(mBonePoseMatrix, 0, sizeof(Matrix4) * iBonesCount);
 
    for(uint iInstanceIndex = 0; iInstanceIndex < vActiveAnimationInstances.size(); iInstanceIndex++)
-      updateAnimationInstance(&vActiveAnimationInstances[iInstanceIndex]);
+      updateAnimationInstance(&vActiveAnimationInstances[iInstanceIndex], fDeltaTime);
 
    // update bone transform matrices
    for(uint iBoneIndex = 0; iBoneIndex < iBonesCount; iBoneIndex++)
@@ -378,10 +378,8 @@ void ComponentSkeleton::updateAnimationInstances()
    }
 }
 
-void ComponentSkeleton::updateAnimationInstance(AnimationInstance* cInstance)
+void ComponentSkeleton::updateAnimationInstance(AnimationInstance* cInstance, float fDeltaTime)
 {
-   const float fDeltaTime = Time::getClock(cOwner->getClockIndex()).getDelta();
-
    cInstance->TimePosition += fDeltaTime * cInstance->Speed * fAnimationSpeedFactor;
 
    switch(cInstance->State)
@@ -573,10 +571,13 @@ void ComponentSkeleton::update()
 
    GEProfilerMarker("ComponentSkeleton::update()");
 
-   updateAnimationInstances();
+   const float fDeltaTime = Time::getClock(cOwner->getClockIndex()).getDelta();
+   updateAnimationInstances(fDeltaTime);
 
    if(onAnimationInstancesUpdated)
+   {
       onAnimationInstancesUpdated(this);
+   }
 
    updateBoneMatrices();
    updateSkinnedMeshes();

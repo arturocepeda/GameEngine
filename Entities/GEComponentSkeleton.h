@@ -118,8 +118,8 @@ namespace GE { namespace Entities
       void updateBoneMatrices();
       void updateSkinnedMeshes();
 
-      void updateAnimationInstances();
-      void updateAnimationInstance(AnimationInstance* cInstance);
+      void updateAnimationInstances(float fDeltaTime);
+      void updateAnimationInstance(AnimationInstance* cInstance, float fDeltaTime);
 
       void releaseSkeletonData();
 
