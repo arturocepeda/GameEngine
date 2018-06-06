@@ -322,7 +322,10 @@ void ComponentSkeleton::playAnimation(const AnimationPlayInfo& PlayInfo)
          vActiveAnimationInstances.erase(vActiveAnimationInstances.begin());
    }
 
-   updateAnimationInstances(0.0f);
+   if(cSkeleton->getBonesCount() == 1)
+   {
+      updateAnimationInstances(0.0f);
+   }
 }
 
 void ComponentSkeleton::stopAllAnimations()
