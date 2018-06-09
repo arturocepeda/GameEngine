@@ -96,7 +96,7 @@ const char* XmlStringWriter::getData()
 bool SerializableIO::saveToXmlFile(Serializable* Obj, const char* Directory, const char* FileName)
 {
    pugi::xml_document xml;
-   pugi::xml_node xmlSettings = xml.append_child(Obj->getClassName().getString().c_str());
+   pugi::xml_node xmlSettings = xml.append_child(Obj->getClassName().getString());
 
    Obj->saveToXml(xmlSettings);
 
@@ -138,7 +138,7 @@ bool SerializableIO::loadFromXmlFile(Serializable* Obj, const char* Directory, c
 
    pugi::xml_document xml;
    xml.load_buffer(cContentData.getData(), cContentData.getDataSize());
-   Obj->loadFromXml(xml.child(Obj->getClassName().getString().c_str()));
+   Obj->loadFromXml(xml.child(Obj->getClassName().getString()));
 
    return true;
 }

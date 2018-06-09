@@ -20,11 +20,25 @@
 
 namespace GE { namespace Core
 {
+   class ObjectNameRegistry
+   {
+   private:
+      typedef GESTLMap(uint, const char*) Registry;
+
+      static Registry* mRegistry;
+      static char* sStringBuffer;
+      static char* sStringBufferPtr;
+
+   public:
+      static void registerString(uint Hash, const char* String);
+      static const char* retrieveString(uint Hash);
+   };
+
+
    class ObjectName
    {
    private:
       uint iID;
-      GESTLString sName;
 
    public:
       static const ObjectName Empty;
@@ -32,13 +46,11 @@ namespace GE { namespace Core
       ObjectName();
       ObjectName(uint ID);
       ObjectName(const char* Name);
-      ObjectName(const GESTLString& Name);
       ObjectName(void* Ptr);
       ~ObjectName();
 
       uint getID() const;
-      const GESTLString& getString() const;
-      const char* getCString() const;
+      const char* getString() const;
 
       bool isEmpty() const;
 
@@ -55,7 +67,6 @@ namespace GE { namespace Core
    public:
       Object(uint ID);
       Object(const char* Name);
-      Object(const GESTLString& Name);
       Object(const ObjectName& Name);
       ~Object();
 

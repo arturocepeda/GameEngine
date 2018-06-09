@@ -73,7 +73,7 @@ void ComponentSkeleton::setSkeletonName(const ObjectName& SkeletonName)
    cSkeleton = ResourcesManager::getInstance()->get<Skeleton>(SkeletonName);
 
    if(!cSkeleton)
-      cSkeleton = ResourcesManager::getInstance()->load<Skeleton>(SkeletonName.getString().c_str());
+      cSkeleton = ResourcesManager::getInstance()->load<Skeleton>(SkeletonName.getString());
 
    GEAssert(cSkeleton);
 

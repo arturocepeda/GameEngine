@@ -62,7 +62,7 @@ void ComponentMesh::setMeshName(const ObjectName& MeshName)
    Mesh* cMesh = ResourcesManager::getInstance()->get<Mesh>(MeshName);
 
    if(!cMesh)
-      cMesh = ResourcesManager::getInstance()->load<Mesh>(MeshName.getString().c_str());
+      cMesh = ResourcesManager::getInstance()->load<Mesh>(MeshName.getString());
 
    loadMesh(cMesh);
 }

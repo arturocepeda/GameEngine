@@ -17,6 +17,47 @@ using namespace GE;
 using namespace GE::Core;
 
 //
+//  ObjectNameRegistry
+//
+ObjectNameRegistry::Registry* ObjectNameRegistry::mRegistry = 0;
+char* ObjectNameRegistry::sStringBuffer = 0;
+char* ObjectNameRegistry::sStringBufferPtr = 0;
+
+void ObjectNameRegistry::registerString(uint Hash, const char* String)
+{
+   if(!mRegistry)
+   {
+      mRegistry = Allocator::alloc<Registry>();
+      GEInvokeCtor(Registry, mRegistry);
+
+      sStringBuffer = Allocator::alloc<char>(1 * 1024 * 1024);
+      sStringBuffer[0] = '\0';
+
+      (*mRegistry)[0] = sStringBuffer;
+      sStringBufferPtr = sStringBuffer + 1;
+   }
+
+   if(mRegistry->find(Hash) == mRegistry->end())
+   {
+      (*mRegistry)[Hash] = sStringBufferPtr;
+      strcpy(sStringBufferPtr, String);
+      sStringBufferPtr += strlen(String) + 1;
+   }
+#if defined (GE_EDITOR_SUPPORT)
+   else
+   {
+      GEAssert(strcmp(String, retrieveString(Hash)) == 0);
+   }
+#endif
+}
+
+const char* ObjectNameRegistry::retrieveString(uint Hash)
+{
+   return mRegistry->find(Hash)->second;
+}
+
+
+//
 //  ObjectName
 //
 const ObjectName ObjectName::Empty;
@@ -33,14 +74,8 @@ ObjectName::ObjectName(uint ID)
 
 ObjectName::ObjectName(const char* Name)
 {
-   sName = GESTLString(Name);
-   iID = hash(sName);
-}
-
-ObjectName::ObjectName(const GESTLString& Name)
-{
    iID = hash(Name);
-   sName = Name;
+   ObjectNameRegistry::registerString(iID, Name);
 }
 
 ObjectName::ObjectName(void* Ptr)
@@ -48,8 +83,8 @@ ObjectName::ObjectName(void* Ptr)
    char sBuffer[32];
    sprintf(sBuffer, "0x%p", Ptr);
 
-   sName = GESTLString(sBuffer);
-   iID = hash(sName);
+   iID = hash(sBuffer);
+   ObjectNameRegistry::registerString(iID, sBuffer);
 }
 
 ObjectName::~ObjectName()
@@ -61,14 +96,9 @@ uint ObjectName::getID() const
    return iID;
 }
 
-const GESTLString& ObjectName::getString() const
+const char* ObjectName::getString() const
 {
-   return sName;
-}
-
-const char* ObjectName::getCString() const
-{
-   return sName.c_str();
+   return ObjectNameRegistry::retrieveString(iID);
 }
 
 bool ObjectName::isEmpty() const
@@ -96,11 +126,6 @@ Object::Object(uint ID)
 }
 
 Object::Object(const char* Name)
-   : cName(Name)
-{
-}
-
-Object::Object(const GESTLString& Name)
    : cName(Name)
 {
 }

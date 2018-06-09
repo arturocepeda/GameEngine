@@ -127,7 +127,7 @@ void Material::setDiffuseTextureName(const ObjectName& Name)
       if(!cDiffuseTexture)
       {
          Log::log(LogType::Warning, "Texture not found: '%s' (Referenced in Material: '%s')",
-            Name.getCString(), cName.getCString());
+            Name.getString(), cName.getString());
       }
    }
 }
@@ -273,7 +273,7 @@ void MaterialPass::setMaterialName(const Core::ObjectName& Name)
    }
    else
    {
-      Log::log(LogType::Warning, "Material not found: '%s'", Name.getString().c_str());
+      Log::log(LogType::Warning, "Material not found: '%s'", Name.getString());
    }
 
    setMaterial(cNewMaterial);

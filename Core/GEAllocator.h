@@ -142,6 +142,13 @@ namespace GE { namespace Core
       }
 
       static void free(void* Ptr);
+
+#if defined (GE_DEVELOPMENT)
+      static uint getTotalBytesAllocated(AllocationCategory eCategory)
+      {
+         return iTotalBytesAllocated[(int)eCategory];
+      }
+#endif
    };
 
 

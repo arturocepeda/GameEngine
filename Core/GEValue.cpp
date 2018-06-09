@@ -222,9 +222,9 @@ void Value::setAsString(const char* StringValue)
 
 void Value::setAsObjectName(const ObjectName& ObjectNameValue)
 {
-   size_t iStringSize = ObjectNameValue.getString().size();
+   size_t iStringSize = strlen(ObjectNameValue.getString());
    GEAssert(iStringSize < BufferSize);
-   memcpy(sBuffer, ObjectNameValue.getString().c_str(), iStringSize);
+   memcpy(sBuffer, ObjectNameValue.getString(), iStringSize);
    sBuffer[iStringSize] = '\0';
 }
 
@@ -372,7 +372,7 @@ void Value::toString(char* Buffer) const
       strcpy(Buffer, getAsString());
       break;
    case ValueType::ObjectName:
-      strcpy(Buffer, getAsObjectName().getString().c_str());
+      strcpy(Buffer, getAsObjectName().getString());
       break;
    case ValueType::Vector2:
       Parser::writeVector2(getAsVector2(), Buffer);

@@ -38,12 +38,12 @@ CurvePropertyInterpolator::CurvePropertyInterpolator(Curve* cCurve, Serializable
    if(!cProperty)
    {
       Log::log(LogType::Warning, "There is no '%s' property in the '%s' type",
-         cPropertyName.getCString(), cSerializable->getClassName().getCString());
+         cPropertyName.getString(), cSerializable->getClassName().getString());
       bPropertyValidated = false;
    }
    else if(!cProperty->Setter)
    {
-      Log::log(LogType::Warning, "The '%s' property is read-only", cPropertyName.getCString());
+      Log::log(LogType::Warning, "The '%s' property is read-only", cPropertyName.getString());
       bPropertyValidated = false;
    }
    else
@@ -74,7 +74,7 @@ CurvePropertyInterpolator::CurvePropertyInterpolator(Curve* cCurve, Serializable
       if(!bPropertyValidated)
       {
          Log::log(LogType::Warning, "The '%s' property does not contain the provided component (%s)",
-            cPropertyName.getCString(), strPropertyValueComponent[(int)eValueComponent]);
+            cPropertyName.getString(), strPropertyValueComponent[(int)eValueComponent]);
       }
    }
 

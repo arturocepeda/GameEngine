@@ -33,7 +33,7 @@ Resource::Resource(const ObjectName& Name, const ObjectName& GroupName, Resource
 
    if(eType != ResourceType::Serializable)
    {
-      Log::log(LogType::Info, "Resource created (%s): '%s'", strResourceType[(int)eType], cName.getString().c_str());
+      Log::log(LogType::Info, "Resource created (%s): '%s'", strResourceType[(int)eType], cName.getString());
    }
 }
 
@@ -45,7 +45,7 @@ Resource::~Resource()
 
    if(eType != ResourceType::Serializable)
    {
-      Log::log(LogType::Info, "Resource destroyed (%s): '%s'", strResourceType[(int)eType], cName.getString().c_str());
+      Log::log(LogType::Info, "Resource destroyed (%s): '%s'", strResourceType[(int)eType], cName.getString());
    }
 }
 
@@ -72,12 +72,12 @@ SerializableResource::SerializableResource(const ObjectName& Name, const ObjectN
    : Resource(Name, GroupName, ResourceType::Serializable)
    , Serializable(TypeName)
 {
-   Log::log(LogType::Info, "Resource created (%s): '%s'", getClassName().getString().c_str(), cName.getString().c_str());
+   Log::log(LogType::Info, "Resource created (%s): '%s'", getClassName().getString(), cName.getString());
 }
 
 SerializableResource::~SerializableResource()
 {
-   Log::log(LogType::Info, "Resource destroyed (%s): '%s'", getClassName().getString().c_str(), cName.getString().c_str());
+   Log::log(LogType::Info, "Resource destroyed (%s): '%s'", getClassName().getString(), cName.getString());
 }
 
 void SerializableResource::setName(const Core::ObjectName& Name)

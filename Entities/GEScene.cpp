@@ -446,7 +446,7 @@ SceneBackgroundMode Scene::getBackgroundMode() const
 
 const char* Scene::getBackgroundMaterialName() const
 {
-   return cBackgroundMaterialName.getString().c_str();
+   return cBackgroundMaterialName.getString();
 }
 
 Color Scene::getAmbientLightColor() const
@@ -500,7 +500,7 @@ void Scene::setupBackground()
    case SceneBackgroundMode::SkyBox:
       {
          if(cBackgroundMaterialName.getID() != 0)
-            setupSkyBox(cBackgroundMaterialName.getString().c_str());
+            setupSkyBox(cBackgroundMaterialName.getString());
       }
       break;
 

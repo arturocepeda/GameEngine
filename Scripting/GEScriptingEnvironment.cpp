@@ -216,7 +216,7 @@ bool ScriptingEnvironment::loadFromFile(const char* FileName)
 ValueType ScriptingEnvironment::getVariableType(const ObjectName& VariableName) const
 {
    lua_State* luaState = lua.lua_state();
-   lua_getglobal(luaState, VariableName.getString().c_str());
+   lua_getglobal(luaState, VariableName.getString());
 
    ValueType eValueType = ValueType::Count;
    bool bUserDataType = false;
@@ -237,7 +237,7 @@ ValueType ScriptingEnvironment::getVariableType(const ObjectName& VariableName) 
 
    if(bUserDataType)
    {
-      const sol::object& cVariableRef = lua[VariableName.getCString()];
+      const sol::object& cVariableRef = lua[VariableName.getString()];
 
       if(cVariableRef.is<Vector3>())
          eValueType = ValueType::Vector3;
@@ -260,7 +260,7 @@ uint ScriptingEnvironment::getFunctionParametersCount(const ObjectName& Function
    lua_State* luaState = lua.lua_state();
    lua_Debug luaDebug;
 
-   lua_getglobal(luaState, FunctionName.getCString());
+   lua_getglobal(luaState, FunctionName.getString());
    lua_getinfo(luaState, ">u", &luaDebug);
 
    return (uint)luaDebug.nparams;
@@ -381,7 +381,7 @@ void* ScriptingEnvironment::customAlloc(void*, void* ptr, size_t, size_t nsize)
 
 bool ScriptingEnvironment::alphabeticalComparison(const ObjectName& l, const ObjectName& r)
 {
-   return strcmp(l.getString().c_str(), r.getString().c_str()) < 0;
+   return strcmp(l.getString(), r.getString()) < 0;
 }
 
 bool ScriptingEnvironment::loadModule(const char* sModuleName)
@@ -476,12 +476,12 @@ void ScriptingEnvironment::collectGlobalSymbols()
    // fill the lists of variables and functions
    for(uint i = 0; i < vGlobalUserSymbols.size(); i++)
    {
-      lua_getglobal(luaState, vGlobalUserSymbols[i].getString().c_str());
+      lua_getglobal(luaState, vGlobalUserSymbols[i].getString());
       
       if(lua_isfunction(luaState, lua_gettop(luaState)))
       {
          vGlobalFunctionNames.push_back(vGlobalUserSymbols[i]);
-         mFunctions[vGlobalUserSymbols[i].getID()] = lua[vGlobalUserSymbols[i].getString().c_str()];
+         mFunctions[vGlobalUserSymbols[i].getID()] = lua[vGlobalUserSymbols[i].getString()];
       }
       else
       {
@@ -586,7 +586,7 @@ void ScriptingEnvironment::registerTypes()
       "ObjectName"
       , sol::constructors<sol::types<>, sol::types<const char*>>()
       , "getID", &ObjectName::getID
-      , "getString", &ObjectName::getCString
+      , "getString", &ObjectName::getString
       , "isEmpty", &ObjectName::isEmpty
       , sol::meta_method::equal_to, &ObjectName::operator==
    );

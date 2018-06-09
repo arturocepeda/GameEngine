@@ -87,12 +87,12 @@ namespace GE { namespace Scripting
       template<typename T>
       void setVariable(const Core::ObjectName& VariableName, T Value)
       {
-         lua[VariableName.getString().c_str()] = Value;
+         lua[VariableName.getString()] = Value;
       }
       template<typename T>
       T getVariable(const Core::ObjectName& VariableName)
       {
-         return lua.get<T>(VariableName.getString().c_str());
+         return lua.get<T>(VariableName.getString());
       }
 
       Core::ValueType getVariableType(const Core::ObjectName& VariableName) const;
@@ -113,7 +113,7 @@ namespace GE { namespace Scripting
          if(!luaFunctionResult.valid())
          {
             sol::error luaError = luaFunctionResult;
-            handleFunctionError(FunctionName.getString().c_str(), luaError.what());
+            handleFunctionError(FunctionName.getString(), luaError.what());
             return (ReturnType)0;
          }
 

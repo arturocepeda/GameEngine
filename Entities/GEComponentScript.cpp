@@ -106,7 +106,7 @@ void ScriptInstance::setScriptName(const ObjectName& Name)
 
    cEnv->reset();
 
-   if(!cEnv->loadFromFile(Name.getString().c_str()))
+   if(!cEnv->loadFromFile(Name.getString()))
       return;
 
    cScriptName = Name;
@@ -203,7 +203,7 @@ void ScriptInstance::registerScriptProperties()
    for(uint i = 0; i < vGlobalVariableNames.size(); i++)
    {
       const ObjectName& cGlobalVariableName = vGlobalVariableNames[i];
-      const char* sGlobalVariableName = cGlobalVariableName.getString().c_str();
+      const char* sGlobalVariableName = cGlobalVariableName.getString();
       ValueType ePropertyValue = cEnv->getVariableType(sGlobalVariableName);
 
       if(ePropertyValue == ValueType::Count)
@@ -283,7 +283,7 @@ void ScriptInstance::registerScriptActions()
       if(cEnv->getFunctionParametersCount(cGlobalFunctionName) > 0)
          continue;
 
-      const char* sGlobalFunctionName = cGlobalFunctionName.getString().c_str();
+      const char* sGlobalFunctionName = cGlobalFunctionName.getString();
 
       registerAction(sGlobalFunctionName, [this, cGlobalFunctionName]
       {

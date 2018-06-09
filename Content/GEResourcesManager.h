@@ -193,16 +193,16 @@ namespace GE { namespace Content
          Core::Device::readContentFile(ContentType::GenericTextData, SubDir, FileName, FileExtension, &cContentData);
 
          char sRootNode[32];
-         sprintf(sRootNode, "%sList", TypeName.getCString());
+         sprintf(sRootNode, "%sList", TypeName.getString());
 
          pugi::xml_document xml;
          xml.load_buffer(cContentData.getData(), cContentData.getDataSize());
          pugi::xml_node xmlEntries = xml.child(sRootNode);
 
          SerializableResourceManagerObjects* cObjects =
-            SerializableResourcesManager::getInstance()->getEntry(TypeName.getCString());
+            SerializableResourcesManager::getInstance()->getEntry(TypeName.getString());
 
-         for(const pugi::xml_node& xmlEntry : xmlEntries.children(TypeName.getCString()))
+         for(const pugi::xml_node& xmlEntry : xmlEntries.children(TypeName.getString()))
          {
             T* cInstance = Allocator::alloc<T>();
             GEInvokeCtor(T, cInstance)(xmlEntry.attribute("name").value(), GroupName);

@@ -267,7 +267,7 @@ void Serializable::loadFromXml(const pugi::xml_node& XmlNode)
    for(uint i = 0; i < vPropertyArrays.size(); i++)
    {
       const PropertyArray& sPropertyArray = vPropertyArrays[i];
-      const char* sPropertyArrayElementName = sPropertyArray.Name.getString().c_str();
+      const char* sPropertyArrayElementName = sPropertyArray.Name.getString();
       uint iPropertyArrayElementsCount = 0;
 
       for(const pugi::xml_node& xmlPropertyArrayElement : XmlNode.children(sPropertyArrayElementName))
@@ -304,14 +304,14 @@ void Serializable::saveToXml(pugi::xml_node& XmlNode) const
          continue;
 
       pugi::xml_node xmlProperty = XmlNode.append_child("Property");
-      xmlProperty.append_attribute("name").set_value(sProperty.Name.getString().c_str());
+      xmlProperty.append_attribute("name").set_value(sProperty.Name.getString());
       xmlProperty.append_attribute("value").set_value(sValueBuffer);
    }
 
    for(uint i = 0; i < vPropertyArrays.size(); i++)
    {
       const PropertyArray& sPropertyArray = vPropertyArrays[i];
-      const char* sPropertyArrayElementName = sPropertyArray.Name.getString().c_str();
+      const char* sPropertyArrayElementName = sPropertyArray.Name.getString();
 
       for(uint j = 0; j < sPropertyArray.Entries->size(); j++)
       {
@@ -413,7 +413,7 @@ void Serializable::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stre
    for(uint i = 0; i < vPropertyArrays.size(); i++)
    {
       const PropertyArray& sPropertyArray = vPropertyArrays[i];
-      const char* sPropertyArrayElementName = sPropertyArray.Name.getString().c_str();
+      const char* sPropertyArrayElementName = sPropertyArray.Name.getString();
 
       pugi::xml_object_range<pugi::xml_named_node_iterator> xmlPropertyArrayElement = XmlNode.children(sPropertyArrayElementName);
       GE::byte iPropertyArrayElementsCount = 0;

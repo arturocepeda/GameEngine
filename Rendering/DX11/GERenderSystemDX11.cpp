@@ -866,7 +866,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
             if(!cActiveCamera)
             {
                Entity* cOwner = cRenderable->getOwner();
-               Log::log(LogType::Warning, "There is no active camera. The entity '%s' will be deactivated.", cOwner->getFullName().getCString());
+               Log::log(LogType::Warning, "There is no active camera. The entity '%s' will be deactivated.", cOwner->getFullName().getString());
                cOwner->setActive(false);
                return;
             }

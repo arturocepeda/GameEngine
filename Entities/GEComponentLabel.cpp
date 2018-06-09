@@ -422,7 +422,7 @@ void ComponentLabel::setFontName(const Core::ObjectName& FontName)
 
    if(!cFont)
    {
-      Log::log(LogType::Warning, "No font found in '%s'. The entity will not be rendered.", cOwner->getFullName().getCString());
+      Log::log(LogType::Warning, "No font found in '%s'. The entity will not be rendered.", cOwner->getFullName().getString());
       hide();
       return;
    }
