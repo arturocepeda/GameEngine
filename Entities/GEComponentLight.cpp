@@ -25,6 +25,7 @@ ComponentLight::ComponentLight(Entity* Owner)
    , eLightType(LightType::Directional)
    , cColor(1.0f, 1.0f, 1.0f)
    , fLinearAttenuation(1.0f)
+   , fSpotAngle(1.0f)
    , fShadowIntensity(0.0f)
 {
    cClassName = ObjectName("Light");
@@ -34,6 +35,7 @@ ComponentLight::ComponentLight(Entity* Owner)
    GERegisterPropertyEnum(LightType, LightType);
    GERegisterProperty(Color, Color);
    GERegisterProperty(Float, LinearAttenuation);
+   GERegisterProperty(Float, SpotAngle);
    GERegisterProperty(Float, ShadowIntensity);
 }
 
@@ -61,6 +63,11 @@ float ComponentLight::getLinearAttenuation() const
    return fLinearAttenuation;
 }
 
+float ComponentLight::getSpotAngle() const
+{
+   return fSpotAngle;
+}
+
 float ComponentLight::getShadowIntensity() const
 {
    return fShadowIntensity;
@@ -68,7 +75,7 @@ float ComponentLight::getShadowIntensity() const
 
 Vector3 ComponentLight::getDirection() const
 {
-   const Matrix4& mRotationMatrix = cTransform->getRotation().getRotationMatrix();
+   const Matrix4& mRotationMatrix = cTransform->getWorldRotation().getRotationMatrix();
 
    // apply the rotation matrix to the down vector (0, -1, 0)
    return Vector3(-mRotationMatrix.m[GE_M4_1_2], -mRotationMatrix.m[GE_M4_2_2], -mRotationMatrix.m[GE_M4_3_2]);
@@ -87,6 +94,11 @@ void ComponentLight::setColor(const Color& cColor)
 void ComponentLight::setLinearAttenuation(float LinearAttenuation)
 {
    fLinearAttenuation = LinearAttenuation;
+}
+
+void ComponentLight::setSpotAngle(float SpotAngle)
+{
+   fSpotAngle = SpotAngle;
 }
 
 void ComponentLight::setShadowIntensity(float Intensity)

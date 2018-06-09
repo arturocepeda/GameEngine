@@ -657,6 +657,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
          glUniform3fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightPosition), 1, &cLight->getTransform()->getPosition().X);
          glUniform3fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightDirection), 1, &vLightDirection.X);
          glUniform1f(cActiveProgram->getUniformLocation((uint)Uniforms::Attenuation), cLight->getLinearAttenuation());
+         glUniform1f(cActiveProgram->getUniformLocation((uint)Uniforms::SpotAngle), cLight->getSpotAngle());
          glUniform1f(cActiveProgram->getUniformLocation((uint)Uniforms::ShadowIntensity), cLight->getShadowIntensity());
       }
    }
