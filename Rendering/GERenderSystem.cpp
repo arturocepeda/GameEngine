@@ -306,9 +306,9 @@ void RenderSystem::preloadTextures(const char* FileName)
 
                sPreloadedTexture.Tex->AtlasUV.push_back(sAtlasEntry);
             }
-
-            sPreloadedTexture.Tex->populateAtlasUVManager();
          }
+
+         sPreloadedTexture.Tex->populateAtlasUVManager();
 
          mTextures.add(sPreloadedTexture.Tex);
 
@@ -368,9 +368,9 @@ void RenderSystem::preloadTextures(const char* FileName)
                TextureAtlasEntry sAtlasEntry = TextureAtlasEntry(cAtlasEntryName, sUV);
                sPreloadedTexture.Tex->AtlasUV.push_back(sAtlasEntry);
             }
-
-            sPreloadedTexture.Tex->populateAtlasUVManager();
          }
+
+         sPreloadedTexture.Tex->populateAtlasUVManager();
 
          mTextures.add(sPreloadedTexture.Tex);
 
