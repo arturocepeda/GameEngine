@@ -137,6 +137,10 @@ namespace GE { namespace Core
       {
       }
 
+      ~Interpolator()
+      {
+      }
+
       bool getGetter() const
       {
          return getter;
