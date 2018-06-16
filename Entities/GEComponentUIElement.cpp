@@ -29,8 +29,7 @@ ComponentUIElement::ComponentUIElement(Entity* Owner)
 {
    cClassName = ObjectName("UIElement");
 
-   cTransform = cOwner->getComponent<ComponentTransform>();
-   GEAssert(cTransform);
+   GEAssert(cOwner->getComponent<ComponentTransform>());
 
    GERegisterPropertyMinMax(Float, Alpha, 0.0f, 1.0f);
 }
@@ -146,7 +145,7 @@ void ComponentUI2DElement::updateTransformPosition()
       break;
    }
 
-   cTransform->setPosition(vNewPosition);
+   cOwner->getComponent<ComponentTransform>()->setPosition(vNewPosition);
 }
 
 Alignment ComponentUI2DElement::getAnchor() const

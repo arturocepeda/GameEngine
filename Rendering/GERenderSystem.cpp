@@ -718,7 +718,7 @@ void RenderSystem::queueForRendering(ComponentRenderable* Renderable, uint Reque
       else
       {
          RenderOperation sRenderOperation;
-         sRenderOperation.Index = (RequestIndex << 24) | i;
+         sRenderOperation.Index = (Renderable->getRenderPriority() << 24) | (RequestIndex << 8) | i;
          sRenderOperation.Renderable = Renderable;
          sRenderOperation.RenderMaterialPass = cMaterialPass;
 

@@ -26,7 +26,6 @@ namespace GE { namespace Entities
    class ComponentUIElement : public Component
    {
    protected:
-      ComponentTransform* cTransform;
       float fAlpha;
       UIElementType eUIElementType;
 

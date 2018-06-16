@@ -31,6 +31,7 @@ ComponentRenderable::ComponentRenderable(Entity* Owner, RenderableType RType)
    , iRenderableType(RType)
    , eGeometryType(GeometryType::Dynamic)
    , eRenderingMode(RenderingMode::_2D)
+   , iRenderPriority(128)
    , cColor(1.0f, 1.0f, 1.0f)
    , iInternalFlags((uint8_t)InternalFlags::Visible)
 {
@@ -42,6 +43,7 @@ ComponentRenderable::ComponentRenderable(Entity* Owner, RenderableType RType)
    GERegisterProperty(Bool, Visible);
    GERegisterPropertyEnum(GeometryType, GeometryType);
    GERegisterPropertyEnum(RenderingMode, RenderingMode);
+   GERegisterPropertyMinMax(Byte, RenderPriority, 0, 255);
    GERegisterProperty(Color, Color);
    GERegisterPropertyArray(MaterialPass);
 }
@@ -74,6 +76,11 @@ GeometryType ComponentRenderable::getGeometryType() const
 RenderingMode ComponentRenderable::getRenderingMode() const
 {
    return eRenderingMode;
+}
+
+uint8_t ComponentRenderable::getRenderPriority() const
+{
+   return iRenderPriority;
 }
 
 ComponentTransform* ComponentRenderable::getTransform() const
@@ -109,6 +116,11 @@ void ComponentRenderable::setGeometryType(GeometryType Type)
 void ComponentRenderable::setRenderingMode(RenderingMode Mode)
 {
    eRenderingMode = Mode;
+}
+
+void ComponentRenderable::setRenderPriority(uint8_t Priority)
+{
+   iRenderPriority = Priority;
 }
 
 void ComponentRenderable::setColor(const Color& C)

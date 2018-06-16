@@ -16,9 +16,6 @@
 
 #define GE_EPSILON   FLT_EPSILON
 
-#define GE_ZNEAR     0.1f
-#define GE_ZFAR      1000.0f
-
 #define GE_PI        3.141592f
 #define GE_HALFPI    1.570796f
 #define GE_DOUBLEPI  6.283185f
