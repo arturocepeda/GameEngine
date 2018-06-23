@@ -204,6 +204,10 @@ void ScriptInstance::registerScriptProperties()
    {
       const ObjectName& cGlobalVariableName = vGlobalVariableNames[i];
       const char* sGlobalVariableName = cGlobalVariableName.getString();
+
+      if(!isupper(sGlobalVariableName[0]))
+         continue;
+
       ValueType ePropertyValue = cEnv->getVariableType(sGlobalVariableName);
 
       if(ePropertyValue == ValueType::Count)
