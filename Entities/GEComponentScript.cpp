@@ -119,6 +119,10 @@ void ScriptInstance::setScriptName(const ObjectName& Name)
 
    registerScriptProperties();
    registerScriptActions();
+
+   Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
+   cEnv->setVariable<Entity*>("entity", cEntity);
+   cEnv->setVariable<ScriptInstance*>("this", this);
 }
 
 const ObjectName& ScriptInstance::getScriptName() const
@@ -320,13 +324,8 @@ void ScriptInstance::update()
    if(!getActive() || cScriptName.isEmpty())
       return;
 
-   Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
-
    if(!bInitialized)
    {
-      cEnv->setVariable<Entity*>("entity", cEntity);
-      cEnv->setVariable<ScriptInstance*>("this", this);
-
       if(cEnv->isFunctionDefined(cInitFunctionName))
       {
          cEnv->runFunction<void>(cInitFunctionName);
@@ -342,6 +341,7 @@ void ScriptInstance::update()
 
    if(cEnv->isFunctionDefined(cUpdateFunctionName))
    {
+      Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
       cEnv->setVariable<float>("deltaTime", Time::getClock(cEntity->getClockIndex()).getDelta());
       cEnv->runFunction<void>(cUpdateFunctionName);
       cEnv->collectGarbage();
