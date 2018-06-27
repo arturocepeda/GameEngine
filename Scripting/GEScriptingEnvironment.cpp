@@ -399,7 +399,7 @@ bool ScriptingEnvironment::loadModule(const char* sModuleName)
 
 #if defined (GE_EDITOR_SUPPORT)
       lua_State* luaState = lua.lua_state();
-      int iResult = luaL_loadstring(luaState, cContentData.getData());
+      int iResult = luaL_loadbuffer(luaState, cContentData.getData(), cContentData.getDataSize() - 1, sModuleName);
 
       if(iResult != 0)
       {
@@ -410,14 +410,7 @@ bool ScriptingEnvironment::loadModule(const char* sModuleName)
          return false;
       }
 
-      sol::protected_function_result luaResult = lua.do_string(cContentData.getData());
-
-      if(!luaResult.valid())
-      {
-         sol::error luaError = luaResult;
-         handleScriptError(sModuleName, luaError.what());
-         return false;
-      }
+      lua_pcall(luaState, 0, LUA_MULTRET, 0);
 #else
       lua.script(cContentData.getData());
 #endif
