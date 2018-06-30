@@ -70,7 +70,7 @@ namespace GE { namespace Entities
       uint8_t iCanvasIndex;
 
    public:
-      static const uint32_t CanvasCount = 16;
+      static const uint32_t CanvasCount = 32;
 
       ComponentUI3DElement(Entity* Owner);
       virtual ~ComponentUI3DElement();
