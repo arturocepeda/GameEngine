@@ -31,7 +31,7 @@ ComponentUIElement::ComponentUIElement(Entity* Owner)
 
    GEAssert(cOwner->getComponent<ComponentTransform>());
 
-   GERegisterPropertyMinMax(Float, Alpha, 0.0f, 1.0f);
+   GERegisterProperty(Float, Alpha);
 }
 
 ComponentUIElement::~ComponentUIElement()
@@ -181,7 +181,7 @@ ComponentUI3DElement::ComponentUI3DElement(Entity* Owner)
    cClassName = ObjectName("UI3DElement");
    eUIElementType = UIElementType::_3D;
 
-   GERegisterPropertyMinMax(Byte, CanvasIndex, 0, CanvasCount - 1);
+   GERegisterProperty(Byte, CanvasIndex);
 }
 
 ComponentUI3DElement::~ComponentUI3DElement()

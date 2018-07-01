@@ -39,7 +39,7 @@ Entity::Entity(const ObjectName& Name, Entity* Parent, Scene* Owner)
    memset(vComponents, 0, sizeof(Component*) * (uint)ComponentType::Count);
 
    GERegisterProperty(Bool, Active);
-   GERegisterPropertyMinMax(UInt, ClockIndex, 0, Time::ClocksCount - 1);
+   GERegisterProperty(UInt, ClockIndex);
    GERegisterProperty(ObjectName, PrefabName);
 }
 

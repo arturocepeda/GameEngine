@@ -88,7 +88,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(Bool, EmitterActive);
    GERegisterProperty(Bool, DynamicShadows);
    GERegisterProperty(Float, EmissionRate);
-   GERegisterPropertyMinMax(UInt, EmissionBurstCount, 1, 256);
+   GERegisterProperty(UInt, EmissionBurstCount);
 
    GERegisterProperty(Float, ParticleLifeTimeMin);
    GERegisterProperty(Float, ParticleLifeTimeMax);

@@ -77,13 +77,13 @@ namespace GE { namespace Core
       static void readContentFile(Content::ContentType Type, const char* SubDir, const char* Name, const char* Extension, Content::ContentData* ContentData);
 
       static uint getContentFilesCount(const char* SubDir, const char* Extension);
-      static void getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name);
+      static bool getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name);
 
       static bool userFileExists(const char* SubDir, const char* Name, const char* Extension);
       static void readUserFile(const char* SubDir, const char* Name, const char* Extension, Content::ContentData* ContentData);
       static void writeUserFile(const char* SubDir, const char* Name, const char* Extension, const Content::ContentData* ContentData);
 
       static uint getUserFilesCount(const char* SubDir, const char* Extension);
-      static void getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name);
+      static bool getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name);
    };
 }}

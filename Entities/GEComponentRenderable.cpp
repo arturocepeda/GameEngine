@@ -43,7 +43,7 @@ ComponentRenderable::ComponentRenderable(Entity* Owner, RenderableType RType)
    GERegisterProperty(Bool, Visible);
    GERegisterPropertyEnum(GeometryType, GeometryType);
    GERegisterPropertyEnum(RenderingMode, RenderingMode);
-   GERegisterPropertyMinMax(Byte, RenderPriority, 0, 255);
+   GERegisterProperty(Byte, RenderPriority);
    GERegisterProperty(Color, Color);
    GERegisterPropertyArray(MaterialPass);
 }

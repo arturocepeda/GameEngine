@@ -39,7 +39,6 @@ namespace GE { namespace Core
    enum class PropertyEditor
    {
       Default,
-      Rotation,
       Enum,
       BitMask,
       Script
@@ -65,8 +64,6 @@ namespace GE { namespace Core
       uint8_t Flags;
       void* DataPtr;
       uint DataUInt;
-      float MinValue;
-      float MaxValue;
 #endif
    };
 
@@ -109,8 +106,7 @@ namespace GE { namespace Core
       void registerProperty(const ObjectName& PropertyName, ValueType Type,
          const PropertySetter& Setter, const PropertyGetter& Getter,
          PropertyEditor Editor = PropertyEditor::Default, uint8_t Flags = 0,
-         void* PropertyDataPtr = 0, uint PropertyDataUInt = 0,
-         float MinValue = 0.0f, float MaxValue = 0.0f);
+         void* PropertyDataPtr = 0, uint PropertyDataUInt = 0);
       void removeProperty(uint PropertyIndex);
 
       void registerPropertyArray(const ObjectName& PropertyArrayName,
@@ -166,6 +162,19 @@ namespace GE { namespace Core
    };
 }}
 
+
+//
+//  Definition of default getters and setters
+//
+#define GEDefaultGetter(PropertyCppType, PropertyName) \
+   inline PropertyCppType get##PropertyName() const { return m##PropertyName; }
+#define GEDefaultSetter(PropertyCppType, PropertyName) \
+   inline void set##PropertyName(PropertyCppType Value) { m##PropertyName = Value; }
+
+#define GEDefaultGetterConstRef(PropertyCppType, PropertyName) \
+   inline const PropertyCppType& get##PropertyName() const { return m##PropertyName; }
+#define GEDefaultSetterConstRef(PropertyCppType, PropertyName) \
+   inline void set##PropertyName(const PropertyCppType& Value) { m##PropertyName = Value; }
 
 
 //
@@ -238,13 +247,6 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
       [this](const GE::Core::Value& v) { this->set##PropertyName(v.getAs##PropertyType()); }, \
       [this]()->GE::Core::Value { return GE::Core::Value(this->get##PropertyName()); })
-
-#define GERegisterPropertyMinMax(PropertyType, PropertyName, MinValue, MaxValue) \
-   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      [this](const GE::Core::Value& v) { this->set##PropertyName(v.getAs##PropertyType()); }, \
-      [this]()->GE::Core::Value { return GE::Core::Value(this->get##PropertyName()); }, \
-      PropertyEditor::Default, 0, 0, 0, \
-      MinValue, MaxValue)
 
 #define GERegisterPropertyReadonly(PropertyType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \

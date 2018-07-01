@@ -72,7 +72,7 @@ uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
    return iFilesCount;
 }
 
-void Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
+bool Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
    char sPath[MAX_PATH];
    DWORD dw = GetCurrentDirectory(MAX_PATH, sPath);
@@ -85,7 +85,7 @@ void Device::getContentFileName(const char* SubDir, const char* Extension, uint 
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
 
    if(hFile == INVALID_HANDLE_VALUE)
-      return;
+      return false;
 
    uint iCurrentFileIndex = 0;
 
@@ -100,6 +100,8 @@ void Device::getContentFileName(const char* SubDir, const char* Extension, uint 
       memcpy(Name, sFileData.cFileName, iLength);
       Name[iLength] = '\0';
    }
+
+   return true;
 }
 
 bool Device::contentFileExists(const char* SubDir, const char* Name, const char* Extension)
@@ -248,7 +250,7 @@ uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
    return iFilesCount;
 }
 
-void Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
+bool Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
    char sPath[MAX_PATH];
    HRESULT hr = SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, sPath);
@@ -265,7 +267,7 @@ void Device::getUserFileName(const char* SubDir, const char* Extension, uint Ind
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
 
    if(hFile == INVALID_HANDLE_VALUE)
-      return;
+      return false;
 
    uint iCurrentFileIndex = 0;
 
@@ -280,6 +282,8 @@ void Device::getUserFileName(const char* SubDir, const char* Extension, uint Ind
       memcpy(Name, sFileData.cFileName, iLength);
       Name[iLength] = '\0';
    }
+
+   return true;
 }
 
 uint Device::getFileLength(const char* Filename)

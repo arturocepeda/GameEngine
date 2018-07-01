@@ -32,7 +32,7 @@ Serializable::~Serializable()
 void Serializable::registerProperty(const ObjectName& PropertyName, ValueType Type,
    const PropertySetter& Setter, const PropertyGetter& Getter,
    PropertyEditor Editor, uint8_t Flags, void* PropertyDataPtr,
-   uint PropertyDataUInt, float MinValue, float MaxValue)
+   uint PropertyDataUInt)
 {
    Property sProperty =
    {
@@ -47,8 +47,6 @@ void Serializable::registerProperty(const ObjectName& PropertyName, ValueType Ty
       Flags,
       PropertyDataPtr,
       PropertyDataUInt,
-      MinValue,
-      MaxValue,
 #endif
    };
    vProperties.push_back(sProperty);
