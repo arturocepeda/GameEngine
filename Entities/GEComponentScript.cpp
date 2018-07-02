@@ -60,7 +60,7 @@ ScriptInstance::ScriptInstance()
    cEnv = Allocator::alloc<ScriptingEnvironment>();
    GEInvokeCtor(ScriptingEnvironment, cEnv);
 
-   GERegisterPropertySpecialEditor(ObjectName, ScriptName, PropertyEditor::Script);
+   GERegisterProperty(ObjectName, ScriptName);
    GERegisterPropertyBitMask(ScriptSettingsBitMask, ScriptSettings);
 
    registerAction("Reload", [this]

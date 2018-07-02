@@ -40,8 +40,7 @@ namespace GE { namespace Core
    {
       Default,
       Enum,
-      BitMask,
-      Script
+      BitMask
    };
 
    enum class PropertyFlags
@@ -266,12 +265,6 @@ namespace GE { namespace Core
       [this]()->GE::Core::Value { return GE::Core::Value(this->get##PropertyName()); }, \
       PropertyEditor::Default, 0, \
       (void*)GE::Content::ResourcesManager::getInstance()->getObjectRegistry(#ObjectType))
-
-#define GERegisterPropertySpecialEditor(PropertyType, PropertyName, Editor) \
-   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      [this](const GE::Core::Value& v) { this->set##PropertyName(v.getAs##PropertyType()); }, \
-      [this]()->GE::Core::Value { return GE::Core::Value(this->get##PropertyName()); }, \
-      Editor)
 
 
 //
