@@ -29,7 +29,7 @@ Serializable::~Serializable()
 {
 }
 
-void Serializable::registerProperty(const ObjectName& PropertyName, ValueType Type,
+Property* Serializable::registerProperty(const ObjectName& PropertyName, ValueType Type,
    const PropertySetter& Setter, const PropertyGetter& Getter,
    PropertyEditor Editor, uint8_t Flags, void* PropertyDataPtr,
    uint PropertyDataUInt)
@@ -50,6 +50,8 @@ void Serializable::registerProperty(const ObjectName& PropertyName, ValueType Ty
 #endif
    };
    vProperties.push_back(sProperty);
+
+   return &vProperties.back();
 }
 
 void Serializable::removeProperty(uint PropertyIndex)
@@ -58,7 +60,7 @@ void Serializable::removeProperty(uint PropertyIndex)
    vProperties.erase(vProperties.begin() + PropertyIndex);
 }
 
-void Serializable::registerPropertyArray(const ObjectName& PropertyArrayName,
+PropertyArray* Serializable::registerPropertyArray(const ObjectName& PropertyArrayName,
    PropertyArrayEntries* PropertyArrayEntries,
    const PropertyArrayAdd& Add, const PropertyArrayRemove& Remove,
    const PropertyArraySwap& Swap, const PropertyArrayXmlToStream& XmlToStream)
@@ -73,15 +75,19 @@ void Serializable::registerPropertyArray(const ObjectName& PropertyArrayName,
    sPropertyArray.XmlToStream = XmlToStream;
 #endif
    vPropertyArrays.push_back(sPropertyArray);
+
+   return &vPropertyArrays.back();
 }
 
-void Serializable::registerAction(const ObjectName& ActionName, const ActionFunction& Function)
+Action* Serializable::registerAction(const ObjectName& ActionName, const ActionFunction& Function)
 {
    Action sAction;
    sAction.Name = ActionName;
    sAction.Function = Function;
    GEAssert(sAction.Function != nullptr);
    vActions.push_back(sAction);
+
+   return &vActions.back();
 }
 
 void Serializable::removeAction(uint ActionIndex)

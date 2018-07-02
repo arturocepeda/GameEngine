@@ -65,6 +65,13 @@ namespace GE { namespace Core
       void* DataPtr;
       uint DataUInt;
 #endif
+
+      void setClass(const ObjectName& ClassName)
+      {
+#if defined (GE_EDITOR_SUPPORT)
+         Class = ClassName;
+#endif
+      }
    };
 
    struct PropertyArray
@@ -103,18 +110,18 @@ namespace GE { namespace Core
       Serializable(const ObjectName& ClassName);
       virtual ~Serializable();
 
-      void registerProperty(const ObjectName& PropertyName, ValueType Type,
+      Property* registerProperty(const ObjectName& PropertyName, ValueType Type,
          const PropertySetter& Setter, const PropertyGetter& Getter,
          PropertyEditor Editor = PropertyEditor::Default, uint8_t Flags = 0,
          void* PropertyDataPtr = 0, uint PropertyDataUInt = 0);
       void removeProperty(uint PropertyIndex);
 
-      void registerPropertyArray(const ObjectName& PropertyArrayName,
+      PropertyArray* registerPropertyArray(const ObjectName& PropertyArrayName,
          PropertyArrayEntries* PropertyArrayEntries,
          const PropertyArrayAdd& Add, const PropertyArrayRemove& Remove,
          const PropertyArraySwap& Swap, const PropertyArrayXmlToStream& XmlToStream);
 
-      void registerAction(const ObjectName& ActionName, const ActionFunction& Function);
+      Action* registerAction(const ObjectName& ActionName, const ActionFunction& Function);
       void removeAction(uint ActionIndex);
 
    public:

@@ -34,14 +34,10 @@ using namespace GE::Content;
    f##PropertyBaseName##Value = DefaultValue; \
    f##PropertyBaseName##ValueMax = DefaultValue; \
    c##PropertyBaseName##Curve = 0; \
-   GERegisterPropertyEnum(ValueProviderType, PropertyBaseName##Type); \
-   const_cast<Property&>(getProperty(getPropertiesCount() - 1)).Class = ObjectName(#CategoryName); \
-   GERegisterProperty(Float, PropertyBaseName##Value); \
-   const_cast<Property&>(getProperty(getPropertiesCount() - 1)).Class = ObjectName(#CategoryName); \
-   GERegisterProperty(Float, PropertyBaseName##ValueMax); \
-   const_cast<Property&>(getProperty(getPropertiesCount() - 1)).Class = ObjectName(#CategoryName); \
-   GERegisterPropertyResource(ObjectName, PropertyBaseName##Curve, Curve); \
-   const_cast<Property&>(getProperty(getPropertiesCount() - 1)).Class = ObjectName(#CategoryName); \
+   GERegisterPropertyEnum(ValueProviderType, PropertyBaseName##Type)->setClass(#CategoryName); \
+   GERegisterProperty(Float, PropertyBaseName##Value)->setClass(#CategoryName); \
+   GERegisterProperty(Float, PropertyBaseName##ValueMax)->setClass(#CategoryName); \
+   GERegisterPropertyResource(ObjectName, PropertyBaseName##Curve, Curve)->setClass(#CategoryName); \
    set##PropertyBaseName##Type(ValueProviderType::Constant);
 
 
@@ -49,6 +45,9 @@ using namespace GE::Content;
 //  ComponentParticleSystem
 //
 RandFloat cRandFloat01(0.0f, 1.0f);
+
+const ObjectName ParticleEmissionName = ObjectName("ParticleEmission");
+const ObjectName ParticleVelocityName = ObjectName("ParticleVelocity");
 
 ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    : ComponentRenderable(Owner, RenderableType::ParticleSystem)
@@ -77,18 +76,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(UInt, MaxParticles);
    GERegisterPropertyReadonly(UInt, ParticlesCount);
 
-   GERegisterPropertyEnum(ParticleEmitterType, EmitterType);
-
-   GERegisterProperty(Vector3, EmitterPointA);
-   GERegisterProperty(Vector3, EmitterPointB);
-   GERegisterProperty(Float, EmitterRadius);
-   GERegisterPropertyResource(ObjectName, EmitterMesh, Mesh);
-   GERegisterProperty(ObjectName, EmitterMeshEntity);
-
-   GERegisterProperty(Bool, EmitterActive);
    GERegisterProperty(Bool, DynamicShadows);
-   GERegisterProperty(Float, EmissionRate);
-   GERegisterProperty(UInt, EmissionBurstCount);
 
    GERegisterProperty(Float, ParticleLifeTimeMin);
    GERegisterProperty(Float, ParticleLifeTimeMax);
@@ -96,23 +84,33 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(Float, ParticleInitialAngleMin);
    GERegisterProperty(Float, ParticleInitialAngleMax);
 
-   GERegisterProperty(Vector3, ConstantForce);
-   GERegisterProperty(Vector3, ConstantAcceleration);
+   GERegisterProperty(Bool, EmitterActive)->setClass(ParticleEmissionName);
+   GERegisterPropertyEnum(ParticleEmitterType, EmitterType)->setClass(ParticleEmissionName);
+   GERegisterProperty(Vector3, EmitterPointA)->setClass(ParticleEmissionName);
+   GERegisterProperty(Vector3, EmitterPointB)->setClass(ParticleEmissionName);
+   GERegisterProperty(Float, EmitterRadius)->setClass(ParticleEmissionName);
+   GERegisterPropertyResource(ObjectName, EmitterMesh, Mesh)->setClass(ParticleEmissionName);
+   GERegisterProperty(ObjectName, EmitterMeshEntity)->setClass(ParticleEmissionName);
+   GERegisterProperty(Float, EmissionRate)->setClass(ParticleEmissionName);
+   GERegisterProperty(UInt, EmissionBurstCount)->setClass(ParticleEmissionName);
 
    GERegisterValueProvider(ParticleColorR, ParticleColor, 1.0f);
    GERegisterValueProvider(ParticleColorG, ParticleColor, 1.0f);
    GERegisterValueProvider(ParticleColorB, ParticleColor, 1.0f);
    GERegisterValueProvider(ParticleAlpha, ParticleColor, 1.0f);
+
    GERegisterValueProvider(ParticleSize, ParticleSize, 1.0f);
+
    GERegisterValueProvider(ParticleLinearVelocityX, ParticleVelocity, 0.0f);
    GERegisterValueProvider(ParticleLinearVelocityY, ParticleVelocity, 0.0f);
    GERegisterValueProvider(ParticleLinearVelocityZ, ParticleVelocity, 0.0f);
    GERegisterValueProvider(ParticleAngularVelocity, ParticleVelocity, 0.0f);
+   GERegisterProperty(Vector3, ConstantForce)->setClass(ParticleVelocityName);
+   GERegisterProperty(Vector3, ConstantAcceleration)->setClass(ParticleVelocityName);
+
    GERegisterValueProvider(ParticleTextureAtlasIndex, ParticleTextureAtlas, 0.0f);
 
-#if defined (GE_EDITOR_SUPPORT)
    registerAction("Burst", [this] { burst(iEmissionBurstCount); });
-#endif
 }
 
 ComponentParticleSystem::~ComponentParticleSystem()
