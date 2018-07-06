@@ -259,6 +259,9 @@ void RenderSystem::preloadTextures(const char* FileName)
       xml.load_buffer(cTexturesData.getData(), cTexturesData.getDataSize());
       const pugi::xml_node& xmlTextures = xml.child("Textures");
 
+      char sSubDir[256];
+      sprintf(sSubDir, "Textures/%s", FileName);
+
       for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
       {
          const char* sTextureName = xmlTexture.attribute("name").value();
@@ -270,7 +273,7 @@ void RenderSystem::preloadTextures(const char* FileName)
          sPreloadedTexture.Data = Allocator::alloc<ImageData>();
          GEInvokeCtor(ImageData, sPreloadedTexture.Data);
 
-         Device::readContentFile(ContentType::Texture, "Textures", sTextureFileName, sTextureFormat, sPreloadedTexture.Data);
+         Device::readContentFile(ContentType::Texture, sSubDir, sTextureFileName, sTextureFormat, sPreloadedTexture.Data);
 
          sPreloadedTexture.Tex = Allocator::alloc<Texture>();
          GEInvokeCtor(Texture, sPreloadedTexture.Tex)
@@ -286,7 +289,7 @@ void RenderSystem::preloadTextures(const char* FileName)
             float fHeight = (float)sPreloadedTexture.Tex->getHeight();
 
             ContentData cAtlasInfo;
-            Device::readContentFile(ContentType::TextureAtlasInfo, "Textures", sTextureFileName, "xml", &cAtlasInfo);
+            Device::readContentFile(ContentType::TextureAtlasInfo, sSubDir, sTextureFileName, "xml", &cAtlasInfo);
 
             pugi::xml_document xml;
             xml.load_buffer(cAtlasInfo.getData(), cAtlasInfo.getDataSize());

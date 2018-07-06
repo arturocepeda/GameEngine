@@ -73,7 +73,7 @@ namespace GE { namespace Content
    private:
       Core::ObjectManager<Animation> mAnimations;
 
-      Animation* loadAnimation(const char* FileName, const Core::ObjectName& AnimationName);
+      Animation* loadAnimation(const char* FileName, const char* AnimationSetName, const Core::ObjectName& AnimationName);
 
    public:
       static const ResourceType Type;

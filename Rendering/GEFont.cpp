@@ -26,14 +26,17 @@ Font::Font(const ObjectName& Name, const ObjectName& GroupName, const char* File
    , pRenderDevice(RenderDevice)
    , cTexture(0)
 {
+   char sSubDir[256];
+   sprintf(sSubDir, "Fonts/%s", GroupName.getString());
+
    ContentData cFontData;
-   Device::readContentFile(ContentType::FontData, "Fonts", FileName, "fnt", &cFontData);
+   Device::readContentFile(ContentType::FontData, sSubDir, FileName, "fnt", &cFontData);
    pugi::xml_document xml;
    xml.load_buffer(cFontData.getData(), cFontData.getDataSize());
    loadFontData(xml.child("font"));
 
    ImageData cImageData;
-   Device::readContentFile(ContentType::FontTexture, "Fonts", FileName, "png", &cImageData);
+   Device::readContentFile(ContentType::FontTexture, sSubDir, FileName, "png", &cImageData);
    createFontTexture(cImageData);
    cImageData.unload();
 }

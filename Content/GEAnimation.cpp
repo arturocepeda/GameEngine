@@ -148,7 +148,7 @@ AnimationSet::AnimationSet(const char* FileName)
          ObjectName cAnimationName = xmlAnimation.attribute("name").value();
          const char* sAnimationFileName = xmlAnimation.attribute("fileName").value();
 
-         Animation* cAnimation = loadAnimation(sAnimationFileName, cAnimationName);
+         Animation* cAnimation = loadAnimation(sAnimationFileName, FileName, cAnimationName);
          mAnimations.add(cAnimation);
 
          pugi::xml_attribute xmlAnimationApplyRootMotionX = xmlAnimation.attribute("applyRootMotionX");
@@ -180,7 +180,7 @@ AnimationSet::AnimationSet(const char* FileName)
          ObjectName cAnimationName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
          Value cAnimationFileName = Value::fromStream(ValueType::String, sStream);
 
-         Animation* cAnimation = loadAnimation(cAnimationFileName.getAsString(), cAnimationName);
+         Animation* cAnimation = loadAnimation(cAnimationFileName.getAsString(), FileName, cAnimationName);
          mAnimations.add(cAnimation);
 
          cAnimation->setApplyRootMotionX(Value::fromStream(ValueType::Bool, sStream).getAsBool());
@@ -194,10 +194,13 @@ AnimationSet::~AnimationSet()
 {
 }
 
-Animation* AnimationSet::loadAnimation(const char* FileName, const ObjectName& AnimationName)
+Animation* AnimationSet::loadAnimation(const char* FileName, const char* AnimationSetName, const ObjectName& AnimationName)
 {
+   char sSubDir[256];
+   sprintf(sSubDir, "Animations/%s", AnimationSetName);
+
    ContentData cContent;
-   Device::readContentFile(Content::ContentType::GenericBinaryData, "Animations", FileName, "animation.ge", &cContent);
+   Device::readContentFile(Content::ContentType::GenericBinaryData, sSubDir, FileName, "animation.ge", &cContent);
 
    char* pData = cContent.getData();
 
