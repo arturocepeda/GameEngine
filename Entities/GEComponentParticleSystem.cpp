@@ -47,6 +47,7 @@ using namespace GE::Content;
 RandFloat cRandFloat01(0.0f, 1.0f);
 
 const ObjectName ParticleEmissionName = ObjectName("ParticleEmission");
+const ObjectName ParticleSizeName = ObjectName("ParticleSize");
 const ObjectName ParticleVelocityName = ObjectName("ParticleVelocity");
 
 ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
@@ -66,6 +67,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , fParticleLifeTimeMax(0.0f)
    , fParticleInitialAngleMin(0.0f)
    , fParticleInitialAngleMax(0.0f)
+   , fParticleSizeMultiplier(1.0f)
 {
    cClassName = ObjectName("ParticleSystem");
 
@@ -100,6 +102,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterValueProvider(ParticleAlpha, ParticleColor, 1.0f);
 
    GERegisterValueProvider(ParticleSize, ParticleSize, 1.0f);
+   GERegisterProperty(Float, ParticleSizeMultiplier)->setClass(ParticleSizeName);
 
    GERegisterValueProvider(ParticleLinearVelocityX, ParticleVelocity, 0.0f);
    GERegisterValueProvider(ParticleLinearVelocityY, ParticleVelocity, 0.0f);
@@ -294,7 +297,7 @@ void ComponentParticleSystem::emitParticle()
    sParticle.LifeTime = getRandomFloat(fParticleLifeTimeMin, fParticleLifeTimeMax);
    sParticle.RemainingLifeTime = sParticle.LifeTime;
 
-   sParticle.Size = getParticleSize(sParticle.LifeTime, sParticle.RemainingLifeTime);
+   sParticle.Size = getParticleSize(sParticle.LifeTime, sParticle.RemainingLifeTime) * fParticleSizeMultiplier;
    sParticle.DiffuseColor = Color
    (
       getParticleColorR(sParticle.LifeTime, sParticle.RemainingLifeTime),
@@ -357,7 +360,7 @@ void ComponentParticleSystem::update()
 
       if(eParticleSizeType == ValueProviderType::Curve)
       {
-         sParticle.Size = getParticleSize(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         sParticle.Size = getParticleSize(sParticle.LifeTime, sParticle.RemainingLifeTime) * fParticleSizeMultiplier;
       }
       if(eParticleColorRType == ValueProviderType::Curve)
       {

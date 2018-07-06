@@ -160,6 +160,8 @@ namespace GE { namespace Entities
       float fParticleInitialAngleMin;
       float fParticleInitialAngleMax;
 
+      float fParticleSizeMultiplier;
+
       Vector3 vConstantForce;
       Vector3 vConstantAcceleration;
 
@@ -210,6 +212,8 @@ namespace GE { namespace Entities
       float getParticleInitialAngleMin() const { return fParticleInitialAngleMin; }
       float getParticleInitialAngleMax() const { return fParticleInitialAngleMax; }
 
+      float getParticleSizeMultiplier() const { return fParticleSizeMultiplier; }
+
       const Vector3& getConstantForce() const { return vConstantForce; }
       const Vector3& getConstantAcceleration() const { return vConstantAcceleration; }
 
@@ -224,6 +228,8 @@ namespace GE { namespace Entities
 
       void setParticleInitialAngleMin(float Value) { fParticleInitialAngleMin = Value; }
       void setParticleInitialAngleMax(float Value) { fParticleInitialAngleMax = Value; }
+
+      void setParticleSizeMultiplier(float Value) { fParticleSizeMultiplier = Value; }
 
       void setConstantForce(const Vector3& Value) { vConstantForce = Value; }
       void setConstantAcceleration(const Vector3& Value) { vConstantAcceleration = Value; }
