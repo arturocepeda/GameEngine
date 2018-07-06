@@ -343,6 +343,10 @@ void packTextureFile(const char* XmlFileName)
 
    Value(iTexturesCount).writeToStream(sOutputFile);
 
+   std::string sSetName = std::string(XmlFileName);
+   size_t iExtPos = sSetName.find(".textures.xml");
+   sSetName.replace(iExtPos, sSetName.length(), "");
+
    for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
    {
       const char* sTextureName = xmlTexture.attribute("name").value();
@@ -357,6 +361,8 @@ void packTextureFile(const char* XmlFileName)
       std::string sTextureFilePath;
       sTextureFilePath.append(ContentXmlDirName);
       sTextureFilePath.append("\\Textures\\");
+      sTextureFilePath.append(sSetName);
+      sTextureFilePath.append("\\");
       sTextureFilePath.append(sTextureFileName);
       sTextureFilePath.append(".");
       sTextureFilePath.append(sTextureFormat);
@@ -375,6 +381,8 @@ void packTextureFile(const char* XmlFileName)
          std::string sTextureAtlasFilePath;
          sTextureAtlasFilePath.append(ContentXmlDirName);
          sTextureAtlasFilePath.append("\\Textures\\");
+         sTextureAtlasFilePath.append(sSetName);
+         sTextureAtlasFilePath.append("\\");
          sTextureAtlasFilePath.append(sTextureFileName);
          sTextureAtlasFilePath.append(".xml");
 
@@ -529,6 +537,10 @@ void packFontFile(const char* XmlFileName)
       Value(sFontName).writeToStream(sOutputFile);
    }
 
+   std::string sSetName = std::string(XmlFileName);
+   size_t iExtPos = sSetName.find(".fonts.xml");
+   sSetName.replace(iExtPos, sSetName.length(), "");
+
    for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
    {
       const char* sFontName = xmlFont.attribute("name").value();
@@ -539,6 +551,8 @@ void packFontFile(const char* XmlFileName)
       std::string sFontFilePath;
       sFontFilePath.append(ContentXmlDirName);
       sFontFilePath.append("\\Fonts\\");
+      sFontFilePath.append(sSetName);
+      sFontFilePath.append("\\");
       sFontFilePath.append(sFontFileName);
       sFontFilePath.append(".fnt");
 
@@ -951,7 +965,7 @@ void packEntity(const ObjectName& cName, const pugi::xml_node& xmlNode, std::ofs
    }
 
    cDummyScene.removeEntity(cName);
-   cDummyScene.update();
+   cDummyScene.queueUpdateJobs();
 }
 
 void packPrefabs()

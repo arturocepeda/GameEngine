@@ -120,9 +120,13 @@ void ScriptInstance::setScriptName(const ObjectName& Name)
    registerScriptProperties();
    registerScriptActions();
 
-   Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
-   cEnv->setVariable<Entity*>("entity", cEntity);
    cEnv->setVariable<ScriptInstance*>("this", this);
+
+   if(cOwner)
+   {
+      Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
+      cEnv->setVariable<Entity*>("entity", cEntity);
+   }
 }
 
 const ObjectName& ScriptInstance::getScriptName() const

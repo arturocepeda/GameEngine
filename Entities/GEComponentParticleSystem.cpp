@@ -118,8 +118,15 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
 
 ComponentParticleSystem::~ComponentParticleSystem()
 {
-   Allocator::free(sGeometryData.VertexData);
-   Allocator::free(sGeometryData.Indices);
+   if(sGeometryData.VertexData)
+   {
+      Allocator::free(sGeometryData.VertexData);
+   }
+
+   if(sGeometryData.Indices)
+   {
+      Allocator::free(sGeometryData.Indices);
+   }
 }
 
 uint ComponentParticleSystem::getMaxParticles() const
