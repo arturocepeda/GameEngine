@@ -201,9 +201,27 @@ void ComponentUI3DElement::setCanvasIndex(uint8_t Index)
    {
       ComponentUIElement* cUIElement = cOwner->getChildByIndex(i)->getComponent<ComponentUIElement>();
 
-      if(cUIElement && cUIElement->getClassName() == cClassName)
+      if(cUIElement && cUIElement->getUIElementType() != UIElementType::_2D)
       {
          static_cast<ComponentUI3DElement*>(cUIElement)->setCanvasIndex(Index);
       }
    }
+}
+
+
+//
+//  ComponentUI3DCanvas
+//
+ComponentUI3DCanvas::ComponentUI3DCanvas(Entity* Owner)
+   : ComponentUI3DElement(Owner)
+   , eSettings(0)
+{
+   cClassName = ObjectName("UI3DCanvas");
+   eUIElementType = UIElementType::_3DCanvas;
+
+   GERegisterPropertyBitMask(CanvasSettingsBitMask, Settings);
+}
+
+ComponentUI3DCanvas::~ComponentUI3DCanvas()
+{
 }

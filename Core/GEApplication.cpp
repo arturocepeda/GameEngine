@@ -102,6 +102,7 @@ void Application::registerComponentFactories()
    Entity::registerComponentFactory<ComponentLight>("Light", ComponentType::Light);
    Entity::registerComponentFactory<ComponentUI2DElement>("UI2DElement", ComponentType::UIElement);
    Entity::registerComponentFactory<ComponentUI3DElement>("UI3DElement", ComponentType::UIElement);
+   Entity::registerComponentFactory<ComponentUI3DCanvas>("UI3DCanvas", ComponentType::UIElement);
    Entity::registerComponentFactory<ComponentSprite>("Sprite", ComponentType::Renderable);
    Entity::registerComponentFactory<ComponentLabel>("Label", ComponentType::Renderable);
    Entity::registerComponentFactory<ComponentMesh>("Mesh", ComponentType::Renderable);

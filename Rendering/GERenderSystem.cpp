@@ -854,11 +854,12 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 
                v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push(sRenderOperation);
 
-               if(!cRenderable->getOwner()->getParent() ||
-                  !cRenderable->getOwner()->getParent()->getComponent<ComponentUIElement>())
+               if(cUIElement->getUIElementType() == UIElementType::_3DCanvas)
                {
-                  const Vector3& vWorldPosition = cUI3DElement->getOwner()->getComponent<ComponentTransform>()->getWorldPosition();
-                  s3DUICanvasEntries[cUI3DElement->getCanvasIndex()].WorldPosition = vWorldPosition;
+                  ComponentUI3DCanvas* cUI3DCanvas = static_cast<ComponentUI3DCanvas*>(cUIElement);
+                  const Vector3& vWorldPosition = cUI3DCanvas->getOwner()->getComponent<ComponentTransform>()->getWorldPosition();
+                  s3DUICanvasEntries[cUI3DCanvas->getCanvasIndex()].Settings = (uint16_t)cUI3DCanvas->getSettings();
+                  s3DUICanvasEntries[cUI3DCanvas->getCanvasIndex()].WorldPosition = vWorldPosition;
                }
             }
          }
@@ -913,11 +914,12 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 
                v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push(sRenderOperation);
 
-               if(!cRenderable->getOwner()->getParent() ||
-                  !cRenderable->getOwner()->getParent()->getComponent<ComponentUIElement>())
+               if(cUIElement->getUIElementType() == UIElementType::_3DCanvas)
                {
-                  const Vector3& vWorldPosition = cUI3DElement->getOwner()->getComponent<ComponentTransform>()->getWorldPosition();
-                  s3DUICanvasEntries[cUI3DElement->getCanvasIndex()].WorldPosition = vWorldPosition;
+                  ComponentUI3DCanvas* cUI3DCanvas = static_cast<ComponentUI3DCanvas*>(cUIElement);
+                  const Vector3& vWorldPosition = cUI3DCanvas->getOwner()->getComponent<ComponentTransform>()->getWorldPosition();
+                  s3DUICanvasEntries[cUI3DCanvas->getCanvasIndex()].Settings = (uint16_t)cUI3DCanvas->getSettings();
+                  s3DUICanvasEntries[cUI3DCanvas->getCanvasIndex()].WorldPosition = vWorldPosition;
                }
             }
          }
@@ -1050,7 +1052,8 @@ void RenderSystem::clearRenderingQueues()
 
    for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
    {
-      s3DUICanvasEntries[i].Index = i;
+      s3DUICanvasEntries[i].Index = (uint16_t)i;
+      s3DUICanvasEntries[i].Settings = (uint16_t)0;
       s3DUICanvasEntries[i].WorldPosition = Vector3::Zero;
    }
 
@@ -1147,44 +1150,60 @@ void RenderSystem::renderFrame()
          v3DLabelsToRender.pop();
       }
 
-      if(cActiveCamera && !vTransparentMeshesToRender.empty())
+      if(cActiveCamera)
       {
-         std::sort(vTransparentMeshesToRender.begin(), vTransparentMeshesToRender.end(),
-         [this](const RenderOperation& sRO1, const RenderOperation& sRO2) -> bool
+         qsort(s3DUICanvasEntries, ComponentUI3DElement::CanvasCount, sizeof(_3DUICanvasEntry), canvasSortComparer);
+
+         for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
          {
-            const Vector3& vCameraWorldPosition = cActiveCamera->getTransform()->getWorldPosition();
+            if(!GEHasFlag(s3DUICanvasEntries[i].Settings, CanvasSettingsBitMask::RenderAfterTransparentGeometry))
+            {
+               uint iIndex = s3DUICanvasEntries[i].Index;
 
-            Vector3 vP1ToCamera = vCameraWorldPosition - sRO1.Renderable->getTransform()->getWorldPosition();
-            Vector3 vP2ToCamera = vCameraWorldPosition - sRO2.Renderable->getTransform()->getWorldPosition();
-
-            return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
-         });
-
-         GESTLVector(RenderOperation)::const_iterator it = vTransparentMeshesToRender.begin();
-
-         for(; it != vTransparentMeshesToRender.end(); it++)
-         {
-            const RenderOperation& sRenderOperation = *it;
-            useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-            render(sRenderOperation);
+               while(!v3DUIElementsToRender[iIndex].empty())
+               {
+                  const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
+                  useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+                  render(sRenderOperation);
+                  v3DUIElementsToRender[iIndex].pop();
+               }
+            }
          }
-      }
-   }
 
-   if(cActiveCamera)
-   {
-      qsort(s3DUICanvasEntries, ComponentUI3DElement::CanvasCount, sizeof(_3DUICanvasEntry), canvasSortComparer);
-
-      for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
-      {
-         uint iIndex = s3DUICanvasEntries[i].Index;
-
-         while(!v3DUIElementsToRender[iIndex].empty())
+         if(!vTransparentMeshesToRender.empty())
          {
-            const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
-            useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-            render(sRenderOperation);
-            v3DUIElementsToRender[iIndex].pop();
+            std::sort(vTransparentMeshesToRender.begin(), vTransparentMeshesToRender.end(),
+            [this](const RenderOperation& sRO1, const RenderOperation& sRO2) -> bool
+            {
+               const Vector3& vCameraWorldPosition = cActiveCamera->getTransform()->getWorldPosition();
+
+               Vector3 vP1ToCamera = vCameraWorldPosition - sRO1.Renderable->getTransform()->getWorldPosition();
+               Vector3 vP2ToCamera = vCameraWorldPosition - sRO2.Renderable->getTransform()->getWorldPosition();
+
+               return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
+            });
+
+            GESTLVector(RenderOperation)::const_iterator it = vTransparentMeshesToRender.begin();
+
+            for(; it != vTransparentMeshesToRender.end(); it++)
+            {
+               const RenderOperation& sRenderOperation = *it;
+               useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+               render(sRenderOperation);
+            }
+         }
+
+         for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
+         {
+            uint iIndex = s3DUICanvasEntries[i].Index;
+
+            while(!v3DUIElementsToRender[iIndex].empty())
+            {
+               const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
+               useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+               render(sRenderOperation);
+               v3DUIElementsToRender[iIndex].pop();
+            }
          }
       }
    }

@@ -156,6 +156,11 @@ namespace GE { namespace Entities
       "Active",
       "ThreadSafe"
    };
+
+   const char* strCanvasSettingsBitMask[] =
+   {
+      "RenderAfterTransparentGeometry"
+   };
 }}
 
 namespace GE { namespace Rendering

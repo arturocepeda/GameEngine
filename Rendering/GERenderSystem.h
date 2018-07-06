@@ -62,7 +62,8 @@ namespace GE { namespace Rendering
 
    struct _3DUICanvasEntry
    {
-      uint Index;
+      uint16_t Index;
+      uint16_t Settings;
       Vector3 WorldPosition;
    };
 

@@ -19,7 +19,8 @@ namespace GE { namespace Entities
    enum class UIElementType : unsigned char
    {
       _2D,
-      _3D
+      _3D,
+      _3DCanvas
    };
 
 
@@ -77,5 +78,27 @@ namespace GE { namespace Entities
 
       uint8_t getCanvasIndex() const;
       void setCanvasIndex(uint8_t Index);
+   };
+
+
+   GESerializableEnum(CanvasSettingsBitMask)
+   {
+      RenderAfterTransparentGeometry  = 1 << 0,
+
+      Count = 1
+   };
+
+
+   class ComponentUI3DCanvas : public ComponentUI3DElement
+   {
+   private:
+      uint8_t eSettings;
+
+   public:
+      ComponentUI3DCanvas(Entity* Owner);
+      virtual ~ComponentUI3DCanvas();
+
+      uint8_t getSettings() const { return eSettings; }
+      void setSettings(uint8_t Value) { eSettings = Value; }
    };
 }}
