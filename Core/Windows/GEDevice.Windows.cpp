@@ -26,6 +26,8 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Content;
 
+const uint MaxPath = 256u;
+
 int Device::getTouchPadWidth()
 {
    return ScreenWidth;
@@ -38,23 +40,39 @@ int Device::getTouchPadHeight()
 
 GESTLString getFullPath(const char* Filename)
 {
-   const int BufferSize = 256;
-   char sBuffer[BufferSize];
+   char sBuffer[MaxPath];
 
-   GetCurrentDirectory(BufferSize, sBuffer);
+   GetCurrentDirectory(MaxPath, sBuffer);
    sprintf(sBuffer, "%s\\%s", sBuffer, Filename);
 
    return GESTLString(sBuffer);
 }
 
+void toWindowsSubDir(const char* SubDir, char* WinSubDir)
+{
+   strcpy(WinSubDir, SubDir);
+   size_t iLength = strlen(WinSubDir);
+
+   for(size_t i = 0; i < iLength; i++)
+   {
+      if(WinSubDir[i] == '/')
+      {
+         WinSubDir[i] = '\\';
+      }
+   }
+}
+
 uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
 {
-   char sPath[MAX_PATH];
-   DWORD dw = GetCurrentDirectory(MAX_PATH, sPath);
+   char sPath[MaxPath];
+   DWORD dw = GetCurrentDirectory(MaxPath, sPath);
    GEAssert(dw >= 0);
 
-   char sFindString[MAX_PATH];
-   sprintf(sFindString, "%s\\%s\\*.%s", sPath, SubDir, Extension);
+   char sSubDir[MaxPath];
+   toWindowsSubDir(SubDir, sSubDir);
+
+   char sFindString[MaxPath];
+   sprintf(sFindString, "%s\\%s\\*.%s", sPath, sSubDir, Extension);
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
@@ -74,12 +92,15 @@ uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
 
 bool Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
-   char sPath[MAX_PATH];
-   DWORD dw = GetCurrentDirectory(MAX_PATH, sPath);
+   char sPath[MaxPath];
+   DWORD dw = GetCurrentDirectory(MaxPath, sPath);
    GEAssert(dw >= 0);
 
-   char sFindString[MAX_PATH];
-   sprintf(sFindString, "%s\\%s\\*.%s", sPath, SubDir, Extension);
+   char sSubDir[MaxPath];
+   toWindowsSubDir(SubDir, sSubDir);
+
+   char sFindString[MaxPath];
+   sprintf(sFindString, "%s\\%s\\*.%s", sPath, sSubDir, Extension);
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
@@ -106,16 +127,22 @@ bool Device::getContentFileName(const char* SubDir, const char* Extension, uint 
 
 bool Device::contentFileExists(const char* SubDir, const char* Name, const char* Extension)
 {
-   char sFileName[256];
-   sprintf(sFileName, "%s\\%s.%s", SubDir, Name, Extension);
+   char sSubDir[MaxPath];
+   toWindowsSubDir(SubDir, sSubDir);
+
+   char sFileName[MaxPath];
+   sprintf(sFileName, "%s\\%s.%s", sSubDir, Name, Extension);
 
    return getFileLength(sFileName) > 0;
 }
 
 void Device::readContentFile(ContentType Type, const char* SubDir, const char* Name, const char* Extension, ContentData* ContentData)
 {
-   char sFileName[256];
-   sprintf(sFileName, "%s\\%s.%s", SubDir, Name, Extension);
+   char sSubDir[MaxPath];
+   toWindowsSubDir(SubDir, sSubDir);
+
+   char sFileName[MaxPath];
+   sprintf(sFileName, "%s\\%s.%s", sSubDir, Name, Extension);
 
    uint iFileLength = getFileLength(sFileName);
 
@@ -145,16 +172,19 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
 
 bool Device::userFileExists(const char* SubDir, const char* Name, const char* Extension)
 {
-   char sPath[MAX_PATH];
+   char sPath[MaxPath];
    HRESULT hr = SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, sPath);
    GEAssert(hr >= 0);
 
-   char sFullPath[MAX_PATH];
+   char sSubDir[MaxPath];
+   toWindowsSubDir(SubDir, sSubDir);
 
-   if(!SubDir || strlen(SubDir) == 0)
+   char sFullPath[MaxPath];
+
+   if(strlen(sSubDir) == 0)
       sprintf(sFullPath, "%s\\%s\\%s.%s", sPath, Application::Name, Name, Extension);
    else
-      sprintf(sFullPath, "%s\\%s\\%s\\%s.%s", sPath, Application::Name, SubDir, Name, Extension);
+      sprintf(sFullPath, "%s\\%s\\%s\\%s.%s", sPath, Application::Name, sSubDir, Name, Extension);
 
    std::ifstream file(sFullPath, std::ios::in | std::ios::binary);
 
@@ -169,16 +199,19 @@ bool Device::userFileExists(const char* SubDir, const char* Name, const char* Ex
 
 void Device::readUserFile(const char* SubDir, const char* Name, const char* Extension, ContentData* ContentData)
 {
-   char sPath[MAX_PATH];
+   char sPath[MaxPath];
    HRESULT hr = SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, sPath);
    GEAssert(hr >= 0);
 
-   char sFullPath[MAX_PATH];
+   char sSubDir[MaxPath];
+   toWindowsSubDir(SubDir, sSubDir);
 
-   if(!SubDir || strlen(SubDir) == 0)
+   char sFullPath[MaxPath];
+
+   if(strlen(sSubDir) == 0)
       sprintf(sFullPath, "%s\\%s\\%s.%s", sPath, Application::Name, Name, Extension);
    else
-      sprintf(sFullPath, "%s\\%s\\%s\\%s.%s", sPath, Application::Name, SubDir, Name, Extension);
+      sprintf(sFullPath, "%s\\%s\\%s\\%s.%s", sPath, Application::Name, sSubDir, Name, Extension);
 
    std::ifstream file(sFullPath, std::ios::in | std::ios::binary);
    GEAssert(file.is_open());
@@ -197,21 +230,24 @@ void Device::readUserFile(const char* SubDir, const char* Name, const char* Exte
 
 void Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension, const ContentData* ContentData)
 {
-   char sPath[MAX_PATH];
+   char sPath[MaxPath];
    HRESULT hr = SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, sPath);
    GEAssert(hr >= 0);
 
-   char sDirectory[MAX_PATH];
+   char sDirectory[MaxPath];
    sprintf(sDirectory, "%s\\%s", sPath, Application::Name);
    CreateDirectory(sDirectory, NULL);
    
-   if(SubDir && strlen(SubDir) > 0)
+   char sSubDir[MaxPath];
+   toWindowsSubDir(SubDir, sSubDir);
+
+   if(strlen(sSubDir) > 0)
    {
-      sprintf(sDirectory, "%s\\%s\\%s", sPath, Application::Name, SubDir);
+      sprintf(sDirectory, "%s\\%s\\%s", sPath, Application::Name, sSubDir);
       CreateDirectory(sDirectory, NULL);
    }
 
-   char sFullPath[MAX_PATH];
+   char sFullPath[MaxPath];
    sprintf(sFullPath, "%s\\%s.%s", sDirectory, Name, Extension);
 
    std::ofstream file(sFullPath, std::ios::out | std::ios::binary);
@@ -223,16 +259,19 @@ void Device::writeUserFile(const char* SubDir, const char* Name, const char* Ext
 
 uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
 {
-   char sPath[MAX_PATH];
+   char sPath[MaxPath];
    HRESULT hr = SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, sPath);
    GEAssert(hr >= 0);
 
-   char sFindString[MAX_PATH];
+   char sSubDir[MaxPath];
+   toWindowsSubDir(SubDir, sSubDir);
 
-   if(!SubDir || strlen(SubDir) == 0)
+   char sFindString[MaxPath];
+
+   if(strlen(sSubDir) == 0)
       sprintf(sFindString, "%s\\%s\\*.%s", sPath, Application::Name, Extension);
    else
-      sprintf(sFindString, "%s\\%s\\%s\\*.%s", sPath, Application::Name, SubDir, Extension);
+      sprintf(sFindString, "%s\\%s\\%s\\*.%s", sPath, Application::Name, sSubDir, Extension);
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
@@ -252,16 +291,19 @@ uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
 
 bool Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
-   char sPath[MAX_PATH];
+   char sPath[MaxPath];
    HRESULT hr = SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, sPath);
    GEAssert(hr >= 0);
 
-   char sFindString[MAX_PATH];
+   char sSubDir[MaxPath];
+   toWindowsSubDir(SubDir, sSubDir);
 
-   if(!SubDir || strlen(SubDir) == 0)
+   char sFindString[MaxPath];
+
+   if(strlen(sSubDir) == 0)
       sprintf(sFindString, "%s\\%s\\*.%s", sPath, Application::Name, Extension);
    else
-      sprintf(sFindString, "%s\\%s\\%s\\*.%s", sPath, Application::Name, SubDir, Extension);
+      sprintf(sFindString, "%s\\%s\\%s\\*.%s", sPath, Application::Name, sSubDir, Extension);
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
