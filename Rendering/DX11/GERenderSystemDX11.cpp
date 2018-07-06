@@ -102,6 +102,10 @@ RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
    CD3D11_VIEWPORT dxViewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)Device::ScreenWidth, (float)Device::ScreenHeight);
    dxContext->RSSetViewports(1, &dxViewport);
 
+   // set default ambient color
+   sShaderConstantsLighting.AmbientLightColor = Color(1.0f, 1.0f, 1.0f, 1.0f);
+   dxContext->UpdateSubresource(dxConstantBufferLighting, 0, NULL, &sShaderConstantsLighting, 0, 0);
+
 #if defined (GE_EDITOR_SUPPORT)
    EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, "RenderSystem", [this](const EventArgs* args) -> bool
    {

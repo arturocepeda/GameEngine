@@ -71,10 +71,6 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
 {
    cClassName = ObjectName("ParticleSystem");
 
-   eRenderingMode = RenderSystem::getInstance()->getActiveCamera()
-      ? RenderingMode::_3D
-      : RenderingMode::_2D;
-
    GERegisterProperty(UInt, MaxParticles);
    GERegisterPropertyReadonly(UInt, ParticlesCount);
 

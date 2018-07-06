@@ -57,6 +57,11 @@ ComponentCamera::ComponentCamera(Entity* Owner)
 
 ComponentCamera::~ComponentCamera()
 {
+   if(RenderSystem::getInstance()->getActiveCamera() == this)
+   {
+      RenderSystem::getInstance()->setActiveCamera(0);
+   }
+
 #if defined (GE_EDITOR_SUPPORT)
    EventHandlingObject::disconnectStaticEventCallback(Events::RenderingSurfaceChanged, this);
 #endif
