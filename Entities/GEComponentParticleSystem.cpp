@@ -37,7 +37,7 @@ using namespace GE::Content;
    GERegisterPropertyEnum(ValueProviderType, PropertyBaseName##Type)->setClass(#CategoryName); \
    GERegisterProperty(Float, PropertyBaseName##Value)->setClass(#CategoryName); \
    GERegisterProperty(Float, PropertyBaseName##ValueMax)->setClass(#CategoryName); \
-   GERegisterPropertyResource(ObjectName, PropertyBaseName##Curve, Curve)->setClass(#CategoryName); \
+   GERegisterProperty(ObjectName, PropertyBaseName##Curve)->setClass(#CategoryName); \
    set##PropertyBaseName##Type(ValueProviderType::Constant);
 
 
@@ -87,7 +87,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(Vector3, EmitterPointA)->setClass(ParticleEmissionName);
    GERegisterProperty(Vector3, EmitterPointB)->setClass(ParticleEmissionName);
    GERegisterProperty(Float, EmitterRadius)->setClass(ParticleEmissionName);
-   GERegisterPropertyResource(ObjectName, EmitterMesh, Mesh)->setClass(ParticleEmissionName);
+   GERegisterProperty(ObjectName, EmitterMesh)->setClass(ParticleEmissionName);
    GERegisterProperty(ObjectName, EmitterMeshEntity)->setClass(ParticleEmissionName);
    GERegisterProperty(Float, EmissionRate)->setClass(ParticleEmissionName);
    GERegisterProperty(UInt, EmissionBurstCount)->setClass(ParticleEmissionName);

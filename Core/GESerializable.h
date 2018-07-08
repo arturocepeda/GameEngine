@@ -177,11 +177,6 @@ namespace GE { namespace Core
 #define GEDefaultSetter(PropertyCppType, PropertyName) \
    inline void set##PropertyName(PropertyCppType Value) { m##PropertyName = Value; }
 
-#define GEDefaultGetterConstRef(PropertyCppType, PropertyName) \
-   inline const PropertyCppType& get##PropertyName() const { return m##PropertyName; }
-#define GEDefaultSetterConstRef(PropertyCppType, PropertyName) \
-   inline void set##PropertyName(const PropertyCppType& Value) { m##PropertyName = Value; }
-
 
 //
 //  Definition of property arrays
@@ -258,13 +253,6 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
       nullptr, \
       [this]()->GE::Core::Value { return GE::Core::Value(this->get##PropertyName()); })
-
-#define GERegisterPropertyResource(PropertyType, PropertyName, ObjectType) \
-   registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
-      [this](const GE::Core::Value& v) { this->set##PropertyName(v.getAs##PropertyType()); }, \
-      [this]()->GE::Core::Value { return GE::Core::Value(this->get##PropertyName()); }, \
-      PropertyEditor::Default, 0, \
-      (void*)GE::Content::ResourcesManager::getInstance()->getObjectRegistry(#ObjectType))
 
 
 //

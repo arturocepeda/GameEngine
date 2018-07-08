@@ -37,7 +37,7 @@ ComponentMesh::ComponentMesh(Entity* Owner)
 
    eRenderingMode = RenderingMode::_3D;
 
-   GERegisterPropertyResource(ObjectName, MeshName, Mesh);
+   GERegisterProperty(ObjectName, MeshName);
    GERegisterPropertyBitMask(DynamicShadowsBitMask, DynamicShadows);
 }
 

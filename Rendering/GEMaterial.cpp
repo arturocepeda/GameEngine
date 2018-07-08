@@ -36,9 +36,9 @@ Material::Material(const ObjectName& Name, const ObjectName& GroupName)
    , eFlags(0)
 {
    GERegisterPropertyReadonly(ObjectName, Name);
-   GERegisterPropertyResource(ObjectName, ShaderProgram, ShaderProgram);
+   GERegisterProperty(ObjectName, ShaderProgram);
    GERegisterProperty(Color, DiffuseColor);
-   GERegisterPropertyResource(ObjectName, DiffuseTextureName, Texture);
+   GERegisterProperty(ObjectName, DiffuseTextureName);
    GERegisterPropertyEnum(BlendingMode, BlendingMode);
    GERegisterPropertyBitMask(MaterialFlagsBitMask, Flags);
 }
@@ -156,7 +156,7 @@ MaterialPass::MaterialPass()
    , sConstantBufferDataVertex(0)
    , sConstantBufferDataFragment(0)
 {
-   GERegisterPropertyResource(ObjectName, MaterialName, Material);
+   GERegisterProperty(ObjectName, MaterialName);
    GERegisterProperty(Bool, Active);
 
    iBasePropertiesCount = getPropertiesCount();

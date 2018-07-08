@@ -40,8 +40,8 @@ ComponentSkeleton::ComponentSkeleton(Entity* Owner)
 {
    cClassName = ObjectName("Skeleton");
 
-   GERegisterPropertyResource(ObjectName, SkeletonName, Skeleton);
-   GERegisterPropertyResource(ObjectName, AnimationSetName, AnimationSet);
+   GERegisterProperty(ObjectName, SkeletonName);
+   GERegisterProperty(ObjectName, AnimationSetName);
    GERegisterProperty(ObjectName, DefaultAnimationName);
    GERegisterProperty(Float, DefaultBlendingTime);
    GERegisterProperty(Float, AnimationSpeedFactor);
