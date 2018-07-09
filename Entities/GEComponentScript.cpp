@@ -24,6 +24,10 @@ using namespace GE::Entities;
 using namespace GE::Content;
 using namespace GE::Scripting;
 
+const ObjectName cRestartActionName = ObjectName("Restart");
+const ObjectName cReloadActionName = ObjectName("Reload");
+const ObjectName cDebugActionName = ObjectName("Debug");
+
 const ObjectName cInitFunctionName = ObjectName("init");
 const ObjectName cActivateFunctionName = ObjectName("activate");
 const ObjectName cDeactivateFunctionName = ObjectName("deactivate");
@@ -63,7 +67,13 @@ ScriptInstance::ScriptInstance()
    GERegisterProperty(ObjectName, ScriptName);
    GERegisterPropertyBitMask(ScriptSettingsBitMask, ScriptSettings);
 
-   registerAction("Reload", [this]
+   registerAction(cRestartActionName, [this]
+   {
+      bInitialized = false;
+   });
+
+#if defined (GE_EDITOR_SUPPORT)
+   registerAction(cReloadActionName, [this]
    {
       const uint iNumProperties = getPropertiesCount() - iBasePropertiesCount;
       vCachedPropertyValues.resize(iNumProperties);
@@ -78,10 +88,9 @@ ScriptInstance::ScriptInstance()
       setScriptName(getScriptName());
    });
 
-#if defined (GE_EDITOR_SUPPORT)
    GERegisterProperty(UInt, DebugBreakpointLine);
 
-   registerAction("Debug", [this]
+   registerAction(cDebugActionName, [this]
    {
       cEnv->enableDebugger();
    });
