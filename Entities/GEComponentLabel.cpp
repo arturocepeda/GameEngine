@@ -44,7 +44,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
 
    sGeometryData.VertexStride = 20;
 
-   GERegisterPropertyResource(ObjectName, FontName, Font);
+   GERegisterProperty(ObjectName, FontName);
    GERegisterProperty(Float, FontSize);
    GERegisterPropertyEnum(Alignment, Alignment);
    GERegisterProperty(Float, HorizontalSpacing);
@@ -52,7 +52,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    GERegisterProperty(Float, LineWidth);
    GERegisterPropertyBitMask(LabelSettingsBitMask, Settings);
    GERegisterProperty(String, Text);
-   GERegisterPropertyResource(ObjectName, StringID, LocalizedString);
+   GERegisterProperty(ObjectName, StringID);
 }
 
 ComponentLabel::~ComponentLabel()

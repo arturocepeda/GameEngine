@@ -165,7 +165,7 @@ ComponentColliderMesh::ComponentColliderMesh(Entity* Owner)
 {
    cClassName = ObjectName("ColliderMesh");
 
-   GERegisterPropertyResource(ObjectName, MeshName, Mesh);
+   GERegisterProperty(ObjectName, MeshName);
 }
 
 ComponentColliderMesh::~ComponentColliderMesh()

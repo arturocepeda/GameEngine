@@ -348,7 +348,7 @@ void RenderSystemES20::attachShaders(ShaderProgramES20* cProgram)
       glGetProgramInfoLog(cProgram->ID, iLogLength, NULL, sLog);
       
       // show info log
-      Log::log(LogType::Error, "Program '%s': linking error\n%s", cProgram->getName().getString().c_str(), sLog);
+      Log::log(LogType::Error, "Program '%s': linking error\n%s", cProgram->getName().getString(), sLog);
       
       Allocator::free(sLog);
       exit(1);
