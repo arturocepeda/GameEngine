@@ -683,7 +683,7 @@ void RenderSystem::bindTexture(TextureSlot eSlot, const Texture* cTexture)
       ? (ID3D11ShaderResourceView*)cTexture->getHandler()
       : 0;
    dxContext->PSSetShaderResources((UINT)eSlot, 1, &dxShaderResourceView);
-   dxContext->PSSetSamplers(0, 1, &dxSamplerStateClamp);
+   dxContext->PSSetSamplers(0, 1, &dxSamplerStateWrap);
 }
 
 void RenderSystem::useShaderProgram(const ObjectName& cName)
