@@ -684,17 +684,24 @@ void RenderSystem::bindTexture(TextureSlot eSlot, const Texture* cTexture)
       : 0;
    dxContext->PSSetShaderResources((UINT)eSlot, 1, &dxShaderResourceView);
 
-   switch(cTexture->getWrapMode())
+   ID3D11SamplerState* dxSamplerState = 0;
+
+   if(cTexture)
    {
-   case TextureWrapMode::Clamp:
-      dxContext->PSSetSamplers(0, 1, &dxSamplerStateClamp);
-      break;
-   case TextureWrapMode::Repeat:
-      dxContext->PSSetSamplers(0, 1, &dxSamplerStateWrap);
-      break;
-   default:
-      dxContext->PSSetSamplers(0, 1, &dxSamplerStateClamp);
+      switch(cTexture->getWrapMode())
+      {
+      case TextureWrapMode::Clamp:
+         dxSamplerState = dxSamplerStateClamp;
+         break;
+      case TextureWrapMode::Repeat:
+         dxSamplerState = dxSamplerStateWrap;
+         break;
+      default:
+         dxSamplerState = dxSamplerStateClamp;
+      }
    }
+
+   dxContext->PSSetSamplers(0, 1, &dxSamplerState);
 }
 
 void RenderSystem::useShaderProgram(const ObjectName& cName)
