@@ -256,6 +256,15 @@ void ScriptInstance::registerScriptProperties()
             cEnv->setVariable<Color>(sGlobalVariableName, cValue.getAsColor());
             break;
          }
+
+         char sOnPropertySetFuncionNameStr[64];
+         sprintf(sOnPropertySetFuncionNameStr, "on%sSet", sGlobalVariableName);
+         ObjectName cOnPropertySetFuncionName = ObjectName(sOnPropertySetFuncionNameStr);
+
+         if(cEnv->isFunctionDefined(cOnPropertySetFuncionName))
+         {
+            cEnv->runFunction<void>(cOnPropertySetFuncionName, cValue);
+         }
       };
       PropertyGetter getter = [this, sGlobalVariableName, ePropertyValue]() -> Value
       {
