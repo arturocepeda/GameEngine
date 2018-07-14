@@ -219,4 +219,15 @@ namespace GE { namespace Rendering
       "RenderOncePerLight",
       "BatchRendering"
    };
+
+   const char* strTextureSettingsBitMask[] =
+   {
+      "AtlasUV"
+   };
+
+   const char* strTextureWrapMode[] =
+   {
+      "Clamp",
+      "Repeat"
+   };
 }}

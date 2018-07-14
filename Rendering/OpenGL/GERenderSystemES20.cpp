@@ -111,7 +111,9 @@ void RenderSystemES20::createBuffers()
    glBindFramebuffer(GL_FRAMEBUFFER, iFrameBuffer);
 
    cDepthTexture = Allocator::alloc<Texture>();
-   GEInvokeCtor(Texture, cDepthTexture)("Depth", "Texture", ShadowMapSize, ShadowMapSize);
+   GEInvokeCtor(Texture, cDepthTexture)("Depth", "Texture");
+   cDepthTexture->setWidth(ShadowMapSize);
+   cDepthTexture->setHeight(ShadowMapSize);
    
    GLuint iDepthTexture;
    glGenTextures(1, &iDepthTexture);
@@ -172,8 +174,21 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
    // setup texture parameters
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+   switch(cPreloadedTexture->Tex->getWrapMode())
+   {
+   case TextureWrapMode::Clamp:
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      break;
+   case TextureWrapMode::Repeat:
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_WRAP_BORDER);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_WRAP_BORDER);
+      break;
+   default:
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+   }
 
    GLenum glFormat = cPreloadedTexture->Data->getBytesPerPixel() == 4 ? GL_RGBA : GL_RGB;
    glTexImage2D(GL_TEXTURE_2D, 0, glFormat, cPreloadedTexture->Data->getWidth(), cPreloadedTexture->Data->getHeight(),

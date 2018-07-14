@@ -40,11 +40,33 @@ namespace GE { namespace Rendering
    };
 
 
-   class Texture : public Content::Resource
+   GESerializableEnum(TextureSettingsBitMask)
+   {
+      AtlasUV  = 1 << 0,
+
+      Count = 1
+   };
+
+
+   GESerializableEnum(TextureWrapMode)
+   {
+      Clamp,
+      Repeat,
+
+      Count
+   };
+
+
+   class Texture : public Content::SerializableResource
    {
    private:
       uint iWidth;
       uint iHeight;
+
+      char sFormat[8];
+
+      uint8_t eSettings;
+      TextureWrapMode eWrapMode;
 
       void* pHandlePtr;
 
@@ -52,16 +74,25 @@ namespace GE { namespace Rendering
       GESTLVector(TextureAtlasEntry) AtlasUV;
       Core::ObjectManager<TextureAtlasEntry> AtlasUVManager;
 
-      Texture(const Core::ObjectName& Name, const Core::ObjectName& GroupName, uint Width, uint Height);
+      Texture(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
 
-      uint getWidth() const;
-      uint getHeight() const;
+      void setWidth(uint Value) { iWidth = Value; }
+      void setHeight(uint Value) { iHeight = Value; }
+      void setFormat(const char* Value) { strcpy(sFormat, Value); }
+      void setSettings(uint8_t Value) { eSettings = Value; }
+      void setWrapMode(TextureWrapMode Value) { eWrapMode = Value; }
+
+      uint getWidth() const { return iWidth; }
+      uint getHeight() const { return iHeight; }
+      const char* getFormat() const { return sFormat; }
+      uint8_t getSettings() const { return eSettings; }
+      TextureWrapMode getWrapMode() const { return eWrapMode; }
 
       uint getAtlasSize() const;
       const Core::ObjectName& getAtlasName(uint Index) const;
 
-      void setHandler(void* HandlePtr);
-      const void* getHandler() const;
+      void setHandler(void* HandlePtr) { pHandlePtr = HandlePtr; }
+      const void* getHandler() const { return pHandlePtr; }
 
       void populateAtlasUVManager();
    };

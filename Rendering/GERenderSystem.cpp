@@ -65,6 +65,7 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    ResourcesManager::getInstance()->registerObjectManager<Font>("Font", &mFonts);
    
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<ShaderProgram>("ShaderProgram", &mShaderPrograms);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<Texture>("Texture", &mTextures);
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<Material>("Material", &mMaterials);
 
    // Position (3) + UV (2)
@@ -257,7 +258,7 @@ void RenderSystem::preloadTextures(const char* FileName)
 
       pugi::xml_document xml;
       xml.load_buffer(cTexturesData.getData(), cTexturesData.getDataSize());
-      const pugi::xml_node& xmlTextures = xml.child("Textures");
+      const pugi::xml_node& xmlTextures = xml.child("TextureList");
 
       char sSubDir[256];
       sprintf(sSubDir, "Textures/%s", FileName);
@@ -265,31 +266,33 @@ void RenderSystem::preloadTextures(const char* FileName)
       for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
       {
          const char* sTextureName = xmlTexture.attribute("name").value();
-         const char* sTextureFileName = xmlTexture.attribute("fileName").value();
-         const char* sTextureFormat = xmlTexture.attribute("format").value();
-         const bool sTextureAtlas = strcmp(xmlTexture.attribute("atlas").value(), "true") == 0;
 
          PreloadedTexture sPreloadedTexture;
          sPreloadedTexture.Data = Allocator::alloc<ImageData>();
          GEInvokeCtor(ImageData, sPreloadedTexture.Data);
 
-         Device::readContentFile(ContentType::Texture, sSubDir, sTextureFileName, sTextureFormat, sPreloadedTexture.Data);
-
          sPreloadedTexture.Tex = Allocator::alloc<Texture>();
-         GEInvokeCtor(Texture, sPreloadedTexture.Tex)
-            (sTextureName, cGroupName, sPreloadedTexture.Data->getWidth(), sPreloadedTexture.Data->getHeight());
+         GEInvokeCtor(Texture, sPreloadedTexture.Tex)(sTextureName, cGroupName);
+         sPreloadedTexture.Tex->loadFromXml(xmlTexture);
+
+         const char* sTextureFormat = sPreloadedTexture.Tex->getFormat();
+
+         Device::readContentFile(ContentType::Texture, sSubDir, sTextureName, sTextureFormat, sPreloadedTexture.Data);
+
+         sPreloadedTexture.Tex->setWidth(sPreloadedTexture.Data->getWidth());
+         sPreloadedTexture.Tex->setHeight(sPreloadedTexture.Data->getHeight());
 
          GEMutexLock(mTextureLoadMutex);
 
          vPreloadedTextures.push_back(sPreloadedTexture);
 
-         if(sTextureAtlas)
+         if(GEHasFlag(sPreloadedTexture.Tex->getSettings(), TextureSettingsBitMask::AtlasUV))
          {
             float fWidth = (float)sPreloadedTexture.Tex->getWidth();
             float fHeight = (float)sPreloadedTexture.Tex->getHeight();
 
             ContentData cAtlasInfo;
-            Device::readContentFile(ContentType::TextureAtlasInfo, sSubDir, sTextureFileName, "xml", &cAtlasInfo);
+            Device::readContentFile(ContentType::TextureAtlasInfo, sSubDir, sTextureName, "xml", &cAtlasInfo);
 
             pugi::xml_document xml;
             xml.load_buffer(cAtlasInfo.getData(), cAtlasInfo.getDataSize());
@@ -339,8 +342,9 @@ void RenderSystem::preloadTextures(const char* FileName)
          sPreloadedTexture.Data->load(iTextureDataSize, sStream);
 
          sPreloadedTexture.Tex = Allocator::alloc<Texture>();
-         GEInvokeCtor(Texture, sPreloadedTexture.Tex)
-            (cTextureName, cGroupName, sPreloadedTexture.Data->getWidth(), sPreloadedTexture.Data->getHeight());
+         GEInvokeCtor(Texture, sPreloadedTexture.Tex)(cTextureName, cGroupName);
+         sPreloadedTexture.Tex->setWidth(sPreloadedTexture.Data->getWidth());
+         sPreloadedTexture.Tex->setHeight(sPreloadedTexture.Data->getHeight());
 
          GEMutexLock(mTextureLoadMutex);
 

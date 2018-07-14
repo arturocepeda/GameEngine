@@ -17,25 +17,27 @@ using namespace GE::Rendering;
 using namespace GE::Core;
 using namespace GE::Content;
 
-Texture::Texture(const ObjectName& Name, const ObjectName& GroupName, uint Width, uint Height)
-   : Resource(Name, GroupName, ResourceType::Texture)
-   , iWidth(Width)
-   , iHeight(Height)
+const ObjectName TextureName = ObjectName("Texture");
+
+Texture::Texture(const ObjectName& Name, const ObjectName& GroupName)
+   : SerializableResource(Name, GroupName, TextureName)
+   , iWidth(0)
+   , iHeight(0)
+   , eSettings(0)
+   , eWrapMode(TextureWrapMode::Clamp)
    , pHandlePtr(0)
 {
+   sFormat[0] = '\0';
+
    TextureCoordinates tDefaultUV = { 0.0f, 1.0f, 0.0f, 1.0f };
    TextureAtlasEntry tDefaultAtlas = { ObjectName::Empty, tDefaultUV };
    AtlasUV.push_back(tDefaultAtlas);
-}
 
-uint Texture::getWidth() const
-{
-   return iWidth;
-}
-
-uint Texture::getHeight() const
-{
-   return iHeight;
+   GERegisterPropertyReadonly(UInt, Width);
+   GERegisterPropertyReadonly(UInt, Height);
+   GERegisterProperty(String, Format);
+   GERegisterPropertyBitMask(TextureSettingsBitMask, Settings);
+   GERegisterPropertyEnum(TextureWrapMode, WrapMode);
 }
 
 uint Texture::getAtlasSize() const
@@ -47,16 +49,6 @@ const ObjectName& Texture::getAtlasName(uint Index) const
 {
    GEAssert(Index < AtlasUV.size());
    return AtlasUV[Index].getName();
-}
-
-void Texture::setHandler(void* HandlePtr)
-{
-   pHandlePtr = HandlePtr;
-}
-
-const void* Texture::getHandler() const
-{
-   return pHandlePtr;
 }
 
 void Texture::populateAtlasUVManager()

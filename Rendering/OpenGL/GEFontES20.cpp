@@ -38,7 +38,9 @@ void Font::createFontTexture(ImageData& cImageData)
       0, glFormat, GL_UNSIGNED_BYTE, cImageData.getData());
 
    cTexture = Allocator::alloc<Texture>();
-   GEInvokeCtor(Texture, cTexture)(cName, "FontTextures", cImageData.getWidth(), cImageData.getHeight());
+   GEInvokeCtor(Texture, cTexture)(cName, "FontTextures");
+   cTexture->setWidth(cImageData.getWidth());
+   cTexture->setHeight(cImageData.getHeight());
    cTexture->setHandler((void*)((GLuintPtrSize)iTexture));
 }
 
