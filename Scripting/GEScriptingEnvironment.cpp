@@ -51,15 +51,6 @@ using namespace GE::Input;
 
 
 //
-//  (Global functions for Lua)
-//
-void luaLog(const char* sMessage)
-{
-   Log::log(LogType::Info, "[Lua] %s", sMessage);
-}
-
-
-//
 //  ScriptingEnvironment
 //
 const size_t MemoryPoolSize = 16 * 1024 * 1024;
@@ -512,7 +503,9 @@ void ScriptingEnvironment::registerTypes()
    //
    //  Global functions
    //
-   lua["log"] = luaLog;
+   lua["logInfo"] = [](const char* sMessage){ Log::log(LogType::Info, "[Lua] %s", sMessage); };
+   lua["logWarning"] = [](const char* sMessage){ Log::log(LogType::Warning, "[Lua] %s", sMessage); };
+   lua["logError"] = [](const char* sMessage){ Log::log(LogType::Error, "[Lua] %s", sMessage); };
 
    //
    //  GE
@@ -943,6 +936,7 @@ void ScriptingEnvironment::registerTypes()
    lua.new_usertype<Material>
    (
       "Material"
+      , "getShaderProgram", &Material::getShaderProgram
       , "getDiffuseColor", &Material::getDiffuseColor
       , "getDiffuseTexture", &Material::getDiffuseTexture
       , "getBlendingMode", &Material::getBlendingMode
