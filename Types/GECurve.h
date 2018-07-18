@@ -34,17 +34,31 @@ namespace GE
    };
 
 
+   GESerializableEnum(CurveValueType)
+   {
+      Default,
+      EulerAngleInRadians,
+      EulerAngleInDegrees,
+
+      Count
+   };
+
+
    class Curve : public Content::SerializableResource
    {
    private:
       InterpolationMode eInterpolationMode;
+      CurveValueType eValueType;
 
    public:
       Curve(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
       ~Curve();
 
-      InterpolationMode getInterpolationMode() const;
-      void setInterpolationMode(InterpolationMode Mode);
+      InterpolationMode getInterpolationMode() const { return eInterpolationMode; }
+      void setInterpolationMode(InterpolationMode Mode) { eInterpolationMode = Mode; }
+
+      CurveValueType getValueType() const { return eValueType; }
+      void setValueType(CurveValueType Type) { eValueType = Type; }
 
       float getLength() const;
       float getValue(float TimePosition);

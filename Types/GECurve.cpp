@@ -62,8 +62,10 @@ void CurveKey::setValue(float Value)
 Curve::Curve(const ObjectName& Name, const ObjectName& GroupName)
    : SerializableResource(Name, GroupName, "Curve")
    , eInterpolationMode(InterpolationMode::Linear)
+   , eValueType(CurveValueType::Default)
 {
    GERegisterPropertyEnum(InterpolationMode, InterpolationMode);
+   GERegisterPropertyEnum(CurveValueType, ValueType);
    GERegisterPropertyReadonly(Float, Length);
    GERegisterPropertyArray(CurveKey);
 }
@@ -71,16 +73,6 @@ Curve::Curve(const ObjectName& Name, const ObjectName& GroupName)
 Curve::~Curve()
 {
    GEReleasePropertyArray(CurveKey);
-}
-
-InterpolationMode Curve::getInterpolationMode() const
-{
-   return eInterpolationMode;
-}
-
-void Curve::setInterpolationMode(InterpolationMode Mode)
-{
-   eInterpolationMode = Mode;
 }
 
 float Curve::getLength() const
@@ -130,7 +122,29 @@ float Curve::getValue(float TimePosition)
          const Value& cKeyAValue = cKeyA->getValue();
          const Value& cKeyBValue = cKeyB->getValue();
 
-         return Math::getInterpolatedValue(cKeyAValue.getAsFloat(), cKeyBValue.getAsFloat(), t);
+         float fValueA = cKeyAValue.getAsFloat();
+         float fValueB = cKeyBValue.getAsFloat();
+
+         if(eValueType != CurveValueType::Default)
+         {
+            const float fMaxDiff = eValueType == CurveValueType::EulerAngleInRadians
+               ? GE_PI
+               : 180.0f;
+
+            if(fabsf(fValueB - fValueA) > fMaxDiff)
+            {
+               if(fValueB > fValueA)
+               {
+                  fValueA += fMaxDiff * 2.0f;
+               }
+               else
+               {
+                  fValueB += fMaxDiff * 2.0f;
+               }
+            }
+         }
+
+         return Math::getInterpolatedValue(fValueA, fValueB, t);
       }
    }
 

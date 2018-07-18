@@ -33,6 +33,13 @@ namespace GE
       "BottomCenter",
       "BottomRight"
    };
+
+   const char* strCurveValueType[] =
+   {
+      "Default",
+      "EulerAngleInRadians",
+      "EulerAngleInDegrees"
+   };
 }
 
 namespace GE { namespace Core
