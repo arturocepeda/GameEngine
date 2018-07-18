@@ -36,7 +36,6 @@ ResourcesManager::ResourcesManager()
    registerSerializableResourceTypes();
 
    loadBuiltInMeshes();
-   loadBuiltInSkeleton();
 }
 
 ResourcesManager::~ResourcesManager()
@@ -71,13 +70,6 @@ void ResourcesManager::loadBuiltInMeshes()
    cBuiltInMesh = Allocator::alloc<Mesh>();
    GEInvokeCtor(Mesh, cBuiltInMesh)(cCube, ObjectName("Cube"));
    add<Mesh>(cBuiltInMesh);
-}
-
-void ResourcesManager::loadBuiltInSkeleton()
-{
-   Skeleton* cTransformSkeleton = Allocator::alloc<Skeleton>();
-   GEInvokeCtor(Skeleton, cTransformSkeleton)();
-   add<Skeleton>(cTransformSkeleton);
 }
 
 

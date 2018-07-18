@@ -40,7 +40,6 @@ namespace GE { namespace Content
       void registerSerializableResourceTypes();
 
       void loadBuiltInMeshes();
-      void loadBuiltInSkeleton();
 
    public:
       ResourcesManager();

@@ -58,7 +58,6 @@ namespace GE { namespace Content
    public:
       static const ResourceType Type;
 
-      Skeleton();
       Skeleton(const char* FileName);
       ~Skeleton();
 

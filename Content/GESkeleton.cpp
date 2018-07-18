@@ -108,14 +108,6 @@ void Bone::setSize(float Size)
 //
 const ResourceType Skeleton::Type = ResourceType::Skeleton;
 
-Skeleton::Skeleton()
-   : Resource("<Transform>", ObjectName::Empty, Type)
-{
-   Bone* cRootBone = Allocator::alloc<Bone>();
-   GEInvokeCtor(Bone, cRootBone)(0, "Root");
-   vBones.push_back(cRootBone);
-}
-
 Skeleton::Skeleton(const char* FileName)
    : Resource(FileName, ObjectName::Empty, Type)
 {
