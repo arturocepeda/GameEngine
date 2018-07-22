@@ -146,9 +146,9 @@ int main(int argc, char* argv[])
     cAudio->init();
     cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
 
-#ifndef _DEBUG
+#if !defined (_DEBUG)
     // hide the mouse pointer
-    //ShowCursor(false);
+    glutSetCursor(GLUT_CURSOR_NONE);
 #endif
 
     // timer
