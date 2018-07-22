@@ -152,6 +152,12 @@ namespace GE { namespace Entities
       "Curve"
    };
 
+   const char* strMeshSettingsBitMask[] =
+   {
+      "Transparency",
+      "Skinning"
+   };
+
    const char* strLabelSettingsBitMask[] =
    {
       "Justify",

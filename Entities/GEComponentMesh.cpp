@@ -31,6 +31,7 @@ ComponentMesh::ComponentMesh(Entity* Owner)
    : ComponentRenderable(Owner, RenderableType::Mesh)
    , cMesh(0)
    , eDynamicShadows(0)
+   , eSettings(0)
    , cSkeleton(0)
 {
    cClassName = ObjectName("Mesh");
@@ -39,6 +40,7 @@ ComponentMesh::ComponentMesh(Entity* Owner)
 
    GERegisterProperty(ObjectName, MeshName);
    GERegisterPropertyBitMask(DynamicShadowsBitMask, DynamicShadows);
+   GERegisterPropertyBitMask(MeshSettingsBitMask, Settings);
 }
 
 ComponentMesh::~ComponentMesh()
@@ -62,19 +64,11 @@ void ComponentMesh::setMeshName(const ObjectName& MeshName)
    Mesh* cMesh = ResourcesManager::getInstance()->get<Mesh>(MeshName);
 
    if(!cMesh)
+   {
       cMesh = ResourcesManager::getInstance()->load<Mesh>(MeshName.getString());
+   }
 
    loadMesh(cMesh);
-}
-
-uint8_t ComponentMesh::getDynamicShadows() const
-{
-   return eDynamicShadows;
-}
-
-void ComponentMesh::setDynamicShadows(uint8_t BitMask)
-{
-   eDynamicShadows = BitMask;
 }
 
 void ComponentMesh::loadMesh(Mesh* M)
@@ -89,6 +83,7 @@ void ComponentMesh::loadMesh(Mesh* M)
    if(cMesh->isSkinned())
    {
       eGeometryType = GeometryType::Dynamic;
+      GESetFlag(eSettings, MeshSettingsBitMask::Skinning);
 
       uint iVertexDataFloats = cMesh->getGeometryData().NumVertices * cMesh->getGeometryData().VertexStride / sizeof(float);
       sGeometryData.VertexData = Allocator::alloc<float>(iVertexDataFloats);
@@ -97,7 +92,9 @@ void ComponentMesh::loadMesh(Mesh* M)
       cSkeleton = cOwner->getComponent<ComponentSkeleton>();
 
       if(!cSkeleton && cOwner->getParent())
+      {
          cSkeleton = cOwner->getParent()->getComponent<ComponentSkeleton>();
+      }
    }
 }
 

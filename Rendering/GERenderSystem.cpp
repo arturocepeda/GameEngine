@@ -801,7 +801,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       else
 #endif
       {
-         if(cMaterialPass->getMaterial()->getAlpha() < 0.99f)
+         if(GEHasFlag(cMesh->getSettings(), MeshSettingsBitMask::Transparency))
          {
             vTransparentMeshesToRender.push_back(sRenderOperation);
          }
