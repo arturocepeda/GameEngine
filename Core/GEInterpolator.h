@@ -264,6 +264,12 @@ namespace GE { namespace Core
          if(eState == State::Inactive)
             return;
 
+         if(!setter)
+         {
+            eState = State::Inactive;
+            return;
+         }
+
          fElapsedTime += Time::getClock(iClockIndex).getDelta();
 
          switch(eState)
