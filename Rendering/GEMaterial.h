@@ -32,7 +32,7 @@ namespace GE { namespace Rendering
    };
 
    
-   class Material : public Content::SerializableResource
+   class Material : public Content::Resource
    {
    public:
       static const uint ConstantBufferSize = 64;
@@ -47,6 +47,8 @@ namespace GE { namespace Rendering
       uint8_t eFlags;
 
    public:
+      static const Core::ObjectName TypeName;
+
       Material(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
 
       virtual uint getSizeInBytes() const override;

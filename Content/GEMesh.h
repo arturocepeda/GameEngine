@@ -44,7 +44,7 @@ namespace GE { namespace Content
       void loadFromPrimivite(const Rendering::Primitive& P);
 
    public:
-      static const ResourceType Type;
+      static const Core::ObjectName TypeName;
 
       static const uint BoneAttachmentsPerVertex = 4;
       static const uint FileFormatHeaderReservedBytes = 36;

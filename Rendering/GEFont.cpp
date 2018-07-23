@@ -21,8 +21,10 @@ using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Content;
 
+const ObjectName Font::TypeName = ObjectName("Font");
+
 Font::Font(const ObjectName& Name, const ObjectName& GroupName, const char* FileName, void* RenderDevice)
-   : Resource(Name, GroupName, ResourceType::Font)
+   : Resource(Name, GroupName, TypeName)
    , pRenderDevice(RenderDevice)
    , cTexture(0)
 {
@@ -42,7 +44,7 @@ Font::Font(const ObjectName& Name, const ObjectName& GroupName, const char* File
 }
 
 Font::Font(const ObjectName& Name, const ObjectName& GroupName, std::istream& Stream, void* RenderDevice)
-   : Resource(Name, GroupName, ResourceType::Font)
+   : Resource(Name, GroupName, TypeName)
    , pRenderDevice(RenderDevice)
    , cTexture(0)
    , fOffsetYMin(0.0f)

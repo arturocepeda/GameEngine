@@ -76,7 +76,7 @@ namespace GE { namespace Content
       Animation* loadAnimation(const char* FileName, const char* AnimationSetName, const Core::ObjectName& AnimationName);
 
    public:
-      static const ResourceType Type;
+      static const Core::ObjectName TypeName;
 
       AnimationSet(const char* FileName);
       ~AnimationSet();

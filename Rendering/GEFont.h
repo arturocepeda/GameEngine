@@ -55,6 +55,8 @@ namespace GE { namespace Rendering
       void releaseFontTexture();
 
    public:
+      static const Core::ObjectName TypeName;
+
       Font(const Core::ObjectName& Name, const Core::ObjectName& GroupName, const char* FileName, void* RenderDevice = 0);
       Font(const Core::ObjectName& Name, const Core::ObjectName& GroupName, std::istream& Stream, void* RenderDevice = 0);
       ~Font();

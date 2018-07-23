@@ -125,10 +125,10 @@ void Animation::setApplyRootMotionZ(bool Apply)
 //
 //  AnimationSet
 //
-const ResourceType AnimationSet::Type = ResourceType::AnimationSet;
+const ObjectName AnimationSet::TypeName = ObjectName("AnimationSet");
 
 AnimationSet::AnimationSet(const char* FileName)
-   : Resource(FileName, ObjectName::Empty, Type)
+   : Resource(FileName, ObjectName::Empty, TypeName)
 {
    char sFileName[64];
    sprintf(sFileName, "%s.animationset", FileName);

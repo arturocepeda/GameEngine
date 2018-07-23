@@ -32,7 +32,7 @@ namespace GE { namespace Content
       Core::ObjectManager<Curve> mCurves;
       Core::ObjectManager<BezierCurve> mBezierCurves;
 
-      GESTLMap(ResourceType, void*) mSimpleResourceManagersRegistry;
+      GESTLMap(uint, void*) mSimpleResourceManagersRegistry;
       Core::ObjectManager<Mesh> mMeshes;
       Core::ObjectManager<Skeleton> mSkeletons;
       Core::ObjectManager<AnimationSet> mAnimationSets;
@@ -62,7 +62,8 @@ namespace GE { namespace Content
          T* cContentInstance = Core::Allocator::alloc<T>();
          GEInvokeCtor(T, cContentInstance)(FileName);
 
-         Core::ObjectManager<T>* cObjectManager = static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::Type]);
+         Core::ObjectManager<T>* cObjectManager =
+            static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::TypeName.getID()]);
          cObjectManager->add(cContentInstance);
 
          return cContentInstance;
@@ -71,7 +72,8 @@ namespace GE { namespace Content
       template<typename T>
       bool unload(const char* FileName)
       {
-         Core::ObjectManager<T>* cObjectManager = static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::Type]);
+         Core::ObjectManager<T>* cObjectManager =
+            static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::TypeName.getID()]);
          GEAssert(cObjectManager->get(Core::ObjectName(FileName)));
          return cObjectManager->remove(Core::ObjectName(FileName));
       }
@@ -80,28 +82,32 @@ namespace GE { namespace Content
       void add(T* cContentInstance)
       {
          GEAssert(cContentInstance);
-         Core::ObjectManager<T>* cObjectManager = static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::Type]);
+         Core::ObjectManager<T>* cObjectManager =
+            static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::TypeName.getID()]);
          cObjectManager->add(cContentInstance);
       }
 
       template<typename T>
       T* get(const Core::ObjectName& Name)
       {
-         Core::ObjectManager<T>* cObjectManager = static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::Type]);
+         Core::ObjectManager<T>* cObjectManager =
+            static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::TypeName.getID()]);
          return cObjectManager->get(Name);
       }
 
       template<typename T>
       bool remove(const Core::ObjectName& Name)
       {
-         Core::ObjectManager<T>* cObjectManager = static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::Type]);
+         Core::ObjectManager<T>* cObjectManager =
+            static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::TypeName.getID()]);
          return cObjectManager->remove(Name);
       }
 
       template<typename T>
       void clear()
       {
-         Core::ObjectManager<T>* cObjectManager = static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::Type]);
+         Core::ObjectManager<T>* cObjectManager =
+            static_cast<Core::ObjectManager<T>*>(mSimpleResourceManagersRegistry[T::TypeName.getID()]);
          cObjectManager->clear();
       }
    };
@@ -118,8 +124,8 @@ namespace GE { namespace Content
       }
 
    public:
-      virtual SerializableResource* create(const Core::ObjectName& Name, const Core::ObjectName& GroupName) = 0;
-      virtual void destroy(SerializableResource* Ptr) = 0;
+      virtual Resource* create(const Core::ObjectName& Name, const Core::ObjectName& GroupName) = 0;
+      virtual void destroy(Resource* Ptr) = 0;
 
       const Core::ObjectName& getResourceTypeName() const { return cResourceTypeName; }
    };
@@ -134,19 +140,19 @@ namespace GE { namespace Content
       {
       }
 
-      virtual SerializableResource* create(const Core::ObjectName& Name, const Core::ObjectName& GroupName) override
+      virtual Resource* create(const Core::ObjectName& Name, const Core::ObjectName& GroupName) override
       {
-         T* cSerializableResource = Core::Allocator::alloc<T>();
-         GEInvokeCtor(T, cSerializableResource)(Name, GroupName);
-         GEAssert(static_cast<SerializableResource*>(cSerializableResource)->getClassName() == cResourceTypeName);
-         return static_cast<SerializableResource*>(cSerializableResource);
+         T* cResource = Core::Allocator::alloc<T>();
+         GEInvokeCtor(T, cResource)(Name, GroupName);
+         GEAssert(static_cast<Resource*>(cResource)->getClassName() == cResourceTypeName);
+         return static_cast<Resource*>(cResource);
       }
 
-      virtual void destroy(SerializableResource* Ptr) override
+      virtual void destroy(Resource* Ptr) override
       {
-         T* cSerializableResource = static_cast<T*>(Ptr);
-         GEInvokeDtor(T, cSerializableResource);
-         Core::Allocator::free(cSerializableResource);
+         T* cResource = static_cast<T*>(Ptr);
+         GEInvokeDtor(T, cResource);
+         Core::Allocator::free(cResource);
       }
    };
 

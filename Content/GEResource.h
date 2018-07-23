@@ -17,44 +17,18 @@
 
 namespace GE { namespace Content
 {
-   GESerializableEnum(ResourceType)
-   {
-      Texture,
-      Font,
-      Mesh,
-      Skeleton,
-      AnimationSet,
-      Serializable,
-
-      Count
-   };
-
-
-   class Resource : public Core::EventHandlingObject
+   class Resource : public Core::EventHandlingObject, public Core::Serializable
    {
    protected:
       Core::ObjectName cGroupName;
-      ResourceType eType;
 
    public:
-      Resource(const Core::ObjectName& Name, const Core::ObjectName& GroupName, ResourceType Type);
+      Resource(const Core::ObjectName& Name, const Core::ObjectName& GroupName, const Core::ObjectName& TypeName);
       virtual ~Resource();
 
-      const Core::ObjectName& getGroupName() const;
-      ResourceType getType() const;
+      void setName(const Core::ObjectName& Name) { cName = Name; }
+      const Core::ObjectName& getGroupName() const { return cGroupName; }
 
       virtual uint getSizeInBytes() const;
-   };
-
-
-   class SerializableResource : public Resource, public Core::Serializable
-   {
-   protected:
-      SerializableResource(const Core::ObjectName& Name, const Core::ObjectName& GroupName, const Core::ObjectName& TypeName);
-
-   public:
-      virtual ~SerializableResource();
-
-      void setName(const Core::ObjectName& Name);
    };
 }}

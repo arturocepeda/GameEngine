@@ -25,9 +25,13 @@ using namespace GE::Rendering;
 //
 ResourcesManager::ResourcesManager()
 {
-   mSimpleResourceManagersRegistry[Mesh::Type] = &mMeshes;
-   mSimpleResourceManagersRegistry[Skeleton::Type] = &mSkeletons;
-   mSimpleResourceManagersRegistry[AnimationSet::Type] = &mAnimationSets;
+   const ObjectName cMeshClassName = ObjectName("Mesh");
+   const ObjectName cSkeletonClassName = ObjectName("Skeleton");
+   const ObjectName cAnimationSetClassName = ObjectName("AnimationSet");
+
+   mSimpleResourceManagersRegistry[cMeshClassName.getID()] = &mMeshes;
+   mSimpleResourceManagersRegistry[cSkeletonClassName.getID()] = &mSkeletons;
+   mSimpleResourceManagersRegistry[cAnimationSetClassName.getID()] = &mAnimationSets;
 
    registerObjectManager<Mesh>("Mesh", &mMeshes);
    registerObjectManager<Skeleton>("Skeleton", &mSkeletons);

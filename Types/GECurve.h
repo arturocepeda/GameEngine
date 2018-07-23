@@ -44,13 +44,15 @@ namespace GE
    };
 
 
-   class Curve : public Content::SerializableResource
+   class Curve : public Content::Resource
    {
    private:
       InterpolationMode eInterpolationMode;
       CurveValueType eValueType;
 
    public:
+      static const Core::ObjectName TypeName;
+
       Curve(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
       ~Curve();
 

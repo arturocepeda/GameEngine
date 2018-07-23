@@ -59,8 +59,10 @@ void CurveKey::setValue(float Value)
 //
 //  Curve
 //
+const ObjectName Curve::TypeName = ObjectName("Curve");
+
 Curve::Curve(const ObjectName& Name, const ObjectName& GroupName)
-   : SerializableResource(Name, GroupName, "Curve")
+   : Resource(Name, GroupName, TypeName)
    , eInterpolationMode(InterpolationMode::Linear)
    , eValueType(CurveValueType::Default)
 {

@@ -29,12 +29,14 @@ namespace GE
    };
 
 
-   class BezierCurve : public Content::SerializableResource
+   class BezierCurve : public Content::Resource
    {
    private:
       int getBinomialCoefficient(int n, int k);
 
    public:
+      static const Core::ObjectName TypeName;
+
       BezierCurve(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
       ~BezierCurve();
 

@@ -17,10 +17,10 @@ using namespace GE::Rendering;
 using namespace GE::Core;
 using namespace GE::Content;
 
-const ObjectName TextureName = ObjectName("Texture");
+const ObjectName Texture::TypeName = ObjectName("Texture");
 
 Texture::Texture(const ObjectName& Name, const ObjectName& GroupName)
-   : SerializableResource(Name, GroupName, TextureName)
+   : Resource(Name, GroupName, TypeName)
    , iWidth(0)
    , iHeight(0)
    , eSettings(0)

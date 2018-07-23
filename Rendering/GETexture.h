@@ -57,7 +57,7 @@ namespace GE { namespace Rendering
    };
 
 
-   class Texture : public Content::SerializableResource
+   class Texture : public Content::Resource
    {
    private:
       uint iWidth;
@@ -71,6 +71,8 @@ namespace GE { namespace Rendering
       void* pHandlePtr;
 
    public:
+      static const Core::ObjectName TypeName;
+
       GESTLVector(TextureAtlasEntry) AtlasUV;
       Core::ObjectManager<TextureAtlasEntry> AtlasUVManager;
 

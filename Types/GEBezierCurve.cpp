@@ -42,8 +42,10 @@ const Vector3& BezierCurveRefPoint::getValue() const
 //
 //  BezierCurve
 //
+const ObjectName BezierCurve::TypeName = ObjectName("BezierCurve");
+
 BezierCurve::BezierCurve(const ObjectName& Name, const ObjectName& GroupName)
-   : SerializableResource(Name, GroupName, "BezierCurve")
+   : Resource(Name, GroupName, TypeName)
 {
    GERegisterPropertyArray(RefPoint);
 }

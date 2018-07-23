@@ -56,7 +56,7 @@ namespace GE { namespace Content
       GESTLVector(Bone*) vBones;
 
    public:
-      static const ResourceType Type;
+      static const Core::ObjectName TypeName;
 
       Skeleton(const char* FileName);
       ~Skeleton();

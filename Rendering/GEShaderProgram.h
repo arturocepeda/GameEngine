@@ -83,7 +83,7 @@ namespace GE { namespace Rendering
    };
 
 
-   class ShaderProgram : public Content::SerializableResource
+   class ShaderProgram : public Content::Resource
    {
    protected:
       char sVertexSource[32];
@@ -93,6 +93,8 @@ namespace GE { namespace Rendering
       CullingMode eCullingMode;
 
    public:
+      static const Core::ObjectName TypeName;
+
       ShaderProgram(const Core::ObjectName& Name, const Core::ObjectName& GroupName = Core::ObjectName::Empty);
       virtual ~ShaderProgram();
 

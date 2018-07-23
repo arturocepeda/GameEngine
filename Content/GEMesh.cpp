@@ -29,17 +29,17 @@ using namespace GE::Rendering;
 //
 //  Mesh
 //
-const ResourceType Mesh::Type = ResourceType::Mesh;
+const ObjectName Mesh::TypeName = ObjectName("Mesh");
 
 Mesh::Mesh(const char* FileName)
-   : Resource(FileName, ObjectName::Empty, Type)
+   : Resource(FileName, ObjectName::Empty, TypeName)
    , cSkinningData(0)
 {
    loadFromFile(FileName);
 }
 
 Mesh::Mesh(const Primitive& P, const ObjectName& Name)
-   : Resource(Name, ObjectName::Empty, Type)
+   : Resource(Name, ObjectName::Empty, TypeName)
    , cSkinningData(0)
 {
    loadFromPrimivite(P);

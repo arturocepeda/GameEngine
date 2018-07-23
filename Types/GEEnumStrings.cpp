@@ -86,19 +86,6 @@ namespace GE { namespace Core
    };
 }}
 
-namespace GE { namespace Content
-{
-   const char* strResourceType[] =
-   {
-      "Texture",
-      "Font",
-      "Mesh",
-      "Skeleton",
-      "AnimationSet",
-      "Serializable",
-   };
-}}
-
 namespace GE { namespace Entities
 {
    const char* strSpriteLayer[] =

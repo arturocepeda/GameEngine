@@ -19,22 +19,16 @@ using namespace GE::Content;
 using namespace GE::Core;
 
 
-//
-//  Resource
-//
-Resource::Resource(const ObjectName& Name, const ObjectName& GroupName, ResourceType Type)
+Resource::Resource(const ObjectName& Name, const ObjectName& GroupName, const ObjectName& TypeName)
    : EventHandlingObject(Name)
+   , Serializable(TypeName)
    , cGroupName(GroupName)
-   , eType(Type)
 {
    EventArgs sArgs;
    sArgs.Sender = this;
    triggerEventStatic(Events::ResourceCreated, &sArgs);
 
-   if(eType != ResourceType::Serializable)
-   {
-      Log::log(LogType::Info, "Resource created (%s): '%s'", strResourceType[(int)eType], cName.getString());
-   }
+   Log::log(LogType::Info, "Resource created (%s): '%s'", getClassName().getString(), cName.getString());
 }
 
 Resource::~Resource()
@@ -43,44 +37,10 @@ Resource::~Resource()
    sArgs.Sender = this;
    triggerEventStatic(Events::ResourceDestroyed, &sArgs);
 
-   if(eType != ResourceType::Serializable)
-   {
-      Log::log(LogType::Info, "Resource destroyed (%s): '%s'", strResourceType[(int)eType], cName.getString());
-   }
-}
-
-const Core::ObjectName& Resource::getGroupName() const
-{
-   return cGroupName;
-}
-
-ResourceType Resource::getType() const
-{
-   return eType;
+   Log::log(LogType::Info, "Resource destroyed (%s): '%s'", getClassName().getString(), cName.getString());
 }
 
 uint Resource::getSizeInBytes() const
 {
    return 0;
-}
-
-
-//
-//  SerializableResource
-//
-SerializableResource::SerializableResource(const ObjectName& Name, const ObjectName& GroupName, const ObjectName& TypeName)
-   : Resource(Name, GroupName, ResourceType::Serializable)
-   , Serializable(TypeName)
-{
-   Log::log(LogType::Info, "Resource created (%s): '%s'", getClassName().getString(), cName.getString());
-}
-
-SerializableResource::~SerializableResource()
-{
-   Log::log(LogType::Info, "Resource destroyed (%s): '%s'", getClassName().getString(), cName.getString());
-}
-
-void SerializableResource::setName(const Core::ObjectName& Name)
-{
-   cName = Name;
 }
