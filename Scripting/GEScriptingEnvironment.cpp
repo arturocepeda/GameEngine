@@ -588,6 +588,7 @@ void ScriptingEnvironment::registerTypes()
       , "getAsVector2", &Value::getAsVector2
       , "getAsVector3", &Value::getAsVector3
       , "getAsColor", &Value::getAsColor
+      , "getAsObjectName", &Value::getAsObjectName
    );
    lua.new_usertype<Serializable>
    (
@@ -667,6 +668,7 @@ void ScriptingEnvironment::registerTypes()
    (
       "CurvePropertyInterpolator"
       , sol::constructors<sol::types<Curve*, Serializable*, const ObjectName&, PropertyValueComponent>>()
+      , "setClockName", &CurvePropertyInterpolator::setClockName
       , "animate", &CurvePropertyInterpolator::animate
       , "animateInverse", &CurvePropertyInterpolator::animateInverse
       , "update", &CurvePropertyInterpolator::update

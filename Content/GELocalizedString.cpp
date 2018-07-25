@@ -44,9 +44,11 @@ const GESTLString& LocalizedString::getString() const
 //
 //  LocalizedStringsManager
 //
+const ObjectName LocalizedStringName = ObjectName("LocalizedString");
+
 LocalizedStringsManager::LocalizedStringsManager()
 {
-   ResourcesManager::getInstance()->registerObjectManager<LocalizedString>("LocalizedString", this);
+   ResourcesManager::getInstance()->registerObjectManager<LocalizedString>(LocalizedStringName, this);
 }
 
 void LocalizedStringsManager::loadStringsSet(const char* Name)

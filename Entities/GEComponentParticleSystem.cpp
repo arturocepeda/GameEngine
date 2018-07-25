@@ -341,7 +341,7 @@ void ComponentParticleSystem::update()
       bVertexDataReallocationPending = false;
    }
 
-   const float fDeltaTime = Time::getClock(cOwner->getClockIndex()).getDelta();
+   const float fDeltaTime = cOwner->getClock()->getDelta();
 
    // active particles
    uint iParticleIndex = 0;

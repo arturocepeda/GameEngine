@@ -13,42 +13,48 @@
 #pragma once
 
 #include "Types/GETypes.h"
-#include "Core/GESerializable.h"
+#include "Content/GEResource.h"
 
 namespace GE { namespace Core
 {
-   class Clock : public Serializable
+   class Clock : public Content::Resource
    {
    private:
-      static uint iClocksCounter;
+      static const float MaxDelta;
 
       float fDelta;
       float fTimeFactor;
 
    public:
-      Clock();
+      static const ObjectName TypeName;
+
+      Clock(const ObjectName& Name, const ObjectName& GroupName);
       ~Clock();
 
-      float getDelta() const;
-      float getTimeFactor() const;
+      float getDelta() const { return fDelta < MaxDelta ? fDelta : MaxDelta; }
+      float getTimeFactor() const { return fTimeFactor; }
 
-      void setDelta(float Delta);
-      void setTimeFactor(float TimeFactor);
+      void setDelta(float Delta) { fDelta = Delta * fTimeFactor; }
+      void setTimeFactor(float TimeFactor) { fTimeFactor = TimeFactor; }
    };
 
 
    class Time
    {
-   public:
-      static const uint ClocksCount = 2;
-
    private:
+      static const ObjectName DefaultClockName;
+
       static float fElapsed;
-      static Clock cClocks[ClocksCount];
+      static ObjectManager<Clock>* mClocks;
 
    public:
+      static void init();
+      static void release();
+
       static float getElapsed();
-      static const Clock& getClock(uint ClockIndex);
+
+      static Clock* getDefaultClock();
+      static Clock* getClock(const ObjectName& pClockName);
 
       static void reset();
       static void setDelta(float DeltaTime);

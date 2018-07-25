@@ -25,17 +25,13 @@ using namespace GE::Rendering;
 //
 ResourcesManager::ResourcesManager()
 {
-   const ObjectName cMeshClassName = ObjectName("Mesh");
-   const ObjectName cSkeletonClassName = ObjectName("Skeleton");
-   const ObjectName cAnimationSetClassName = ObjectName("AnimationSet");
+   mSimpleResourceManagersRegistry[Mesh::TypeName.getID()] = &mMeshes;
+   mSimpleResourceManagersRegistry[Skeleton::TypeName.getID()] = &mSkeletons;
+   mSimpleResourceManagersRegistry[AnimationSet::TypeName.getID()] = &mAnimationSets;
 
-   mSimpleResourceManagersRegistry[cMeshClassName.getID()] = &mMeshes;
-   mSimpleResourceManagersRegistry[cSkeletonClassName.getID()] = &mSkeletons;
-   mSimpleResourceManagersRegistry[cAnimationSetClassName.getID()] = &mAnimationSets;
-
-   registerObjectManager<Mesh>("Mesh", &mMeshes);
-   registerObjectManager<Skeleton>("Skeleton", &mSkeletons);
-   registerObjectManager<AnimationSet>("AnimationSet", &mAnimationSets);
+   registerObjectManager<Mesh>(Mesh::TypeName, &mMeshes);
+   registerObjectManager<Skeleton>(Skeleton::TypeName, &mSkeletons);
+   registerObjectManager<AnimationSet>(AnimationSet::TypeName, &mAnimationSets);
 
    registerSerializableResourceTypes();
 
@@ -51,11 +47,11 @@ ResourcesManager::~ResourcesManager()
 
 void ResourcesManager::registerSerializableResourceTypes()
 {
-   registerObjectManager<Curve>("Curve", &mCurves);
-   registerObjectManager<BezierCurve>("BezierCurve", &mBezierCurves);
+   registerObjectManager<Curve>(Curve::TypeName, &mCurves);
+   registerObjectManager<BezierCurve>(BezierCurve::TypeName, &mBezierCurves);
 
-   SerializableResourcesManager::getInstance()->registerSerializableResourceType("Curve", &mCurves);
-   SerializableResourcesManager::getInstance()->registerSerializableResourceType("BezierCurve", &mBezierCurves);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<Curve>(&mCurves);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<BezierCurve>(&mBezierCurves);
 }
 
 void ResourcesManager::loadBuiltInMeshes()

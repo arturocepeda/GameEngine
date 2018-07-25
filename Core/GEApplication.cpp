@@ -14,6 +14,7 @@
 #include "GEAllocator.h"
 #include "GETaskManager.h"
 #include "GEDevice.h"
+#include "GETime.h"
 
 #include "Input/GEInputSystem.h"
 
@@ -70,6 +71,7 @@ void Application::startUp()
    LocalizedStringsManager* cLocaStringsManager = Allocator::alloc<LocalizedStringsManager>();
    GEInvokeCtor(LocalizedStringsManager, cLocaStringsManager);
 
+   Time::init();
    ScriptingEnvironment::initStaticData();
 
    registerComponentFactories();
@@ -78,6 +80,7 @@ void Application::startUp()
 void Application::shutDown()
 {
    ScriptingEnvironment::releaseStaticData();
+   Time::release();
 
    GEInvokeDtor(LocalizedStringsManager, LocalizedStringsManager::getInstance());
    Allocator::free(LocalizedStringsManager::getInstance());

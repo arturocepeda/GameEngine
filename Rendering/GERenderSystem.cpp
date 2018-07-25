@@ -59,14 +59,14 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
 {
    memset(pBoundTexture, 0, sizeof(Texture*) * (GE::uint)TextureSlot::Count);
 
-   ResourcesManager::getInstance()->registerObjectManager<Texture>("Texture", &mTextures);
-   ResourcesManager::getInstance()->registerObjectManager<ShaderProgram>("ShaderProgram", &mShaderPrograms);
-   ResourcesManager::getInstance()->registerObjectManager<Material>("Material", &mMaterials);
-   ResourcesManager::getInstance()->registerObjectManager<Font>("Font", &mFonts);
+   ResourcesManager::getInstance()->registerObjectManager<Texture>(Texture::TypeName, &mTextures);
+   ResourcesManager::getInstance()->registerObjectManager<ShaderProgram>(ShaderProgram::TypeName, &mShaderPrograms);
+   ResourcesManager::getInstance()->registerObjectManager<Material>(Material::TypeName, &mMaterials);
+   ResourcesManager::getInstance()->registerObjectManager<Font>(Font::TypeName, &mFonts);
    
-   SerializableResourcesManager::getInstance()->registerSerializableResourceType<ShaderProgram>("ShaderProgram", &mShaderPrograms);
-   SerializableResourcesManager::getInstance()->registerSerializableResourceType<Texture>("Texture", &mTextures);
-   SerializableResourcesManager::getInstance()->registerSerializableResourceType<Material>("Material", &mMaterials);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<ShaderProgram>(&mShaderPrograms);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<Texture>(&mTextures);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<Material>(&mMaterials);
 
    // Position (3) + UV (2)
    sGPUBufferPairs[GeometryGroup::_2DStatic].VertexStride = (3 + 2) * sizeof(float);

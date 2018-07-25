@@ -31,15 +31,17 @@ Entity::Entity(const ObjectName& Name, Entity* Parent, Scene* Owner)
    , cOwner(Owner)
    , bActive(true)
    , bInitialized(false)
-   , iClockIndex(0)
+   , mClock(0)
    , iInternalFlags(0)
 {
    GEAssert(Owner);
    updateFullName();
    memset(vComponents, 0, sizeof(Component*) * (uint)ComponentType::Count);
 
+   mClock = cParent ? cParent->getClock() : Time::getDefaultClock();
+
    GERegisterProperty(Bool, Active);
-   GERegisterProperty(UInt, ClockIndex);
+   GERegisterProperty(ObjectName, ClockName);
    GERegisterProperty(ObjectName, PrefabName);
 }
 
@@ -254,23 +256,39 @@ bool Entity::getActive() const
    return bActive;
 }
 
-uint Entity::getClockIndex() const
+const ObjectName& Entity::getClockName() const
 {
-   return iClockIndex;
+   return mClock ? mClock->getName() : ObjectName::Empty;
 }
 
-void Entity::setClockIndex(uint ClockIndex)
+void Entity::setClockName(const ObjectName& pClockName)
 {
-   GEAssert(ClockIndex < Time::ClocksCount);
-   iClockIndex = ClockIndex;
+   Clock* cClock = Time::getClock(pClockName);
+
+   if(!cClock)
+   {
+      cClock = Time::getDefaultClock();
+   }
+
+   setClock(cClock);
 }
 
-const Core::ObjectName& Entity::getPrefabName() const
+void Entity::setClock(Core::Clock* pClock)
+{
+   mClock = pClock;
+
+   for(size_t i = 0; i < vChildren.size(); i++)
+   {
+      vChildren[i]->setClock(pClock);
+   }
+}
+
+const ObjectName& Entity::getPrefabName() const
 {
    return cPrefabName;
 }
 
-void Entity::setPrefabName(const Core::ObjectName& Name)
+void Entity::setPrefabName(const ObjectName& Name)
 {
    cPrefabName = Name;
 }

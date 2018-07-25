@@ -20,6 +20,11 @@
 #include <vector>
 #include <cassert>
 
+namespace GE { namespace Core
+{
+   class Clock;
+}}
+
 namespace GE { namespace Entities
 {
    class ComponentAbstractFactory
@@ -75,7 +80,7 @@ namespace GE { namespace Entities
       Scene* cOwner;
       bool bActive;
       bool bInitialized;
-      uint iClockIndex;
+      Core::Clock* mClock;
       Core::ObjectName cPrefabName;
       uint8_t iInternalFlags;
 
@@ -175,8 +180,10 @@ namespace GE { namespace Entities
       void setActive(bool Active);
       bool getActive() const;
 
-      uint getClockIndex() const;
-      void setClockIndex(uint ClockIndex);
+      const Core::ObjectName& getClockName() const;
+      void setClockName(const Core::ObjectName& pClockName);
+      Core::Clock* getClock() const { return mClock; }
+      void setClock(Core::Clock* pClock);
 
       const Core::ObjectName& getPrefabName() const;
       void setPrefabName(const Core::ObjectName& Name);

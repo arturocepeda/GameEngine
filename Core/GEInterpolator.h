@@ -48,7 +48,7 @@ namespace GE { namespace Core
       };
 
       State eState;
-      uint iClockIndex;
+      Clock* mClock;
       float fElapsedTime;
 
       bool bStopOnStartValue;
@@ -133,8 +133,9 @@ namespace GE { namespace Core
          , getter(nullptr)
          , setter(nullptr)
          , onFinished(nullptr)
-         , iClockIndex(0)
+         , mClock(0)
       {
+         mClock = Time::getDefaultClock();
       }
 
       ~Interpolator()
@@ -166,14 +167,14 @@ namespace GE { namespace Core
          this->getter = getter;
       }
 
-      uint getClockIndex() const
+      const ObjectName& getClockName() const
       {
-         return iClockIndex;
+         return mClock ? mClock->getName() : ObjectName::Empty;
       }
 
-      void setClockIndex(uint ClockIndex)
+      void setClockName(const ObjectName& pClockName)
       {
-         iClockIndex = ClockIndex;
+         mClock = Time::getClock(pClockName);
       }
 
       void animate(const T& EndValue, float Duration, std::function<void()> onFinished = nullptr)
@@ -270,7 +271,7 @@ namespace GE { namespace Core
             return;
          }
 
-         fElapsedTime += Time::getClock(iClockIndex).getDelta();
+         fElapsedTime += mClock->getDelta();
 
          switch(eState)
          {

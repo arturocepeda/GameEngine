@@ -574,7 +574,7 @@ void ComponentSkeleton::update()
 
    GEProfilerMarker("ComponentSkeleton::update()");
 
-   const float fDeltaTime = Time::getClock(cOwner->getClockIndex()).getDelta();
+   const float fDeltaTime = cOwner->getClock()->getDelta();
    updateAnimationInstances(fDeltaTime);
 
    if(onAnimationInstancesUpdated)

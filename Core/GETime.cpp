@@ -12,18 +12,21 @@
 
 #include "GETime.h"
 
+#include "Content/GEResourcesManager.h"
+
 using namespace GE;
 using namespace GE::Core;
-
-
-const float MaxDelta = 0.1f;
+using namespace GE::Content;
 
 
 //
 //  Clock
 //
-Clock::Clock()
-   : Serializable("Clock")
+const ObjectName Clock::TypeName = ObjectName("Clock");
+const float Clock::MaxDelta = 0.1f;
+
+Clock::Clock(const ObjectName& Name, const ObjectName& GroupName)
+   : Resource(Name, GroupName, TypeName)
    , fDelta(0.0f)
    , fTimeFactor(1.0f)
 {
@@ -37,42 +40,47 @@ Clock::~Clock()
 {
 }
 
-float Clock::getDelta() const
-{
-   return fDelta < MaxDelta ? fDelta : MaxDelta;
-}
-
-float Clock::getTimeFactor() const
-{
-   return fTimeFactor;
-}
-
-void Clock::setDelta(float Delta)
-{
-   fDelta = Delta * fTimeFactor;
-}
-
-void Clock::setTimeFactor(float TimeFactor)
-{
-   fTimeFactor = TimeFactor;
-}
-
 
 //
 //  Time
 //
+const ObjectName Time::DefaultClockName = ObjectName("Default");
+
 float Time::fElapsed = 0.0f;
-Clock Time::cClocks[Time::ClocksCount];
+ObjectManager<Clock>* Time::mClocks = 0;
+
+void Time::init()
+{
+   mClocks = Allocator::alloc<ObjectManager<Clock>>();
+   GEInvokeCtor(ObjectManager<Clock>, mClocks);
+
+   Clock* cDefaultClock = Allocator::alloc<Clock>();
+   GEInvokeCtor(Clock, cDefaultClock)(DefaultClockName, ObjectName::Empty);
+   mClocks->add(cDefaultClock);
+
+   ResourcesManager::getInstance()->registerObjectManager<Clock>(Clock::TypeName, mClocks);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<Clock>(mClocks);
+}
+
+void Time::release()
+{
+   GEInvokeDtor(ObjectManager<Clock>, mClocks);
+   Allocator::free(mClocks);
+}
 
 float Time::getElapsed()
 {
    return fElapsed;
 }
 
-const Clock& Time::getClock(uint ClockIndex)
+Clock* Time::getDefaultClock()
 {
-   GEAssert(ClockIndex < ClocksCount);
-   return cClocks[ClockIndex];
+   return mClocks->get(DefaultClockName);
+}
+
+Clock* Time::getClock(const ObjectName& pClockName)
+{
+   return mClocks->get(pClockName);
 }
 
 void Time::reset()
@@ -84,6 +92,9 @@ void Time::setDelta(float DeltaTime)
 {
    fElapsed += DeltaTime;
 
-   for(uint i = 0; i < ClocksCount; i++)
-      cClocks[i].setDelta(DeltaTime);
+   mClocks->iterate([DeltaTime](Clock* pClock) -> bool
+   {
+      pClock->setDelta(DeltaTime);
+      return true;
+   });
 }

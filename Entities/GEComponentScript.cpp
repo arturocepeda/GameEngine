@@ -364,7 +364,7 @@ void ScriptInstance::update()
    if(cEnv->isFunctionDefined(cUpdateFunctionName))
    {
       Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
-      cEnv->setVariable<float>("deltaTime", Time::getClock(cEntity->getClockIndex()).getDelta());
+      cEnv->setVariable<float>("deltaTime", cEntity->getClock()->getDelta());
       cEnv->runFunction<void>(cUpdateFunctionName);
       cEnv->collectGarbage();
    }
@@ -445,7 +445,7 @@ ComponentScript::~ComponentScript()
 
 void ComponentScript::update()
 {
-   if(Time::getClock(cOwner->getClockIndex()).getDelta() < GE_EPSILON)
+   if(cOwner->getClock()->getDelta() < GE_EPSILON)
       return;
 
    for(uint i = 0; i < vScriptInstanceList.size(); i++)
