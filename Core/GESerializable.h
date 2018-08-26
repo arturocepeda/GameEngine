@@ -191,21 +191,21 @@ namespace GE { namespace Core
       v##ClassName##List.push_back(cEntry); \
       return cEntry; \
    } \
-   GE::uint get##ClassName##Count() const \
+   uint32_t get##ClassName##Count() const \
    { \
-      return (GE::uint)v##ClassName##List.size(); \
+      return (uint32_t)v##ClassName##List.size(); \
    } \
-   Class* get##ClassName(uint Index) \
-   { \
-      GEAssert(Index < v##ClassName##List.size()); \
-      return static_cast<Class*>(v##ClassName##List[Index]); \
-   } \
-   const Class* get##ClassName##Const(uint Index) const \
+   Class* get##ClassName(uint32_t Index) \
    { \
       GEAssert(Index < v##ClassName##List.size()); \
       return static_cast<Class*>(v##ClassName##List[Index]); \
    } \
-   void remove##ClassName(uint Index) \
+   const Class* get##ClassName##Const(uint32_t Index) const \
+   { \
+      GEAssert(Index < v##ClassName##List.size()); \
+      return static_cast<Class*>(v##ClassName##List[Index]); \
+   } \
+   void remove##ClassName(uint32_t Index) \
    { \
       GEAssert(Index < v##ClassName##List.size()); \
       Class* cEntry = static_cast<Class*>(v##ClassName##List[Index]); \
@@ -213,7 +213,7 @@ namespace GE { namespace Core
       GE::Core::Allocator::free(cEntry); \
       v##ClassName##List.erase(v##ClassName##List.begin() + Index); \
    } \
-   void swap##ClassName(uint IndexA, uint IndexB) \
+   void swap##ClassName(uint32_t IndexA, uint32_t IndexB) \
    { \
       GEAssert(IndexA < v##ClassName##List.size()); \
       GEAssert(IndexB < v##ClassName##List.size()); \
@@ -224,7 +224,7 @@ namespace GE { namespace Core
    } \
    void clear##ClassName##List() \
    { \
-      for(GE::uint i = 0; i < v##ClassName##List.size(); i++) \
+      for(uint32_t i = 0; i < v##ClassName##List.size(); i++) \
       { \
          Class* cEntry = static_cast<Class*>(v##ClassName##List[i]); \
          GEInvokeDtor(Class, cEntry); \
@@ -293,8 +293,8 @@ namespace GE { namespace Core
 #define GERegisterPropertyArray(ArrayElementName) \
    registerPropertyArray(GE::Core::ObjectName(#ArrayElementName), &v##ArrayElementName##List, \
       [this]() { this->add##ArrayElementName(); }, \
-      [this](uint i) { this->remove##ArrayElementName(i); }, \
-      [this](uint i, uint j) { this->swap##ArrayElementName(i, j); }, \
+      [this](uint32_t i) { this->remove##ArrayElementName(i); }, \
+      [this](uint32_t i, uint32_t j) { this->swap##ArrayElementName(i, j); }, \
       [this](const pugi::xml_node& n, std::ostream& o) { this->xmlToStream##ArrayElementName(n, o); })
 
 #define GEReleasePropertyArray(ArrayElementName) \
