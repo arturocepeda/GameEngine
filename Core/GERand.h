@@ -23,6 +23,9 @@ namespace GE { namespace Core
    class Rand
    {
    protected:
+      static std::random_device cRandomDevice;
+      static std::mt19937 cRandomEngine;
+
       std::uniform_real_distribution<float> cRandomDist01;
       std::uniform_real_distribution<float> cRandomDistM11;
 
@@ -45,6 +48,7 @@ namespace GE { namespace Core
 
    public:
       RandInt(int MinValue, int MaxValue);
+
       int generate();
    };
 
@@ -61,6 +65,7 @@ namespace GE { namespace Core
 
    public:
       RandFloat(float MinValue, float MaxValue);
+
       float generate();
    };
 
@@ -76,6 +81,7 @@ namespace GE { namespace Core
 
    public:
       RandEvent(float Probability);
+
       void setProbability(float Probability);
       bool occurs();
    };
@@ -91,7 +97,8 @@ namespace GE { namespace Core
       std::uniform_int_distribution<int> cRandomDist;
 
    public:
-      RandDie();
+      RandDie(int pMin = 1, int pMax = 6);
+
       int roll();
    };
 
@@ -100,16 +107,33 @@ namespace GE { namespace Core
    //
    //  RandUniform
    //
+   template<typename T>
    class RandUniform : public Rand
    {
    protected:
-      GESTLVector(int) iValues;
+      GESTLVector(T) mValues;
 
    public:
-      void addNumber(int Number);
-      int extractNumber();
-      void clear();
-      uint getSize() const;
+      void insert(T pValue)
+      {
+         mValues.push_back(pValue);
+      }
+
+      T extract()
+      {
+         std::uniform_int_distribution<int> randomDist(0, (int)mValues.size() - 1);
+         return (mValues[randomDist(cRandomEngine)]);
+      }
+
+      void clear()
+      {
+         mValues.clear();
+      }
+
+      uint32_t getSize() const
+      {
+         return (uint32_t)mValues.size();
+      }
    };
 
 
@@ -117,10 +141,21 @@ namespace GE { namespace Core
    //
    //  RandUrn
    //
-   class RandUrn : public RandUniform
+   template<typename T>
+   class RandUrn : public RandUniform<T>
    {
    public:
-      int extractNumber();
+      T extract()
+      {
+         std::uniform_int_distribution<int> randomDist(0, (int)mValues.size() - 1);
+
+         const int position = randomDist(cRandomEngine);
+         T value = mValues[position];
+
+         mValues.erase(mValues.begin() + position);
+
+         return value;
+      }
    };
 
 
@@ -135,6 +170,7 @@ namespace GE { namespace Core
 
    public:
       RandExponential(float Lambda);
+
       float generate();
    };
 
@@ -155,6 +191,7 @@ namespace GE { namespace Core
 
    public:
       RandNormal(float Mean, float StandardDeviation);
+
       float generate();
    };
 }}

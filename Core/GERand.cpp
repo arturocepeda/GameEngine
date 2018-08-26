@@ -13,15 +13,15 @@
 
 #include "GERand.h"
 
-std::random_device cRandomDevice;
-std::mt19937 cRandomEngine(cRandomDevice());
-
 using namespace GE;
 using namespace GE::Core;
 
 //
 //  Rand
 //
+std::random_device Rand::cRandomDevice;
+std::mt19937 Rand::cRandomEngine(cRandomDevice());
+
 Rand::Rand()
    : cRandomDist01(0.0f, 1.0f)
    , cRandomDistM11(-1.0f, 1.0f)
@@ -112,56 +112,14 @@ bool RandEvent::occurs()
 //
 //  RandDie
 //
-RandDie::RandDie()
-   : cRandomDist(1, 6)
+RandDie::RandDie(int pMin, int pMax)
+   : cRandomDist(pMin, pMax)
 {
 }
 
 int RandDie::roll()
 {
    return cRandomDist(cRandomEngine);
-}
-
-
-
-//
-//  RandUniform
-//
-void RandUniform::addNumber(int Number)
-{
-   iValues.push_back(Number);
-}
-
-int RandUniform::extractNumber()
-{
-   std::uniform_int_distribution<int> cRandomDist(0, (int)iValues.size() - 1);
-   return (iValues[cRandomDist(cRandomEngine)]);
-}
-
-void RandUniform::clear()
-{
-   iValues.clear();
-}
-
-uint RandUniform::getSize() const
-{
-   return (uint)iValues.size();
-}
-
-
-
-//
-//  RandUrn
-//
-int RandUrn::extractNumber()
-{
-   std::uniform_int_distribution<int> cRandomDist(0, (int)iValues.size() - 1);
-   int iPosition = cRandomDist(cRandomEngine);
-   int iValue = iValues[iPosition];
-
-   iValues.erase(iValues.begin() + iPosition);
-
-   return iValue;
 }
 
 
