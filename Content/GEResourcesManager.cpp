@@ -47,9 +47,6 @@ ResourcesManager::~ResourcesManager()
 
 void ResourcesManager::registerSerializableResourceTypes()
 {
-   registerObjectManager<Curve>(Curve::TypeName, &mCurves);
-   registerObjectManager<BezierCurve>(BezierCurve::TypeName, &mBezierCurves);
-
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<Curve>(&mCurves);
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<BezierCurve>(&mBezierCurves);
 }

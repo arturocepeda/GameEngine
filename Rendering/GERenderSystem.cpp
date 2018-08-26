@@ -59,9 +59,6 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
 {
    memset(pBoundTexture, 0, sizeof(Texture*) * (GE::uint)TextureSlot::Count);
 
-   ResourcesManager::getInstance()->registerObjectManager<Texture>(Texture::TypeName, &mTextures);
-   ResourcesManager::getInstance()->registerObjectManager<ShaderProgram>(ShaderProgram::TypeName, &mShaderPrograms);
-   ResourcesManager::getInstance()->registerObjectManager<Material>(Material::TypeName, &mMaterials);
    ResourcesManager::getInstance()->registerObjectManager<Font>(Font::TypeName, &mFonts);
    
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<ShaderProgram>(&mShaderPrograms);

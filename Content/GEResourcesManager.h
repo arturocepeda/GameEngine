@@ -46,7 +46,7 @@ namespace GE { namespace Content
       ~ResourcesManager();
 
       template<typename T>
-      void registerObjectManager(const Core::ObjectName& Name, Core::ObjectManager<T>* Mgr)
+      void registerObjectManager(const Core::ObjectName& Name, const Core::ObjectManager<T>* Mgr)
       {
          mResourcesRegistry[Name.getID()] = Mgr->getObjectRegistry();
       }
@@ -181,8 +181,11 @@ namespace GE { namespace Content
          SerializableResourceManagerObjects sManagerObjects;
          sManagerObjects.Registry = const_cast<Core::ObjectRegistry*>(Manager->getObjectRegistry());
          sManagerObjects.Factory = Core::Allocator::alloc<SerializableResourceFactory<T>>();
+
          GEInvokeCtor(SerializableResourceFactory<T>, sManagerObjects.Factory)(T::TypeName);
          vEntries.push_back(sManagerObjects);
+
+         ResourcesManager::getInstance()->registerObjectManager<T>(T::TypeName, Manager);
       }
 
       uint getEntriesCount() const;

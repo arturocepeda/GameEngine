@@ -58,7 +58,6 @@ void Time::init()
    GEInvokeCtor(Clock, cDefaultClock)(DefaultClockName, ObjectName::Empty);
    mClocks->add(cDefaultClock);
 
-   ResourcesManager::getInstance()->registerObjectManager<Clock>(Clock::TypeName, mClocks);
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<Clock>(mClocks);
 }
 
