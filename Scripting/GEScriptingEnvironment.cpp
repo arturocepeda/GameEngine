@@ -510,7 +510,7 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE
    //
-   lua.new_usertype<Vector2>
+   lua.new_simple_usertype<Vector2>
    (
       "Vector2"
       , sol::constructors<sol::types<>, sol::types<float, float>>()
@@ -526,7 +526,7 @@ void ScriptingEnvironment::registerTypes()
       , sol::meta_method::multiplication, (Vector2 (Vector2::*)(const float) const)&Vector2::operator*
       , sol::meta_method::unary_minus, (Vector2 (Vector2::*)())&Vector2::operator-
    );
-   lua.new_usertype<Vector3>
+   lua.new_simple_usertype<Vector3>
    (
       "Vector3"
       , sol::constructors<sol::types<>, sol::types<float, float, float>, sol::types<float>>()
@@ -545,7 +545,7 @@ void ScriptingEnvironment::registerTypes()
       , sol::meta_method::multiplication, (Vector3 (Vector3::*)(const float) const)&Vector3::operator*
       , sol::meta_method::unary_minus, (Vector3 (Vector3::*)())&Vector3::operator-
    );
-   lua.new_usertype<Rotation>
+   lua.new_simple_usertype<Rotation>
    (
       "Rotation"
       , sol::constructors<sol::types<>, sol::types<const Vector3&>, sol::types<const Vector3&, float>>()
@@ -553,7 +553,7 @@ void ScriptingEnvironment::registerTypes()
       , "setFromAxisAngle", &Rotation::setFromAxisAngle
       , "setFromQuaternion", &Rotation::setFromQuaternion
    );
-   lua.new_usertype<Color>
+   lua.new_simple_usertype<Color>
    (
       "Color"
       , sol::constructors<sol::types<>, sol::types<float, float, float, float>>()
@@ -567,7 +567,7 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Core
    //
-   lua.new_usertype<ObjectName>
+   lua.new_simple_usertype<ObjectName>
    (
       "ObjectName"
       , sol::constructors<sol::types<>, sol::types<const char*>>()
@@ -576,7 +576,7 @@ void ScriptingEnvironment::registerTypes()
       , "isEmpty", &ObjectName::isEmpty
       , sol::meta_method::equal_to, &ObjectName::operator==
    );
-   lua.new_usertype<Value>
+   lua.new_simple_usertype<Value>
    (
       "Value"
       , sol::constructors<sol::types<bool>, sol::types<int>, sol::types<float>, sol::types<const char*>,
@@ -590,7 +590,7 @@ void ScriptingEnvironment::registerTypes()
       , "getAsColor", &Value::getAsColor
       , "getAsObjectName", &Value::getAsObjectName
    );
-   lua.new_usertype<Serializable>
+   lua.new_simple_usertype<Serializable>
    (
       "Serializable"
       , "get", &Serializable::get
@@ -605,7 +605,7 @@ void ScriptingEnvironment::registerTypes()
       , "QuadraticInverse", InterpolationMode::QuadraticInverse
       , "Logarithmic", InterpolationMode::Logarithmic
    );
-   lua.new_usertype<PropertyInterpolator<float>>
+   lua.new_simple_usertype<PropertyInterpolator<float>>
    (
       "PropertyInterpolatorFloat"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
@@ -613,7 +613,7 @@ void ScriptingEnvironment::registerTypes()
       , "alternate", &PropertyInterpolator<float>::alternate
       , "update", &PropertyInterpolator<float>::update
    );
-   lua.new_usertype<PropertyInterpolator<Vector2>>
+   lua.new_simple_usertype<PropertyInterpolator<Vector2>>
    (
       "PropertyInterpolatorVector2"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
@@ -621,7 +621,7 @@ void ScriptingEnvironment::registerTypes()
       , "alternate", &PropertyInterpolator<Vector2>::alternate
       , "update", &PropertyInterpolator<Vector2>::update
    );
-   lua.new_usertype<PropertyInterpolator<Vector3>>
+   lua.new_simple_usertype<PropertyInterpolator<Vector3>>
    (
       "PropertyInterpolatorVector3"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
@@ -629,7 +629,7 @@ void ScriptingEnvironment::registerTypes()
       , "alternate", &PropertyInterpolator<Vector3>::alternate
       , "update", &PropertyInterpolator<Vector3>::update
    );
-   lua.new_usertype<PropertyInterpolator<Color>>
+   lua.new_simple_usertype<PropertyInterpolator<Color>>
    (
       "PropertyInterpolatorColor"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
@@ -637,7 +637,7 @@ void ScriptingEnvironment::registerTypes()
       , "alternate", &PropertyInterpolator<Color>::alternate
       , "update", &PropertyInterpolator<Color>::update
    );
-   lua.new_usertype<CurveKey>
+   lua.new_simple_usertype<CurveKey>
    (
       "CurveKey"
       , "getTimePosition", &CurveKey::getTimePosition
@@ -645,7 +645,7 @@ void ScriptingEnvironment::registerTypes()
       , "setTimePosition", &CurveKey::setTimePosition
       , "setValue", &CurveKey::setValue
    );
-   lua.new_usertype<Curve>
+   lua.new_simple_usertype<Curve>
    (
       "Curve"
       , "getValue", &Curve::getValue
@@ -664,7 +664,7 @@ void ScriptingEnvironment::registerTypes()
       , "Blue", PropertyValueComponent::Blue
       , "Alpha", PropertyValueComponent::Alpha
    );
-   lua.new_usertype<CurvePropertyInterpolator>
+   lua.new_simple_usertype<CurvePropertyInterpolator>
    (
       "CurvePropertyInterpolator"
       , sol::constructors<sol::types<Curve*, Serializable*, const ObjectName&, PropertyValueComponent>>()
@@ -673,12 +673,12 @@ void ScriptingEnvironment::registerTypes()
       , "animateInverse", &CurvePropertyInterpolator::animateInverse
       , "update", &CurvePropertyInterpolator::update
    );
-   lua.new_usertype<BezierCurve>
+   lua.new_simple_usertype<BezierCurve>
    (
       "BezierCurve"
       , "getPoint", &BezierCurve::getPoint
    );
-   lua.new_usertype<BezierPropertyInterpolator>
+   lua.new_simple_usertype<BezierPropertyInterpolator>
    (
       "BezierPropertyInterpolator"
       , sol::constructors<sol::types<BezierCurve*, Serializable*, const ObjectName&, InterpolationMode>>()
@@ -686,12 +686,12 @@ void ScriptingEnvironment::registerTypes()
       , "animateInverse", &BezierPropertyInterpolator::animateInverse
       , "update", &BezierPropertyInterpolator::update
    );
-   lua.new_usertype<Physics::Ray>
+   lua.new_simple_usertype<Physics::Ray>
    (
       "Ray"
       , sol::constructors<sol::types<const Vector3&, const Vector3&>>()
    );
-   lua.new_usertype<Physics::HitInfo>
+   lua.new_simple_usertype<Physics::HitInfo>
    (
       "HitInfo"
       , sol::constructors<sol::types<>>()
@@ -704,7 +704,7 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Content
    //
-   lua.new_usertype<Skeleton>
+   lua.new_simple_usertype<Skeleton>
    (
       "Skeleton"
       , "getBonesCount", &Skeleton::getBonesCount
@@ -713,7 +713,7 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Input
    //
-   lua.new_usertype<InputSystem>
+   lua.new_simple_usertype<InputSystem>
    (
       "InputSystem"
       , "getInstance", &InputSystem::getInstance
@@ -724,7 +724,7 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Entities
    //
-   lua.new_usertype<Scene>
+   lua.new_simple_usertype<Scene>
    (
       "Scene"
       , "getActiveScene", &Scene::getActiveScene
@@ -735,7 +735,7 @@ void ScriptingEnvironment::registerTypes()
       , "renameEntity", &Scene::renameEntity
       , sol::base_classes, sol::bases<Serializable>()
    );
-   lua.new_usertype<Entity>
+   lua.new_simple_usertype<Entity>
    (
       "Entity"
       , "getName", &Entity::getName
@@ -774,13 +774,13 @@ void ScriptingEnvironment::registerTypes()
       , "init", &Entity::init
       , sol::base_classes, sol::bases<Serializable>()
    );
-   lua.new_usertype<Component>
+   lua.new_simple_usertype<Component>
    (
       "Component"
       , "getOwner", &Component::getOwner
       , sol::base_classes, sol::bases<Serializable>()
    );
-   lua.new_usertype<ComponentTransform>
+   lua.new_simple_usertype<ComponentTransform>
    (
       "ComponentTransform"
       , "move", (void (ComponentTransform::*)(const Vector3&))&ComponentTransform::move
@@ -803,7 +803,7 @@ void ScriptingEnvironment::registerTypes()
       , "setForwardVector", &ComponentTransform::setForwardVector
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_usertype<ComponentRenderable>
+   lua.new_simple_usertype<ComponentRenderable>
    (
       "ComponentRenderable"
       , "getMaterialPassCount", &ComponentRenderable::getMaterialPassCount
@@ -816,7 +816,7 @@ void ScriptingEnvironment::registerTypes()
       , "setColor", &ComponentRenderable::setColor
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_usertype<ComponentSprite>
+   lua.new_simple_usertype<ComponentSprite>
    (
       "ComponentSprite"
       , "isOver", &ComponentSprite::isOver
@@ -826,7 +826,7 @@ void ScriptingEnvironment::registerTypes()
       , "setSize", &ComponentSprite::setSize
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
-   lua.new_usertype<ComponentLabel>
+   lua.new_simple_usertype<ComponentLabel>
    (
       "ComponentLabel"
       , "getText", &ComponentLabel::getText
@@ -835,14 +835,14 @@ void ScriptingEnvironment::registerTypes()
       , "setStringID", &ComponentLabel::setStringID
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
-   lua.new_usertype<ComponentMesh>
+   lua.new_simple_usertype<ComponentMesh>
    (
       "ComponentMesh"
       , "getMeshName", &ComponentMesh::getMeshName
       , "setMeshName", &ComponentMesh::setMeshName
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
-   lua.new_usertype<ComponentParticleSystem>
+   lua.new_simple_usertype<ComponentParticleSystem>
    (
       "ComponentParticleSystem"
       , "getEmitterActive", &ComponentParticleSystem::getEmitterActive
@@ -850,34 +850,34 @@ void ScriptingEnvironment::registerTypes()
       , "burst", &ComponentParticleSystem::burst
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
-   lua.new_usertype<ComponentCamera>
+   lua.new_simple_usertype<ComponentCamera>
    (
       "ComponentCamera"
       , "getScreenRay", &ComponentCamera::getScreenRay
       , "worldToScreen", &ComponentCamera::worldToScreen
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_usertype<ComponentCollider>
+   lua.new_simple_usertype<ComponentCollider>
    (
       "ComponentCollider"
       , "checkCollision", &ComponentCollider::checkCollision
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_usertype<ComponentUIElement>
+   lua.new_simple_usertype<ComponentUIElement>
    (
       "ComponentUIElement"
       , "getAlpha", &ComponentUIElement::getAlpha
       , "setAlpha", &ComponentUIElement::setAlpha
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_usertype<ComponentUI3DElement>
+   lua.new_simple_usertype<ComponentUI3DElement>
    (
       "ComponentUI3DElement"
       , "getCanvasIndex", &ComponentUI3DElement::getCanvasIndex
       , "setCanvasIndex", &ComponentUI3DElement::setCanvasIndex
       , sol::base_classes, sol::bases<ComponentUIElement, Component, Serializable>()
    );
-   lua.new_usertype<ComponentSkeleton>
+   lua.new_simple_usertype<ComponentSkeleton>
    (
       "ComponentSkeleton"
       , "getSkeleton", &ComponentSkeleton::getSkeleton
@@ -892,7 +892,7 @@ void ScriptingEnvironment::registerTypes()
       , "Loop", AnimationPlayMode::Loop
       , "Once", AnimationPlayMode::Once
    );
-   lua.new_usertype<AnimationPlayInfo>
+   lua.new_simple_usertype<AnimationPlayInfo>
    (
       "AnimationPlayInfo"
       , "AnimationName", &AnimationPlayInfo::AnimationName
@@ -900,7 +900,7 @@ void ScriptingEnvironment::registerTypes()
       , "BlendTime", &AnimationPlayInfo::BlendTime
       , "Speed", &AnimationPlayInfo::Speed
    );
-   lua.new_usertype<ComponentScript>
+   lua.new_simple_usertype<ComponentScript>
    (
       "ComponentScript"
       , "getScriptInstanceCount", &ComponentScript::getScriptInstanceCount
@@ -910,7 +910,7 @@ void ScriptingEnvironment::registerTypes()
       , "removeScriptInstance", &ComponentScript::removeScriptInstance
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_usertype<ScriptInstance>
+   lua.new_simple_usertype<ScriptInstance>
    (
       "ScriptInstance"
       , "getScriptName", &ScriptInstance::getScriptName
@@ -923,19 +923,19 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Rendering
    //
-   lua.new_usertype<RenderSystem>
+   lua.new_simple_usertype<RenderSystem>
    (
       "RenderSystem"
       , "getInstance", &RenderSystem::getInstance
       , "getActiveCamera", &RenderSystem::getActiveCamera
    );
-   lua.new_usertype<Texture>
+   lua.new_simple_usertype<Texture>
    (
       "Texture"
       , "getAtlasSize", &Texture::getAtlasSize
       , "getAtlasName", &Texture::getAtlasName
    );
-   lua.new_usertype<Material>
+   lua.new_simple_usertype<Material>
    (
       "Material"
       , "getShaderProgram", &Material::getShaderProgram
@@ -943,7 +943,7 @@ void ScriptingEnvironment::registerTypes()
       , "getDiffuseTexture", &Material::getDiffuseTexture
       , "getBlendingMode", &Material::getBlendingMode
    );
-   lua.new_usertype<MaterialPass>
+   lua.new_simple_usertype<MaterialPass>
    (
       "MaterialPass"
       , "getActive", &MaterialPass::getActive
