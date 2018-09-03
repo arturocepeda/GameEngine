@@ -231,3 +231,12 @@ namespace GE { namespace Rendering
       "Repeat"
    };
 }}
+
+namespace GE { namespace Audio
+{
+   const char* strAudioEventPlayMode[] =
+   {
+      "OneShot",
+      "Loop"
+   };
+}}

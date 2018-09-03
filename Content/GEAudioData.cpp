@@ -112,3 +112,8 @@ short AudioData::getBitDepth()
 {
    return iBitDepth;
 }
+
+short AudioData::getNumberOfChannels()
+{
+   return iNumberOfChannels;
+}

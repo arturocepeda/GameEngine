@@ -11,94 +11,261 @@
 //////////////////////////////////////////////////////////////////
 
 #include "GEAudioSystem.h"
+
 #include "Core/GEAllocator.h"
+#include "Core/GETime.h"
+#include "Content/GEResourcesManager.h"
 
 using namespace GE;
 using namespace GE::Audio;
 using namespace GE::Core;
+using namespace GE::Content;
+
+const float UpdatePeriod = 0.5f;
 
 AudioSystem::AudioSystem()
-   : pHandler(0)
-   , iChannels(0)
-   , iSounds(0)
-   , sChannels(0)
-   , iAssignmentTime(0)
+   : mHandler(0)
+   , mChannelsCount(0)
+   , mBuffersCount(0)
+   , mNextBufferToAssign(0)
+   , mChannels(0)
+   , mAssignmentTime(0)
+   , mTimeSinceLastUpdate(0.0f)
 {
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<AudioBank>(&mAudioBanks);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<AudioEvent>(&mAudioEvents);
 }
 
 AudioSystem::~AudioSystem()
 {
-   if(sChannels)
-      Allocator::free(sChannels);
 }
 
-void AudioSystem::init(uint Channels, uint Sounds)
+void AudioSystem::loadAudioEventEntries()
 {
-   iChannels = Channels;
-   iSounds = Sounds;
-   
-   if(Channels > 0)
-      sChannels = Allocator::alloc<AudioChannel>(Channels);
-   
-   internalInit();
+   const char* subdir = "Audio";
+   const char* extension = "events.xml";
+
+   const uint32_t groupsCount = Device::getContentFilesCount(subdir, extension);
+
+   for(uint32_t i = 0; i < groupsCount; i++)
+   {
+      char fileName[256];
+      Device::getContentFileName(subdir, extension, i, fileName);
+
+      const ObjectName groupName = ObjectName(fileName);
+      SerializableResourcesManager::getInstance()->loadFromXml<AudioEvent>(AudioEvent::TypeName, groupName, subdir, fileName, extension);
+   }
+}
+
+void AudioSystem::loadAudioBankEntries()
+{
+   const char* subdir = "Audio";
+   const char* extension = "banks.xml";
+
+   const uint32_t groupsCount = Device::getContentFilesCount(subdir, extension);
+
+   for(uint32_t i = 0; i < groupsCount; i++)
+   {
+      char fileName[256];
+      Device::getContentFileName(subdir, extension, i, fileName);
+
+      const ObjectName groupName = ObjectName(fileName);
+      SerializableResourcesManager::getInstance()->loadFromXml<AudioBank>(AudioBank::TypeName, groupName, subdir, fileName, extension);
+   }
+}
+
+void AudioSystem::init(uint32_t pChannelsCount, uint32_t pBuffersCount)
+{
+   mChannelsCount = pChannelsCount;
+   mBuffersCount = pBuffersCount;
+
+   GEAssert(mChannelsCount > 0);
+
+   mChannels = Allocator::alloc<AudioChannel>(mChannelsCount);
+
+   platformInit();
+
+   setListenerPosition(Vector3::Zero);
+
+   loadAudioEventEntries();
+   loadAudioBankEntries();
 }
 
 void AudioSystem::update()
 {
+   const float deltaTime = Time::getDefaultClock()->getDelta();
+
+   mTimeSinceLastUpdate += deltaTime;
+
+   if(mTimeSinceLastUpdate >= UpdatePeriod)
+   {
+      mTimeSinceLastUpdate -= UpdatePeriod;
+
+      for(uint32_t i = 0; i < mChannelsCount; i++)
+      {
+         if(!mChannels[i].Free && !platformIsInUse(i))
+         {
+            mChannels[i].Free = true;
+         }
+      }
+
+      platformUpdate();
+   }
 }
 
-void* AudioSystem::getHandler()
+void AudioSystem::release()
 {
-   return pHandler;
+   unloadAllAudioBanks();
+   platformRelease();
+
+   if(mChannels)
+   {
+      Allocator::free(mChannels);
+   }
 }
 
-uint AudioSystem::playSound(uint Sound)
+void AudioSystem::loadAudioBank(const ObjectName& pAudioBankName)
+{
+   AudioBank* audioBank = mAudioBanks.get(pAudioBankName);
+
+   if(audioBank)
+   {
+      audioBank->load(mAudioEvents);
+
+      const GESTLMap(uint32_t, AudioData*)& audioFiles = audioBank->getAudioFiles();
+
+      for(GESTLMap(uint32_t, AudioData*)::const_iterator it = audioFiles.begin(); it != audioFiles.end(); it++)
+      {
+         std::pair<uint32_t, BufferID> audioBufferPair;
+         audioBufferPair.first = it->first;
+         audioBufferPair.second = mNextBufferToAssign;
+         mAudioBuffers.insert(audioBufferPair);
+
+         platformLoadSound(mNextBufferToAssign++, it->second);
+      }
+   }
+}
+
+void AudioSystem::unloadAudioBank(const ObjectName& pAudioBankName)
+{
+   AudioBank* audioBank = mAudioBanks.get(pAudioBankName);
+
+   if(audioBank)
+   {
+      audioBank->unload();
+   }
+}
+
+void AudioSystem::unloadAllAudioBanks()
+{
+   mAudioBanks.iterate([this](AudioBank* pAudioBank)
+   {
+      pAudioBank->unload();
+      return true;
+   });
+}
+
+ChannelID AudioSystem::playAudioEvent(const ObjectName& pAudioBankName, const ObjectName& pAudioEventName)
 {
    // select channel to play the sound
-   uint iCurrentChannel = 0;
-   uint iSelectedChannel = 0;
-   uint iOldestAssignmentTime = sChannels[0].AssignmentTime;
+   ChannelID selectedChannel = 0;
+   uint32_t oldestAssignmentTime = mChannels[0].AssignmentTime;
 
-   for(; iCurrentChannel < iChannels; iCurrentChannel++)
+   for(ChannelID currentChannel = 0; currentChannel < mChannelsCount; currentChannel++)
    {
-      if(sChannels[iCurrentChannel].Free)
+      if(mChannels[currentChannel].Free)
       {
-         iSelectedChannel = iCurrentChannel;
+         selectedChannel = currentChannel;
          break;
       }
 
-      if(sChannels[iCurrentChannel].AssignmentTime < iOldestAssignmentTime)
+      if(mChannels[currentChannel].AssignmentTime < oldestAssignmentTime)
       {
-         iOldestAssignmentTime = sChannels[iCurrentChannel].AssignmentTime;
-         iSelectedChannel = iCurrentChannel;
+         oldestAssignmentTime = mChannels[currentChannel].AssignmentTime;
+         selectedChannel = currentChannel;
       }
    }
 
-   // play the sound through the selected channel
-   playSound(Sound, iSelectedChannel);
+   // play the event through the selected channel
+   playAudioEvent(pAudioBankName, pAudioEventName, selectedChannel);
 
    // return the selected channel
-   return iSelectedChannel;
+   return selectedChannel;
 }
 
-void AudioSystem::playSound(uint Sound, uint Channel)
+void AudioSystem::playAudioEvent(const ObjectName& pAudioBankName, const ObjectName& pAudioEventName, ChannelID pChannel)
 {
-   sChannels[Channel].AssignmentTime = iAssignmentTime++;
-   sChannels[Channel].AssignedSound = Sound;
-   sChannels[Channel].Free = false;
+   AudioBank* audioBank = mAudioBanks.get(pAudioBankName);
 
-   internalPlaySound(Sound, Channel);
+   if(!audioBank)
+      return;
+
+   AudioEvent* audioEvent = audioBank->getAudioEvent(pAudioEventName);
+
+   if(!audioEvent || audioEvent->getAudioFileCount() == 0)
+      return;
+
+   GESTLMap(uint32_t, BufferID)::iterator it = mAudioBuffers.find(audioEvent->getAudioFile(0)->getFileName().getID());
+
+   if(it == mAudioBuffers.end())
+      return;
+
+   const BufferID bufferID = it->second;
+
+   mChannels[pChannel].AssignmentTime = mAssignmentTime++;
+   mChannels[pChannel].AssignedBuffer = bufferID;
+   mChannels[pChannel].Free = false;
+
+   platformPlaySound(bufferID, pChannel);
 }
 
-void AudioSystem::stop(uint Channel)
+void AudioSystem::stop(ChannelID pChannel)
 {
-   sChannels[Channel].Free = true;
+   mChannels[pChannel].Free = true;
 
-   internalStop(Channel);
+   platformStop(pChannel);
 }
 
-void AudioSystem::unloadAllSounds()
+void AudioSystem::pause(ChannelID pChannel)
 {
-   for(uint i = 0; i < iSounds; i++)
-      unloadSound(i);
+   platformPause(pChannel);
+}
+
+void AudioSystem::resume(ChannelID pChannel)
+{
+   platformResume(pChannel);
+}
+
+bool AudioSystem::isPlaying(ChannelID pChannel) const
+{
+   return platformIsPlaying(pChannel);
+}
+
+bool AudioSystem::isPaused(ChannelID pChannel) const
+{
+   return platformIsPaused(pChannel);
+}
+
+void AudioSystem::setVolume(ChannelID pChannel, float pVolume)
+{
+   platformSetVolume(pChannel, pVolume);
+}
+
+void AudioSystem::setPosition(ChannelID pChannel, const Vector3& pPosition)
+{
+   platformSetPosition(pChannel, pPosition);
+}
+
+void AudioSystem::setListenerPosition(const Vector3& pPosition)
+{
+   mListenerPosition = pPosition;
+
+   platformSetListenerPosition(pPosition);
+}
+
+void AudioSystem::setListenerOrientation(const Quaternion& pOrientation)
+{
+   mListenerOrientation = pOrientation;
+
+   platformSetListenerOrientation(pOrientation);
 }

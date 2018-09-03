@@ -16,9 +16,6 @@
     <Filter Include="Audio">
       <UniqueIdentifier>{0edacfdc-48db-43a7-ac45-59f2e90e62ca}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Audio.FMOD">
-      <UniqueIdentifier>{9af8d146-46d7-4729-b6d8-31a87ed7d735}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Types">
       <UniqueIdentifier>{3995c7f6-9e84-48d6-954a-e2ae36cb13ba}</UniqueIdentifier>
     </Filter>
@@ -46,13 +43,13 @@
     <Filter Include="Externals\lua">
       <UniqueIdentifier>{d34f522c-491e-4ae0-a117-44e8e31d6670}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Audio.OpenAL">
+      <UniqueIdentifier>{5aa80b8c-62e2-4f64-ba52-f48627327557}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
       <Filter>Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="Audio\FMOD\GEAudioSystemFMOD.cpp">
-      <Filter>Audio.FMOD</Filter>
     </ClCompile>
     <ClCompile Include="Content\GEAudioData.cpp">
       <Filter>Content</Filter>
@@ -357,13 +354,19 @@
     <ClCompile Include="Core\GEInterpolator.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Audio\OpenAL\GEAudioSystemOpenAL.cpp">
+      <Filter>Audio.OpenAL</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\GEAudioBank.cpp">
+      <Filter>Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\GEAudioEvent.cpp">
+      <Filter>Audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\GEAudioSystem.h">
       <Filter>Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="Audio\FMOD\GEAudioSystemFMOD.h">
-      <Filter>Audio.FMOD</Filter>
     </ClInclude>
     <ClInclude Include="Content\GEAudioData.h">
       <Filter>Content</Filter>
@@ -700,6 +703,12 @@
     </ClInclude>
     <ClInclude Include="Core\GELog.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\GEAudioBank.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\GEAudioEvent.h">
+      <Filter>Audio</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -12,65 +12,110 @@
 
 #pragma once
 
+#include "GEAudioBank.h"
+
 #include "Types/GETypes.h"
 #include "Core/GESingleton.h"
+#include "Core/GEObjectManager.h"
 
-#define GE_AUDIO_CHANNELS   24
-#define GE_AUDIO_SOUNDS    256
+#define GE_AUDIO_CHANNELS    24
+#define GE_AUDIO_BUFFERS    256
 
-#define GE_AUDIO_UPDATE_FRAMES  30
+namespace GE { namespace Content
+{
+   class AudioData;
+}};
 
 namespace GE { namespace Audio
 {
+   typedef uint32_t BufferID;
+   typedef uint32_t ChannelID;
+
    struct AudioChannel
    {
-      uint AssignmentTime;
-      uint AssignedSound;
+      uint32_t AssignmentTime;
+      BufferID AssignedBuffer;
       bool Free;
 
       AudioChannel()
          : AssignmentTime(0)
-         , AssignedSound(0)
+         , AssignedBuffer(0)
          , Free(true) {}
    };
 
    class AudioSystem : public Core::Singleton<AudioSystem>
    {
    protected:
-       void* pHandler;
+       void* mHandler;
 
-       uint iChannels;
-       uint iSounds;
+       uint32_t mChannelsCount;
+       uint32_t mBuffersCount;
+
+       Core::ObjectManager<AudioBank> mAudioBanks;
+       Core::ObjectManager<AudioEvent> mAudioEvents;
+
+       GESTLMap(uint32_t, BufferID) mAudioBuffers;
+       BufferID mNextBufferToAssign;
       
-       AudioChannel* sChannels;
-       uint iAssignmentTime;
+       AudioChannel* mChannels;
+       uint32_t mAssignmentTime;
+       float mTimeSinceLastUpdate;
 
-       virtual void internalInit() = 0;
-       virtual void internalPlaySound(uint Sound, uint Channel) = 0;
-       virtual void internalStop(uint Channel) = 0;
+       Vector3 mListenerPosition;
+       Quaternion mListenerOrientation;
+
+       void loadAudioEventEntries();
+       void loadAudioBankEntries();
+
+       // platform specific methods
+       void platformInit();
+       void platformUpdate();
+       void platformRelease();
+
+       void platformLoadSound(BufferID pBuffer, Content::AudioData* pAudioData);
+       void platformUnloadSound(BufferID pBuffer);
+
+       void platformPlaySound(ChannelID pChannel, BufferID pBuffer);
+       void platformStop(ChannelID pChannel);
+       void platformPause(ChannelID pChannel);
+       void platformResume(ChannelID pChannel);
+       bool platformIsPlaying(ChannelID pChannel) const;
+       bool platformIsPaused(ChannelID pChannel) const;
+       bool platformIsInUse(ChannelID pChannel) const;
+       void platformSetVolume(ChannelID pChannel, float pVolume);
+       void platformSetPosition(ChannelID pChannel, const Vector3& pPosition);
+
+       void platformSetListenerPosition(const Vector3& pPosition);
+       void platformSetListenerOrientation(const Quaternion& pOrientation);
 
    public:
        AudioSystem();
-       virtual ~AudioSystem();
+       ~AudioSystem();
 
-       void init(uint Channels = GE_AUDIO_CHANNELS, uint Sounds = GE_AUDIO_SOUNDS);
-       virtual void update();
-       virtual void release() = 0;
+       void* getHandler() { return mHandler; }
 
-       void* getHandler();
+       void init(uint32_t pChannelsCount = GE_AUDIO_CHANNELS, uint32_t pBuffersCount = GE_AUDIO_BUFFERS);
+       void update();
+       void release();
 
-       virtual void loadSound(uint Sound, const char* FileName, const char* FileExtension) = 0;
-       virtual void unloadSound(uint Sound) = 0;
-       void unloadAllSounds();
+       void loadAudioBank(const Core::ObjectName& pAudioBankName);
+       void unloadAudioBank(const Core::ObjectName& pAudioBankName);
+       void unloadAllAudioBanks();
 
-       uint playSound(uint Sound);
-       void playSound(uint Sound, uint Channel);
-       void stop(uint Channel);
+       ChannelID playAudioEvent(const Core::ObjectName& pAudioBankName, const Core::ObjectName& pAudioEventName);
+       void playAudioEvent(const Core::ObjectName& pAudioBankName, const Core::ObjectName& pAudioEventName, ChannelID pChannel);
+       void stop(ChannelID pChannel);
+       void pause(ChannelID pChannel);
+       void resume(ChannelID pChannel);
+       bool isPlaying(ChannelID pChannel) const;
+       bool isPaused(ChannelID pChannel) const;
+       void setVolume(ChannelID pChannel, float pVolume);
+       void setPosition(ChannelID pChannel, const Vector3& pPosition);
 
-       virtual bool isPlaying(uint Channel) = 0;
+       void setListenerPosition(const Vector3& pPosition);
+       void setListenerOrientation(const Quaternion& pOrientation);
 
-       virtual void setListenerPosition(const Vector3& Position) = 0;
-       virtual void setVolume(uint Channel, float Volume) = 0;
-       virtual void setPosition(uint Channel, const Vector3& Position) = 0;
+       const Vector3& getListenerPosition() const { return mListenerPosition; }
+       const Quaternion& getListenerOrientation() const { return mListenerOrientation; }
    };
 }}

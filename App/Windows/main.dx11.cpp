@@ -33,9 +33,9 @@
 #pragma comment(lib, "AppModule.lib")
 
 #if defined (_M_X64)
-# pragma comment(lib, "../../../GameEngine/Externals/FMOD/lib/fmodex64_vc.lib")
+# pragma comment(lib, "../../../GameEngine/Externals/OpenAL/lib/Win64/OpenAL32.lib")
 #else
-# pragma comment(lib, "../../../GameEngine/Externals/FMOD/lib/fmodex_vc.lib")
+# pragma comment(lib, "../../../GameEngine/Externals/OpenAL/lib/Win32/OpenAL32.lib")
 #endif
 
 #if defined (GE_PLATFORM_WINDOWS)
