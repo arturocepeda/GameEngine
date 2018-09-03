@@ -216,7 +216,7 @@ void AudioSystem::playAudioEvent(const ObjectName& pAudioBankName, const ObjectN
    mChannels[pChannel].AssignedBuffer = bufferID;
    mChannels[pChannel].Free = false;
 
-   platformPlaySound(bufferID, pChannel);
+   platformPlaySound(pChannel, bufferID);
 }
 
 void AudioSystem::stop(ChannelID pChannel)
