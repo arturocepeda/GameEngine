@@ -35,6 +35,7 @@
 #include "Entities/GEComponentScript.h"
 #include "Rendering/GERenderSystem.h"
 #include "Rendering/GEMaterial.h"
+#include "Audio/GEAudioSystem.h"
 #include "Types/GECurve.h"
 #include "Types/GEBezierCurve.h"
 
@@ -47,6 +48,7 @@ using namespace GE::Core;
 using namespace GE::Content;
 using namespace GE::Entities;
 using namespace GE::Rendering;
+using namespace GE::Audio;
 using namespace GE::Input;
 
 
@@ -952,6 +954,18 @@ void ScriptingEnvironment::registerTypes()
       , "setActive", &MaterialPass::setActive
       , "setMaterialName", &MaterialPass::setMaterialName
       , sol::base_classes, sol::bases<Serializable>()
+   );
+
+   //
+   //  GE::Audio
+   //
+   lua.new_simple_usertype<AudioSystem>
+   (
+      "AudioSystem"
+      , "getInstance", &AudioSystem::getInstance
+      , "loadAudioBank", &AudioSystem::loadAudioBank
+      , "unloadAudioBank", &AudioSystem::unloadAudioBank
+      , "playAudioEvent", (ChannelID (AudioSystem::*)(const ObjectName&, const ObjectName&))&AudioSystem::playAudioEvent
    );
 
    // Extensions

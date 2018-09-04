@@ -14,6 +14,7 @@
 
 #include "Core/GEAllocator.h"
 #include "Core/GETime.h"
+#include "Core/GERand.h"
 #include "Content/GEResourcesManager.h"
 
 using namespace GE;
@@ -205,7 +206,16 @@ void AudioSystem::playAudioEvent(const ObjectName& pAudioBankName, const ObjectN
    if(!audioEvent || audioEvent->getAudioFileCount() == 0)
       return;
 
-   GESTLMap(uint32_t, BufferID)::iterator it = mAudioBuffers.find(audioEvent->getAudioFile(0)->getFileName().getID());
+   int audioFileIndex = 0;
+
+   if(audioEvent->getAudioFileCount() > 1)
+   {
+      RandInt rand = RandInt(0, audioEvent->getAudioFileCount() - 1);
+      audioFileIndex = rand.generate();
+   }
+
+   const ObjectName& audioFileName = audioEvent->getAudioFile(audioFileIndex)->getFileName();
+   GESTLMap(uint32_t, BufferID)::iterator it = mAudioBuffers.find(audioFileName.getID());
 
    if(it == mAudioBuffers.end())
       return;

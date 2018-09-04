@@ -26,7 +26,7 @@
 #include "Core/GEProfiler.h"
 
 #include "Rendering/DX11/GERenderSystemDX11.h"
-#include "Audio/FMOD/GEAudioSystemFMOD.h"
+#include "Audio/GEAudioSystem.h"
 #include "Input/GEInputSystem.h"
 
 #pragma comment(lib, "GameEngine.DX11.lib")
@@ -154,8 +154,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
 #else
     GEInvokeCtor(RenderSystemDX11, cRender)(hWnd, true);
 #endif
-    cAudio = Allocator::alloc<AudioSystemFMOD>();
-    GEInvokeCtor(AudioSystemFMOD, cAudio);
+    cAudio = Allocator::alloc<AudioSystem>();
+    GEInvokeCtor(AudioSystem, cAudio);
     cAudio->init();
     cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
 
