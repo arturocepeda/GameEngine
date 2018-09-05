@@ -15,6 +15,7 @@
 #include "Core/GEAllocator.h"
 #include "Core/GETime.h"
 #include "Core/GERand.h"
+#include "Core/GELog.h"
 #include "Content/GEResourcesManager.h"
 
 using namespace GE;
@@ -83,6 +84,11 @@ void AudioSystem::init(uint32_t pChannelsCount, uint32_t pBuffersCount)
    GEAssert(mChannelsCount > 0);
 
    mChannels = Allocator::alloc<AudioChannel>(mChannelsCount);
+
+   for(uint32_t i = 0; i < mChannelsCount; i++)
+   {
+      GEInvokeCtor(AudioChannel, &mChannels[i])();
+   }
 
    platformInit();
 
@@ -199,12 +205,30 @@ void AudioSystem::playAudioEvent(const ObjectName& pAudioBankName, const ObjectN
    AudioBank* audioBank = mAudioBanks.get(pAudioBankName);
 
    if(!audioBank)
+   {
+      Log::log(LogType::Warning, "The '%s' audio bank does not exist", pAudioBankName.getString());
       return;
+   }
+
+   if(!audioBank->getLoaded())
+   {
+      Log::log(LogType::Warning, "The '%s' audio bank has not been loaded", pAudioBankName.getString());
+      return;
+   }
 
    AudioEvent* audioEvent = audioBank->getAudioEvent(pAudioEventName);
 
-   if(!audioEvent || audioEvent->getAudioFileCount() == 0)
+   if(!audioEvent)
+   {
+      Log::log(LogType::Warning, "The '%s' audio bank does not contain the '%s' audio event", pAudioBankName.getString(), pAudioEventName.getString());
       return;
+   }
+
+   if(audioEvent->getAudioFileCount() == 0)
+   {
+      Log::log(LogType::Warning, "The '%s' audio event does not contain any audio files", pAudioEventName.getString());
+      return;
+   }
 
    int audioFileIndex = 0;
 

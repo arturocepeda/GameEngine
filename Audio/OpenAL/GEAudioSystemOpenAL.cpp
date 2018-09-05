@@ -109,7 +109,7 @@ void AudioSystem::platformResume(ChannelID pChannel)
 bool AudioSystem::platformIsPlaying(ChannelID pChannel) const
 {
    ALenum alState;
-   alGetSourcei(pChannel, AL_SOURCE_STATE, &alState);
+   alGetSourcei(alSources[pChannel], AL_SOURCE_STATE, &alState);
 
    return alState == AL_PLAYING;
 }
@@ -117,7 +117,7 @@ bool AudioSystem::platformIsPlaying(ChannelID pChannel) const
 bool AudioSystem::platformIsPaused(ChannelID pChannel) const
 {
    ALenum alState;
-   alGetSourcei(pChannel, AL_SOURCE_STATE, &alState);
+   alGetSourcei(alSources[pChannel], AL_SOURCE_STATE, &alState);
 
    return alState == AL_PAUSED;
 }
@@ -125,7 +125,7 @@ bool AudioSystem::platformIsPaused(ChannelID pChannel) const
 bool AudioSystem::platformIsInUse(ChannelID pChannel) const
 {
    ALenum alState;
-   alGetSourcei(pChannel, AL_SOURCE_STATE, &alState);
+   alGetSourcei(alSources[pChannel], AL_SOURCE_STATE, &alState);
 
    return alState == AL_PLAYING || alState == AL_PAUSED;
 }
