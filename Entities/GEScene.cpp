@@ -17,6 +17,7 @@
 #include "Entities/GEComponentParticleSystem.h"
 #include "Entities/GEComponentSkeleton.h"
 #include "Entities/GEComponentCollider.h"
+#include "Entities/GEComponentAudio.h"
 #include "Entities/GEComponentScript.h"
 #include "Rendering/GERenderSystem.h"
 #include "Content/GEContentData.h"
@@ -659,6 +660,21 @@ void Scene::queueUpdateJobs()
          cParticleSystem->update();
 #endif
       }
+   }
+
+   // audio components
+   GESTLVector(Component*)& vAudioComponents = vComponents[(uint)ComponentType::Audio];
+
+   for(uint i = 0; i < vAudioComponents.size(); i++)
+   {
+      ComponentAudio* cAudioComponent = static_cast<ComponentAudio*>(vAudioComponents[i]);
+#if defined (GE_SCENE_JOBIFIED_UPDATE)
+      JobDesc sJobDesc("UpdateAudioComponent");
+      sJobDesc.Task = [cAudioComponent] { cAudioComponent->update(); };
+      TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
+#else
+      cAudioComponent->update();
+#endif
    }
 
    // thread-safe script instances

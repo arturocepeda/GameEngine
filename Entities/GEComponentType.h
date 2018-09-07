@@ -24,6 +24,7 @@ namespace GE { namespace Entities
       Skeleton,
       DataContainer,
       Collider,
+      Audio,
       Script,
 
       Count

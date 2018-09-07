@@ -135,9 +135,35 @@ void AudioSystem::platformSetVolume(ChannelID pChannel, float pVolume)
    alSourcef(alSources[pChannel], AL_GAIN, pVolume);
 }
 
+void AudioSystem::platformSetPan(ChannelID pChannel, float pPan)
+{
+   alSourcei(alSources[pChannel], AL_SOURCE_RELATIVE, AL_TRUE);
+   alSourcef(alSources[pChannel], AL_ROLLOFF_FACTOR, 0.0f);
+   alSource3f(alSources[pChannel], AL_POSITION, pPan, 0.0f, 0.0f);
+}
+
 void AudioSystem::platformSetPosition(ChannelID pChannel, const Vector3& pPosition)
 {
+   alSourcei(alSources[pChannel], AL_SOURCE_RELATIVE, AL_FALSE);
    alSource3f(alSources[pChannel], AL_POSITION, pPosition.X, pPosition.Y, pPosition.Z);
+}
+
+void AudioSystem::platformSetOrientation(ChannelID pChannel, const Rotation& pOrientation)
+{
+   Vector3 direction = Vector3::UnitZ;
+   Matrix4Transform(pOrientation.getRotationMatrix(), &direction);
+
+   alSource3f(alSources[pChannel], AL_DIRECTION, direction.X, direction.Y, direction.Z);
+}
+
+void AudioSystem::platformSetMinDistance(ChannelID pChannel, float pDistance)
+{
+   alSourcef(alSources[pChannel], AL_REFERENCE_DISTANCE, pDistance);
+}
+
+void AudioSystem::platformSetMaxDistance(ChannelID pChannel, float pDistance)
+{
+   alSourcef(alSources[pChannel], AL_MAX_DISTANCE, pDistance);
 }
 
 void AudioSystem::platformSetListenerPosition(const Vector3& pPosition)
@@ -145,10 +171,10 @@ void AudioSystem::platformSetListenerPosition(const Vector3& pPosition)
    alListener3f(AL_POSITION, pPosition.X, pPosition.Y, pPosition.Z);
 }
 
-void AudioSystem::platformSetListenerOrientation(const Quaternion& pOrientation)
+void AudioSystem::platformSetListenerOrientation(const Rotation& pOrientation)
 {
-   Rotation rotation = Rotation(pOrientation);
-   Vector3 eulerOrientation = rotation.getEulerAngles() * GE_RAD2DEG;
+   Vector3 direction = Vector3::UnitZ;
+   Matrix4Transform(pOrientation.getRotationMatrix(), &direction);
 
-   alListener3f(AL_DIRECTION, eulerOrientation.X, eulerOrientation.Y, eulerOrientation.Z);
+   alListener3f(AL_DIRECTION, direction.X, direction.Y, direction.Z);
 }

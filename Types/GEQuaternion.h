@@ -78,6 +78,15 @@ namespace GE
             W < (1.0f + GE_EPSILON);
       }
 
+      bool equals(const Quaternion& other) const
+      {
+         return
+            fabsf(other.X - X) < GE_EPSILON &&
+            fabsf(other.Y - Y) < GE_EPSILON &&
+            fabsf(other.Z - Z) < GE_EPSILON &&
+            fabsf(other.W - W) < GE_EPSILON;
+      }
+
       Quaternion operator*(const Quaternion& Other) const
       {
          return Quaternion(

@@ -55,6 +55,7 @@
     <ClCompile Include="Core\Windows\GEDevice.Windows.cpp" />
     <ClCompile Include="Core\Windows\GELog.Windows.cpp" />
     <ClCompile Include="Entities\GEComponent.cpp" />
+    <ClCompile Include="Entities\GEComponentAudio.cpp" />
     <ClCompile Include="Entities\GEComponentCamera.cpp" />
     <ClCompile Include="Entities\GEComponentCollider.cpp" />
     <ClCompile Include="Entities\GEComponentDataContainer.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="Core\GEUtils.h" />
     <ClInclude Include="Core\GEValue.h" />
     <ClInclude Include="Entities\GEComponent.h" />
+    <ClInclude Include="Entities\GEComponentAudio.h" />
     <ClInclude Include="Entities\GEComponentCamera.h" />
     <ClInclude Include="Entities\GEComponentCollider.h" />
     <ClInclude Include="Entities\GEComponentDataContainer.h" />

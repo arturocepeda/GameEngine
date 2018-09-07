@@ -32,6 +32,7 @@
 #include "Entities/GEComponentSkeleton.h"
 #include "Entities/GEComponentCollider.h"
 #include "Entities/GEComponentDataContainer.h"
+#include "Entities/GEComponentAudio.h"
 #include "Entities/GEComponentScript.h"
 
 #include "Scripting/GEScriptingEnvironment.h"
@@ -114,5 +115,8 @@ void Application::registerComponentFactories()
    Entity::registerComponentFactory<ComponentColliderSphere>("ColliderSphere", ComponentType::Collider);
    Entity::registerComponentFactory<ComponentColliderMesh>("ColliderMesh", ComponentType::Collider);
    Entity::registerComponentFactory<ComponentDataContainer>("DataContainer", ComponentType::DataContainer);
+   Entity::registerComponentFactory<ComponentAudioListener>("AudioListener", ComponentType::Audio);
+   Entity::registerComponentFactory<ComponentAudioSource2D>("AudioSource2D", ComponentType::Audio);
+   Entity::registerComponentFactory<ComponentAudioSource3D>("AudioSource3D", ComponentType::Audio);
    Entity::registerComponentFactory<ComponentScript>("Script", ComponentType::Script);
 }

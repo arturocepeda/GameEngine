@@ -1,0 +1,261 @@
+
+//////////////////////////////////////////////////////////////////
+//
+//  Arturo Cepeda Pérez
+//  Game Engine
+//
+//  Entities
+//
+//  --- GEComponentAudio.cpp ---
+//
+//////////////////////////////////////////////////////////////////
+
+#include "GEComponentAudio.h"
+#include "GEComponentTransform.h"
+#include "GEEntity.h"
+
+#include "Audio/GEAudioSystem.h"
+
+using namespace GE;
+using namespace GE::Core;
+using namespace GE::Entities;
+using namespace GE::Audio;
+
+
+//
+//  ComponentAudio
+//
+ComponentAudio::ComponentAudio(Entity* pOwner)
+   : Component(pOwner)
+{
+}
+
+
+//
+//  ComponentAudioListener
+//
+ComponentAudioListener::ComponentAudioListener(Entity* pOwner)
+   : ComponentAudio(pOwner)
+{
+   cClassName = ObjectName("AudioListener");
+}
+
+ComponentAudioListener::~ComponentAudioListener()
+{
+}
+
+void ComponentAudioListener::update()
+{
+   ComponentTransform* transform = cOwner->getComponent<ComponentTransform>();
+   AudioSystem* audioSystem = AudioSystem::getInstance();
+
+   audioSystem->setListenerPosition(transform->getWorldPosition());
+   audioSystem->setListenerOrientation(transform->getRotation().getQuaternion());
+}
+
+
+//
+//  ComponentAudioSource
+//
+const ObjectName PlayAudioEventName = ObjectName("PlayAudioEvent");
+const ObjectName StopAllAudioEventsName = ObjectName("StopAllAudioEvents");
+
+ComponentAudioSource::ComponentAudioSource(Entity* pOwner)
+   : ComponentAudio(pOwner)
+{
+   cClassName = ObjectName("AudioSource");
+
+   GERegisterProperty(ObjectName, AudioBankName);
+   GERegisterProperty(ObjectName, AudioEventName);
+
+   registerAction(PlayAudioEventName, [this]
+   {
+      playAudioEvent();
+   });
+   registerAction(StopAllAudioEventsName, [this]
+   {
+      stopAllAudioEvents();
+   });
+}
+
+ComponentAudioSource::~ComponentAudioSource()
+{
+   stopAllAudioEvents();
+}
+
+void ComponentAudioSource::stopAllAudioEvents()
+{
+   AudioSystem* audioSystem = AudioSystem::getInstance();
+
+   for(size_t i = 0; i < mAudioEventInstances.size(); i++)
+   {
+      audioSystem->stop(mAudioEventInstances[i]);
+   }
+}
+
+void ComponentAudioSource::update()
+{
+   for(size_t i = 0; i < mAudioEventInstances.size(); )
+   {
+      if(mAudioEventInstances[i]->Active)
+      {
+         i++;
+      }
+      else
+      {
+         mAudioEventInstances[i] = mAudioEventInstances[mAudioEventInstances.size() - 1];
+         mAudioEventInstances.pop_back();
+      }
+   }
+}
+
+
+//
+//  ComponentAudioSource2D
+//
+ComponentAudioSource2D::ComponentAudioSource2D(Entity* pOwner)
+   : ComponentAudioSource(pOwner)
+   , mVolume(1.0f)
+   , mPan(0.0f)
+{
+   cClassName = ObjectName("AudioSource2D");
+
+   GERegisterProperty(Float, Volume);
+   GERegisterProperty(Float, Pan);
+}
+
+ComponentAudioSource2D::~ComponentAudioSource2D()
+{
+}
+
+void ComponentAudioSource2D::playAudioEvent()
+{
+   AudioSystem* audioSystem = AudioSystem::getInstance();
+   AudioEventInstance* audioEventInstance = audioSystem->playAudioEvent(mAudioBankName, mAudioEventName);
+
+   if(!audioEventInstance)
+      return;
+
+   mAudioEventInstances.push_back(audioEventInstance);
+
+   audioSystem->setVolume(audioEventInstance, mVolume);
+   audioSystem->setPan(audioEventInstance, mPan);
+}
+
+void ComponentAudioSource2D::setVolume(float pValue)
+{
+   if(fabsf(mVolume - pValue) > GE_EPSILON)
+   {
+      mVolume = pValue;
+
+      AudioSystem* audioSystem = AudioSystem::getInstance();
+
+      for(size_t i = 0; i < mAudioEventInstances.size(); i++)
+      {
+         audioSystem->setVolume(mAudioEventInstances[i], mVolume);
+      }
+   }
+}
+
+void ComponentAudioSource2D::setPan(float pValue)
+{
+   if(fabsf(mPan - pValue) > GE_EPSILON)
+   {
+      mPan = pValue;
+
+      AudioSystem* audioSystem = AudioSystem::getInstance();
+
+      for(size_t i = 0; i < mAudioEventInstances.size(); i++)
+      {
+         audioSystem->setPan(mAudioEventInstances[i], mPan);
+      }
+   }
+}
+
+
+//
+//  ComponentAudioSource3D
+//
+ComponentAudioSource3D::ComponentAudioSource3D(Entity* pOwner)
+   : ComponentAudioSource(pOwner)
+   , mMinDistance(2.0f)
+   , mMaxDistance(20.0f)
+{
+   cClassName = ObjectName("AudioSource3D");
+
+   GERegisterProperty(Float, MinDistance);
+   GERegisterProperty(Float, MaxDistance);
+}
+
+ComponentAudioSource3D::~ComponentAudioSource3D()
+{
+}
+
+void ComponentAudioSource3D::playAudioEvent()
+{
+   AudioSystem* audioSystem = AudioSystem::getInstance();
+   AudioEventInstance* audioEventInstance = audioSystem->playAudioEvent(mAudioBankName, mAudioEventName);
+
+   if(!audioEventInstance)
+      return;
+
+   mAudioEventInstances.push_back(audioEventInstance);
+
+   update3DAttributes(audioEventInstance);
+}
+
+void ComponentAudioSource3D::update3DAttributes(AudioEventInstance* pAudioEventInstance)
+{
+   ComponentTransform* transform = cOwner->getComponent<ComponentTransform>();
+   const Vector3& worldPosition = transform->getWorldPosition();
+   Rotation worldRotation = transform->getWorldRotation();
+
+   AudioSystem* audioSystem = AudioSystem::getInstance();
+   audioSystem->setPosition(pAudioEventInstance, worldPosition);
+   audioSystem->setOrientation(pAudioEventInstance, worldRotation);
+}
+
+void ComponentAudioSource3D::update()
+{
+   if(mAudioEventInstances.empty())
+      return;
+
+   ComponentAudioSource::update();
+
+   AudioSystem* audioSystem = AudioSystem::getInstance();
+
+   for(size_t i = 0; i < mAudioEventInstances.size(); i++)
+   {
+      update3DAttributes(mAudioEventInstances[i]);
+   }
+}
+
+void ComponentAudioSource3D::setMinDistance(float pValue)
+{
+   if(fabsf(mMinDistance - pValue) > GE_EPSILON)
+   {
+      mMinDistance = pValue;
+
+      AudioSystem* audioSystem = AudioSystem::getInstance();
+
+      for(size_t i = 0; i < mAudioEventInstances.size(); i++)
+      {
+         audioSystem->setMinDistance(mAudioEventInstances[i], mMinDistance);
+      }
+   }
+}
+
+void ComponentAudioSource3D::setMaxDistance(float pValue)
+{
+   if(fabsf(mMaxDistance - pValue) > GE_EPSILON)
+   {
+      mMaxDistance = pValue;
+
+      AudioSystem* audioSystem = AudioSystem::getInstance();
+
+      for(size_t i = 0; i < mAudioEventInstances.size(); i++)
+      {
+         audioSystem->setMaxDistance(mAudioEventInstances[i], mMaxDistance);
+      }
+   }
+}

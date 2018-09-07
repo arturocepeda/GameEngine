@@ -33,89 +33,124 @@ namespace GE { namespace Audio
 
    struct AudioChannel
    {
-      uint32_t AssignmentTime;
+      uint32_t AssignmentIndex;
       BufferID AssignedBuffer;
       bool Free;
 
       AudioChannel()
-         : AssignmentTime(0)
+         : AssignmentIndex(0)
          , AssignedBuffer(0)
          , Free(true) {}
+   };
+
+   struct AudioEventInstance
+   {
+      AudioEvent* Event;
+      ChannelID Channel;
+      bool Active;
+
+      AudioEventInstance()
+         : Event(0)
+         , Channel(0)
+         , Active(false) {}
    };
 
    class AudioSystem : public Core::Singleton<AudioSystem>
    {
    protected:
-       void* mHandler;
+      static const uint32_t AudioEventInstancesCount = 256;
 
-       uint32_t mChannelsCount;
-       uint32_t mBuffersCount;
+      void* mHandler;
 
-       Core::ObjectManager<AudioBank> mAudioBanks;
-       Core::ObjectManager<AudioEvent> mAudioEvents;
+      uint32_t mChannelsCount;
+      uint32_t mBuffersCount;
 
-       GESTLMap(uint32_t, BufferID) mAudioBuffers;
-       BufferID mNextBufferToAssign;
+      Core::ObjectManager<AudioBank> mAudioBanks;
+      Core::ObjectManager<AudioEvent> mAudioEvents;
+
+      GESTLMap(uint32_t, BufferID) mAudioBuffers;
+      BufferID mNextBufferToAssign;
       
-       AudioChannel* mChannels;
-       uint32_t mAssignmentTime;
-       float mTimeSinceLastUpdate;
+      AudioChannel* mChannels;
+      uint32_t mChannelAssignmentIndex;
 
-       Vector3 mListenerPosition;
-       Quaternion mListenerOrientation;
+      AudioEventInstance mAudioEventInstances[AudioEventInstancesCount];
+      uint32_t mAudioEventInstanceAssignmentIndex;
 
-       void loadAudioEventEntries();
-       void loadAudioBankEntries();
+      GESTLVector(AudioEventInstance*) mActiveAudioEventInstances;
 
-       // platform specific methods
-       void platformInit();
-       void platformUpdate();
-       void platformRelease();
+      GEMutex mMutex;
 
-       void platformLoadSound(BufferID pBuffer, Content::AudioData* pAudioData);
-       void platformUnloadSound(BufferID pBuffer);
+      float mTimeSinceLastUpdate;
 
-       void platformPlaySound(ChannelID pChannel, BufferID pBuffer);
-       void platformStop(ChannelID pChannel);
-       void platformPause(ChannelID pChannel);
-       void platformResume(ChannelID pChannel);
-       bool platformIsPlaying(ChannelID pChannel) const;
-       bool platformIsPaused(ChannelID pChannel) const;
-       bool platformIsInUse(ChannelID pChannel) const;
-       void platformSetVolume(ChannelID pChannel, float pVolume);
-       void platformSetPosition(ChannelID pChannel, const Vector3& pPosition);
+      Vector3 mListenerPosition;
+      Rotation mListenerOrientation;
 
-       void platformSetListenerPosition(const Vector3& pPosition);
-       void platformSetListenerOrientation(const Quaternion& pOrientation);
+      void loadAudioEventEntries();
+      void loadAudioBankEntries();
+
+      void releaseChannel(ChannelID pChannel);
+
+      // platform specific methods
+      void platformInit();
+      void platformUpdate();
+      void platformRelease();
+
+      void platformLoadSound(BufferID pBuffer, Content::AudioData* pAudioData);
+      void platformUnloadSound(BufferID pBuffer);
+
+      void platformPlaySound(ChannelID pChannel, BufferID pBuffer);
+      void platformStop(ChannelID pChannel);
+      void platformPause(ChannelID pChannel);
+      void platformResume(ChannelID pChannel);
+      bool platformIsPlaying(ChannelID pChannel) const;
+      bool platformIsPaused(ChannelID pChannel) const;
+      bool platformIsInUse(ChannelID pChannel) const;
+
+      void platformSetVolume(ChannelID pChannel, float pVolume);
+      void platformSetPan(ChannelID pChannel, float pPan);
+
+      void platformSetPosition(ChannelID pChannel, const Vector3& pPosition);
+      void platformSetOrientation(ChannelID pChannel, const Rotation& pOrientation);
+      void platformSetMinDistance(ChannelID pChannel, float pDistance);
+      void platformSetMaxDistance(ChannelID pChannel, float pDistance);
+
+      void platformSetListenerPosition(const Vector3& pPosition);
+      void platformSetListenerOrientation(const Rotation& pOrientation);
 
    public:
-       AudioSystem();
-       ~AudioSystem();
+      AudioSystem();
+      ~AudioSystem();
 
-       void* getHandler() { return mHandler; }
+      void* getHandler() { return mHandler; }
 
-       void init(uint32_t pChannelsCount = GE_AUDIO_CHANNELS, uint32_t pBuffersCount = GE_AUDIO_BUFFERS);
-       void update();
-       void release();
+      void init(uint32_t pChannelsCount = GE_AUDIO_CHANNELS, uint32_t pBuffersCount = GE_AUDIO_BUFFERS);
+      void update();
+      void release();
 
-       void loadAudioBank(const Core::ObjectName& pAudioBankName);
-       void unloadAudioBank(const Core::ObjectName& pAudioBankName);
-       void unloadAllAudioBanks();
+      void loadAudioBank(const Core::ObjectName& pAudioBankName);
+      void unloadAudioBank(const Core::ObjectName& pAudioBankName);
+      void unloadAllAudioBanks();
 
-       ChannelID playAudioEvent(const Core::ObjectName& pAudioBankName, const Core::ObjectName& pAudioEventName);
-       void playAudioEvent(const Core::ObjectName& pAudioBankName, const Core::ObjectName& pAudioEventName, ChannelID pChannel);
-       void stop(ChannelID pChannel);
-       void pause(ChannelID pChannel);
-       void resume(ChannelID pChannel);
-       bool isPlaying(ChannelID pChannel) const;
-       bool isPaused(ChannelID pChannel) const;
-       void setVolume(ChannelID pChannel, float pVolume);
-       void setPosition(ChannelID pChannel, const Vector3& pPosition);
+      AudioEventInstance* playAudioEvent(const Core::ObjectName& pAudioBankName, const Core::ObjectName& pAudioEventName);
+      void stop(AudioEventInstance* pAudioEventInstance);
+      void pause(AudioEventInstance* pAudioEventInstance);
+      void resume(AudioEventInstance* pAudioEventInstance);
+      bool isPlaying(AudioEventInstance* pAudioEventInstance) const;
+      bool isPaused(AudioEventInstance* pAudioEventInstance) const;
 
-       void setListenerPosition(const Vector3& pPosition);
-       void setListenerOrientation(const Quaternion& pOrientation);
+      void setVolume(AudioEventInstance* pAudioEventInstance, float pVolume);
+      void setPan(AudioEventInstance* pAudioEventInstance, float pPan);
 
-       const Vector3& getListenerPosition() const { return mListenerPosition; }
-       const Quaternion& getListenerOrientation() const { return mListenerOrientation; }
+      void setPosition(AudioEventInstance* pAudioEventInstance, const Vector3& pPosition);
+      void setOrientation(AudioEventInstance* pAudioEventInstance, const Rotation& pOrientation);
+      void setMinDistance(AudioEventInstance* pAudioEventInstance, float pDistance);
+      void setMaxDistance(AudioEventInstance* pAudioEventInstance, float pDistance);
+
+      void setListenerPosition(const Vector3& pPosition);
+      void setListenerOrientation(const Rotation& pOrientation);
+
+      const Vector3& getListenerPosition() const { return mListenerPosition; }
+      const Rotation& getListenerOrientation() const { return mListenerOrientation; }
    };
 }}
