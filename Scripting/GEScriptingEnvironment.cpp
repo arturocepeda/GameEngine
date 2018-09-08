@@ -973,7 +973,6 @@ void ScriptingEnvironment::registerTypes()
       , "getInstance", &AudioSystem::getInstance
       , "loadAudioBank", &AudioSystem::loadAudioBank
       , "unloadAudioBank", &AudioSystem::unloadAudioBank
-      , "playAudioEvent", (ChannelID (AudioSystem::*)(const ObjectName&, const ObjectName&))&AudioSystem::playAudioEvent
    );
 
    // Extensions
