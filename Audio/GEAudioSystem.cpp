@@ -340,14 +340,6 @@ void AudioSystem::setVolume(AudioEventInstance* pAudioEventInstance, float pVolu
    platformSetVolume(pAudioEventInstance->Channel, pVolume);
 }
 
-void AudioSystem::setPan(AudioEventInstance* pAudioEventInstance, float pPan)
-{
-   if(!pAudioEventInstance->Active)
-      return;
-
-   platformSetPan(pAudioEventInstance->Channel, pPan);
-}
-
 void AudioSystem::setPosition(AudioEventInstance* pAudioEventInstance, const Vector3& pPosition)
 {
    if(!pAudioEventInstance->Active)

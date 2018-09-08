@@ -32,6 +32,7 @@
 #include "Entities/GEComponentCamera.h"
 #include "Entities/GEComponentCollider.h"
 #include "Entities/GEComponentUIElement.h"
+#include "Entities/GEComponentAudio.h"
 #include "Entities/GEComponentScript.h"
 #include "Rendering/GERenderSystem.h"
 #include "Rendering/GEMaterial.h"
@@ -768,6 +769,7 @@ void ScriptingEnvironment::registerTypes()
       , "getComponentUI2DElement", &Entity::getComponent<ComponentUI2DElement>
       , "getComponentUI3DElement", &Entity::getComponent<ComponentUI3DElement>
       , "getComponentSkeleton", &Entity::getComponent<ComponentSkeleton>
+      , "getComponentAudioSource", &Entity::getComponent<ComponentAudioSource>
       , "getComponentScript", &Entity::getComponent<ComponentScript>
       , "getChildrenCount", &Entity::getChildrenCount
       , "getChildByIndex", &Entity::getChildByIndex
@@ -901,6 +903,12 @@ void ScriptingEnvironment::registerTypes()
       , "Mode", &AnimationPlayInfo::Mode
       , "BlendTime", &AnimationPlayInfo::BlendTime
       , "Speed", &AnimationPlayInfo::Speed
+   );
+   lua.new_simple_usertype<ComponentAudioSource>
+   (
+      "ComponentAudioSource"
+      , "playAudioEvent", &ComponentAudioSource::playAudioEvent
+      , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_simple_usertype<ComponentScript>
    (

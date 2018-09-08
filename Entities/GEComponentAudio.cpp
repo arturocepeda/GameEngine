@@ -70,7 +70,7 @@ ComponentAudioSource::ComponentAudioSource(Entity* pOwner)
 
    registerAction(PlayAudioEventName, [this]
    {
-      playAudioEvent();
+      playAudioEvent(mAudioEventName);
    });
    registerAction(StopAllAudioEventsName, [this]
    {
@@ -81,6 +81,21 @@ ComponentAudioSource::ComponentAudioSource(Entity* pOwner)
 ComponentAudioSource::~ComponentAudioSource()
 {
    stopAllAudioEvents();
+}
+
+AudioEventInstance* ComponentAudioSource::playAudioEvent(const Core::ObjectName& pAudioEventName)
+{
+   AudioSystem* audioSystem = AudioSystem::getInstance();
+   AudioEventInstance* audioEventInstance = audioSystem->playAudioEvent(mAudioBankName, pAudioEventName);
+
+   if(!audioEventInstance)
+      return 0;
+
+   mAudioEventInstances.push_back(audioEventInstance);
+
+   onAudioEventPlayed(audioEventInstance);
+
+   return audioEventInstance;
 }
 
 void ComponentAudioSource::stopAllAudioEvents()
@@ -116,30 +131,20 @@ void ComponentAudioSource::update()
 ComponentAudioSource2D::ComponentAudioSource2D(Entity* pOwner)
    : ComponentAudioSource(pOwner)
    , mVolume(1.0f)
-   , mPan(0.0f)
 {
    cClassName = ObjectName("AudioSource2D");
 
    GERegisterProperty(Float, Volume);
-   GERegisterProperty(Float, Pan);
 }
 
 ComponentAudioSource2D::~ComponentAudioSource2D()
 {
 }
 
-void ComponentAudioSource2D::playAudioEvent()
+void ComponentAudioSource2D::onAudioEventPlayed(AudioEventInstance* pAudioEventInstance)
 {
    AudioSystem* audioSystem = AudioSystem::getInstance();
-   AudioEventInstance* audioEventInstance = audioSystem->playAudioEvent(mAudioBankName, mAudioEventName);
-
-   if(!audioEventInstance)
-      return;
-
-   mAudioEventInstances.push_back(audioEventInstance);
-
-   audioSystem->setVolume(audioEventInstance, mVolume);
-   audioSystem->setPan(audioEventInstance, mPan);
+   audioSystem->setVolume(pAudioEventInstance, mVolume);
 }
 
 void ComponentAudioSource2D::setVolume(float pValue)
@@ -153,21 +158,6 @@ void ComponentAudioSource2D::setVolume(float pValue)
       for(size_t i = 0; i < mAudioEventInstances.size(); i++)
       {
          audioSystem->setVolume(mAudioEventInstances[i], mVolume);
-      }
-   }
-}
-
-void ComponentAudioSource2D::setPan(float pValue)
-{
-   if(fabsf(mPan - pValue) > GE_EPSILON)
-   {
-      mPan = pValue;
-
-      AudioSystem* audioSystem = AudioSystem::getInstance();
-
-      for(size_t i = 0; i < mAudioEventInstances.size(); i++)
-      {
-         audioSystem->setPan(mAudioEventInstances[i], mPan);
       }
    }
 }
@@ -191,17 +181,13 @@ ComponentAudioSource3D::~ComponentAudioSource3D()
 {
 }
 
-void ComponentAudioSource3D::playAudioEvent()
+void ComponentAudioSource3D::onAudioEventPlayed(AudioEventInstance* pAudioEventInstance)
 {
+   update3DAttributes(pAudioEventInstance);
+
    AudioSystem* audioSystem = AudioSystem::getInstance();
-   AudioEventInstance* audioEventInstance = audioSystem->playAudioEvent(mAudioBankName, mAudioEventName);
-
-   if(!audioEventInstance)
-      return;
-
-   mAudioEventInstances.push_back(audioEventInstance);
-
-   update3DAttributes(audioEventInstance);
+   audioSystem->setMinDistance(pAudioEventInstance, mMinDistance);
+   audioSystem->setMaxDistance(pAudioEventInstance, mMaxDistance);
 }
 
 void ComponentAudioSource3D::update3DAttributes(AudioEventInstance* pAudioEventInstance)

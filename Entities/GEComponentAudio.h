@@ -57,8 +57,7 @@ namespace GE { namespace Entities
       ComponentAudioSource(Entity* Owner);
       virtual ~ComponentAudioSource();
 
-      virtual void playAudioEvent() = 0;
-      void stopAllAudioEvents();
+      virtual void onAudioEventPlayed(Audio::AudioEventInstance* pAudioEventInstance) = 0;
 
    public:
       GEDefaultGetter(const Core::ObjectName&, AudioBankName)
@@ -66,6 +65,9 @@ namespace GE { namespace Entities
 
       GEDefaultSetter(const Core::ObjectName&, AudioBankName)
       GEDefaultSetter(const Core::ObjectName&, AudioEventName)
+
+      Audio::AudioEventInstance* playAudioEvent(const Core::ObjectName& pAudioEventName);
+      void stopAllAudioEvents();
 
       virtual void update() override;
    };
@@ -75,19 +77,16 @@ namespace GE { namespace Entities
    {
    protected:
       float mVolume;
-      float mPan;
 
-      virtual void playAudioEvent() override;
+      virtual void onAudioEventPlayed(Audio::AudioEventInstance* pAudioEventInstance) override;
 
    public:
       ComponentAudioSource2D(Entity* pOwner);
       ~ComponentAudioSource2D();
 
       GEDefaultGetter(float, Volume)
-      GEDefaultGetter(float, Pan)
 
       void setVolume(float pValue);
-      void setPan(float pValue);
    };
 
 
@@ -97,7 +96,7 @@ namespace GE { namespace Entities
       float mMinDistance;
       float mMaxDistance;
 
-      virtual void playAudioEvent() override;
+      virtual void onAudioEventPlayed(Audio::AudioEventInstance* pAudioEventInstance) override;
 
       void update3DAttributes(Audio::AudioEventInstance* pAudioEventInstance);
 

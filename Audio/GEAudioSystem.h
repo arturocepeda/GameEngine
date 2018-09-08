@@ -108,7 +108,6 @@ namespace GE { namespace Audio
       bool platformIsInUse(ChannelID pChannel) const;
 
       void platformSetVolume(ChannelID pChannel, float pVolume);
-      void platformSetPan(ChannelID pChannel, float pPan);
 
       void platformSetPosition(ChannelID pChannel, const Vector3& pPosition);
       void platformSetOrientation(ChannelID pChannel, const Rotation& pOrientation);
@@ -140,7 +139,6 @@ namespace GE { namespace Audio
       bool isPaused(AudioEventInstance* pAudioEventInstance) const;
 
       void setVolume(AudioEventInstance* pAudioEventInstance, float pVolume);
-      void setPan(AudioEventInstance* pAudioEventInstance, float pPan);
 
       void setPosition(AudioEventInstance* pAudioEventInstance, const Vector3& pPosition);
       void setOrientation(AudioEventInstance* pAudioEventInstance, const Rotation& pOrientation);

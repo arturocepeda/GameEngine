@@ -135,13 +135,6 @@ void AudioSystem::platformSetVolume(ChannelID pChannel, float pVolume)
    alSourcef(alSources[pChannel], AL_GAIN, pVolume);
 }
 
-void AudioSystem::platformSetPan(ChannelID pChannel, float pPan)
-{
-   alSourcei(alSources[pChannel], AL_SOURCE_RELATIVE, AL_TRUE);
-   alSourcef(alSources[pChannel], AL_ROLLOFF_FACTOR, 0.0f);
-   alSource3f(alSources[pChannel], AL_POSITION, pPan, 0.0f, 0.0f);
-}
-
 void AudioSystem::platformSetPosition(ChannelID pChannel, const Vector3& pPosition)
 {
    alSourcei(alSources[pChannel], AL_SOURCE_RELATIVE, AL_FALSE);
@@ -173,8 +166,16 @@ void AudioSystem::platformSetListenerPosition(const Vector3& pPosition)
 
 void AudioSystem::platformSetListenerOrientation(const Rotation& pOrientation)
 {
-   Vector3 direction = Vector3::UnitZ;
-   Matrix4Transform(pOrientation.getRotationMatrix(), &direction);
+   Vector3 forwardDirection = Vector3::UnitZ;
+   Matrix4Transform(pOrientation.getRotationMatrix(), &forwardDirection);
 
-   alListener3f(AL_DIRECTION, direction.X, direction.Y, direction.Z);
+   Vector3 upDirection = Vector3::UnitY;
+   Matrix4Transform(pOrientation.getRotationMatrix(), &upDirection);
+
+   const ALfloat orientationValues[] =
+   {
+      forwardDirection.X, forwardDirection.Y, forwardDirection.Z,
+      upDirection.X, upDirection.Y, upDirection.Z
+   };
+   alListenerfv(AL_ORIENTATION, orientationValues);
 }
