@@ -121,9 +121,10 @@ void Rotation::calculateQuaternionFromMatrix()
 {
    qQuaternion.W = sqrt(1.0f + mRotationMatrix.m[GE_M4_1_1] + mRotationMatrix.m[GE_M4_2_2] + mRotationMatrix.m[GE_M4_3_3]) * 0.5f;
 
-   float f4QW = -4.0f * qQuaternion.W;
+   const float f4QW = -4.0f * qQuaternion.W;
+   const float Epsilon = 0.001f;
 
-   if(fabsf(f4QW) > GE_EPSILON)
+   if(fabsf(f4QW) > Epsilon)
    {
       qQuaternion.X = (mRotationMatrix.m[GE_M4_3_2] - mRotationMatrix.m[GE_M4_2_3]) / f4QW;
       qQuaternion.Y = (mRotationMatrix.m[GE_M4_1_3] - mRotationMatrix.m[GE_M4_3_1]) / f4QW;
@@ -132,10 +133,44 @@ void Rotation::calculateQuaternionFromMatrix()
    }
    else
    {
-      qQuaternion.X = 0.0f;
-      qQuaternion.Y = 0.0f;
-      qQuaternion.Z = 0.0f;
-      qQuaternion.W = 1.0f;
+      // main diagonal: (1, 1, 1)
+      if(fabsf(mRotationMatrix.m[GE_M4_1_1] - 1.0f) < Epsilon &&
+         fabsf(mRotationMatrix.m[GE_M4_2_2] - 1.0f) < Epsilon &&
+         fabsf(mRotationMatrix.m[GE_M4_3_3] - 1.0f) < Epsilon)
+      {
+         qQuaternion.X = 0.0f;
+         qQuaternion.Y = 0.0f;
+         qQuaternion.Z = 0.0f;
+         qQuaternion.W = 1.0f;
+      }
+      // main diagonal: (1, -1, -1)
+      else if(fabsf(mRotationMatrix.m[GE_M4_1_1] - 1.0f) < Epsilon &&
+         fabsf(mRotationMatrix.m[GE_M4_2_2] - -1.0f) < Epsilon &&
+         fabsf(mRotationMatrix.m[GE_M4_3_3] - -1.0f) < Epsilon)
+      {
+         qQuaternion.X = 1.0f;
+         qQuaternion.Y = 0.0f;
+         qQuaternion.Z = 0.0f;
+         qQuaternion.W = 0.0f;
+      }
+      // main diagonal: (-1, 1, -1)
+      else if(fabsf(mRotationMatrix.m[GE_M4_1_1] - -1.0f) < Epsilon &&
+         fabsf(mRotationMatrix.m[GE_M4_2_2] - 1.0f) < Epsilon &&
+         fabsf(mRotationMatrix.m[GE_M4_3_3] - -1.0f) < Epsilon)
+      {
+         qQuaternion.X = 0.0f;
+         qQuaternion.Y = 1.0f;
+         qQuaternion.Z = 0.0f;
+         qQuaternion.W = 0.0f;
+      }
+      // main diagonal: (-1, -1, 1)
+      else
+      {
+         qQuaternion.X = 0.0f;
+         qQuaternion.Y = 0.0f;
+         qQuaternion.Z = 1.0f;
+         qQuaternion.W = 0.0f;
+      }
    }
 }
 
