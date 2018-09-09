@@ -46,6 +46,8 @@ AudioBank::AudioBank(const ObjectName& pName, const ObjectName& pGroupName)
    : Resource(pName, pGroupName, TypeName)
    , mLoaded(false)
 {
+   GERegisterPropertyReadonly(Bool, Loaded);
+
    GERegisterPropertyArray(AudioEventEntry);
 }
 
