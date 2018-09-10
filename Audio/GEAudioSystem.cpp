@@ -16,7 +16,9 @@
 #include "Core/GETime.h"
 #include "Core/GERand.h"
 #include "Core/GELog.h"
+#include "Core/GEDevice.h"
 #include "Content/GEResourcesManager.h"
+#include "Content/GEAudioData.h"
 
 using namespace GE;
 using namespace GE::Audio;
@@ -97,23 +99,27 @@ void AudioSystem::releaseChannel(ChannelID pChannel)
 
 void AudioSystem::releaseAudioBankFiles(AudioBank* pAudioBank)
 {
-   const GESTLMap(uint32_t, AudioData*)& audioFiles = pAudioBank->getAudioFiles();
+   const GESTLVector(ObjectName)& audioFileNames = pAudioBank->getAudioFileNames();
 
-   for(GESTLMap(uint32_t, AudioData*)::const_iterator it = audioFiles.begin(); it != audioFiles.end(); it++)
+   for(size_t i = 0; i < audioFileNames.size(); i++)
    {
-      const uint32_t audioFileID = it->first;
-      AudioData* audioFileData = it->second;
+      const ObjectName& audioFileName = audioFileNames[i];
 
       for(BufferID i = 0; i < mBuffersCount; i++)
       {
-         if(mBuffers[i].AssignedFileID == audioFileID)
+         if(mBuffers[i].AssignedFileID == audioFileName.getID())
          {
             mBuffers[i].References--;
 
             if(mBuffers[i].References == 0)
             {
-               mBuffers[i].AssignedFileID = 0;
                platformUnloadSound(i);
+
+               GEInvokeDtor(AudioData, mBuffers[i].Data);
+               Allocator::free(mBuffers[i].Data);
+
+               mBuffers[i].AssignedFileID = 0;
+               mBuffers[i].Data = 0;
             }
 
             break;
@@ -209,20 +215,23 @@ void AudioSystem::loadAudioBank(const ObjectName& pAudioBankName)
    {
       audioBank->load(mAudioEvents);
 
-      const GESTLMap(uint32_t, AudioData*)& audioFiles = audioBank->getAudioFiles();
+      const GESTLVector(ObjectName)& audioFileNames = audioBank->getAudioFileNames();
 
-      for(GESTLMap(uint32_t, AudioData*)::const_iterator it = audioFiles.begin(); it != audioFiles.end(); it++)
+      char audioBankSubdir[256];
+      sprintf(audioBankSubdir, "Audio/%s", audioBank->getName().getString());
+
+      for(size_t i = 0; i < audioFileNames.size(); i++)
       {
-         const uint32_t audioFileID = it->first;
-         AudioData* audioFileData = it->second;
+         const ObjectName& audioFileName = audioFileNames[i];
 
+         // assign buffer index
          const uint32_t InvalidBufferIndex = mBuffersCount;
          uint32_t loadedFileIndex = InvalidBufferIndex;
          uint32_t firstFreeIndex = InvalidBufferIndex;
 
          for(BufferID i = 0; i < mBuffersCount; i++)
          {
-            if(mBuffers[i].AssignedFileID == audioFileID)
+            if(mBuffers[i].AssignedFileID == audioFileName.getID())
             {
                loadedFileIndex = i;
                break;
@@ -240,10 +249,17 @@ void AudioSystem::loadAudioBank(const ObjectName& pAudioBankName)
             ? loadedFileIndex
             : firstFreeIndex;
 
-         mBuffers[bufferIndexToAssign].AssignedFileID = audioFileID;
+         mBuffers[bufferIndexToAssign].AssignedFileID = audioFileName.getID();
          mBuffers[bufferIndexToAssign].References++;
 
-         platformLoadSound(bufferIndexToAssign, audioFileData);
+         // load audio file
+         mBuffers[bufferIndexToAssign].Data = Allocator::alloc<AudioData>();
+         GEInvokeCtor(AudioData, mBuffers[bufferIndexToAssign].Data)();
+
+         Device::readContentFile(ContentType::Audio, audioBankSubdir, audioFileNames[i].getString(), "wav", mBuffers[bufferIndexToAssign].Data);
+
+         // register audio data
+         platformLoadSound(bufferIndexToAssign, mBuffers[bufferIndexToAssign].Data);
       }
    }
 }

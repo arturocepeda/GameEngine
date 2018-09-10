@@ -17,11 +17,6 @@
 #include "Types/GETypes.h"
 #include "Content/GEResource.h"
 
-namespace GE { namespace Content
-{
-   class AudioData;
-}}
-
 namespace GE { namespace Audio
 {
    class AudioEventEntry : public Core::SerializableArrayElement
@@ -42,7 +37,7 @@ namespace GE { namespace Audio
    {
    private:
       GESTLMap(uint32_t, AudioEvent*) mAudioEvents;
-      GESTLMap(uint32_t, Content::AudioData*) mAudioFiles;
+      GESTLVector(Core::ObjectName) mAudioFileNames;
 
       bool mLoaded;
 
@@ -58,7 +53,7 @@ namespace GE { namespace Audio
       void unload();
 
       GEDefaultGetter(bool, Loaded)
-      GEDefaultGetter(const GESTLMap(uint32_t, Content::AudioData*)&, AudioFiles)
+      GEDefaultGetter(const GESTLVector(Core::ObjectName)&, AudioFileNames)
 
       AudioEvent* getAudioEvent(const Core::ObjectName& pAudioEventName);
    };

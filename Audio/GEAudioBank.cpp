@@ -12,9 +12,6 @@
 
 #include "GEAudioBank.h"
 
-#include "Content/GEAudioData.h"
-#include "Core/GEDevice.h"
-
 using namespace GE;
 using namespace GE::Audio;
 using namespace GE::Core;
@@ -77,8 +74,6 @@ void AudioBank::load(ObjectManager<AudioEvent>& pAudioEventManager)
    }
 
    // collect required audio files
-   GESTLVector(ObjectName) audioFileNames;
-
    for(GESTLMap(uint32_t, AudioEvent*)::iterator it = mAudioEvents.begin(); it != mAudioEvents.end(); it++)
    {
       AudioEvent* audioEvent = it->second;
@@ -88,9 +83,9 @@ void AudioBank::load(ObjectManager<AudioEvent>& pAudioEventManager)
          const ObjectName& audioFileName = audioEvent->getAudioFile(i)->getFileName();
          bool alreadyAdded = false;
 
-         for(size_t j = 0; j < audioFileNames.size(); j++)
+         for(size_t j = 0; j < mAudioFileNames.size(); j++)
          {
-            if(audioFileNames[j] == audioFileName)
+            if(mAudioFileNames[j] == audioFileName)
             {
                alreadyAdded = true;
                break;
@@ -99,26 +94,9 @@ void AudioBank::load(ObjectManager<AudioEvent>& pAudioEventManager)
 
          if(!alreadyAdded)
          {
-            audioFileNames.push_back(audioFileName);
+            mAudioFileNames.push_back(audioFileName);
          }
       }
-   }
-
-   // load audio files
-   char subdir[256];
-   sprintf(subdir, "Audio/%s", cName.getString());
-
-   for(size_t i = 0; i < audioFileNames.size(); i++)
-   {
-      AudioData* audioData = Allocator::alloc<AudioData>();
-      GEInvokeCtor(AudioData, audioData)();
-
-      Device::readContentFile(ContentType::Audio, subdir, audioFileNames[i].getString(), "wav", audioData);
-
-      std::pair<uint32_t, AudioData*> audioFilePair;
-      audioFilePair.first = audioFileNames[i].getID();
-      audioFilePair.second = audioData;
-      mAudioFiles.insert(audioFilePair);
    }
 
    // the bank has been loaded
@@ -130,16 +108,8 @@ void AudioBank::unload()
    if(!mLoaded)
       return;
 
-   // unload audio files
-   for(GESTLMap(uint32_t, AudioData*)::iterator it = mAudioFiles.begin(); it != mAudioFiles.end(); it++)
-   {
-      AudioData* audioData = it->second;
-      GEInvokeDtor(AudioData, audioData);
-      Allocator::free(audioData);
-   }
-
-   // clear maps
-   mAudioFiles.clear();
+   // clear data
+   mAudioFileNames.clear();
    mAudioEvents.clear();
 
    // the bank has been unloaded

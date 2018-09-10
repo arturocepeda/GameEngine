@@ -47,10 +47,12 @@ namespace GE { namespace Audio
    {
       uint32_t AssignedFileID;
       uint32_t References;
+      Content::AudioData* Data;
 
       AudioBuffer()
          : AssignedFileID(0)
-         , References(0) {}
+         , References(0)
+         , Data(0) {}
    };
 
    struct AudioEventInstance
