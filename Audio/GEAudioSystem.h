@@ -43,6 +43,16 @@ namespace GE { namespace Audio
          , Free(true) {}
    };
 
+   struct AudioBuffer
+   {
+      uint32_t AssignedFileID;
+      uint32_t References;
+
+      AudioBuffer()
+         : AssignedFileID(0)
+         , References(0) {}
+   };
+
    struct AudioEventInstance
    {
       AudioEvent* Event;
@@ -67,12 +77,11 @@ namespace GE { namespace Audio
 
       Core::ObjectManager<AudioBank> mAudioBanks;
       Core::ObjectManager<AudioEvent> mAudioEvents;
-
-      GESTLMap(uint32_t, BufferID) mAudioBuffers;
-      BufferID mNextBufferToAssign;
       
       AudioChannel* mChannels;
       uint32_t mChannelAssignmentIndex;
+
+      AudioBuffer* mBuffers;
 
       AudioEventInstance mAudioEventInstances[AudioEventInstancesCount];
       uint32_t mAudioEventInstanceAssignmentIndex;
@@ -90,6 +99,7 @@ namespace GE { namespace Audio
       void loadAudioBankEntries();
 
       void releaseChannel(ChannelID pChannel);
+      void releaseAudioBankFiles(AudioBank* pAudioBank);
 
       // platform specific methods
       void platformInit();
