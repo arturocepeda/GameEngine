@@ -193,10 +193,10 @@ void AudioSystem::update()
 
 void AudioSystem::release()
 {
-   GEMutexDestroy(mMutex);
-
    unloadAllAudioBanks();
    platformRelease();
+
+   GEMutexDestroy(mMutex);
 
    if(mBuffers)
    {
