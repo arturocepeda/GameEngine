@@ -79,6 +79,7 @@ ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
    : ComponentUIElement(Owner)
    , eAnchor(Alignment::None)
    , vOffset(Vector2::Zero)
+   , fScaledYOffset(0.0f)
 {
    cClassName = ObjectName("UI2DElement");
    eUIElementType = UIElementType::_2D;
@@ -93,6 +94,7 @@ ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
 
    GERegisterPropertyEnum(Alignment, Anchor);
    GERegisterProperty(Vector2, Offset);
+   GERegisterProperty(Float, ScaledYOffset);
 }
 
 ComponentUI2DElement::~ComponentUI2DElement()
@@ -145,6 +147,8 @@ void ComponentUI2DElement::updateTransformPosition()
       break;
    }
 
+   vNewPosition.Y += fScaledYOffset * Device::getAspectRatio();
+
    cOwner->getComponent<ComponentTransform>()->setPosition(vNewPosition);
 }
 
@@ -158,6 +162,11 @@ const Vector2& ComponentUI2DElement::getOffset() const
    return vOffset;
 }
 
+float ComponentUI2DElement::getScaledYOffset() const
+{
+   return fScaledYOffset;
+}
+
 void ComponentUI2DElement::setAnchor(Alignment Anchor)
 {
    eAnchor = Anchor;
@@ -167,6 +176,12 @@ void ComponentUI2DElement::setAnchor(Alignment Anchor)
 void ComponentUI2DElement::setOffset(const Vector2& Offset)
 {
    vOffset = Offset;
+   updateTransformPosition();
+}
+
+void ComponentUI2DElement::setScaledYOffset(float Offset)
+{
+   fScaledYOffset = Offset;
    updateTransformPosition();
 }
 

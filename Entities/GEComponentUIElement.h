@@ -50,6 +50,7 @@ namespace GE { namespace Entities
    private:
       Alignment eAnchor;
       Vector2 vOffset;
+      float fScaledYOffset;
 
       void updateTransformPosition();
 
@@ -59,9 +60,11 @@ namespace GE { namespace Entities
 
       Alignment getAnchor() const;
       const Vector2& getOffset() const;
+      float getScaledYOffset() const;
 
       void setAnchor(Alignment Anchor);
       void setOffset(const Vector2& Offset);
+      void setScaledYOffset(float Offset);
    };
 
 
