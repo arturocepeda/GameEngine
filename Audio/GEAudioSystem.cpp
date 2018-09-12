@@ -99,6 +99,8 @@ void AudioSystem::releaseChannel(ChannelID pChannel)
 
 void AudioSystem::releaseAudioBankFiles(AudioBank* pAudioBank)
 {
+   GEMutexLock(mMutex);
+
    const GESTLVector(ObjectName)& audioFileNames = pAudioBank->getAudioFileNames();
 
    for(size_t i = 0; i < audioFileNames.size(); i++)
@@ -126,6 +128,8 @@ void AudioSystem::releaseAudioBankFiles(AudioBank* pAudioBank)
          }
       }
    }
+
+   GEMutexUnlock(mMutex);
 }
 
 void AudioSystem::init(uint32_t pChannelsCount, uint32_t pBuffersCount)
@@ -225,6 +229,8 @@ void AudioSystem::loadAudioBank(const ObjectName& pAudioBankName)
          const ObjectName& audioFileName = audioFileNames[i];
 
          // assign buffer index
+         GEMutexLock(mMutex);
+
          const uint32_t InvalidBufferIndex = mBuffersCount;
          uint32_t loadedFileIndex = InvalidBufferIndex;
          uint32_t firstFreeIndex = InvalidBufferIndex;
@@ -249,8 +255,12 @@ void AudioSystem::loadAudioBank(const ObjectName& pAudioBankName)
             ? loadedFileIndex
             : firstFreeIndex;
 
+         GEAssert(bufferIndexToAssign < mBuffersCount);
+
          mBuffers[bufferIndexToAssign].AssignedFileID = audioFileName.getID();
          mBuffers[bufferIndexToAssign].References++;
+
+         GEMutexUnlock(mMutex);
 
          // load audio file
          mBuffers[bufferIndexToAssign].Data = Allocator::alloc<AudioData>();
