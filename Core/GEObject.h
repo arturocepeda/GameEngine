@@ -80,9 +80,9 @@ namespace GE { namespace Core
    struct EventArgs
    {
       Object* Sender;
-      void* Args;
+      void* Data;
 
-      EventArgs() : Sender(0), Args(0) {}
+      EventArgs() : Sender(0), Data(0) {}
    };
 
 

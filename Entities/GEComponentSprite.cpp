@@ -45,7 +45,11 @@ ComponentSprite::ComponentSprite(Entity* Owner)
 #if defined (GE_EDITOR_SUPPORT)
    EventHandlingObject::connectStaticEventCallback(Events::PropertiesUpdated, this, [this](const EventArgs* args) -> bool
    {
-      updateVertexData();
+      Serializable* cSerializable = static_cast<Serializable*>(args->Data);
+
+      if(cSerializable == this)
+         updateVertexData();
+
       return false;
    });
    EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
@@ -199,7 +203,9 @@ void ComponentSprite::updateVertexData()
 
    if(cTextureAtlasNameProperty->DataPtr != pCachedDataPtr)
    {
-      EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
+      EventArgs sArgs;
+      sArgs.Data = this;
+      EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &sArgs);
    }
 #endif
 }

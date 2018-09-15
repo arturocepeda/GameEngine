@@ -508,7 +508,12 @@ void GenericVariable::setType(Core::ValueType Type)
       [this]()->GE::Core::Value { return cValue; });
 
 #if defined (GE_EDITOR_SUPPORT)
-   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
+   if(cOwner)
+   {
+      EventArgs sArgs;
+      sArgs.Data = cOwner;
+      EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &sArgs);
+   }
 #endif
 }
 

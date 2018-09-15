@@ -167,7 +167,7 @@ Entity* Scene::addEntity(const ObjectName& Name, Entity* cParent)
 
    EventArgs sEventArgs;
    sEventArgs.Sender = this;
-   sEventArgs.Args = cEntity;
+   sEventArgs.Data = cEntity;
    triggerEvent(Events::EntityAdded, &sEventArgs);
 
    return cEntity;
@@ -204,7 +204,7 @@ bool Scene::removeEntity(const ObjectName& FullName)
 
    EventArgs sEventArgs;
    sEventArgs.Sender = this;
-   sEventArgs.Args = it->second;
+   sEventArgs.Data = it->second;
    triggerEvent(Events::EntityRemoved, &sEventArgs);
 
    GEMutexUnlock(mSceneMutex);
@@ -232,7 +232,7 @@ bool Scene::renameEntity(Entity* cEntity, const Core::ObjectName& NewName)
 
       EventArgs sEventArgs;
       sEventArgs.Sender = this;
-      sEventArgs.Args = cEntity;
+      sEventArgs.Data = cEntity;
       triggerEvent(Events::EntityRenamed, &sEventArgs);
 
       GEMutexUnlock(mSceneMutex);
@@ -363,7 +363,7 @@ void Scene::setEntityParent(Entity* cEntity, Entity* cNewParent)
 
    EventArgs sEventArgs;
    sEventArgs.Sender = this;
-   sEventArgs.Args = cEntity;
+   sEventArgs.Data = cEntity;
    triggerEvent(Events::EntityParentChanged, &sEventArgs);
 }
 

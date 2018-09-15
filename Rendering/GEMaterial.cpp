@@ -203,7 +203,11 @@ void MaterialPass::setMaterial(Material* M)
       }
    }
 
-   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
+#if defined (GE_EDITOR_SUPPORT)
+   EventArgs sArgs;
+   sArgs.Data = cOwner;
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &sArgs);
+#endif
 }
 
 void MaterialPass::registerShaderProperties(char* sBuffer, const PropertyArrayEntries& vParameterList)
@@ -329,5 +333,9 @@ void MaterialPass::reload()
       registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->vShaderProgramFragmentParameterList);
    }
 
-   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
+#if defined (GE_EDITOR_SUPPORT)
+   EventArgs sArgs;
+   sArgs.Data = cOwner;
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &sArgs);
+#endif
 }

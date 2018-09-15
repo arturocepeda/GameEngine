@@ -286,7 +286,9 @@ void ScriptInstance::registerScriptProperties()
       registerProperty(cGlobalVariableName, ePropertyValue, setter, getter);
    }
 
-   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated);
+   EventArgs sArgs;
+   sArgs.Data = cOwner;
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &sArgs);
 }
 
 void ScriptInstance::registerScriptActions()
