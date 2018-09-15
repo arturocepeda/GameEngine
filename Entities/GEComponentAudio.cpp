@@ -36,8 +36,11 @@ ComponentAudio::ComponentAudio(Entity* pOwner)
 //
 ComponentAudioListener::ComponentAudioListener(Entity* pOwner)
    : ComponentAudio(pOwner)
+   , mActive(true)
 {
    cClassName = ObjectName("AudioListener");
+
+   GERegisterProperty(Bool, Active);
 }
 
 ComponentAudioListener::~ComponentAudioListener()
@@ -46,6 +49,9 @@ ComponentAudioListener::~ComponentAudioListener()
 
 void ComponentAudioListener::update()
 {
+   if(!mActive)
+      return;
+
    ComponentTransform* transform = cOwner->getComponent<ComponentTransform>();
    AudioSystem* audioSystem = AudioSystem::getInstance();
 

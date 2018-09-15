@@ -38,9 +38,15 @@ namespace GE { namespace Entities
 
    class ComponentAudioListener : public ComponentAudio
    {
+   private:
+      bool mActive;
+
    public:
       ComponentAudioListener(Entity* Owner);
       ~ComponentAudioListener();
+
+      GEDefaultGetter(bool, Active)
+      GEDefaultSetter(bool, Active)
 
       virtual void update() override;
    };
