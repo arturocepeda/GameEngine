@@ -28,6 +28,10 @@ const ObjectName cRestartActionName = ObjectName("Restart");
 const ObjectName cReloadActionName = ObjectName("Reload");
 const ObjectName cDebugActionName = ObjectName("Debug");
 
+const ObjectName cThisVariableName = ObjectName("this");
+const ObjectName cEntityVariableName = ObjectName("entity");
+const ObjectName cDeltaTimeVariableName = ObjectName("deltaTime");
+
 const ObjectName cInitFunctionName = ObjectName("init");
 const ObjectName cActivateFunctionName = ObjectName("activate");
 const ObjectName cDeactivateFunctionName = ObjectName("deactivate");
@@ -129,12 +133,12 @@ void ScriptInstance::setScriptName(const ObjectName& Name)
    registerScriptProperties();
    registerScriptActions();
 
-   cEnv->setVariable<ScriptInstance*>("this", this);
+   cEnv->setVariable<ScriptInstance*>(cThisVariableName, this);
 
    if(cOwner)
    {
       Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
-      cEnv->setVariable<Entity*>("entity", cEntity);
+      cEnv->setVariable<Entity*>(cEntityVariableName, cEntity);
    }
 }
 
@@ -230,35 +234,35 @@ void ScriptInstance::registerScriptProperties()
       if(ePropertyValue == ValueType::Count)
          continue;
 
-      PropertySetter setter = [this, sGlobalVariableName](const Value& cValue)
+      PropertySetter setter = [this, cGlobalVariableName](const Value& cValue)
       {
          switch(cValue.getType())
          {
          case ValueType::Bool:
-            cEnv->setVariable<bool>(sGlobalVariableName, cValue.getAsBool());
+            cEnv->setVariable<bool>(cGlobalVariableName, cValue.getAsBool());
             break;
          case ValueType::Int:
-            cEnv->setVariable<int>(sGlobalVariableName, cValue.getAsInt());
+            cEnv->setVariable<int>(cGlobalVariableName, cValue.getAsInt());
             break;
          case ValueType::Float:
-            cEnv->setVariable<float>(sGlobalVariableName, cValue.getAsFloat());
+            cEnv->setVariable<float>(cGlobalVariableName, cValue.getAsFloat());
             break;
          case ValueType::String:
-            cEnv->setVariable<const char*>(sGlobalVariableName, cValue.getAsString());
+            cEnv->setVariable<const char*>(cGlobalVariableName, cValue.getAsString());
             break;
          case ValueType::Vector3:
-            cEnv->setVariable<Vector3>(sGlobalVariableName, cValue.getAsVector3());
+            cEnv->setVariable<Vector3>(cGlobalVariableName, cValue.getAsVector3());
             break;
          case ValueType::Vector2:
-            cEnv->setVariable<Vector2>(sGlobalVariableName, cValue.getAsVector2());
+            cEnv->setVariable<Vector2>(cGlobalVariableName, cValue.getAsVector2());
             break;
          case ValueType::Color:
-            cEnv->setVariable<Color>(sGlobalVariableName, cValue.getAsColor());
+            cEnv->setVariable<Color>(cGlobalVariableName, cValue.getAsColor());
             break;
          }
 
          char sOnPropertySetFuncionNameStr[64];
-         sprintf(sOnPropertySetFuncionNameStr, "on%sSet", sGlobalVariableName);
+         sprintf(sOnPropertySetFuncionNameStr, "on%sSet", cGlobalVariableName.getString());
          ObjectName cOnPropertySetFuncionName = ObjectName(sOnPropertySetFuncionNameStr);
 
          if(cEnv->isFunctionDefined(cOnPropertySetFuncionName))
@@ -366,7 +370,7 @@ void ScriptInstance::update()
    if(cEnv->isFunctionDefined(cUpdateFunctionName))
    {
       Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
-      cEnv->setVariable<float>("deltaTime", cEntity->getClock()->getDelta());
+      cEnv->setVariable<float>(cDeltaTimeVariableName, cEntity->getClock()->getDelta());
       cEnv->runFunction<void>(cUpdateFunctionName);
       cEnv->collectGarbage();
    }
