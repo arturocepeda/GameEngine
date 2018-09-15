@@ -343,7 +343,12 @@ void MaterialPass::reload()
    for(uint i = iBasePropertiesCount; i < getPropertiesCount(); i++)
    {
       const Property& sProperty = getProperty(i);
-      sProperty.Setter(mCachedPropertyValues.find(sProperty.Name.getID())->second);
+      GESTLMap(uint, Value)::iterator it = mCachedPropertyValues.find(sProperty.Name.getID());
+
+      if(it != mCachedPropertyValues.end())
+      {
+         sProperty.Setter(it->second);
+      }
    }
 
 #if defined (GE_EDITOR_SUPPORT)
