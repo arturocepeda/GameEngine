@@ -56,6 +56,11 @@ ValueType Value::getValueType(const char* TypeAsString)
 }
 
 
+Value::Value()
+   : Value(0)
+{
+}
+
 Value::Value(ValueType Type)
    : eType(Type)
 {

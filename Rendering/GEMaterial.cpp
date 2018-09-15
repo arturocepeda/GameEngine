@@ -316,8 +316,15 @@ void MaterialPass::reload()
    if(getPropertiesCount() == iBasePropertiesCount)
       return;
 
+   GESTLMap(uint, Value) mCachedPropertyValues;
+
    while(getPropertiesCount() > iBasePropertiesCount)
-      removeProperty(getPropertiesCount() - 1);
+   {
+      const uint iPropertyIndex = getPropertiesCount() - 1;
+      const Property& sProperty = getProperty(iPropertyIndex);
+      mCachedPropertyValues[sProperty.Name.getID()] = sProperty.Getter();
+      removeProperty(iPropertyIndex);
+   }
 
    const ObjectRegistry* cShadersObjectRegistry = ResourcesManager::getInstance()->getObjectRegistry(ShadersObjectRegistryName);
    ShaderProgram* cShaderProgram = static_cast<ShaderProgram*>(cShadersObjectRegistry->find(cMaterial->getShaderProgram().getID())->second);
@@ -331,6 +338,12 @@ void MaterialPass::reload()
    if(cShaderProgram->getShaderProgramFragmentParameterCount() > 0)
    {
       registerShaderProperties(sConstantBufferDataFragment, cShaderProgram->vShaderProgramFragmentParameterList);
+   }
+
+   for(uint i = iBasePropertiesCount; i < getPropertiesCount(); i++)
+   {
+      const Property& sProperty = getProperty(i);
+      sProperty.Setter(mCachedPropertyValues.find(sProperty.Name.getID())->second);
    }
 
 #if defined (GE_EDITOR_SUPPORT)

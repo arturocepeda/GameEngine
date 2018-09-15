@@ -14,6 +14,7 @@
 
 #include "Core/GEObject.h"
 #include "Types/GETypes.h"
+
 #include <iostream>
 
 namespace GE { namespace Core
@@ -65,6 +66,8 @@ namespace GE { namespace Core
       void setAsColor(const GE::Color& Val);
 
    public:
+      Value();
+
       Value(int IntValue);
       Value(uint UIntValue);
       Value(float FloatValue);
