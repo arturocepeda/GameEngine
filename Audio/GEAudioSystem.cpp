@@ -221,8 +221,12 @@ void AudioSystem::loadAudioBank(const ObjectName& pAudioBankName)
 
       const GESTLVector(ObjectName)& audioFileNames = audioBank->getAudioFileNames();
 
-      char audioBankSubdir[256];
-      sprintf(audioBankSubdir, "Audio/%s", audioBank->getName().getString());
+      const char* audioFilesSubdir = "Audio/files";
+#if defined (GE_PLATFORM_WINDOWS)
+      const char* audioFilesExt = "ogg";
+#else
+      const char* audioFilesExt = "wav";
+#endif
 
       for(size_t i = 0; i < audioFileNames.size(); i++)
       {
@@ -263,10 +267,11 @@ void AudioSystem::loadAudioBank(const ObjectName& pAudioBankName)
          GEMutexUnlock(mMutex);
 
          // load audio file
-         mBuffers[bufferIndexToAssign].Data = Allocator::alloc<AudioData>();
+         mBuffers[bufferIndexToAssign].Data = Allocator::alloc<AudioData>(1, AllocationCategory::Audio);
          GEInvokeCtor(AudioData, mBuffers[bufferIndexToAssign].Data)();
 
-         Device::readContentFile(ContentType::Audio, audioBankSubdir, audioFileNames[i].getString(), "ogg", mBuffers[bufferIndexToAssign].Data);
+         Device::readContentFile(ContentType::Audio, audioFilesSubdir,
+            audioFileNames[i].getString(), audioFilesExt, mBuffers[bufferIndexToAssign].Data);
 
          // register audio data
          platformLoadSound(bufferIndexToAssign, mBuffers[bufferIndexToAssign].Data);

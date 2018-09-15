@@ -171,7 +171,7 @@ void AudioData::loadWAVData(uint32_t Size, const char* Data)
    iDataSize = *(int*)pDataPointer;
    pDataPointer += 4;
 
-   pData = Allocator::alloc<char>(iDataSize);
+   pData = Allocator::alloc<char>(iDataSize, AllocationCategory::Audio);
    memcpy(pData, pDataPointer, iDataSize);
 }
 
@@ -205,7 +205,7 @@ void AudioData::loadOggData(uint32_t Size, const char* Data)
    const uint iBytesPerDecodedSample = (uint)iBitDepth / 8;
 
    iDataSize = iDecodedSamplesCount * iBytesPerDecodedSample;
-   pData = Allocator::alloc<char>(iDataSize);
+   pData = Allocator::alloc<char>(iDataSize, AllocationCategory::Audio);
 
    int iBitStream = 0;
    long iReadedBytes = 0;

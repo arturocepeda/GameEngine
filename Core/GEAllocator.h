@@ -33,6 +33,7 @@ namespace GE { namespace Core
    {
       General,
       STL,
+      Audio,
       Scripting,
 
       Count
