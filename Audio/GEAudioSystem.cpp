@@ -397,7 +397,8 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
    audioEventInstance->Active = true;
 
    // play the sound
-   platformPlaySound(selectedChannel, bufferID);
+   const bool looping = audioEvent->getPlayMode() == AudioEventPlayMode::Loop;
+   platformPlaySound(selectedChannel, bufferID, looping);
 
    // return the event instance
    return audioEventInstance;

@@ -111,7 +111,7 @@ namespace GE { namespace Audio
       void platformLoadSound(BufferID pBuffer, Content::AudioData* pAudioData);
       void platformUnloadSound(BufferID pBuffer);
 
-      void platformPlaySound(ChannelID pChannel, BufferID pBuffer);
+      void platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool pLooping);
       void platformStop(ChannelID pChannel);
       void platformPause(ChannelID pChannel);
       void platformResume(ChannelID pChannel);
