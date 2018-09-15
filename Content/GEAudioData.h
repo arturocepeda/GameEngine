@@ -22,11 +22,14 @@ namespace GE { namespace Content
       int iSampleRate;
       short iBitDepth;
       short iNumberOfChannels;
+
+      void loadWAVData(uint32_t Size, const char* Data);
+      void loadOggData(uint32_t Size, const char* Data);
     
    public:
       AudioData();
 
-      virtual void load(unsigned int Size, const char* Data) override;
+      virtual void load(uint Size, const char* Data) override;
     
       int getSampleRate();
       short getBitDepth();

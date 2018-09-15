@@ -266,7 +266,7 @@ void AudioSystem::loadAudioBank(const ObjectName& pAudioBankName)
          mBuffers[bufferIndexToAssign].Data = Allocator::alloc<AudioData>();
          GEInvokeCtor(AudioData, mBuffers[bufferIndexToAssign].Data)();
 
-         Device::readContentFile(ContentType::Audio, audioBankSubdir, audioFileNames[i].getString(), "wav", mBuffers[bufferIndexToAssign].Data);
+         Device::readContentFile(ContentType::Audio, audioBankSubdir, audioFileNames[i].getString(), "ogg", mBuffers[bufferIndexToAssign].Data);
 
          // register audio data
          platformLoadSound(bufferIndexToAssign, mBuffers[bufferIndexToAssign].Data);

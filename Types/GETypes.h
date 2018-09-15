@@ -21,6 +21,9 @@
 
 #include <cassert>
 
+#define GEMin(a, b)  (((a) < (b)) ? (a) : (b))
+#define GEMax(a, b)  (((a) > (b)) ? (a) : (b))
+
 #define GEAssert(Expr)  assert(Expr)
 
 namespace GE

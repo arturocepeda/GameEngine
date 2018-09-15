@@ -11,12 +11,86 @@
 //////////////////////////////////////////////////////////////////
 
 #include "GEAudioData.h"
+
+#include "Core/GEPlatform.h"
 #include "Core/GEAllocator.h"
-#include <iostream>
 
 using namespace GE::Content;
 using namespace GE::Core;
 
+
+struct AudioDataStream
+{
+   const char* Data;
+   size_t Size;
+   size_t Cursor;
+
+   AudioDataStream(const char* pData, size_t pSize)
+      : Data(pData)
+      , Size(pSize)
+      , Cursor(0)
+   {
+   }
+};
+
+
+#if defined (GE_PLATFORM_WINDOWS)
+# include "Externals/libogg/include/os_types.h"
+# include "Externals/libvorbis/include/vorbisfile.h"
+
+//
+//  Ogg Vorbis functions
+//
+size_t ovRead(void* pDestination, size_t pSize, size_t pNumMembers, void* pDataSource)
+{
+   AudioDataStream* stream = static_cast<AudioDataStream*>(pDataSource);
+
+   // calculate number of bytes to read
+   const size_t iBytesToRead = GEMin(pSize * pNumMembers, stream->Size - stream->Cursor);
+
+   // read the data
+   memcpy(pDestination, stream->Data + stream->Cursor, iBytesToRead);
+   stream->Cursor += iBytesToRead;
+
+   return iBytesToRead;
+}
+
+int ovSeek(void* pDataSource, ogg_int64_t pOffset, int pWhence)
+{
+   AudioDataStream* stream = static_cast<AudioDataStream*>(pDataSource);
+
+   switch(pWhence)
+   {
+   case SEEK_SET:
+      stream->Cursor = GEMin((unsigned int)pOffset, stream->Size);
+      break;
+
+   case SEEK_CUR:
+      stream->Cursor = GEMin(stream->Cursor + (unsigned int)pOffset, stream->Size);
+      break;
+
+   case SEEK_END:
+      stream->Cursor = stream->Size;
+      break;
+
+   default:
+      return -1;
+   }
+
+   return 0;
+}
+
+long ovTell(void* pDataSource)
+{
+   AudioDataStream* stream = static_cast<AudioDataStream*>(pDataSource);
+   return (long)stream->Cursor;
+}
+#endif
+
+
+//
+//  AudioData
+//
 AudioData::AudioData()
    : iSampleRate(0)
    , iBitDepth(0)
@@ -24,10 +98,8 @@ AudioData::AudioData()
 {
 }
 
-void AudioData::load(unsigned int Size, const char* Data)
+void AudioData::loadWAVData(uint32_t Size, const char* Data)
 {
-   unload();
-
    const int BufferSize = 8;
    char sBuffer[BufferSize];
    char* pDataPointer = (char*)Data;
@@ -101,6 +173,70 @@ void AudioData::load(unsigned int Size, const char* Data)
 
    pData = Allocator::alloc<char>(iDataSize);
    memcpy(pData, pDataPointer, iDataSize);
+}
+
+void AudioData::loadOggData(uint32_t Size, const char* Data)
+{
+#if defined (GE_PLATFORM_WINDOWS)
+   AudioDataStream stream = AudioDataStream(Data, Size);
+   OggVorbis_File ovFile;
+   ov_callbacks ovCallbacks;
+
+   // set our functions to handle Vorbis OGG data
+   ovCallbacks.read_func = ovRead;
+   ovCallbacks.seek_func = ovSeek;
+   ovCallbacks.tell_func = ovTell;
+   ovCallbacks.close_func = 0;
+
+   // attach audio file data with the ovFile struct
+   ov_open_callbacks(&stream, &ovFile, 0, 0, ovCallbacks);
+
+   // check format and frequency
+   vorbis_info* pVorbisInfo = ov_info(&ovFile, -1);
+   iNumberOfChannels = pVorbisInfo->channels;
+   iSampleRate = pVorbisInfo->rate;
+   iBitDepth = 16;
+
+   // read file data
+   const size_t BufferSize = 4096;
+   char sBuffer[BufferSize];
+
+   const uint iDecodedSamplesCount = (uint)ov_pcm_total(&ovFile, -1);
+   const uint iBytesPerDecodedSample = (uint)iBitDepth / 8;
+
+   iDataSize = iDecodedSamplesCount * iBytesPerDecodedSample;
+   pData = Allocator::alloc<char>(iDataSize);
+
+   int iBitStream = 0;
+   long iReadedBytes = 0;
+   long iTotalReadedBytes = 0;
+
+   do
+   {
+      iReadedBytes = ov_read(&ovFile, sBuffer, BufferSize, 0, 2, 1, &iBitStream);
+      memcpy(pData + iTotalReadedBytes, sBuffer, iReadedBytes);
+      iTotalReadedBytes += iReadedBytes;
+   }
+   while(iReadedBytes > 0);
+
+   ov_clear(&ovFile);
+#endif
+}
+
+void AudioData::load(GE::uint Size, const char* Data)
+{
+   unload();
+
+   // WAV
+   if(strncmp(Data, "RIFF", 4) == 0)
+   {
+      loadWAVData(Size, Data);
+   }
+   // Ogg Vorbis
+   else if(strncmp(Data, "OggS", 4) == 0)
+   {
+      loadOggData(Size, Data);
+   }
 }
 
 int AudioData::getSampleRate()
