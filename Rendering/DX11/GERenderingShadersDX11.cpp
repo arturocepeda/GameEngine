@@ -75,7 +75,10 @@ VertexShader::VertexShader(ShaderProgram* cShaderProgram, ID3D11Device1* DXDevic
          dxErrorBlob->Release();
       }
 
-      return;
+      strcpy(sBuffer, "Shaders\\hlsl\\default.vsh.hlsl");
+      mbstowcs(wsBuffer, sBuffer, strlen(sBuffer) + 1);
+
+      D3DCompileFromFile(wsBuffer, dxDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", 0, 0, &dxCodeBlob, &dxErrorBlob);
    }
 
    char* pShaderByteCodeData = (char*)dxCodeBlob->GetBufferPointer();
@@ -213,7 +216,10 @@ PixelShader::PixelShader(ShaderProgram* cShaderProgram, ID3D11Device1* DXDevice)
          dxErrorBlob->Release();
       }
 
-      return;
+      strcpy(sBuffer, "Shaders\\hlsl\\default.psh.hlsl");
+      mbstowcs(wsBuffer, sBuffer, strlen(sBuffer) + 1);
+
+      D3DCompileFromFile(wsBuffer, dxDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", 0, 0, &dxCodeBlob, &dxErrorBlob);
    }
 
    char* pShaderByteCodeData = (char*)dxCodeBlob->GetBufferPointer();
