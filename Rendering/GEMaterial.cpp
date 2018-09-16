@@ -313,6 +313,12 @@ void MaterialPass::reload()
    if(!cMaterial)
       return;
 
+#if defined (GE_EDITOR_SUPPORT)
+   EventArgs sArgs;
+   sArgs.Data = cOwner;
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &sArgs);
+#endif
+
    if(getPropertiesCount() == iBasePropertiesCount)
       return;
 
@@ -350,10 +356,4 @@ void MaterialPass::reload()
          sProperty.Setter(it->second);
       }
    }
-
-#if defined (GE_EDITOR_SUPPORT)
-   EventArgs sArgs;
-   sArgs.Data = cOwner;
-   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &sArgs);
-#endif
 }
