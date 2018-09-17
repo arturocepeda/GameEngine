@@ -33,6 +33,11 @@ InputSystem::~InputSystem()
 void InputSystem::setInputEnabled(bool Enabled)
 {
    bInputEnabled = Enabled;
+
+   if(bInputEnabled)
+   {
+      inputMouse(vMousePosition);
+   }
 }
 
 const Vector2& InputSystem::getMousePosition() const
