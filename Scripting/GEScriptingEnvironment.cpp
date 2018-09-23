@@ -66,6 +66,8 @@ GEMutex mAllocatorMutex;
 GESTLSet(uint) ScriptingEnvironment::sPredefinedGlobalSymbols;
 GESTLVector(ScriptingEnvironment::registerTypesExtension) ScriptingEnvironment::vRegisterTypesExtensions;
 
+GESTLMap(uint32_t, ScriptingEnvironment::SharedEnvironment) ScriptingEnvironment::mSharedEnvironments;
+
 ScriptingEnvironment::ScriptingEnvironment()
    : bReset(true)
 #if defined (GE_EDITOR_SUPPORT)
@@ -73,12 +75,15 @@ ScriptingEnvironment::ScriptingEnvironment()
    , bDebuggerActive(false)
 #endif
 {
+   GEMutexInit(mAccessMutex);
+
    lua.open_libraries();
    registerTypes();
 }
 
 ScriptingEnvironment::~ScriptingEnvironment()
 {
+   GEMutexDestroy(mAccessMutex);
 }
 
 void ScriptingEnvironment::initStaticData()
@@ -135,6 +140,54 @@ void ScriptingEnvironment::addPredefinedGlobalSymbol(const ObjectName& Symbol)
 void ScriptingEnvironment::addRegisterTypesExtension(registerTypesExtension Extension)
 {
    vRegisterTypesExtensions.push_back(Extension);
+}
+
+ScriptingEnvironment* ScriptingEnvironment::requestSharedEnvironment(const Core::ObjectName& Name)
+{
+   ScriptingEnvironment* env = 0;
+
+   GESTLMap(uint32_t, SharedEnvironment)::iterator it = mSharedEnvironments.find(Name.getID());
+
+   if(it == mSharedEnvironments.end())
+   {
+      env = Allocator::alloc<ScriptingEnvironment>();
+      GEInvokeCtor(ScriptingEnvironment, env)();
+
+      SharedEnvironment sharedEnv;
+      sharedEnv.Env = env;
+      sharedEnv.Refs = 1;
+
+      std::pair<uint32_t, SharedEnvironment> sharedEnvironmentPair;
+      sharedEnvironmentPair.first = Name.getID();
+      sharedEnvironmentPair.second = sharedEnv;
+
+      mSharedEnvironments.insert(sharedEnvironmentPair);
+   }
+   else
+   {
+      env = it->second.Env;
+      it->second.Refs++;
+   }
+
+   return env;
+}
+
+void ScriptingEnvironment::leaveSharedEnvironment(const Core::ObjectName& Name)
+{
+   GESTLMap(uint32_t, SharedEnvironment)::iterator it = mSharedEnvironments.find(Name.getID());
+
+   if(it != mSharedEnvironments.end())
+   {
+      it->second.Refs--;
+
+      if(it->second.Refs == 0)
+      {
+         GEInvokeDtor(ScriptingEnvironment, it->second.Env);
+         Allocator::free(it->second.Env);
+
+         mSharedEnvironments.erase(it);
+      }
+   }
 }
 
 void ScriptingEnvironment::handleScriptError(const char* ScriptName, const char* Msg)

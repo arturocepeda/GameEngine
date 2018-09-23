@@ -47,6 +47,8 @@ namespace GE { namespace Scripting
 
       GESTLMap(uint32_t, ScriptFunction) mFunctions;
 
+      GEMutex mAccessMutex;
+
 #if defined (GE_EDITOR_SUPPORT)
       uint iDebugBreakpointLine;
       bool bDebuggerActive;
@@ -56,6 +58,13 @@ namespace GE { namespace Scripting
 
       static GESTLSet(uint) sPredefinedGlobalSymbols;
       static GESTLVector(registerTypesExtension) vRegisterTypesExtensions;
+
+      struct SharedEnvironment
+      {
+         ScriptingEnvironment* Env;
+         uint32_t Refs;
+      };
+      static GESTLMap(uint32_t, SharedEnvironment) mSharedEnvironments;
 
       static void* customAlloc(void*, void* ptr, size_t, size_t nsize);
       static bool alphabeticalComparison(const Core::ObjectName& l, const Core::ObjectName& r);
@@ -75,8 +84,16 @@ namespace GE { namespace Scripting
       static void addPredefinedGlobalSymbol(const Core::ObjectName& Symbol);
       static void addRegisterTypesExtension(registerTypesExtension Extension);
 
+      static ScriptingEnvironment* requestSharedEnvironment(const Core::ObjectName& Name);
+      static void leaveSharedEnvironment(const Core::ObjectName& Name);
+
       static void handleScriptError(const char* ScriptName, const char* Msg = 0);
       static void handleFunctionError(const char* FunctionName, const char* Msg = 0);
+
+      void lock() { GEMutexLock(mAccessMutex); }
+      void unlock() { GEMutexUnlock(mAccessMutex); }
+
+      bool isReset() const { return bReset; }
 
       void reset();
       void collectGarbage();
