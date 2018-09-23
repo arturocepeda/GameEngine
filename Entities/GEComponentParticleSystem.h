@@ -96,7 +96,9 @@ namespace GE { namespace Entities
            const_cast<Core::Property*>(getProperty(#PropertyBaseName"Curve"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
            break; \
          } \
-         Core::EventHandlingObject::triggerEventStatic(Core::Events::PropertiesUpdated); \
+         Core::EventArgs sArgs; \
+         sArgs.Data = this; \
+         Core::EventHandlingObject::triggerEventStatic(Core::Events::PropertiesUpdated, &sArgs); \
       } \
       void set##PropertyBaseName##Value(float v) { f##PropertyBaseName##Value = v; } \
       void set##PropertyBaseName##ValueMax(float v) { f##PropertyBaseName##ValueMax = v; } \
