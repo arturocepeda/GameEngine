@@ -44,6 +44,8 @@ namespace GE { namespace Audio
    {
    private:
       AudioEventPlayMode mPlayMode;
+      float mFadeInTime;
+      float mFadeOutTime;
 
    public:
       static const Core::ObjectName TypeName;
@@ -52,7 +54,12 @@ namespace GE { namespace Audio
       ~AudioEvent();
 
       GEDefaultGetter(AudioEventPlayMode, PlayMode)
+      GEDefaultGetter(float, FadeInTime)
+      GEDefaultGetter(float, FadeOutTime)
+
       GEDefaultSetter(AudioEventPlayMode, PlayMode)
+      GEDefaultSetter(float, FadeInTime)
+      GEDefaultSetter(float, FadeOutTime)
 
       GEPropertyArray(AudioFileEntry, AudioFile)
    };

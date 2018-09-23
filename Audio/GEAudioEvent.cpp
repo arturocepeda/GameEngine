@@ -43,8 +43,12 @@ const ObjectName AudioEvent::TypeName = ObjectName("AudioEvent");
 AudioEvent::AudioEvent(const ObjectName& pName, const ObjectName& pGroupName)
    : Resource(pName, pGroupName, TypeName)
    , mPlayMode(AudioEventPlayMode::OneShot)
+   , mFadeInTime(0.0f)
+   , mFadeOutTime(0.0f)
 {
    GERegisterPropertyEnum(AudioEventPlayMode, PlayMode);
+   GERegisterProperty(Float, FadeInTime);
+   GERegisterProperty(Float, FadeOutTime);
 
    GERegisterPropertyArray(AudioFile);
 }

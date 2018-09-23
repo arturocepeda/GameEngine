@@ -64,6 +64,8 @@ void ComponentAudioListener::update()
 //  ComponentAudioSource
 //
 const ObjectName PlayAudioEventName = ObjectName("PlayAudioEvent");
+const ObjectName PauseAllAudioEventsName = ObjectName("PauseAllAudioEvents");
+const ObjectName ResumeAllAudioEventsName = ObjectName("ResumeAllAudioEvents");
 const ObjectName StopAllAudioEventsName = ObjectName("StopAllAudioEvents");
 
 ComponentAudioSource::ComponentAudioSource(Entity* pOwner)
@@ -77,6 +79,14 @@ ComponentAudioSource::ComponentAudioSource(Entity* pOwner)
    registerAction(PlayAudioEventName, [this]
    {
       playAudioEvent(mAudioEventName);
+   });
+   registerAction(PauseAllAudioEventsName, [this]
+   {
+      pauseAllAudioEvents();
+   });
+   registerAction(ResumeAllAudioEventsName, [this]
+   {
+      resumeAllAudioEvents();
    });
    registerAction(StopAllAudioEventsName, [this]
    {
@@ -104,6 +114,26 @@ AudioEventInstance* ComponentAudioSource::playAudioEvent(const Core::ObjectName&
    return audioEventInstance;
 }
 
+void ComponentAudioSource::pauseAllAudioEvents()
+{
+   AudioSystem* audioSystem = AudioSystem::getInstance();
+
+   for(size_t i = 0; i < mAudioEventInstances.size(); i++)
+   {
+      audioSystem->pause(mAudioEventInstances[i]);
+   }
+}
+
+void ComponentAudioSource::resumeAllAudioEvents()
+{
+   AudioSystem* audioSystem = AudioSystem::getInstance();
+
+   for(size_t i = 0; i < mAudioEventInstances.size(); i++)
+   {
+      audioSystem->resume(mAudioEventInstances[i]);
+   }
+}
+
 void ComponentAudioSource::stopAllAudioEvents()
 {
    AudioSystem* audioSystem = AudioSystem::getInstance();
@@ -118,14 +148,14 @@ void ComponentAudioSource::update()
 {
    for(size_t i = 0; i < mAudioEventInstances.size(); )
    {
-      if(mAudioEventInstances[i]->Active)
-      {
-         i++;
-      }
-      else
+      if(mAudioEventInstances[i]->State == AudioEventInstanceState::Free)
       {
          mAudioEventInstances[i] = mAudioEventInstances[mAudioEventInstances.size() - 1];
          mAudioEventInstances.pop_back();
+      }
+      else
+      {
+         i++;
       }
    }
 }

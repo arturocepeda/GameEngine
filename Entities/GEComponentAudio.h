@@ -69,10 +69,14 @@ namespace GE { namespace Entities
       GEDefaultGetter(const Core::ObjectName&, AudioBankName)
       GEDefaultGetter(const Core::ObjectName&, AudioEventName)
 
+      uint32_t getActiveAudioEventsCount() const { return (uint32_t)mAudioEventInstances.size(); }
+
       GEDefaultSetter(const Core::ObjectName&, AudioBankName)
       GEDefaultSetter(const Core::ObjectName&, AudioEventName)
 
       Audio::AudioEventInstance* playAudioEvent(const Core::ObjectName& pAudioEventName);
+      void pauseAllAudioEvents();
+      void resumeAllAudioEvents();
       void stopAllAudioEvents();
 
       virtual void update() override;

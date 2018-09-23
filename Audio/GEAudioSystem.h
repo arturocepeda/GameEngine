@@ -55,16 +55,44 @@ namespace GE { namespace Audio
          , Data(0) {}
    };
 
+   enum class AudioEventInstanceState : uint8_t
+   {
+      Free,
+      FadingIn,
+      Playing,
+      FadingOut
+   };
+
    struct AudioEventInstance
    {
       AudioEvent* Event;
       ChannelID Channel;
-      bool Active;
+      float VolumeBase;
+      float VolumeFactorFade;
+      AudioEventInstanceState State;
 
       AudioEventInstance()
          : Event(0)
          , Channel(0)
-         , Active(false) {}
+         , VolumeBase(1.0f)
+         , VolumeFactorFade(1.0f)
+         , State(AudioEventInstanceState::Free)
+      {
+      }
+
+      void reset()
+      {
+         Event = 0;
+         Channel = 0;
+         VolumeBase = 1.0f;
+         VolumeFactorFade = 1.0f;
+         State = AudioEventInstanceState::Free;
+      }
+
+      float getVolume() const
+      {
+         return VolumeBase * VolumeFactorFade;
+      }
    };
 
    class AudioSystem : public Core::Singleton<AudioSystem>

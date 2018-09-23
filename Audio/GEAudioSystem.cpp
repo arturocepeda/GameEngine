@@ -89,7 +89,7 @@ void AudioSystem::releaseChannel(ChannelID pChannel)
    {
       if(mActiveAudioEventInstances[i]->Channel == pChannel)
       {
-         mActiveAudioEventInstances[i]->Active = false;
+         mActiveAudioEventInstances[i]->reset();
          mActiveAudioEventInstances[i] = mActiveAudioEventInstances[audioEventInstancesCount - 1];
          mActiveAudioEventInstances.pop_back();
          break;
@@ -169,6 +169,7 @@ void AudioSystem::update()
 {
    const float deltaTime = Time::getDefaultClock()->getDelta();
 
+   // audio system update
    mTimeSinceLastUpdate += deltaTime;
 
    if(mTimeSinceLastUpdate >= UpdatePeriod)
@@ -189,6 +190,55 @@ void AudioSystem::update()
 
       platformUpdate();
    }
+
+   // handle fades
+   GEMutexLock(mMutex);
+
+   for(size_t i = 0; i < mActiveAudioEventInstances.size(); )
+   {
+      AudioEventInstance* instance = mActiveAudioEventInstances[i];
+      
+      if(instance->State == AudioEventInstanceState::FadingIn &&
+         !platformIsPaused(instance->Channel))
+      {
+         instance->VolumeFactorFade += (1.0f / instance->Event->getFadeInTime()) * deltaTime;
+
+         if(instance->VolumeFactorFade >= 1.0f)
+         {
+            instance->VolumeFactorFade = 1.0f;
+            instance->State = AudioEventInstanceState::Playing;
+         }
+
+         platformSetVolume(instance->Channel, instance->getVolume());
+      }
+      else if(instance->State == AudioEventInstanceState::FadingOut &&
+         !platformIsPaused(instance->Channel))
+      {
+         if(instance->Event->getFadeOutTime() > GE_EPSILON)
+         {
+            instance->VolumeFactorFade -= (1.0f / instance->Event->getFadeOutTime()) * deltaTime;
+         }
+         else
+         {
+            instance->VolumeFactorFade = 0.0f;
+         }
+
+         if(instance->VolumeFactorFade < GE_EPSILON)
+         {
+            releaseChannel(instance->Channel);
+            platformStop(instance->Channel);
+            continue;
+         }
+         else
+         {
+            platformSetVolume(instance->Channel, instance->getVolume());
+         }
+      }
+
+      i++;
+   }
+
+   GEMutexUnlock(mMutex);
 }
 
 void AudioSystem::release()
@@ -394,11 +444,21 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
 
    audioEventInstance->Event = audioEvent;
    audioEventInstance->Channel = selectedChannel;
-   audioEventInstance->Active = true;
+
+   if(audioEvent->getFadeInTime() < GE_EPSILON)
+   {
+      audioEventInstance->State = AudioEventInstanceState::Playing;
+   }
+   else
+   {
+      audioEventInstance->State = AudioEventInstanceState::FadingIn;
+      audioEventInstance->VolumeFactorFade = 0.0f;
+   }
 
    // play the sound
    const bool looping = audioEvent->getPlayMode() == AudioEventPlayMode::Loop;
    platformPlaySound(selectedChannel, bufferID, looping);
+   platformSetVolume(selectedChannel, audioEventInstance->getVolume());
 
    // return the event instance
    return audioEventInstance;
@@ -406,19 +466,15 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
 
 void AudioSystem::stop(AudioEventInstance* pAudioEventInstance)
 {
-   if(!pAudioEventInstance->Active)
+   if(pAudioEventInstance->State == AudioEventInstanceState::Free)
       return;
 
-   GEMutexLock(mMutex);
-   releaseChannel(pAudioEventInstance->Channel);
-   GEMutexUnlock(mMutex);
-
-   platformStop(pAudioEventInstance->Channel);
+   pAudioEventInstance->State = AudioEventInstanceState::FadingOut;
 }
 
 void AudioSystem::pause(AudioEventInstance* pAudioEventInstance)
 {
-   if(!pAudioEventInstance->Active)
+   if(pAudioEventInstance->State == AudioEventInstanceState::Free)
       return;
 
    platformPause(pAudioEventInstance->Channel);
@@ -426,7 +482,7 @@ void AudioSystem::pause(AudioEventInstance* pAudioEventInstance)
 
 void AudioSystem::resume(AudioEventInstance* pAudioEventInstance)
 {
-   if(!pAudioEventInstance->Active)
+   if(pAudioEventInstance->State == AudioEventInstanceState::Free)
       return;
 
    platformResume(pAudioEventInstance->Channel);
@@ -434,25 +490,28 @@ void AudioSystem::resume(AudioEventInstance* pAudioEventInstance)
 
 bool AudioSystem::isPlaying(AudioEventInstance* pAudioEventInstance) const
 {
-   return pAudioEventInstance->Active && platformIsPlaying(pAudioEventInstance->Channel);
+   return pAudioEventInstance->State != AudioEventInstanceState::Free &&
+      platformIsPlaying(pAudioEventInstance->Channel);
 }
 
 bool AudioSystem::isPaused(AudioEventInstance* pAudioEventInstance) const
 {
-   return pAudioEventInstance->Active && platformIsPaused(pAudioEventInstance->Channel);
+   return pAudioEventInstance->State != AudioEventInstanceState::Free &&
+      platformIsPaused(pAudioEventInstance->Channel);
 }
 
 void AudioSystem::setVolume(AudioEventInstance* pAudioEventInstance, float pVolume)
 {
-   if(!pAudioEventInstance->Active)
+   if(pAudioEventInstance->State == AudioEventInstanceState::Free)
       return;
 
-   platformSetVolume(pAudioEventInstance->Channel, pVolume);
+   pAudioEventInstance->VolumeBase = pVolume;
+   platformSetVolume(pAudioEventInstance->Channel, pAudioEventInstance->getVolume());
 }
 
 void AudioSystem::setPosition(AudioEventInstance* pAudioEventInstance, const Vector3& pPosition)
 {
-   if(!pAudioEventInstance->Active)
+   if(pAudioEventInstance->State == AudioEventInstanceState::Free)
       return;
 
    platformSetPosition(pAudioEventInstance->Channel, pPosition);
@@ -460,7 +519,7 @@ void AudioSystem::setPosition(AudioEventInstance* pAudioEventInstance, const Vec
 
 void AudioSystem::setOrientation(AudioEventInstance* pAudioEventInstance, const Rotation& pOrientation)
 {
-   if(!pAudioEventInstance->Active)
+   if(pAudioEventInstance->State == AudioEventInstanceState::Free)
       return;
 
    platformSetOrientation(pAudioEventInstance->Channel, pOrientation);
@@ -468,7 +527,7 @@ void AudioSystem::setOrientation(AudioEventInstance* pAudioEventInstance, const 
 
 void AudioSystem::setMinDistance(AudioEventInstance* pAudioEventInstance, float pDistance)
 {
-   if(!pAudioEventInstance->Active)
+   if(pAudioEventInstance->State == AudioEventInstanceState::Free)
       return;
 
    platformSetMinDistance(pAudioEventInstance->Channel, pDistance);
@@ -476,7 +535,7 @@ void AudioSystem::setMinDistance(AudioEventInstance* pAudioEventInstance, float 
 
 void AudioSystem::setMaxDistance(AudioEventInstance* pAudioEventInstance, float pDistance)
 {
-   if(!pAudioEventInstance->Active)
+   if(pAudioEventInstance->State == AudioEventInstanceState::Free)
       return;
 
    platformSetMaxDistance(pAudioEventInstance->Channel, pDistance);
