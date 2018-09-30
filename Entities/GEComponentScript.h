@@ -24,10 +24,11 @@ namespace GE { namespace Entities
 {
    GESerializableEnum(ScriptSettingsBitMask)
    {
-      Active      = 1 << 0,
-      ThreadSafe  = 1 << 1,
+      Active             = 1 << 0,
+      ThreadSafe         = 1 << 1,
+      SharedEnvironment  = 1 << 2,
 
-      Count = 2
+      Count = 3
    };
 
 
@@ -45,19 +46,26 @@ namespace GE { namespace Entities
 
       struct CachedPropertyValue
       {
-         uint PropertyNameHash;
+         Core::ObjectName PropertyName;
          Core::Value PropertyValue;
 
-         CachedPropertyValue() : PropertyNameHash(0), PropertyValue(0) {}
+         CachedPropertyValue() : PropertyValue(0) {}
       };
-      GESTLVector(CachedPropertyValue) vCachedPropertyValues;
+      GESTLVector(CachedPropertyValue) vInstancePropertyValues;
 
 #if defined (GE_EDITOR_SUPPORT)
+      GESTLVector(CachedPropertyValue) vCachedPropertyValues;
       uint iDebugBreakpointLine;
 #endif
 
       void registerScriptProperties();
       void registerScriptActions();
+
+      void setScriptProperty(const Core::ObjectName& pName, const Core::Value& pValue);
+      Core::Value getScriptProperty(const Core::ObjectName& pName, Core::ValueType pType);
+
+      void updateEnvironmentContext();
+      void cachePropertyValues();
 
    public:
       ScriptInstance();

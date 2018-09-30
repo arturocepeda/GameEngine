@@ -46,7 +46,8 @@ namespace GE { namespace Core
    enum class PropertyFlags
    {
       Hidden     = 1 << 0,
-      EditorOnly = 1 << 1,
+      Internal   = 1 << 1,
+      EditorOnly = 1 << 2,
    };
 
    struct Property
