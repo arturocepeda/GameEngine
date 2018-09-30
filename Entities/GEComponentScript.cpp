@@ -186,11 +186,19 @@ void ScriptInstance::setScriptSettings(uint8_t BitMask)
 
    eScriptSettings = BitMask;
 
+   if(!cEnv)
+      return;
+
    const bool bScriptActiveNow = GEHasFlag(eScriptSettings, ScriptSettingsBitMask::Active);
    const bool bSharedEnvironmentNow = GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment);
 
    if(bScriptActiveBefore != bScriptActiveNow)
    {
+      if(bSharedEnvironmentBefore)
+      {
+         cEnv->lock();
+      }
+
       updateEnvironmentContext();
 
       if(bScriptActiveNow)
@@ -207,6 +215,11 @@ void ScriptInstance::setScriptSettings(uint8_t BitMask)
             cEnv->runFunction<void>(cDeactivateFunctionName);
          }
       }
+
+      if(bSharedEnvironmentBefore)
+      {
+         cEnv->unlock();
+      }
    }
 
    if(bSharedEnvironmentBefore != bSharedEnvironmentNow)
@@ -215,20 +228,14 @@ void ScriptInstance::setScriptSettings(uint8_t BitMask)
 
       if(bSharedEnvironmentBefore)
       {
-         if(cEnv)
-         {
-            ScriptingEnvironment::leaveSharedEnvironment(cScriptName);
-            cEnv = 0;
-         }
+         ScriptingEnvironment::leaveSharedEnvironment(cScriptName);
+         cEnv = 0;
       }
       else
       {
-         if(cEnv)
-         {
-            GEInvokeDtor(ScriptingEnvironment, cEnv);
-            Allocator::free(cEnv);
-            cEnv = 0;
-         }
+         GEInvokeDtor(ScriptingEnvironment, cEnv);
+         Allocator::free(cEnv);
+         cEnv = 0;
       }
 
       setScriptName(cScriptName);
@@ -516,6 +523,13 @@ void ScriptInstance::update()
 
    if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
    {
+      for(size_t i = 0; i < vInstancePropertyValues.size(); i++)
+      {
+         const ObjectName& propertyName = vInstancePropertyValues[i].PropertyName;
+         ValueType propertyType = vInstancePropertyValues[i].PropertyValue.getType();
+         vInstancePropertyValues[i].PropertyValue = getScriptProperty(propertyName, propertyType);
+      }
+
       cEnv->unlock();
    }
 }
