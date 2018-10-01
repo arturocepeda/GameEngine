@@ -37,7 +37,9 @@ namespace GE { namespace Entities
    {
    private:
       static Scene* cActiveScene;
-      static Scene* cDebuggingScene;
+
+      static Scene cPermanentScene;
+      static Scene cDebuggingScene;
 
       GESTLVector(Entity*) vEntities;
       GESTLMap(uint, Entity*) mRegistry;
@@ -71,7 +73,7 @@ namespace GE { namespace Entities
       static void setActiveScene(Scene* S);
       static Scene* getActiveScene();
 
-      static void setDebuggingScene(Scene* S);
+      static Scene* getPermanentScene();
       static Scene* getDebuggingScene();
 
       Entity* addEntity(const Core::ObjectName& Name, Entity* cParent = 0);

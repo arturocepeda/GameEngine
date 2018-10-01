@@ -47,7 +47,9 @@ const ObjectName BackgroundEntityName = ObjectName("Background");
 //  Scene
 //
 Scene* Scene::cActiveScene = 0;
-Scene* Scene::cDebuggingScene = 0;
+
+Scene Scene::cPermanentScene = Scene("Permanent");
+Scene Scene::cDebuggingScene = Scene("Debugging");
 
 Scene::Scene(const ObjectName& Name)
    : EventHandlingObject(Name)
@@ -147,14 +149,14 @@ Scene* Scene::getActiveScene()
    return cActiveScene;
 }
 
-void Scene::setDebuggingScene(Scene* S)
+Scene* Scene::getPermanentScene()
 {
-   cDebuggingScene = S;
+   return &cPermanentScene;
 }
 
 Scene* Scene::getDebuggingScene()
 {
-   return cDebuggingScene;
+   return &cDebuggingScene;
 }
 
 Entity* Scene::addEntity(const ObjectName& Name, Entity* cParent)

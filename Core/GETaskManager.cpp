@@ -83,12 +83,11 @@ void TaskManager::update()
 
    // queue scene update jobs
    Scene* cDebuggingScene = Scene::getDebuggingScene();
+   Scene* cPermanentScene = Scene::getPermanentScene();
    Scene* cActiveScene = Scene::getActiveScene();
 
-   if(cDebuggingScene)
-   {
-      cDebuggingScene->queueUpdateJobs();
-   }
+   cDebuggingScene->queueUpdateJobs();
+   cPermanentScene->queueUpdateJobs();
 
    if(cActiveScene)
    {
@@ -99,10 +98,8 @@ void TaskManager::update()
    cFrameThreadPool->kickJobs();
 
    // update scene
-   if(cDebuggingScene)
-   {
-      cDebuggingScene->update();
-   }
+   cDebuggingScene->update();
+   cPermanentScene->update();
 
    if(cActiveScene)
    {
@@ -113,10 +110,8 @@ void TaskManager::update()
    cFrameThreadPool->waitForJobsCompletion();
 
    // queue scene objects for rendering
-   if(cDebuggingScene)
-   {
-      cDebuggingScene->queueForRendering();
-   }
+   cDebuggingScene->queueForRendering();
+   cPermanentScene->queueForRendering();
 
    if(cActiveScene)
    {
