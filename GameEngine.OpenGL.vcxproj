@@ -19,8 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Audio\FMOD\GEAudioSystemFMOD.cpp" />
+    <ClCompile Include="Audio\GEAudioBank.cpp" />
+    <ClCompile Include="Audio\GEAudioEvent.cpp" />
     <ClCompile Include="Audio\GEAudioSystem.cpp" />
+    <ClCompile Include="Audio\OpenAL\GEAudioSystemOpenAL.cpp" />
     <ClCompile Include="Content\GEAnimation.cpp" />
     <ClCompile Include="Content\GEAudioData.cpp" />
     <ClCompile Include="Content\GEContentData.cpp" />
@@ -53,6 +55,7 @@
     <ClCompile Include="Core\Windows\GEDevice.Windows.cpp" />
     <ClCompile Include="Core\Windows\GELog.Windows.cpp" />
     <ClCompile Include="Entities\GEComponent.cpp" />
+    <ClCompile Include="Entities\GEComponentAudio.cpp" />
     <ClCompile Include="Entities\GEComponentCamera.cpp" />
     <ClCompile Include="Entities\GEComponentCollider.cpp" />
     <ClCompile Include="Entities\GEComponentDataContainer.cpp" />
@@ -129,7 +132,8 @@
     <ClCompile Include="Types\GEVector.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Audio\FMOD\GEAudioSystemFMOD.h" />
+    <ClInclude Include="Audio\GEAudioBank.h" />
+    <ClInclude Include="Audio\GEAudioEvent.h" />
     <ClInclude Include="Audio\GEAudioSystem.h" />
     <ClInclude Include="Content\GEAnimation.h" />
     <ClInclude Include="Content\GEAudioData.h" />
@@ -168,6 +172,7 @@
     <ClInclude Include="Core\GEUtils.h" />
     <ClInclude Include="Core\GEValue.h" />
     <ClInclude Include="Entities\GEComponent.h" />
+    <ClInclude Include="Entities\GEComponentAudio.h" />
     <ClInclude Include="Entities\GEComponentCamera.h" />
     <ClInclude Include="Entities\GEComponentCollider.h" />
     <ClInclude Include="Entities\GEComponentDataContainer.h" />

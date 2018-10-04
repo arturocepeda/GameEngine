@@ -26,7 +26,7 @@
 
 #include "Rendering/OpenGL/GEOpenGLES20.h"
 #include "Rendering/OpenGL/GERenderSystemES20.h"
-#include "Audio/FMOD/GEAudioSystemFMOD.h"
+#include "Audio/GEAudioSystem.h"
 #include "Input/GEInputSystem.h"
 
 #define FREEGLUT_LIB_PRAGMAS 0
@@ -39,12 +39,15 @@
 #if defined (_M_X64)
 # pragma comment(lib, "../../../GameEngine/Externals/glew/lib/Release/x64/glew32.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/freeglut/lib/x64/freeglut.lib")
-# pragma comment(lib, "../../../GameEngine/Externals/FMOD/lib/fmodex64_vc.lib")
+# pragma comment(lib, "../../../GameEngine/Externals/OpenAL/lib/Win64/OpenAL32.lib")
+# pragma comment(lib, "../../../GameEngine/Externals/libogg/lib/x64/libogg_static.lib")
+# pragma comment(lib, "../../../GameEngine/Externals/libvorbis/lib/x64/libvorbis_static.lib")
+# pragma comment(lib, "../../../GameEngine/Externals/libvorbis/lib/x64/libvorbisfile_static.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/Brofiler/ProfilerCore64.lib")
 #else
 # pragma comment(lib, "../../../GameEngine/Externals/glew/lib/Release/Win32/glew32.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/freeglut/lib/freeglut.lib")
-# pragma comment(lib, "../../../GameEngine/Externals/FMOD/lib/fmodex_vc.lib")
+# pragma comment(lib, "../../../GameEngine/Externals/OpenAL/lib/Win32/OpenAL32.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/Brofiler/ProfilerCore32.lib")
 #endif
 
@@ -141,8 +144,8 @@ int main(int argc, char* argv[])
 
     cRender = Allocator::alloc<RenderSystemES20>();
     GEInvokeCtor(RenderSystemES20, cRender)();
-    cAudio = Allocator::alloc<AudioSystemFMOD>();
-    GEInvokeCtor(AudioSystemFMOD, cAudio)();
+    cAudio = Allocator::alloc<AudioSystem>();
+    GEInvokeCtor(AudioSystem, cAudio)();
     cAudio->init();
     cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
 
