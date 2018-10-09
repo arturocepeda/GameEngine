@@ -65,6 +65,8 @@ namespace GE { namespace Entities
       Core::Value getScriptProperty(const Core::ObjectName& pName, Core::ValueType pType);
 
       void updateEnvironmentContext();
+      void updateInstancePropertyValues();
+
       void cachePropertyValues();
 
    public:
