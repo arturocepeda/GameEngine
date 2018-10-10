@@ -69,6 +69,9 @@ namespace GE { namespace Scripting
       static void* customAlloc(void*, void* ptr, size_t, size_t nsize);
       static bool alphabeticalComparison(const Core::ObjectName& l, const Core::ObjectName& r);
 
+      static void collectPredefinedGlobalSymbols();
+      static void addPredefinedGlobalSymbol(const Core::ObjectName& Symbol);
+
       bool loadModule(const char* sModuleName);
 
       void collectGlobalSymbols();
@@ -81,7 +84,6 @@ namespace GE { namespace Scripting
       static void initStaticData();
       static void releaseStaticData();
 
-      static void addPredefinedGlobalSymbol(const Core::ObjectName& Symbol);
       static void addRegisterTypesExtension(registerTypesExtension Extension);
 
       static ScriptingEnvironment* requestSharedEnvironment(const Core::ObjectName& Name);

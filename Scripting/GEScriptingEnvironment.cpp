@@ -97,26 +97,7 @@ void ScriptingEnvironment::initStaticData()
    GEMutexInit(mAllocatorMutex);
 
    // collect predefined global symbols
-   ScriptingEnvironment cDefaultEnv;
-   lua_State* luaState = cDefaultEnv.lua.lua_state();
-
-   lua_pushglobaltable(luaState);
-   lua_pushnil(luaState);
-
-   while(lua_next(luaState, -2) != 0)
-   {
-      const char* sVariableName = lua_tostring(luaState, -2);
-      ObjectName cVariableName = ObjectName(sVariableName);
-      addPredefinedGlobalSymbol(cVariableName);
-      lua_pop(luaState, 1);
-   }
-
-   lua_pop(luaState, 1);
-
-   // add GE variable names
-   addPredefinedGlobalSymbol(ObjectName("deltaTime"));
-   addPredefinedGlobalSymbol(ObjectName("entity"));
-   addPredefinedGlobalSymbol(ObjectName("this"));
+   collectPredefinedGlobalSymbols();
 }
 
 void ScriptingEnvironment::releaseStaticData()
@@ -132,14 +113,10 @@ void ScriptingEnvironment::releaseStaticData()
    pAllocatorBuffer = 0;
 }
 
-void ScriptingEnvironment::addPredefinedGlobalSymbol(const ObjectName& Symbol)
-{
-   sPredefinedGlobalSymbols.insert(Symbol.getID());
-}
-
 void ScriptingEnvironment::addRegisterTypesExtension(registerTypesExtension Extension)
 {
    vRegisterTypesExtensions.push_back(Extension);
+   collectPredefinedGlobalSymbols();
 }
 
 ScriptingEnvironment* ScriptingEnvironment::requestSharedEnvironment(const Core::ObjectName& Name)
@@ -430,6 +407,37 @@ void* ScriptingEnvironment::customAlloc(void*, void* ptr, size_t, size_t nsize)
 bool ScriptingEnvironment::alphabeticalComparison(const ObjectName& l, const ObjectName& r)
 {
    return strcmp(l.getString(), r.getString()) < 0;
+}
+
+void ScriptingEnvironment::collectPredefinedGlobalSymbols()
+{
+   sPredefinedGlobalSymbols.clear();
+
+   ScriptingEnvironment cDefaultEnv;
+   lua_State* luaState = cDefaultEnv.lua.lua_state();
+
+   lua_pushglobaltable(luaState);
+   lua_pushnil(luaState);
+
+   while(lua_next(luaState, -2) != 0)
+   {
+      const char* sVariableName = lua_tostring(luaState, -2);
+      ObjectName cVariableName = ObjectName(sVariableName);
+      addPredefinedGlobalSymbol(cVariableName);
+      lua_pop(luaState, 1);
+   }
+
+   lua_pop(luaState, 1);
+
+   // add GE variable names
+   addPredefinedGlobalSymbol(ObjectName("deltaTime"));
+   addPredefinedGlobalSymbol(ObjectName("entity"));
+   addPredefinedGlobalSymbol(ObjectName("this"));
+}
+
+void ScriptingEnvironment::addPredefinedGlobalSymbol(const ObjectName& Symbol)
+{
+   sPredefinedGlobalSymbols.insert(Symbol.getID());
 }
 
 bool ScriptingEnvironment::loadModule(const char* sModuleName)
