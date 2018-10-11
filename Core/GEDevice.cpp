@@ -24,6 +24,7 @@ int Device::ScreenHeight = 0;
 
 SystemLanguage Device::Language = SystemLanguage::English;
 DeviceOrientation Device::Orientation = DeviceOrientation::Portrait;
+Quaternion Device::Rotation;
 
 int Device::AudioSystemSampleRate = 0;
 int Device::AudioSystemFramesPerBuffer = 0;
