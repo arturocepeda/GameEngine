@@ -87,8 +87,7 @@
       <ThumbMode>false</ThumbMode>
       <StrictAliasing>false</StrictAliasing>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
-      <CLanguageStandard>
-      </CLanguageStandard>
+      <CLanguageStandard>c11</CLanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalOptions>-lGLESv1_CM %(AdditionalOptions)</AdditionalOptions>
@@ -119,7 +118,8 @@
     </AntBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Audio\OpenSL\GEAudioSystemOpenSL.h" />
+    <ClInclude Include="Audio\GEAudioBank.h" />
+    <ClInclude Include="Audio\GEAudioEvent.h" />
     <ClInclude Include="Audio\GEAudioSystem.h" />
     <ClInclude Include="Content\GEAnimation.h" />
     <ClInclude Include="Content\GEAudioData.h" />
@@ -157,6 +157,7 @@
     <ClInclude Include="Core\GEUtils.h" />
     <ClInclude Include="Core\GEValue.h" />
     <ClInclude Include="Entities\GEComponent.h" />
+    <ClInclude Include="Entities\GEComponentAudio.h" />
     <ClInclude Include="Entities\GEComponentCamera.h" />
     <ClInclude Include="Entities\GEComponentCollider.h" />
     <ClInclude Include="Entities\GEComponentDataContainer.h" />
@@ -198,6 +199,8 @@
     <ClInclude Include="Types\GEVector.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Audio\GEAudioBank.cpp" />
+    <ClCompile Include="Audio\GEAudioEvent.cpp" />
     <ClCompile Include="Audio\OpenSL\GEAudioSystemOpenSL.cpp" />
     <ClCompile Include="Audio\GEAudioSystem.cpp" />
     <ClCompile Include="Content\GEAnimation.cpp" />
@@ -209,8 +212,11 @@
     <ClCompile Include="Content\GEResource.cpp" />
     <ClCompile Include="Content\GEResourcesManager.cpp" />
     <ClCompile Include="Content\GESkeleton.cpp" />
+    <ClCompile Include="Core\Android\GEDevice.Android.cpp" />
+    <ClCompile Include="Core\Android\GELog.Android.cpp" />
     <ClCompile Include="Core\GEAllocator.cpp" />
     <ClCompile Include="Core\GEApplication.cpp" />
+    <ClCompile Include="Core\GEDevice.cpp" />
     <ClCompile Include="Core\GEEvents.cpp" />
     <ClCompile Include="Core\GEGeometry.cpp" />
     <ClCompile Include="Core\GEMath.cpp" />
@@ -226,9 +232,9 @@
     <ClCompile Include="Core\GETime.cpp" />
     <ClCompile Include="Core\GETimer.cpp" />
     <ClCompile Include="Core\GEUtils.cpp" />
-    <ClCompile Include="Core\Android\GEDevice.cpp" />
     <ClCompile Include="Core\GEValue.cpp" />
     <ClCompile Include="Entities\GEComponent.cpp" />
+    <ClCompile Include="Entities\GEComponentAudio.cpp" />
     <ClCompile Include="Entities\GEComponentCamera.cpp" />
     <ClCompile Include="Entities\GEComponentCollider.cpp" />
     <ClCompile Include="Entities\GEComponentDataContainer.cpp" />

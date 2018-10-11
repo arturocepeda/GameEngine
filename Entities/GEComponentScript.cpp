@@ -305,10 +305,12 @@ void ScriptInstance::registerScriptProperties()
 
       Property* cProperty = registerProperty(cGlobalVariableName, ePropertyType, setter, getter);
 
+#if defined (GE_EDITOR_SUPPORT)
       if(!isupper(sGlobalVariableName[0]))
       {
          GESetFlag(cProperty->Flags, PropertyFlags::Internal);
       }
+#endif
    }
 
    vInstancePropertyValues.shrink_to_fit();

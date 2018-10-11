@@ -25,32 +25,6 @@
 using namespace GE::Core;
 using namespace GE::Content;
 
-int Device::ScreenWidth = 0;
-int Device::ScreenHeight = 0;
-
-SystemLanguage Device::Language = SystemLanguage::English;
-
-DeviceOrientation Device::Orientation = DeviceOrientation::Portrait;
-GE::Quaternion Device::Rotation;
-
-int Device::AudioSystemSampleRate = 44100;
-int Device::AudioSystemFramesPerBuffer = 512;
-
-int Device::getScreenWidth()
-{
-   return ScreenWidth;
-}
-
-int Device::getScreenHeight()
-{
-   return ScreenHeight;
-}
-
-float Device::getAspectRatio()
-{
-   return (float)ScreenHeight / ScreenWidth;
-}
-
 int Device::getTouchPadWidth()
 {
    return ScreenWidth;
@@ -206,7 +180,7 @@ uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
    return iFilesCount;
 }
 
-void Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
+bool Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
    char sAppDataDirectory[256];
    sprintf(sAppDataDirectory, "/sdcard/Android/data/%s/%s", Application::ID, SubDir);
@@ -214,7 +188,9 @@ void Device::getUserFileName(const char* SubDir, const char* Extension, uint Ind
    DIR* sDir = opendir(sAppDataDirectory);
 
    if(!sDir)
-      return;
+   {
+      return false;
+   }
 
    uint iExtensionLength = strlen(Extension);
    uint iFileIndex = 0;
@@ -261,16 +237,6 @@ void Device::getUserFileName(const char* SubDir, const char* Extension, uint Ind
    while(sDirEnt);
 
    closedir(sDir);
-}
 
-void Device::log(const char* Message, ...)
-{
-   char sBuffer[256];
-
-   va_list vArguments;
-   va_start(vArguments, Message);
-   vsprintf(sBuffer, Message, vArguments);
-   va_end(vArguments);
-
-   __android_log_print(ANDROID_LOG_VERBOSE, "GameEngine", "%s", sBuffer);
+   return true;
 }

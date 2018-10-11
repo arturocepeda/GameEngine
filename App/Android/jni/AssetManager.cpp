@@ -99,12 +99,14 @@ uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
    return iFilesCount;
 }
 
-void Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
+bool Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
    AAssetDir* aAssetDir = AAssetManager_openDir(NativeAssetManager, SubDir);
 
    if(!aAssetDir)
-      return;
+   {
+      return false;
+   }
 
    uint iExtensionLength = strlen(Extension);
    uint iFileIndex = 0;
@@ -150,4 +152,6 @@ void Device::getContentFileName(const char* SubDir, const char* Extension, uint 
    while(sFileName);
 
    AAssetDir_close(aAssetDir);
+
+   return true;
 }

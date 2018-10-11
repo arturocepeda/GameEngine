@@ -21,7 +21,7 @@
 #include "config.h"
 
 #include "Rendering/OpenGL/GERenderSystemES20.h"
-#include "Audio/OpenSL/GEAudioSystemOpenSL.h"
+#include "Audio/GEAudioSystem.h"
 #include "Input/GEInputSystem.h"
 
 #include "Core/GEDevice.h"
@@ -125,7 +125,7 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
 
    // initialize audio system
 #if defined (GE_AUDIO_SUPPORT)
-   cAudio = new AudioSystemOpenSL();
+   cAudio = new AudioSystem();
    cAudio->init();
 #endif
 

@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Core\Android\GEDevice.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Core\GETimer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -193,6 +190,24 @@
     <ClCompile Include="Externals\tlsf\tlsf.c">
       <Filter>Externals\tlsf</Filter>
     </ClCompile>
+    <ClCompile Include="Core\GEDevice.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Android\GEDevice.Android.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Android\GELog.Android.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Entities\GEComponentAudio.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\GEAudioBank.cpp">
+      <Filter>Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\GEAudioEvent.cpp">
+      <Filter>Audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\GETimer.h">
@@ -242,9 +257,6 @@
     </ClInclude>
     <ClInclude Include="Audio\GEAudioSystem.h">
       <Filter>Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="Audio\OpenSL\GEAudioSystemOpenSL.h">
-      <Filter>Audio.OpenSL</Filter>
     </ClInclude>
     <ClInclude Include="Core\GESingleton.h">
       <Filter>Core</Filter>
@@ -425,6 +437,15 @@
     </ClInclude>
     <ClInclude Include="Externals\tlsf\tlsf.h">
       <Filter>Externals\tlsf</Filter>
+    </ClInclude>
+    <ClInclude Include="Entities\GEComponentAudio.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\GEAudioBank.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\GEAudioEvent.h">
+      <Filter>Audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

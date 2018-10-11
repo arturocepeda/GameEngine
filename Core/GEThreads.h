@@ -103,7 +103,7 @@
 # define GEThreadWait(Thread)  pthread_join(Thread, NULL)
 # define GEThreadClose(Thread)
 
-# define GEThreadID  (GE::uint)pthread_getthreadid_np()
+# define GEThreadID  (GE::uint)pthread_self()
 # define GEThreadAffinity(Thread, CoreIndex) \
    cpu_set_t cpuset; \
    CPU_ZERO(&cpuset); \

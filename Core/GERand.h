@@ -147,12 +147,12 @@ namespace GE { namespace Core
    public:
       T extract()
       {
-         std::uniform_int_distribution<int> randomDist(0, (int)mValues.size() - 1);
+         std::uniform_int_distribution<int> randomDist(0, (int)RandUniform<T>::mValues.size() - 1);
 
-         const int position = randomDist(cRandomEngine);
-         T value = mValues[position];
+         const int position = randomDist(Rand::cRandomEngine);
+         T value = RandUniform<T>::mValues[position];
 
-         mValues.erase(mValues.begin() + position);
+         RandUniform<T>::mValues.erase(RandUniform<T>::mValues.begin() + position);
 
          return value;
       }

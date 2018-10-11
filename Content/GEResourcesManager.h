@@ -212,7 +212,7 @@ namespace GE { namespace Content
 
          for(const pugi::xml_node& xmlEntry : xmlEntries.children(TypeName.getString()))
          {
-            T* cInstance = Allocator::alloc<T>();
+            T* cInstance = Core::Allocator::alloc<T>();
             GEInvokeCtor(T, cInstance)(xmlEntry.attribute("name").value(), GroupName);
             cInstance->loadFromXml(xmlEntry);
             (*cObjects->Registry)[cInstance->getName().getID()] = cInstance;

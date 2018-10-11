@@ -10,10 +10,67 @@
 //
 //////////////////////////////////////////////////////////////////
 
+#if 0
+
 #include "GEAudioSystemOpenSL.h"
 #include "Core/GEDevice.h"
 #include <iostream>
 #include <fstream>
+
+namespace GE { namespace Audio
+{
+   class AudioSystemOpenSL : public AudioSystem
+   {
+   private:
+      SLObjectItf slEngineObject;
+      SLEngineItf slEngine;
+      SLObjectItf slOutputMix;
+
+      SLDataLocator_OutputMix slDataLocatorOut;
+      SLDataSink slDataSink;
+
+      struct OpenSLSource
+      {
+         SLObjectItf AudioPlayer;
+         SLBufferQueueItf BufferQueue;
+         SLPlayItf PlaybackState;
+         SLVolumeItf VolumeController;
+      };
+
+      OpenSLSource* slSources;
+      Content::AudioData* slBuffers;
+
+      void internalInit();
+
+      SLmillibel linearToMillibel(float fGain);
+      SLpermille floatToPermille(float fPanning);
+
+      static void bufferCallback(SLBufferQueueItf slBufferQueue, void* pContext);
+
+   public:
+      AudioSystemOpenSL();
+      ~AudioSystemOpenSL();
+
+      void release();
+   
+      void loadSound(unsigned int SoundIndex, const char* FileName, const char* FileExtension);
+      void unloadSound(unsigned int SoundIndex);
+      void unloadAllSounds();
+   
+      void internalPlaySound(unsigned int SoundIndex, unsigned int SourceIndex);
+      void internalStop(unsigned int SourceIndex);
+
+      bool isPlaying(unsigned int SourceIndex);
+   
+      void moveListener(const Vector3& Delta);
+      void moveSource(unsigned int SourceIndex, const Vector3& Delta);
+   
+      void setListenerPosition(const Vector3& Position);
+      void setVolume(unsigned int SourceIndex, float Volume);
+      void setPosition(unsigned int SourceIndex, const Vector3& Position);
+      void setDirection(unsigned int SourceIndex, const Vector3& Direction);
+   };
+}}
 
 using namespace GE::Audio;
 using namespace GE::Core;
@@ -197,4 +254,95 @@ SLmillibel AudioSystemOpenSL::linearToMillibel(float fGain)
 SLpermille AudioSystemOpenSL::floatToPermille(float fPanning)
 {
    return (SLpermille)(1000 * fPanning);
+}
+
+#endif
+
+
+#include "Audio/GEAudioSystem.h"
+
+#include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
+
+using namespace GE::Audio;
+using namespace GE::Core;
+using namespace GE::Content;
+
+void AudioSystem::platformInit()
+{
+}
+
+void AudioSystem::platformUpdate()
+{
+}
+
+void AudioSystem::platformRelease()
+{
+}
+
+void AudioSystem::platformLoadSound(BufferID pBuffer, Content::AudioData* pAudioData)
+{
+}
+
+void AudioSystem::platformUnloadSound(BufferID pBuffer)
+{
+}
+
+void AudioSystem::platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool pLooping)
+{
+}
+
+void AudioSystem::platformStop(ChannelID pChannel)
+{
+}
+
+void AudioSystem::platformPause(ChannelID pChannel)
+{
+}
+
+void AudioSystem::platformResume(ChannelID pChannel)
+{
+}
+
+bool AudioSystem::platformIsPlaying(ChannelID pChannel) const
+{
+   return false;
+}
+
+bool AudioSystem::platformIsPaused(ChannelID pChannel) const
+{
+   return false;
+}
+
+bool AudioSystem::platformIsInUse(ChannelID pChannel) const
+{
+   return false;
+}
+
+void AudioSystem::platformSetVolume(ChannelID pChannel, float pVolume)
+{
+}
+
+void AudioSystem::platformSetPosition(ChannelID pChannel, const Vector3& pPosition)
+{
+}
+
+void AudioSystem::platformSetOrientation(ChannelID pChannel, const Rotation& pOrientation)
+{
+}
+
+void AudioSystem::platformSetMinDistance(ChannelID pChannel, float pDistance)
+{
+}
+
+void AudioSystem::platformSetMaxDistance(ChannelID pChannel, float pDistance)
+{
+}
+
+void AudioSystem::platformSetListenerPosition(const Vector3& pPosition)
+{
+}
+
+void AudioSystem::platformSetListenerOrientation(const Rotation& pOrientation)
+{
 }
