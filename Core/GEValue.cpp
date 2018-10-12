@@ -336,22 +336,28 @@ ObjectName Value::getAsObjectName() const
    return ObjectName(sBuffer);
 }
 
-const Vector2& Value::getAsVector2() const
+Vector2 Value::getAsVector2() const
 {
    GEAssert(eType == ValueType::Vector2);
-   return *(reinterpret_cast<const Vector2*>(sBuffer));
+   Vector2 vVector;
+   memcpy(&vVector, sBuffer, sizeof(Vector2));
+   return vVector;
 }
 
-const Vector3& Value::getAsVector3() const
+Vector3 Value::getAsVector3() const
 {
    GEAssert(eType == ValueType::Vector3);
-   return *(reinterpret_cast<const Vector3*>(sBuffer));
+   Vector3 vVector;
+   memcpy(&vVector, sBuffer, sizeof(Vector3));
+   return vVector;
 }
 
-const Color& Value::getAsColor() const
+Color Value::getAsColor() const
 {
    GEAssert(eType == ValueType::Color);
-   return *(reinterpret_cast<const Color*>(sBuffer));
+   Color sColor;
+   memcpy(&sColor, sBuffer, sizeof(Color));
+   return sColor;
 }
 
 void Value::toString(char* Buffer) const

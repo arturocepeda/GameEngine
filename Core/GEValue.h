@@ -95,9 +95,9 @@ namespace GE { namespace Core
       short getAsShort() const;
       const char* getAsString() const;
       ObjectName getAsObjectName() const;
-      const GE::Vector2& getAsVector2() const;
-      const GE::Vector3& getAsVector3() const;
-      const GE::Color& getAsColor() const;
+      GE::Vector2 getAsVector2() const;
+      GE::Vector3 getAsVector3() const;
+      GE::Color getAsColor() const;
 
       template<typename T> T getAs() const { return (T)0; }
 
