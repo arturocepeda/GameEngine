@@ -40,11 +40,11 @@
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Profile|Tegra-Android'">
     <AndroidStlType>gnustl_static</AndroidStlType>
-    <AndroidTargetAPI>android-24</AndroidTargetAPI>
+    <AndroidTargetAPI>android-21</AndroidTargetAPI>
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <NdkToolchainVersion>Default</NdkToolchainVersion>
     <AndroidNativeAPI>UseTarget</AndroidNativeAPI>
-    <AndroidMinAPI>android-15</AndroidMinAPI>
+    <AndroidMinAPI>android-21</AndroidMinAPI>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -219,6 +219,7 @@
     <ClCompile Include="Core\GEDevice.cpp" />
     <ClCompile Include="Core\GEEvents.cpp" />
     <ClCompile Include="Core\GEGeometry.cpp" />
+    <ClCompile Include="Core\GEInterpolator.cpp" />
     <ClCompile Include="Core\GEMath.cpp" />
     <ClCompile Include="Core\GEObject.cpp" />
     <ClCompile Include="Core\GEParser.cpp" />
