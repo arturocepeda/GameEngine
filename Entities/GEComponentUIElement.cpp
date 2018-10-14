@@ -196,6 +196,20 @@ ComponentUI3DElement::ComponentUI3DElement(Entity* Owner)
    cClassName = ObjectName("UI3DElement");
    eUIElementType = UIElementType::_3D;
 
+   Entity* cParent = cOwner->getParent();
+
+   if(cParent)
+   {
+      ComponentUIElement* cUIElement = cParent->getComponent<ComponentUIElement>();
+
+      if(cUIElement &&
+         (cUIElement->getUIElementType() == UIElementType::_3D ||
+         cUIElement->getUIElementType() == UIElementType::_3DCanvas))
+      {
+         iCanvasIndex = static_cast<ComponentUI3DElement*>(cUIElement)->getCanvasIndex();
+      }
+   }
+
    GERegisterProperty(Byte, CanvasIndex);
 }
 
