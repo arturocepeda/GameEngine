@@ -879,8 +879,10 @@ void ScriptingEnvironment::registerTypes()
       , "removeMaterialPass", &ComponentRenderable::removeMaterialPass
       , "getVisible", &ComponentRenderable::getVisible
       , "getColor", &ComponentRenderable::getColor
+      , "getRenderPriority", &ComponentRenderable::getRenderPriority
       , "setVisible", &ComponentRenderable::setVisible
       , "setColor", &ComponentRenderable::setColor
+      , "setRenderPriority", &ComponentRenderable::setRenderPriority
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
    lua.new_simple_usertype<ComponentSprite>
