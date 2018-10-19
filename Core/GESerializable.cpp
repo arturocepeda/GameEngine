@@ -296,6 +296,8 @@ void Serializable::saveToXml(pugi::xml_node& XmlNode) const
 #if defined (GE_EDITOR_SUPPORT)
       if(sProperty.Getter() == sProperty.DefaultValue)
          continue;
+      if(GEHasFlag(sProperty.Flags, PropertyFlags::Internal))
+         continue;
       if(GEHasFlag(sProperty.Flags, PropertyFlags::EditorOnly))
          continue;
 #endif
