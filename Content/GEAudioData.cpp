@@ -204,7 +204,7 @@ void AudioData::loadOggData(uint32_t Size, const char* Data)
    const uint iDecodedSamplesCount = (uint)ov_pcm_total(&ovFile, -1);
    const uint iBytesPerDecodedSample = (uint)iBitDepth / 8;
 
-   iDataSize = iDecodedSamplesCount * iBytesPerDecodedSample;
+   iDataSize = iDecodedSamplesCount * iBytesPerDecodedSample * (uint)iNumberOfChannels;
    pData = Allocator::alloc<char>(iDataSize, AllocationCategory::Audio);
 
    int iBitStream = 0;
