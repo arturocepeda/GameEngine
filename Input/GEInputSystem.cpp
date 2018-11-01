@@ -11,232 +11,320 @@
 //////////////////////////////////////////////////////////////////
 
 #include "GEInputSystem.h"
-#include "Core/GEStateManager.h"
-#include "Entities/GEScene.h"
-#include "Entities/GEEntity.h"
-#include "Entities/GEComponentScript.h"
 
 using namespace GE;
 using namespace GE::Input;
 using namespace GE::Core;
-using namespace GE::Entities;
 
-InputSystem::InputSystem()
-   : bInputEnabled(true)
+
+//
+//  InputListener
+//
+bool InputListener::inputKeyPress(char)
 {
+   return false;
+}
+bool InputListener::inputKeyRelease(char)
+{
+   return false;
+}
+
+bool InputListener::inputMouse(const Vector2&)
+{
+   return false;
+}
+bool InputListener::inputMouseLeftButton()
+{
+   return false;
+}
+bool InputListener::inputMouseRightButton()
+{
+   return false;
+}
+bool InputListener::inputMouseWheel(int)
+{
+   return false;
+}
+
+bool InputListener::inputTouchBegin(int, const Vector2&)
+{
+   return false;
+}
+bool InputListener::inputTouchMove(int, const Vector2&, const Vector2&)
+{
+   return false;
+}
+bool InputListener::inputTouchEnd(int, const Vector2&)
+{
+   return false;
+}
+
+
+//
+//  InputSystem
+//
+InputSystem::InputSystem()
+   : mInputEnabled(true)
+{
+   GEMutexInit(mEventsMutex);
 }
 
 InputSystem::~InputSystem()
 {
+   GEMutexDestroy(mEventsMutex);
 }
 
-void InputSystem::setInputEnabled(bool Enabled)
+void InputSystem::addListener(InputListener* pListener)
 {
-   bInputEnabled = Enabled;
+   GEMutexLock(mEventsMutex);
+   mListeners.push_back(pListener);
+   GEMutexUnlock(mEventsMutex);
+}
 
-   if(bInputEnabled)
+void InputSystem::removeListener(InputListener* pListener)
+{
+   GEMutexLock(mEventsMutex);
+   
+   for(size_t i = 0; i < mListeners.size(); i++)
    {
-      inputMouse(vMousePosition);
-   }
-}
-
-const Vector2& InputSystem::getMousePosition() const
-{
-   return vMousePosition;
-}
-
-void InputSystem::inputKeyPress(char Key)
-{
-   if(!bInputEnabled)
-      return;
-
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-
-   if(cCurrentState)
-   {
-      cCurrentState->inputKeyPress(Key);
-   }
-}
-
-void InputSystem::inputKeyRelease(char Key)
-{
-   if(!bInputEnabled)
-      return;
-
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-
-   if(cCurrentState)
-   {
-      cCurrentState->inputKeyRelease(Key);
-   }
-}
-
-void InputSystem::inputMouse(const Vector2& Point)
-{
-   vMousePosition = Point;
-
-   if(!bInputEnabled)
-      return;
-
-   Scene* cActiveScene = Scene::getActiveScene();
-
-   if(cActiveScene)
-   {
-      GESTLVector(Component*) cComponents = cActiveScene->getComponents<ComponentScript>();
-
-      for(uint i = 0; i < cComponents.size(); i++)
+      if(mListeners[i] == pListener)
       {
-         if(cComponents[i]->getOwner()->isActiveInHierarchy())
-         {
-            if(static_cast<ComponentScript*>(cComponents[i])->inputMouse(Point))
-               return;
-         }
+         mListeners.erase(mListeners.begin() + i);
+         break;
       }
    }
 
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
+   GEMutexUnlock(mEventsMutex);
+}
 
-   if(cCurrentState)
+void InputSystem::processEvents()
+{
+   GEMutexLock(mEventsMutex);
+
+   if(mListeners.empty() || mEvents.empty())
    {
-      cCurrentState->inputMouse(Point);
+      GEMutexUnlock(mEventsMutex);
+      return;
    }
+
+   for(size_t i = 0; i < mEvents.size(); i++)
+   {
+      const InputEvent& event = mEvents[i];
+
+      switch(event.mType)
+      {
+      case InputEventType::KeyPressed:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputKeyPress((char)event.mID))
+               break;
+         }
+         break;
+      case InputEventType::KeyReleased:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputKeyRelease((char)event.mID))
+               break;
+         }
+         break;
+      case InputEventType::MouseMoved:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputMouse(event.mPointA))
+               break;
+         }
+         break;
+      case InputEventType::MouseLeftButton:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputMouseLeftButton())
+               break;
+         }
+         break;
+      case InputEventType::MouseRightButton:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputMouseRightButton())
+               break;
+         }
+         break;
+      case InputEventType::MouseWheel:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputMouseWheel(event.mID))
+               break;
+         }
+         break;
+      case InputEventType::TouchBegin:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputTouchBegin(event.mID, event.mPointA))
+               break;
+         }
+         break;
+      case InputEventType::TouchMoved:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputTouchMove(event.mID, event.mPointA, event.mPointB))
+               break;
+         }
+         break;
+      case InputEventType::TouchEnd:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputTouchEnd(event.mID, event.mPointA))
+               break;
+         }
+         break;
+      }
+   }
+
+   mEvents.clear();
+
+   GEMutexUnlock(mEventsMutex);
+}
+
+void InputSystem::setInputEnabled(bool pEnabled)
+{
+   mInputEnabled = pEnabled;
+
+   if(mInputEnabled)
+   {
+      inputMouse(mMousePosition);
+   }
+}
+
+void InputSystem::inputKeyPress(char pKey)
+{
+   if(!mInputEnabled)
+      return;
+
+   InputEvent event;
+   event.mType = InputEventType::KeyPressed;
+   event.mID = (int16_t)pKey;
+
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
+}
+
+void InputSystem::inputKeyRelease(char pKey)
+{
+   if(!mInputEnabled)
+      return;
+
+   InputEvent event;
+   event.mType = InputEventType::KeyReleased;
+   event.mID = (int16_t)pKey;
+
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
+}
+
+void InputSystem::inputMouse(const Vector2& pPoint)
+{
+   mMousePosition = pPoint;
+
+   if(!mInputEnabled)
+      return;
+
+   InputEvent event;
+   event.mType = InputEventType::MouseMoved;
+   event.mPointA = pPoint;
+
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
 }
 
 void InputSystem::inputMouseLeftButton()
 {
-   if(!bInputEnabled)
+   if(!mInputEnabled)
       return;
 
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
+   InputEvent event;
+   event.mType = InputEventType::MouseLeftButton;
 
-   if(cCurrentState)
-   {
-      cCurrentState->inputMouseLeftButton();
-   }
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
 }
 
 void InputSystem::inputMouseRightButton()
 {
-   if(!bInputEnabled)
+   if(!mInputEnabled)
       return;
 
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
+   InputEvent event;
+   event.mType = InputEventType::MouseRightButton;
 
-   if(cCurrentState)
-   {
-      cCurrentState->inputMouseRightButton();
-   }
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
 }
 
-void InputSystem::inputMouseWheel(int Delta)
+void InputSystem::inputMouseWheel(int pDelta)
 {
-   if(!bInputEnabled)
+   if(!mInputEnabled)
       return;
 
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
+   InputEvent event;
+   event.mType = InputEventType::MouseWheel;
+   event.mID = (int16_t)pDelta;
 
-   if(cCurrentState)
-   {
-      cCurrentState->inputMouseWheel(Delta);
-   }
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
 }
 
-void InputSystem::inputTouchBegin(int ID, const Vector2& Point)
+void InputSystem::inputTouchBegin(int pID, const Vector2& pPoint)
 {
-   if(!bInputEnabled)
+   if(!mInputEnabled)
       return;
 
-   Scene* cActiveScene = Scene::getActiveScene();
+   InputEvent event;
+   event.mType = InputEventType::TouchBegin;
+   event.mID = (int16_t)pID;
+   event.mPointA = pPoint;
 
-   if(cActiveScene)
-   {
-      GESTLVector(Component*) cComponents = cActiveScene->getComponents<ComponentScript>();
-
-      for(uint i = 0; i < cComponents.size(); i++)
-      {
-         if(cComponents[i]->getOwner()->isActiveInHierarchy())
-         {
-            if(static_cast<ComponentScript*>(cComponents[i])->inputTouchBegin(ID, Point))
-               return;
-         }
-      }
-   }
-
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-
-   if(cCurrentState)
-   {
-      cCurrentState->inputTouchBegin(ID, Point);
-   }
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
 }
 
-void InputSystem::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
+void InputSystem::inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint)
 {
-   if(!bInputEnabled)
+   if(!mInputEnabled)
       return;
 
-   Scene* cActiveScene = Scene::getActiveScene();
+   InputEvent event;
+   event.mType = InputEventType::TouchMoved;
+   event.mID = (int16_t)pID;
+   event.mPointA = pPreviousPoint;
+   event.mPointB = pCurrentPoint;
 
-   if(cActiveScene)
-   {
-      GESTLVector(Component*) cComponents = cActiveScene->getComponents<ComponentScript>();
-
-      for(uint i = 0; i < cComponents.size(); i++)
-      {
-         if(cComponents[i]->getOwner()->isActiveInHierarchy())
-         {
-            if(static_cast<ComponentScript*>(cComponents[i])->inputTouchMove(ID, PreviousPoint, CurrentPoint))
-               return;
-         }
-      }
-   }
-
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-
-   if(cCurrentState)
-   {
-      cCurrentState->inputTouchMove(ID, PreviousPoint, CurrentPoint);
-   }
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
 }
 
-void InputSystem::inputTouchEnd(int ID, const Vector2& Point)
+void InputSystem::inputTouchEnd(int pID, const Vector2& pPoint)
 {
-   if(!bInputEnabled)
+   if(!mInputEnabled)
       return;
 
-   Scene* cActiveScene = Scene::getActiveScene();
+   InputEvent event;
+   event.mType = InputEventType::TouchEnd;
+   event.mID = (int16_t)pID;
+   event.mPointA = pPoint;
 
-   if(cActiveScene)
-   {
-      GESTLVector(Component*) cComponents = cActiveScene->getComponents<ComponentScript>();
-
-      for(uint i = 0; i < cComponents.size(); i++)
-      {
-         if(cComponents[i]->getOwner()->isActiveInHierarchy())
-         {
-            if(static_cast<ComponentScript*>(cComponents[i])->inputTouchEnd(ID, Point))
-               return;
-         }
-      }
-   }
-
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-
-   if(cCurrentState)
-   {
-      cCurrentState->inputTouchEnd(ID, Point);
-   }
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
 }
 
-void InputSystem::updateAccelerometerStatus(const Vector3& Status)
+void InputSystem::updateAccelerometerStatus(const Vector3& pStatus)
 {
-   if(!bInputEnabled)
-      return;
-
-   State* cCurrentState = StateManager::getInstance()->getActiveState();
-
-   if(cCurrentState)
-   {
-      cCurrentState->updateAccelerometerStatus(Status);
-   }
+   mAccelerometerStatus = pStatus;
 }

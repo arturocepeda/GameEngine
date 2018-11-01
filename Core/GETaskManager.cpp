@@ -20,6 +20,7 @@
 
 using namespace GE;
 using namespace GE::Core;
+using namespace GE::Input;
 using namespace GE::Entities;
 
 TaskManager::TaskManager()
@@ -67,13 +68,22 @@ void TaskManager::update()
    if(cCurrentState != cActiveState)
    {
       if(cCurrentState && (!cActiveState || cActiveState->getStateType() != StateType::Modal))
+      {
+         InputSystem::getInstance()->removeListener(cCurrentState);
          cCurrentState->deactivate();
+      }
 
       if(cActiveState && (!cCurrentState || cCurrentState->getStateType() != StateType::Modal))
+      {
          cActiveState->activate();
+         InputSystem::getInstance()->addListener(cActiveState);
+      }
 
       cCurrentState = cActiveState;
    }
+
+   // process input event
+   InputSystem::getInstance()->processEvents();
 
    // update current state
    if(cCurrentState)

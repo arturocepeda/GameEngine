@@ -17,32 +17,90 @@
 
 namespace GE { namespace Input
 {
+   class InputListener
+   {
+   public:
+      virtual bool inputKeyPress(char pKey);
+      virtual bool inputKeyRelease(char pKey);
+
+      virtual bool inputMouse(const Vector2& pPoint);
+      virtual bool inputMouseLeftButton();
+      virtual bool inputMouseRightButton();
+      virtual bool inputMouseWheel(int pDelta);
+
+      virtual bool inputTouchBegin(int pID, const Vector2& pPoint);
+      virtual bool inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint);
+      virtual bool inputTouchEnd(int pID, const Vector2& pPoint);
+   };
+
+
    class InputSystem : public Core::Singleton<InputSystem>
    {
    private:
-      bool bInputEnabled;
-      Vector2 vMousePosition;
+      enum class InputEventType : uint16_t
+      {
+         Invalid,
+
+         KeyPressed,
+         KeyReleased,
+
+         MouseMoved,
+         MouseLeftButton,
+         MouseRightButton,
+         MouseWheel,
+
+         TouchBegin,
+         TouchMoved,
+         TouchEnd
+      };
+
+      struct InputEvent
+      {
+         InputEventType mType;
+         int16_t mID;
+         Vector2 mPointA;
+         Vector2 mPointB;
+
+         InputEvent()
+            : mType(InputEventType::Invalid)
+            , mID(0)
+         {
+         }
+      };
+
+      GEMutex mEventsMutex;
+      GESTLVector(InputListener*) mListeners;
+      GESTLVector(InputEvent) mEvents;
+
+      bool mInputEnabled;
+      Vector2 mMousePosition;
+      Vector3 mAccelerometerStatus;
 
    public:
       InputSystem();
       ~InputSystem();
 
-      void setInputEnabled(bool Enabled);
+      void addListener(InputListener* pListener);
+      void removeListener(InputListener* pListener);
 
-      const Vector2& getMousePosition() const;
+      void setInputEnabled(bool pEnabled);
+      void processEvents();
 
-      void inputKeyPress(char Key);
-      void inputKeyRelease(char Key);
+      const Vector2& getMousePosition() const { return mMousePosition; }
+      const Vector3& getAccelerometerStatus() const { return mAccelerometerStatus; } 
 
-      void inputMouse(const Vector2& Point);
+      void inputKeyPress(char pKey);
+      void inputKeyRelease(char pKey);
+
+      void inputMouse(const Vector2& pPoint);
       void inputMouseLeftButton();
       void inputMouseRightButton();
-      void inputMouseWheel(int Delta);
+      void inputMouseWheel(int pDelta);
 
-      void inputTouchBegin(int ID, const Vector2& Point);
-      void inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
-      void inputTouchEnd(int ID, const Vector2& Point);
+      void inputTouchBegin(int pID, const Vector2& pPoint);
+      void inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint);
+      void inputTouchEnd(int pID, const Vector2& pPoint);
 
-      void updateAccelerometerStatus(const Vector3& Status);
+      void updateAccelerometerStatus(const Vector3& pStatus);
    };
 }}

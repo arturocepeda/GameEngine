@@ -13,7 +13,8 @@
 #pragma once
 
 #include "Types/GETypes.h"
-#include "GEObject.h"
+#include "Input/GEInputSystem.h"
+#include "Core/GEObject.h"
 
 #define GE_KEY_UP          38
 #define GE_KEY_DOWN        40
@@ -46,7 +47,7 @@ namespace GE { namespace Core
    };
 
 
-   class State : public Object
+   class State : public Object, public Input::InputListener
    {
    protected:
       void* pGlobalData;
@@ -64,19 +65,5 @@ namespace GE { namespace Core
 
       virtual void pause();
       virtual void resume();
-
-      virtual void inputKeyPress(char Key);
-      virtual void inputKeyRelease(char Key);
-
-      virtual void inputMouse(const Vector2& Point);
-      virtual void inputMouseLeftButton();
-      virtual void inputMouseRightButton();
-      virtual void inputMouseWheel(int Delta);
-
-      virtual void inputTouchBegin(int ID, const Vector2& Point);
-      virtual void inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
-      virtual void inputTouchEnd(int ID, const Vector2& Point);
-   
-      virtual void updateAccelerometerStatus(const Vector3& Status);
    };
 }}

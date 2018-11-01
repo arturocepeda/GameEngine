@@ -22,6 +22,7 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Entities;
 using namespace GE::Content;
+using namespace GE::Input;
 using namespace GE::Scripting;
 
 const ObjectName cRestartActionName = ObjectName("Restart");
@@ -592,10 +593,14 @@ ComponentScript::ComponentScript(Entity* Owner)
    cClassName = ObjectName("Script");
 
    GERegisterPropertyArray(ScriptInstance);
+
+   InputSystem::getInstance()->addListener(this);
 }
 
 ComponentScript::~ComponentScript()
 {
+   InputSystem::getInstance()->removeListener(this);
+
    GEReleasePropertyArray(ScriptInstance);
 }
 
@@ -612,6 +617,9 @@ void ComponentScript::update()
 
 bool ComponentScript::inputMouse(const Vector2& Point)
 {
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
    for(uint i = 0; i < vScriptInstanceList.size(); i++)
    {
       if(getScriptInstance(i)->inputMouse(Point))
@@ -623,6 +631,9 @@ bool ComponentScript::inputMouse(const Vector2& Point)
 
 bool ComponentScript::inputTouchBegin(int ID, const Vector2& Point)
 {
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
    for(uint i = 0; i < vScriptInstanceList.size(); i++)
    {
       if(getScriptInstance(i)->inputTouchBegin(ID, Point))
@@ -634,6 +645,9 @@ bool ComponentScript::inputTouchBegin(int ID, const Vector2& Point)
 
 bool ComponentScript::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
 {
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
    for(uint i = 0; i < vScriptInstanceList.size(); i++)
    {
       if(getScriptInstance(i)->inputTouchMove(ID, PreviousPoint, CurrentPoint))
@@ -645,6 +659,9 @@ bool ComponentScript::inputTouchMove(int ID, const Vector2& PreviousPoint, const
 
 bool ComponentScript::inputTouchEnd(int ID, const Vector2& Point)
 {
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
    for(uint i = 0; i < vScriptInstanceList.size(); i++)
    {
       if(getScriptInstance(i)->inputTouchEnd(ID, Point))

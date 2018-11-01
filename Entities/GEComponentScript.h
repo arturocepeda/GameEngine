@@ -14,6 +14,7 @@
 
 #include "GEComponent.h"
 #include "GEComponentType.h"
+#include "Input/GEInputSystem.h"
 
 namespace GE { namespace Scripting
 {
@@ -98,7 +99,7 @@ namespace GE { namespace Entities
    };
 
 
-   class ComponentScript : public Component
+   class ComponentScript : public Component, public Input::InputListener
    {
    public:
       static ComponentType getType() { return ComponentType::Script; }
@@ -108,11 +109,11 @@ namespace GE { namespace Entities
 
       void update();
 
-      bool inputMouse(const Vector2& Point);
+      virtual bool inputMouse(const Vector2& Point) override;
 
-      bool inputTouchBegin(int ID, const Vector2& Point);
-      bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
-      bool inputTouchEnd(int ID, const Vector2& Point);
+      virtual bool inputTouchBegin(int ID, const Vector2& Point) override;
+      virtual bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint) override;
+      virtual bool inputTouchEnd(int ID, const Vector2& Point) override;
 
       ScriptInstance* getScriptInstanceByName(const Core::ObjectName& ScriptName);
 
