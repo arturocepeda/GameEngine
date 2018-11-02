@@ -74,12 +74,14 @@ void Application::startUp()
 
    Time::init();
    ScriptingEnvironment::initStaticData();
+   Scene::initStaticScenes();
 
    registerComponentFactories();
 }
 
 void Application::shutDown()
 {
+   Scene::releaseStaticScenes();
    ScriptingEnvironment::releaseStaticData();
    Time::release();
 

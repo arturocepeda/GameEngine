@@ -38,8 +38,8 @@ namespace GE { namespace Entities
    private:
       static Scene* cActiveScene;
 
-      static Scene cPermanentScene;
-      static Scene cDebuggingScene;
+      static Scene* cPermanentScene;
+      static Scene* cDebuggingScene;
 
       GESTLVector(Entity*) vEntities;
       GESTLMap(uint, Entity*) mRegistry;
@@ -69,6 +69,9 @@ namespace GE { namespace Entities
    public:
       Scene(const Core::ObjectName& Name);
       ~Scene();
+
+      static void initStaticScenes();
+      static void releaseStaticScenes();
 
       static void setActiveScene(Scene* S);
       static Scene* getActiveScene();

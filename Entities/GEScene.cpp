@@ -48,8 +48,8 @@ const ObjectName BackgroundEntityName = ObjectName("Background");
 //
 Scene* Scene::cActiveScene = 0;
 
-Scene Scene::cPermanentScene = Scene("Permanent");
-Scene Scene::cDebuggingScene = Scene("Debugging");
+Scene* Scene::cPermanentScene = 0;
+Scene* Scene::cDebuggingScene = 0;
 
 Scene::Scene(const ObjectName& Name)
    : EventHandlingObject(Name)
@@ -78,6 +78,26 @@ Scene::~Scene()
    }
 
    GEMutexDestroy(mSceneMutex);
+}
+
+void Scene::initStaticScenes()
+{
+   cPermanentScene = Allocator::alloc<Scene>();
+   GEInvokeCtor(Scene, cPermanentScene)("Permanent");
+
+   cDebuggingScene = Allocator::alloc<Scene>();
+   GEInvokeCtor(Scene, cDebuggingScene)("Debugging");
+}
+
+void Scene::releaseStaticScenes()
+{
+   GEInvokeDtor(Scene, cDebuggingScene);
+   Allocator::free(cDebuggingScene);
+   cDebuggingScene = 0;
+
+   GEInvokeDtor(Scene, cPermanentScene);
+   Allocator::free(cPermanentScene);
+   cPermanentScene = 0;
 }
 
 void Scene::registerEntity(Entity* cEntity)
@@ -151,12 +171,12 @@ Scene* Scene::getActiveScene()
 
 Scene* Scene::getPermanentScene()
 {
-   return &cPermanentScene;
+   return cPermanentScene;
 }
 
 Scene* Scene::getDebuggingScene()
 {
-   return &cDebuggingScene;
+   return cDebuggingScene;
 }
 
 Entity* Scene::addEntity(const ObjectName& Name, Entity* cParent)
