@@ -129,6 +129,12 @@ void Scene::removeEntity(Entity* cEntity)
 
 void Scene::removeEntityRecursively(Entity* cEntity)
 {
+   // notify the removal
+   EventArgs sEventArgs;
+   sEventArgs.Sender = this;
+   sEventArgs.Data = cEntity;
+   triggerEvent(Events::EntityRemoved, &sEventArgs);
+
    // remove the entity from the registry
    GESTLMap(uint, Entity*)::iterator it = mRegistry.find(cEntity->getFullName().getID());
    mRegistry.erase(it);
@@ -223,11 +229,6 @@ bool Scene::removeEntity(const ObjectName& FullName)
    }
 
    vEntitiesToRemove.push_back(it->second);
-
-   EventArgs sEventArgs;
-   sEventArgs.Sender = this;
-   sEventArgs.Data = it->second;
-   triggerEvent(Events::EntityRemoved, &sEventArgs);
 
    GEMutexUnlock(mSceneMutex);
 
