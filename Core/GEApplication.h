@@ -23,6 +23,13 @@ namespace GE { namespace Core
    };
 
 
+   enum class ApplicationRenderingAPI
+   {
+      DirectX,
+      OpenGL
+   };
+
+
    class Application
    {
    private:
@@ -37,6 +44,8 @@ namespace GE { namespace Core
 
       static const char* ExecutablePath;
       static GESTLVector(const char*) Arguments;
+
+      static const ApplicationRenderingAPI RenderingAPI;
 
       static ApplicationContentType ContentType;
 

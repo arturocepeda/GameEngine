@@ -14,6 +14,7 @@
 #include "GEAllocator.h"
 #include "GETaskManager.h"
 #include "GEDevice.h"
+#include "GEPlatform.h"
 #include "GETime.h"
 
 #include "Input/GEInputSystem.h"
@@ -52,6 +53,12 @@ uint Application::VersionNumber = 0;
 
 const char* Application::ExecutablePath = 0;
 GESTLVector(const char*) Application::Arguments;
+
+#if defined (GE_RENDERING_API_DIRECTX)
+const ApplicationRenderingAPI Application::RenderingAPI = ApplicationRenderingAPI::DirectX;
+#else
+const ApplicationRenderingAPI Application::RenderingAPI = ApplicationRenderingAPI::OpenGL;
+#endif
 
 ApplicationContentType Application::ContentType = ApplicationContentType::Xml;
 
