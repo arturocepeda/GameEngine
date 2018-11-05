@@ -225,11 +225,13 @@ bool ScriptingEnvironment::loadFromFile(const char* FileName)
 {
    GEProfilerMarker("ScriptingEnvironment::loadFromFile()");
 
-   if(!loadModule(FileName))
+   sol::table returnValue;
+
+   if(!loadModule(FileName, &returnValue))
       return false;
 
 #if defined (GE_EDITOR_SUPPORT)
-   loadModule("_ed_debug");
+   loadModule("_ed_debug", &returnValue);
 #endif
 
    collectGlobalSymbols();
@@ -440,11 +442,12 @@ void ScriptingEnvironment::addPredefinedGlobalSymbol(const ObjectName& Symbol)
    sPredefinedGlobalSymbols.insert(Symbol.getID());
 }
 
-bool ScriptingEnvironment::loadModule(const char* sModuleName)
+bool ScriptingEnvironment::loadModule(const char* sModuleName, sol::table* pOutReturnValue)
 {
    GEProfilerMarker("ScriptingEnvironment::loadModule()");
 
    ContentData cContentData;
+   uint32_t codeSize = 0;
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
@@ -452,24 +455,7 @@ bool ScriptingEnvironment::loadModule(const char* sModuleName)
          return false;
 
       Device::readContentFile(ContentType::GenericTextData, "Scripts", sModuleName, "lua", &cContentData);
-
-#if defined (GE_EDITOR_SUPPORT)
-      lua_State* luaState = lua.lua_state();
-      int iResult = luaL_loadbuffer(luaState, cContentData.getData(), cContentData.getDataSize() - 1, sModuleName);
-
-      if(iResult != 0)
-      {
-         const char* sErrorMsg = lua_tostring(luaState, -1);
-         handleScriptError(sModuleName, sErrorMsg);
-         lua_pop(luaState, 1);
-
-         return false;
-      }
-
-      lua_pcall(luaState, 0, LUA_MULTRET, 0);
-#else
-      lua.script(cContentData.getData());
-#endif
+      codeSize = cContentData.getDataSize() - 1;
    }
    else
    {
@@ -487,10 +473,19 @@ bool ScriptingEnvironment::loadModule(const char* sModuleName)
 
       Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sModuleName, "luabc", &cContentData);
 #endif
-      lua_State* luaState = lua.lua_state();
-      luaL_loadbuffer(luaState, cContentData.getData(), cContentData.getDataSize(), 0);
-      lua_pcall(luaState, 0, LUA_MULTRET, 0);
+      codeSize = cContentData.getDataSize();
    }
+
+   sol::load_result loadFunction = lua.load_buffer(cContentData.getData(), codeSize, sModuleName);
+
+   if(!loadFunction.valid())
+   {
+      sol::error luaError = loadFunction;
+      handleScriptError(sModuleName, luaError.what());
+      return false;
+   }
+
+   *pOutReturnValue = loadFunction();
 
    return true;
 }
@@ -557,7 +552,12 @@ void ScriptingEnvironment::registerTypes()
    {
       char moduleLoaderName[64];
       sprintf(moduleLoaderName, "%sLoader", sModuleName);
-      lua[moduleLoaderName] = [this, sModuleName]() { loadModule(sModuleName); };
+      lua[moduleLoaderName] = [this, sModuleName]() -> sol::table
+      {
+         sol::table returnValue;
+         loadModule(sModuleName, &returnValue);
+         return returnValue;
+      };
 
       char codeBuffer[256];
       sprintf(codeBuffer, "package.preload['%s'] = %s", sModuleName, moduleLoaderName);

@@ -72,7 +72,7 @@ namespace GE { namespace Scripting
       static void collectPredefinedGlobalSymbols();
       static void addPredefinedGlobalSymbol(const Core::ObjectName& Symbol);
 
-      bool loadModule(const char* sModuleName);
+      bool loadModule(const char* sModuleName, sol::table* pOutReturnValue);
 
       void collectGlobalSymbols();
       void registerTypes();
