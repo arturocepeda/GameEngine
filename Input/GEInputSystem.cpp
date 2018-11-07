@@ -76,15 +76,11 @@ InputSystem::~InputSystem()
 
 void InputSystem::addListener(InputListener* pListener)
 {
-   GEMutexLock(mEventsMutex);
    mListeners.push_back(pListener);
-   GEMutexUnlock(mEventsMutex);
 }
 
 void InputSystem::removeListener(InputListener* pListener)
-{
-   GEMutexLock(mEventsMutex);
-   
+{   
    for(size_t i = 0; i < mListeners.size(); i++)
    {
       if(mListeners[i] == pListener)
@@ -93,8 +89,6 @@ void InputSystem::removeListener(InputListener* pListener)
          break;
       }
    }
-
-   GEMutexUnlock(mEventsMutex);
 }
 
 void InputSystem::processEvents()
