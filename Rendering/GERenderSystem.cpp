@@ -66,16 +66,19 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<Material>(&mMaterials);
 
    // Position (3) + UV (2)
-   sGPUBufferPairs[GeometryGroup::_2DStatic].VertexStride = (3 + 2) * sizeof(float);
-   sGPUBufferPairs[GeometryGroup::_2DDynamic].VertexStride = sGPUBufferPairs[GeometryGroup::_2DStatic].VertexStride;
+   sGPUBufferPairs[GeometryGroup::SpriteStatic].VertexStride = (3 + 2) * sizeof(float);
+   sGPUBufferPairs[GeometryGroup::SpriteDynamic].VertexStride = sGPUBufferPairs[GeometryGroup::SpriteStatic].VertexStride;
+   // Position (3) + Color (4) + UV (2)
+   sGPUBufferPairs[GeometryGroup::Label].VertexStride = (3 + 4 + 2) * sizeof(float);
    // Position (3) + Normal (3) + UV (2)
    sGPUBufferPairs[GeometryGroup::MeshStatic].VertexStride = (3 + 3 + 2) * sizeof(float);
    sGPUBufferPairs[GeometryGroup::MeshDynamic].VertexStride = sGPUBufferPairs[GeometryGroup::MeshStatic].VertexStride;
    // Position (3) + Color (4) + UV (2)
    sGPUBufferPairs[GeometryGroup::Particles].VertexStride = (3 + 4 + 2) * sizeof(float);
 
-   // Batch buffers --> + WorldViewProjection (16)
-   sGPUBufferPairs[GeometryGroup::_2DBatch].VertexStride = sGPUBufferPairs[GeometryGroup::_2DStatic].VertexStride;
+   // Batch buffers
+   sGPUBufferPairs[GeometryGroup::SpriteBatch].VertexStride = sGPUBufferPairs[GeometryGroup::SpriteStatic].VertexStride;
+   sGPUBufferPairs[GeometryGroup::LabelBatch].VertexStride = sGPUBufferPairs[GeometryGroup::Label].VertexStride;
    sGPUBufferPairs[GeometryGroup::MeshBatch].VertexStride = sGPUBufferPairs[GeometryGroup::MeshStatic].VertexStride;
 
    GEMutexInit(mTextureLoadMutex);
@@ -189,8 +192,7 @@ void RenderSystem::calculateLightViewProjectionMatrix(ComponentLight* Light)
    float fShadowsDistance = cActiveScene->getShadowsMaxDistance();
 
    Vector3 vLightDirection = Light->getDirection();
-   Vector3 vLightPosition = -(vLightDirection * fShadowsDistance * 0.5f);
-   Light->getTransform()->setPosition(vLightPosition);
+   Vector3 vLightPosition = Light->getTransform()->getWorldPosition();
 
    Matrix4 matLightView;
    Matrix4MakeLookAt(vLightPosition, vLightPosition + vLightDirection, Vector3::UnitY, &matLightView);
@@ -710,8 +712,10 @@ void RenderSystem::queueForRendering(ComponentRenderable* Renderable, uint Reque
             sBatch.Group = GeometryGroup::MeshBatch;
             break;
          case RenderableType::Sprite:
+            sBatch.Group = GeometryGroup::SpriteBatch;
+            break;
          case RenderableType::Label:
-            sBatch.Group = GeometryGroup::_2DBatch;
+            sBatch.Group = GeometryGroup::LabelBatch;
             break;
          }
 
@@ -732,8 +736,10 @@ void RenderSystem::queueForRendering(ComponentRenderable* Renderable, uint Reque
             sRenderOperation.Group = Renderable->getGeometryType() == GeometryType::Static ? GeometryGroup::MeshStatic : GeometryGroup::MeshDynamic;
             break;
          case RenderableType::Sprite:
+            sRenderOperation.Group = Renderable->getGeometryType() == GeometryType::Static ? GeometryGroup::SpriteStatic : GeometryGroup::SpriteDynamic;
+            break;
          case RenderableType::Label:
-            sRenderOperation.Group = Renderable->getGeometryType() == GeometryType::Static ? GeometryGroup::_2DStatic : GeometryGroup::_2DDynamic;
+            sRenderOperation.Group = GeometryGroup::Label;
             break;
          case RenderableType::ParticleSystem:
             sRenderOperation.Group = GeometryGroup::Particles;
@@ -876,14 +882,14 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 
          if(it == mStaticGeometryToRender.end())
          {
-            GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::_2DStatic];
+            GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::SpriteStatic];
             mStaticGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
             loadRenderingData(cRenderable->getGeometryData(), sBuffers);
          }
       }
       else
       {
-         GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::_2DDynamic];
+         GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::SpriteDynamic];
          mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
          loadRenderingData(cRenderable->getGeometryData(), sBuffers);
       }
@@ -930,7 +936,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          }
       }
 
-      GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::_2DDynamic];
+      GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::Label];
       mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
       loadRenderingData(cRenderable->getGeometryData(), sBuffers);
    }
@@ -1065,8 +1071,10 @@ void RenderSystem::clearRenderingQueues()
       sBatch.Data.NumIndices = 0;
    }
 
-   sGPUBufferPairs[GeometryGroup::_2DDynamic].clear();
-   sGPUBufferPairs[GeometryGroup::_2DBatch].clear();
+   sGPUBufferPairs[GeometryGroup::SpriteDynamic].clear();
+   sGPUBufferPairs[GeometryGroup::SpriteBatch].clear();
+   sGPUBufferPairs[GeometryGroup::Label].clear();
+   sGPUBufferPairs[GeometryGroup::LabelBatch].clear();
    sGPUBufferPairs[GeometryGroup::MeshDynamic].clear();
    sGPUBufferPairs[GeometryGroup::MeshBatch].clear();
    sGPUBufferPairs[GeometryGroup::Particles].clear();

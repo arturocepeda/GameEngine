@@ -42,7 +42,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
 {
    cClassName = ObjectName("Label");
 
-   sGeometryData.VertexStride = 20;
+   sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
 
    GERegisterProperty(ObjectName, FontName);
    GERegisterProperty(Float, FontSize);
@@ -220,6 +220,7 @@ void ComponentLabel::generateVertexData()
    }
 
    uint iCurrentLineIndex = 0;
+   Color cVertexColor = cColor;
 
    vVertexData.clear();
    vIndices.clear();
@@ -286,21 +287,37 @@ void ComponentLabel::generateVertexData()
          vVertexData.push_back(fPosX - fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY);
          vVertexData.push_back(0.0f);
+         vVertexData.push_back(cVertexColor.Red);
+         vVertexData.push_back(cVertexColor.Green);
+         vVertexData.push_back(cVertexColor.Blue);
+         vVertexData.push_back(cVertexColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U0); vVertexData.push_back(sGlyph.UV.V1);
 
          vVertexData.push_back(fPosX + fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY);
          vVertexData.push_back(0.0f);
+         vVertexData.push_back(cVertexColor.Red);
+         vVertexData.push_back(cVertexColor.Green);
+         vVertexData.push_back(cVertexColor.Blue);
+         vVertexData.push_back(cVertexColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U1); vVertexData.push_back(sGlyph.UV.V1);
 
          vVertexData.push_back(fPosX - fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY);
          vVertexData.push_back(0.0f);
+         vVertexData.push_back(cVertexColor.Red);
+         vVertexData.push_back(cVertexColor.Green);
+         vVertexData.push_back(cVertexColor.Blue);
+         vVertexData.push_back(cVertexColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U0); vVertexData.push_back(sGlyph.UV.V0);
 
          vVertexData.push_back(fPosX + fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY);
          vVertexData.push_back(0.0f);
+         vVertexData.push_back(cVertexColor.Red);
+         vVertexData.push_back(cVertexColor.Green);
+         vVertexData.push_back(cVertexColor.Blue);
+         vVertexData.push_back(cVertexColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U1); vVertexData.push_back(sGlyph.UV.V0);
 
          vIndices.push_back(sGeometryData.NumVertices);

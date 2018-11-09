@@ -61,9 +61,11 @@ namespace GE { namespace Rendering
    public:
       enum
       {
-         _2DStatic,
-         _2DDynamic,
-         _2DBatch,
+         SpriteStatic,
+         SpriteDynamic,
+         SpriteBatch,
+         Label,
+         LabelBatch,
          MeshStatic,
          MeshDynamic,
          MeshBatch,
