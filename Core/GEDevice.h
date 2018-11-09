@@ -35,6 +35,9 @@ namespace GE { namespace Core
    };
 
 
+   typedef GESTLVector(GESTLString) FileNamesList;
+
+
    class Device
    {
    private:
@@ -78,6 +81,7 @@ namespace GE { namespace Core
 
       static uint getContentFilesCount(const char* SubDir, const char* Extension);
       static bool getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name);
+      static void getContentFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames);
 
       static bool userFileExists(const char* SubDir, const char* Name, const char* Extension);
       static void readUserFile(const char* SubDir, const char* Name, const char* Extension, Content::ContentData* ContentData);
@@ -85,5 +89,6 @@ namespace GE { namespace Core
 
       static uint getUserFilesCount(const char* SubDir, const char* Extension);
       static bool getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name);
+      static void getUserFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames);
    };
 }}

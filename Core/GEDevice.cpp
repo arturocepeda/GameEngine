@@ -86,3 +86,31 @@ float Device::getAspectRatio()
 {
    return (float)ScreenHeight / ScreenWidth;
 }
+
+void Device::getContentFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames)
+{
+   pOutFileNames->clear();
+
+   const uint32_t contentFilesCount = Device::getContentFilesCount(pSubDir, pExtension);
+
+   for(uint32_t i = 0; i < contentFilesCount; i++)
+   {
+      char fileName[256];
+      Device::getContentFileName(pSubDir, pExtension, i, fileName);
+      pOutFileNames->push_back(GESTLString(fileName));
+   }
+}
+
+void Device::getUserFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames)
+{
+   pOutFileNames->clear();
+
+   const uint32_t contentFilesCount = Device::getUserFilesCount(pSubDir, pExtension);
+
+   for(uint32_t i = 0; i < contentFilesCount; i++)
+   {
+      char fileName[256];
+      Device::getUserFileName(pSubDir, pExtension, i, fileName);
+      pOutFileNames->push_back(GESTLString(fileName));
+   }
+}
