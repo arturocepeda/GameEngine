@@ -148,7 +148,8 @@ namespace GE { namespace Entities
    const char* strLabelSettingsBitMask[] =
    {
       "Justify",
-      "VariableReplacement"
+      "VariableReplacement",
+      "RichTextSupport"
    };
 
    const char* strScriptSettingsBitMask[] =

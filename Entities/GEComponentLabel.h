@@ -23,14 +23,21 @@ namespace GE { namespace Entities
    {
       Justify              = 1 << 0,
       VariableReplacement  = 1 << 1,
+      RichTextSupport      = 1 << 2,
 
-      Count = 2
+      Count = 3
    };
 
 
    class ComponentLabel : public ComponentRenderable
    {
    private:
+      struct Pen
+      {
+         Color mColor;
+         uint32_t mCharIndex;
+      };
+
       Rendering::Font* cFont;
       float fFontSize;
       Alignment iAlignment;
@@ -51,6 +58,7 @@ namespace GE { namespace Entities
       GESTLVector(float) vVertexData;
       GESTLVector(ushort) vIndices;
 
+      void evaluateRichTextTag(Pen* pPen);
       void processVariables();
       void generateVertexData();
 

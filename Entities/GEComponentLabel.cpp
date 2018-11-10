@@ -59,6 +59,77 @@ ComponentLabel::~ComponentLabel()
 {
 }
 
+void ComponentLabel::evaluateRichTextTag(Pen* pPen)
+{
+   unsigned char character = sText[pPen->mCharIndex];
+
+   if(character == '<')
+   {
+      size_t i = (size_t)pPen->mCharIndex + 1;
+
+      char tag[64];
+      size_t tagLength = 0;
+      bool tagClosing = false;
+
+      char value[64];
+      size_t valueLength = 0;
+
+      char* currentString = tag;
+      size_t* currentLength = &tagLength;
+
+      while(i < sText.length() && sText[i] != '>')
+      {
+         character = sText[i++];
+
+         if(character == '/' && i == (pPen->mCharIndex + 2))
+         {
+            tagClosing = true;
+         }
+         else if(character == '=')
+         {
+            currentString = value;
+            currentLength = &valueLength;
+         }
+         else
+         {
+            currentString[(*currentLength)++] = character;
+         }
+      }
+
+      if(i == sText.length())
+         return;
+
+      tag[tagLength] = '\0';
+      value[valueLength] = '\0';
+
+      // color
+      if(strcmp(tag, "color") == 0)
+      {
+         if(tagClosing)
+         {
+            pPen->mColor = cColor;
+         }
+         else if(value[0] == '#')
+         {
+            const unsigned long colorIntValue = strtoul(value + 1, 0, 16);
+
+            const unsigned long colorIntValueR = (colorIntValue & 0xff0000) >> 16;
+            const unsigned long colorIntValueG = (colorIntValue & 0x00ff00) >> 8;
+            const unsigned long colorIntValueB = (colorIntValue & 0x0000ff);
+
+            pPen->mColor = Color
+            (
+               (float)colorIntValueR / 255.0f,
+               (float)colorIntValueG / 255.0f,
+               (float)colorIntValueB / 255.0f
+            );
+         }
+      }
+
+      pPen->mCharIndex = (uint32_t)i + 1;
+   }
+}
+
 void ComponentLabel::processVariables()
 {
    size_t iVariableStartPos = sText.find('$');
@@ -96,7 +167,12 @@ void ComponentLabel::generateVertexData()
    if(!cFont)
       return;
 
+   Pen sPen;
+   sPen.mColor = cColor;
+   sPen.mCharIndex = 0;
+
    const uint iTextLength = (uint)sText.length();
+   const bool bRichTextSupport = GEHasFlag(eSettings, LabelSettingsBitMask::RichTextSupport);
 
    fCharacterSize = (fFontSize * FontSizeScale);
 
@@ -110,14 +186,22 @@ void ComponentLabel::generateVertexData()
    float fLineWidthAtLastSpace = 0.0f;
    float fLastSpaceCharWidth = 0.0f;
 
-   for(uint i = 0; i < iTextLength; i++)
+   for(sPen.mCharIndex = 0; sPen.mCharIndex < iTextLength; sPen.mCharIndex++)
    {
-      unsigned char cChar = sText[i];
+      if(bRichTextSupport)
+      {
+         evaluateRichTextTag(&sPen);
+
+         if(sPen.mCharIndex >= iTextLength)
+            break;
+      }
+
+      unsigned char cChar = sText[sPen.mCharIndex];
 
       if(cChar == LineFeedChar)
       {
          vLineWidths.push_back(fCurrentLineWidth);
-         vLineFeedIndices.push_back(i);
+         vLineFeedIndices.push_back(sPen.mCharIndex);
          vLineJustifySpaces.push_back(0);
 
          fCurrentLineWidth = 0.0f;
@@ -126,11 +210,11 @@ void ComponentLabel::generateVertexData()
          continue;
       }
 
-      float fCharWidth = measureCharacter(i) + getKerning(i);
+      float fCharWidth = measureCharacter(sPen.mCharIndex) + getKerning(sPen.mCharIndex);
 
       if(cChar == ' ')
       {
-         iLastSpaceIndex = (int)i;
+         iLastSpaceIndex = (int)sPen.mCharIndex;
          fLineWidthAtLastSpace = fCurrentLineWidth;
          fLastSpaceCharWidth = fCharWidth;
       }
@@ -220,15 +304,17 @@ void ComponentLabel::generateVertexData()
    }
 
    uint iCurrentLineIndex = 0;
-   Color cVertexColor = cColor;
+
+   sPen.mColor = cColor;
+   sPen.mCharIndex = 0;
 
    vVertexData.clear();
    vIndices.clear();
    sGeometryData.NumVertices = 0;
 
-   for(uint i = 0; i < iTextLength; i++)
+   for(sPen.mCharIndex = 0; sPen.mCharIndex < iTextLength; sPen.mCharIndex++)
    {
-      if(i == vLineFeedIndices[iCurrentLineIndex])
+      if(sPen.mCharIndex == vLineFeedIndices[iCurrentLineIndex])
       {
          iCurrentLineIndex++;
 
@@ -266,14 +352,22 @@ void ComponentLabel::generateVertexData()
          continue;
       }
 
-      unsigned char cCurrentChar = sText[i];
+      if(bRichTextSupport)
+      {
+         evaluateRichTextTag(&sPen);
+
+         if(sPen.mCharIndex >= iTextLength)
+            break;
+      }
+
+      unsigned char cCurrentChar = sText[sPen.mCharIndex];
       const Glyph& sGlyph = cFont->getGlyph(cCurrentChar);
 
-      float fAdvanceX = measureCharacter(i);
+      float fAdvanceX = measureCharacter(sPen.mCharIndex);
 
       if(cCurrentChar != ' ')
       {
-         fPosX += getKerning(i);
+         fPosX += getKerning(sPen.mCharIndex);
 
          float fGlyphWidth = sGlyph.Width * fCharacterSize;
          float fGlyphHeight = sGlyph.Height * fCharacterSize;
@@ -287,37 +381,37 @@ void ComponentLabel::generateVertexData()
          vVertexData.push_back(fPosX - fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY);
          vVertexData.push_back(0.0f);
-         vVertexData.push_back(cVertexColor.Red);
-         vVertexData.push_back(cVertexColor.Green);
-         vVertexData.push_back(cVertexColor.Blue);
-         vVertexData.push_back(cVertexColor.Alpha);
+         vVertexData.push_back(sPen.mColor.Red);
+         vVertexData.push_back(sPen.mColor.Green);
+         vVertexData.push_back(sPen.mColor.Blue);
+         vVertexData.push_back(sPen.mColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U0); vVertexData.push_back(sGlyph.UV.V1);
 
          vVertexData.push_back(fPosX + fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY);
          vVertexData.push_back(0.0f);
-         vVertexData.push_back(cVertexColor.Red);
-         vVertexData.push_back(cVertexColor.Green);
-         vVertexData.push_back(cVertexColor.Blue);
-         vVertexData.push_back(cVertexColor.Alpha);
+         vVertexData.push_back(sPen.mColor.Red);
+         vVertexData.push_back(sPen.mColor.Green);
+         vVertexData.push_back(sPen.mColor.Blue);
+         vVertexData.push_back(sPen.mColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U1); vVertexData.push_back(sGlyph.UV.V1);
 
          vVertexData.push_back(fPosX - fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY);
          vVertexData.push_back(0.0f);
-         vVertexData.push_back(cVertexColor.Red);
-         vVertexData.push_back(cVertexColor.Green);
-         vVertexData.push_back(cVertexColor.Blue);
-         vVertexData.push_back(cVertexColor.Alpha);
+         vVertexData.push_back(sPen.mColor.Red);
+         vVertexData.push_back(sPen.mColor.Green);
+         vVertexData.push_back(sPen.mColor.Blue);
+         vVertexData.push_back(sPen.mColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U0); vVertexData.push_back(sGlyph.UV.V0);
 
          vVertexData.push_back(fPosX + fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
          vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY);
          vVertexData.push_back(0.0f);
-         vVertexData.push_back(cVertexColor.Red);
-         vVertexData.push_back(cVertexColor.Green);
-         vVertexData.push_back(cVertexColor.Blue);
-         vVertexData.push_back(cVertexColor.Alpha);
+         vVertexData.push_back(sPen.mColor.Red);
+         vVertexData.push_back(sPen.mColor.Green);
+         vVertexData.push_back(sPen.mColor.Blue);
+         vVertexData.push_back(sPen.mColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U1); vVertexData.push_back(sGlyph.UV.V0);
 
          vIndices.push_back(sGeometryData.NumVertices);
