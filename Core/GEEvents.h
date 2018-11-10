@@ -35,5 +35,10 @@ namespace GE { namespace Core
       static const ObjectName EntityRenamed;
       static const ObjectName EntityRemoved;
       static const ObjectName EntityParentChanged;
+
+#if defined (GE_EDITOR_SUPPORT)
+      // Development
+      static const ObjectName LocalizedStringsReloaded;
+#endif
    };
 }}

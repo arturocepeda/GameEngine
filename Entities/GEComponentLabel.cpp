@@ -14,6 +14,7 @@
 #include "Rendering/GERenderSystem.h"
 #include "Core/GEAllocator.h"
 #include "Core/GELog.h"
+#include "Core/GEEvents.h"
 #include "Content/GELocalizedString.h"
 #include "Content/GEResourcesManager.h"
 
@@ -44,6 +45,18 @@ ComponentLabel::ComponentLabel(Entity* Owner)
 
    sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
 
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::connectStaticEventCallback(Events::LocalizedStringsReloaded, this, [this](const EventArgs* args) -> bool
+   {
+      if(!cStringID.isEmpty())
+      {
+         setStringID(cStringID);
+      }
+
+      return false;
+   });
+#endif
+
    GERegisterProperty(ObjectName, FontName);
    GERegisterProperty(Float, FontSize);
    GERegisterPropertyEnum(Alignment, Alignment);
@@ -57,6 +70,9 @@ ComponentLabel::ComponentLabel(Entity* Owner)
 
 ComponentLabel::~ComponentLabel()
 {
+#if defined (GE_EDITOR_SUPPORT)
+   EventHandlingObject::disconnectStaticEventCallback(Events::LocalizedStringsReloaded, this);
+#endif
 }
 
 void ComponentLabel::evaluateRichTextTag(Pen* pPen)
