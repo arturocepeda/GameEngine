@@ -603,7 +603,7 @@ void ComponentLabel::setStringID(const ObjectName& StringID)
 
       if(cLocaString)
       {
-         setText(cLocaString->getString().c_str());
+         setText(cLocaString->getString());
       }
    }
 }

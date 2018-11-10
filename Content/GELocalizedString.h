@@ -22,13 +22,13 @@ namespace GE { namespace Content
    class LocalizedString : public Core::Object
    {
    private:
-      GESTLString sString;
+      char* sString;
 
    public:
-      LocalizedString(const Core::ObjectName& Name, const GESTLString& Str);
+      LocalizedString(const Core::ObjectName& Name, const char* Str);
       ~LocalizedString();
 
-      const GESTLString& getString() const;
+      const char* getString() const;
    };
 
 

@@ -25,17 +25,20 @@ using namespace GE::Core;
 //
 //  LocalizedString
 //
-LocalizedString::LocalizedString(const ObjectName& Name, const GESTLString& Str)
+LocalizedString::LocalizedString(const ObjectName& Name, const char* Str)
     : Object(Name)
 {
-   sString = Str;
+   const uint32_t stringLength = (uint32_t)strlen(Str);
+   sString = Allocator::alloc<char>(stringLength + 1);
+   strcpy(sString, Str);
 }
 
 LocalizedString::~LocalizedString()
 {
+   Allocator::free(sString);
 }
 
-const GESTLString& LocalizedString::getString() const
+const char* LocalizedString::getString() const
 {
    return sString;
 }
