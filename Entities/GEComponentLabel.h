@@ -35,6 +35,8 @@ namespace GE { namespace Entities
       struct Pen
       {
          Color mColor;
+         float mFontSize;
+         uint32_t mCharSet;
          uint32_t mCharIndex;
       };
 
@@ -49,8 +51,6 @@ namespace GE { namespace Entities
       float fVerticalSpacing;
       float fLineWidth;
 
-      float fCharacterSize;
-
       GESTLVector(float) vLineWidths;
       GESTLVector(uint) vLineFeedIndices;
       GESTLVector(uint) vLineJustifySpaces;
@@ -62,8 +62,8 @@ namespace GE { namespace Entities
       void processVariables();
       void generateVertexData();
 
-      float measureCharacter(uint iCharIndex);
-      float getKerning(uint iCharIndex);
+      float measureCharacter(const Pen& pPen);
+      float getKerning(const Pen& pPen);
 
    public:
       ComponentLabel(Entity* Owner);

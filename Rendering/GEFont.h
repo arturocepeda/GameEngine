@@ -39,17 +39,17 @@ namespace GE { namespace Rendering
       void* pRenderDevice;
 
       typedef GESTLMap(byte, Glyph) GlyphsMap;
-      GlyphsMap mGlyphs;
+      GESTLVector(GlyphsMap) mGlyphs;
 
       typedef GESTLMap(byte, int) CharKerningsMap;
       typedef GESTLMap(byte, CharKerningsMap) KerningsMap;
-      KerningsMap mKernings;
+      GESTLVector(KerningsMap) mKernings;
 
       float fOffsetYMin;
       float fOffsetYMax;
 
-      void loadFontData(const pugi::xml_node& xmlFontData);
-      void loadFontData(std::istream& sStream);
+      void loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData);
+      void loadFontData(uint32_t pCharSet, std::istream& pStream);
 
       void createFontTexture(Content::ImageData& cImageData);
       void releaseFontTexture();
@@ -57,14 +57,14 @@ namespace GE { namespace Rendering
    public:
       static const Core::ObjectName TypeName;
 
-      Font(const Core::ObjectName& Name, const Core::ObjectName& GroupName, const char* FileName, void* RenderDevice = 0);
+      Font(const Core::ObjectName& Name, const Core::ObjectName& GroupName, void* RenderDevice = 0);
       Font(const Core::ObjectName& Name, const Core::ObjectName& GroupName, std::istream& Stream, void* RenderDevice = 0);
       ~Font();
 
       const Texture* getTexture();
       const void* getHandler();
-      const Glyph& getGlyph(byte Character);
-      float getKerning(byte Char1, byte Char2) const;
+      const Glyph& getGlyph(uint32_t pCharSet, byte pCharacter);
+      float getKerning(uint32_t pCharSet, byte pChar1, byte pChar2) const;
 
       float getOffsetYMin() const;
       float getOffsetYMax() const;

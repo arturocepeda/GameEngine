@@ -592,15 +592,15 @@ void RenderSystem::loadFonts(const char* FileName)
 
       pugi::xml_document xml;
       xml.load_buffer(cFontsData.getData(), cFontsData.getDataSize());
-      const pugi::xml_node& xmlFonts = xml.child("Fonts");
+      const pugi::xml_node& xmlFonts = xml.child("FontList");
 
       for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
       {
          const char* sFontName = xmlFont.attribute("name").value();
-         const char* sFileName = xmlFont.attribute("fileName").value();
 
          Font* fFont = Allocator::alloc<Font>();
-         GEInvokeCtor(Font, fFont)(sFontName, cGroupName, sFileName, pDevice);
+         GEInvokeCtor(Font, fFont)(sFontName, cGroupName, pDevice);
+         fFont->loadFromXml(xmlFont);
          mFonts.add(fFont);
          pBoundTexture[(GE::uint)TextureSlot::Diffuse] = const_cast<Texture*>(fFont->getTexture());
       }

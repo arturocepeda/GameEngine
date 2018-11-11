@@ -39,7 +39,6 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    , fHorizontalSpacing(0.0f)
    , fVerticalSpacing(0.0f)
    , fLineWidth(0.0f)
-   , fCharacterSize(0.0f)
 {
    cClassName = ObjectName("Label");
 
@@ -141,6 +140,18 @@ void ComponentLabel::evaluateRichTextTag(Pen* pPen)
             );
          }
       }
+      // size
+      else if(strcmp(tag, "size") == 0)
+      {
+         if(tagClosing)
+         {
+            pPen->mFontSize = fFontSize;
+         }
+         else
+         {
+            pPen->mFontSize = (float)strtod(value, 0);
+         }
+      }
 
       pPen->mCharIndex = (uint32_t)i + 1;
    }
@@ -185,12 +196,12 @@ void ComponentLabel::generateVertexData()
 
    Pen sPen;
    sPen.mColor = cColor;
+   sPen.mFontSize = fFontSize;
+   sPen.mCharSet = 0;
    sPen.mCharIndex = 0;
 
    const uint iTextLength = (uint)sText.length();
    const bool bRichTextSupport = GEHasFlag(eSettings, LabelSettingsBitMask::RichTextSupport);
-
-   fCharacterSize = (fFontSize * FontSizeScale);
 
    vLineWidths.clear();
    vLineFeedIndices.clear();
@@ -226,7 +237,7 @@ void ComponentLabel::generateVertexData()
          continue;
       }
 
-      float fCharWidth = measureCharacter(sPen.mCharIndex) + getKerning(sPen.mCharIndex);
+      float fCharWidth = measureCharacter(sPen) + getKerning(sPen);
 
       if(cChar == ' ')
       {
@@ -291,7 +302,7 @@ void ComponentLabel::generateVertexData()
       break;
    }
 
-   const float fFontOffsetY = (cFont->getOffsetYMin() + cFont->getOffsetYMax()) * 0.5f * fCharacterSize;
+   const float fFontOffsetY = (cFont->getOffsetYMin() + cFont->getOffsetYMax()) * 0.5f * fFontSize * FontSizeScale;
    const float fHalfFontOffsetY = fFontOffsetY * 0.5f;
    const float fLineHeight = fFontOffsetY + fVerticalSpacing;
 
@@ -322,6 +333,8 @@ void ComponentLabel::generateVertexData()
    uint iCurrentLineIndex = 0;
 
    sPen.mColor = cColor;
+   sPen.mFontSize = fFontSize;
+   sPen.mCharSet = 0;
    sPen.mCharIndex = 0;
 
    vVertexData.clear();
@@ -377,13 +390,14 @@ void ComponentLabel::generateVertexData()
       }
 
       unsigned char cCurrentChar = sText[sPen.mCharIndex];
-      const Glyph& sGlyph = cFont->getGlyph(cCurrentChar);
+      const Glyph& sGlyph = cFont->getGlyph(sPen.mCharSet, cCurrentChar);
+      const float fCharacterSize = sPen.mFontSize * FontSizeScale;
 
-      float fAdvanceX = measureCharacter(sPen.mCharIndex);
+      float fAdvanceX = measureCharacter(sPen);
 
       if(cCurrentChar != ' ')
       {
-         fPosX += getKerning(sPen.mCharIndex);
+         fPosX += getKerning(sPen);
 
          float fGlyphWidth = sGlyph.Width * fCharacterSize;
          float fGlyphHeight = sGlyph.Height * fCharacterSize;
@@ -462,26 +476,31 @@ void ComponentLabel::generateVertexData()
    }
 }
 
-float ComponentLabel::measureCharacter(uint iCharIndex)
+float ComponentLabel::measureCharacter(const Pen& pPen)
 {
-   GEAssert(iCharIndex < sText.length());
+   GEAssert(pPen.mCharIndex < sText.length());
 
-   unsigned char cChar = sText[iCharIndex];
-   const Glyph& sGlyph = cFont->getGlyph(cChar);
+   unsigned char cChar = sText[pPen.mCharIndex];
+   const Glyph& sGlyph = cFont->getGlyph(pPen.mCharSet, cChar);
+   const float fCharacterSize = pPen.mFontSize * FontSizeScale;
 
    return (sGlyph.AdvanceX * fCharacterSize) + fHorizontalSpacing;
 }
 
-float ComponentLabel::getKerning(uint iCharIndex)
+float ComponentLabel::getKerning(const Pen& pPen)
 {
-   GEAssert(iCharIndex < sText.length());
+   GEAssert(pPen.mCharIndex < sText.length());
 
-   unsigned char cChar = sText[iCharIndex];
+   unsigned char cChar = sText[pPen.mCharIndex];
    float fKerning = 0.0f;
 
    if(cChar != ' ')
    {
-      fKerning = iCharIndex > 0 ? cFont->getKerning(sText[iCharIndex - 1], cChar) : 0.0f;
+      fKerning = pPen.mCharIndex > 0
+         ? cFont->getKerning(pPen.mCharSet, sText[pPen.mCharIndex - 1], cChar)
+         : 0.0f;
+
+      const float fCharacterSize = pPen.mFontSize * FontSizeScale;
       fKerning *= fCharacterSize;
    }
 

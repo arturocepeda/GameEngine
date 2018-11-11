@@ -23,7 +23,7 @@ using namespace GE::Content;
 
 const ObjectName Font::TypeName = ObjectName("Font");
 
-Font::Font(const ObjectName& Name, const ObjectName& GroupName, const char* FileName, void* RenderDevice)
+Font::Font(const ObjectName& Name, const ObjectName& GroupName, void* RenderDevice)
    : Resource(Name, GroupName, TypeName)
    , pRenderDevice(RenderDevice)
    , cTexture(0)
@@ -31,14 +31,17 @@ Font::Font(const ObjectName& Name, const ObjectName& GroupName, const char* File
    char sSubDir[256];
    sprintf(sSubDir, "Fonts/%s", GroupName.getString());
 
+   mGlyphs.resize(1);
+   mKernings.resize(1);
+
    ContentData cFontData;
-   Device::readContentFile(ContentType::FontData, sSubDir, FileName, "fnt", &cFontData);
+   Device::readContentFile(ContentType::FontData, sSubDir, Name.getString(), "fnt", &cFontData);
    pugi::xml_document xml;
    xml.load_buffer(cFontData.getData(), cFontData.getDataSize());
-   loadFontData(xml.child("font"));
+   loadFontData(0, xml.child("font"));
 
    ImageData cImageData;
-   Device::readContentFile(ContentType::FontTexture, sSubDir, FileName, "png", &cImageData);
+   Device::readContentFile(ContentType::FontTexture, sSubDir, Name.getString(), "png", &cImageData);
    createFontTexture(cImageData);
    cImageData.unload();
 }
@@ -50,7 +53,10 @@ Font::Font(const ObjectName& Name, const ObjectName& GroupName, std::istream& St
    , fOffsetYMin(0.0f)
    , fOffsetYMax(0.0f)
 {
-   loadFontData(Stream);
+   mGlyphs.resize(1);
+   mKernings.resize(1);
+
+   loadFontData(0, Stream);
 
    ImageData cImageData;
    uint iTextureDataSize = Value::fromStream(ValueType::UInt, Stream).getAsUInt();
@@ -64,9 +70,9 @@ Font::~Font()
    releaseFontTexture();
 }
 
-void Font::loadFontData(const pugi::xml_node& xmlFontData)
+void Font::loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData)
 {
-   const pugi::xml_node& xmlCommon = xmlFontData.child("common");
+   const pugi::xml_node& xmlCommon = pXmlFontData.child("common");
 
    float fTextureWidth = Parser::parseFloat(xmlCommon.attribute("scaleW").value());
    float fTextureHeight = Parser::parseFloat(xmlCommon.attribute("scaleH").value());
@@ -74,7 +80,7 @@ void Font::loadFontData(const pugi::xml_node& xmlFontData)
    fOffsetYMin = 0.0f;
    fOffsetYMax = 0.0f;
 
-   const pugi::xml_node& xmlChars = xmlFontData.child("chars");
+   const pugi::xml_node& xmlChars = pXmlFontData.child("chars");
 
    for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
    {
@@ -97,10 +103,10 @@ void Font::loadFontData(const pugi::xml_node& xmlFontData)
       sGlyph.UV.V0 = Parser::parseFloat(xmlChar.attribute("y").value()) / fTextureHeight;
       sGlyph.UV.V1 = sGlyph.UV.V0 + (Parser::parseFloat(xmlChar.attribute("height").value()) / fTextureHeight);
 
-      mGlyphs[iCharId] = sGlyph;
+      mGlyphs[pCharSet][iCharId] = sGlyph;
    }
 
-   const pugi::xml_node& xmlKernings = xmlFontData.child("kernings");
+   const pugi::xml_node& xmlKernings = pXmlFontData.child("kernings");
 
    for(const pugi::xml_node& xmlKerning : xmlKernings.children("kerning"))
    {
@@ -108,12 +114,12 @@ void Font::loadFontData(const pugi::xml_node& xmlFontData)
        byte iKerningSecondCharId = (byte)Parser::parseUInt(xmlKerning.attribute("second").value());
        int iKerningAmount = Parser::parseInt(xmlKerning.attribute("amount").value());
 
-       KerningsMap::iterator it = mKernings.find(iKerningFirstCharId);
+       KerningsMap::iterator it = mKernings[pCharSet].find(iKerningFirstCharId);
 
-       if(it == mKernings.end())
+       if(it == mKernings[pCharSet].end())
        {
-           mKernings[iKerningFirstCharId] = CharKerningsMap();
-           it = mKernings.find(iKerningFirstCharId);
+           mKernings[pCharSet][iKerningFirstCharId] = CharKerningsMap();
+           it = mKernings[pCharSet].find(iKerningFirstCharId);
        }
 
        CharKerningsMap& mCharKernings = it->second;
@@ -121,29 +127,29 @@ void Font::loadFontData(const pugi::xml_node& xmlFontData)
    }
 }
 
-void Font::loadFontData(std::istream& sStream)
+void Font::loadFontData(uint32_t pCharSet, std::istream& pStream)
 {
-   float fTextureWidth = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
-   float fTextureHeight = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
+   float fTextureWidth = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+   float fTextureHeight = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
 
    fOffsetYMin = 0.0f;
    fOffsetYMax = 0.0f;
 
-   uint iCharsCount = (uint)Value::fromStream(ValueType::Short, sStream).getAsShort();
+   uint iCharsCount = (uint)Value::fromStream(ValueType::Short, pStream).getAsShort();
 
    for(uint i = 0; i < iCharsCount; i++)
    {
-      byte iCharId = Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      byte iCharId = Value::fromStream(ValueType::Byte, pStream).getAsByte();
 
-      float x = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
-      float y = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
+      float x = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      float y = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
 
       Glyph sGlyph;
-      sGlyph.Width = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
-      sGlyph.Height = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
-      sGlyph.OffsetX = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
-      sGlyph.OffsetY = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
-      sGlyph.AdvanceX = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
+      sGlyph.Width = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      sGlyph.Height = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      sGlyph.OffsetX = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      sGlyph.OffsetY = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      sGlyph.AdvanceX = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
 
       if(sGlyph.OffsetY < fOffsetYMin)
          fOffsetYMin = sGlyph.OffsetY;
@@ -155,23 +161,23 @@ void Font::loadFontData(std::istream& sStream)
       sGlyph.UV.V0 = y / fTextureHeight;
       sGlyph.UV.V1 = sGlyph.UV.V0 + (sGlyph.Height / fTextureHeight);
 
-      mGlyphs[iCharId] = sGlyph;
+      mGlyphs[pCharSet][iCharId] = sGlyph;
    }
 
-   uint iKerningsCount = (uint)Value::fromStream(ValueType::Short, sStream).getAsShort();
+   uint iKerningsCount = (uint)Value::fromStream(ValueType::Short, pStream).getAsShort();
 
    for(uint i = 0; i < iKerningsCount; i++)
    {
-      byte iKerningFirstCharId = Value::fromStream(ValueType::Byte, sStream).getAsByte();
-      byte iKerningSecondCharId = Value::fromStream(ValueType::Byte, sStream).getAsByte();
-      int iKerningAmount = (int)Value::fromStream(ValueType::Short, sStream).getAsShort();
+      byte iKerningFirstCharId = Value::fromStream(ValueType::Byte, pStream).getAsByte();
+      byte iKerningSecondCharId = Value::fromStream(ValueType::Byte, pStream).getAsByte();
+      int iKerningAmount = (int)Value::fromStream(ValueType::Short, pStream).getAsShort();
 
-      KerningsMap::iterator it = mKernings.find(iKerningFirstCharId);
+      KerningsMap::iterator it = mKernings[pCharSet].find(iKerningFirstCharId);
 
-      if(it == mKernings.end())
+      if(it == mKernings[pCharSet].end())
       {
-         mKernings[iKerningFirstCharId] = CharKerningsMap();
-         it = mKernings.find(iKerningFirstCharId);
+         mKernings[pCharSet][iKerningFirstCharId] = CharKerningsMap();
+         it = mKernings[pCharSet].find(iKerningFirstCharId);
       }
 
       CharKerningsMap& mCharKernings = it->second;
@@ -189,25 +195,28 @@ const void* Font::getHandler()
    return pRenderDevice;
 }
 
-const Glyph& Font::getGlyph(GE::byte Character)
+const Glyph& Font::getGlyph(uint32_t pCharSet, GE::byte pCharacter)
 {
-   return mGlyphs[Character];
+   pCharSet = pCharSet < (uint32_t)mGlyphs.size() ? pCharSet : 0;
+   return mGlyphs[pCharSet][pCharacter];
 }
 
-float Font::getKerning(GE::byte Char1, GE::byte Char2) const
+float Font::getKerning(uint32_t pCharSet, GE::byte pChar1, GE::byte pChar2) const
 {
-    KerningsMap::const_iterator itChar1Kernings = mKernings.find(Char1);
+   pCharSet = pCharSet < (uint32_t)mKernings.size() ? pCharSet : 0;
 
-    if(itChar1Kernings != mKernings.end())
-    {
-        const CharKerningsMap& sChar1Kernings = itChar1Kernings->second;
-        CharKerningsMap::const_iterator itChar2Kerning = sChar1Kernings.find(Char2);
+   KerningsMap::const_iterator itChar1Kernings = mKernings[pCharSet].find(pChar1);
 
-        if(itChar2Kerning != sChar1Kernings.end())
-            return (float)itChar2Kerning->second;
-    }
+   if(itChar1Kernings != mKernings[pCharSet].end())
+   {
+      const CharKerningsMap& sChar1Kernings = itChar1Kernings->second;
+      CharKerningsMap::const_iterator itChar2Kerning = sChar1Kernings.find(pChar2);
 
-    return 0.0f;
+      if(itChar2Kerning != sChar1Kernings.end())
+         return (float)itChar2Kerning->second;
+   }
+
+   return 0.0f;
 }
 
 float Font::getOffsetYMin() const
