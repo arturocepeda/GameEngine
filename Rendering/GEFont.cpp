@@ -135,8 +135,8 @@ void Font::loadFontData(uint32_t pCharSetIndex, const pugi::xml_node& pXmlFontDa
 
    const pugi::xml_node& xmlCommon = pXmlFontData.child("common");
 
-   float fTextureWidth = Parser::parseFloat(xmlCommon.attribute("scaleW").value());
-   float fTextureHeight = Parser::parseFloat(xmlCommon.attribute("scaleH").value());
+   const float fTextureWidth = Parser::parseFloat(xmlCommon.attribute("scaleW").value());
+   const float fTextureHeight = Parser::parseFloat(xmlCommon.attribute("scaleH").value());
 
    fOffsetYMin = 0.0f;
    fOffsetYMax = 0.0f;
@@ -166,8 +166,8 @@ void Font::loadFontData(uint32_t pCharSetIndex, const pugi::xml_node& pXmlFontDa
 
       sGlyph.UV.U0 = charSet->getUOffset() + (sGlyph.UV.U0 * charSet->getUScale());
       sGlyph.UV.U1 = charSet->getUOffset() + (sGlyph.UV.U1 * charSet->getUScale());
-      sGlyph.UV.V0 = charSet->getUOffset() + (sGlyph.UV.V0 * charSet->getUScale());
-      sGlyph.UV.V1 = charSet->getUOffset() + (sGlyph.UV.V1 * charSet->getUScale());
+      sGlyph.UV.V0 = charSet->getVOffset() + (sGlyph.UV.V0 * charSet->getVScale());
+      sGlyph.UV.V1 = charSet->getVOffset() + (sGlyph.UV.V1 * charSet->getVScale());
 
       mGlyphs[pCharSetIndex][iCharId] = sGlyph;
    }
