@@ -21,57 +21,118 @@ using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Content;
 
-const ObjectName Font::TypeName = ObjectName("Font");
 
-Font::Font(const ObjectName& Name, const ObjectName& GroupName, void* RenderDevice)
-   : Resource(Name, GroupName, TypeName)
-   , pRenderDevice(RenderDevice)
-   , cTexture(0)
+//
+//  FontCharacterSet
+//
+const ObjectName FontCharacterSetClassName = ObjectName("FontCharacterSet");
+
+FontCharacterSet::FontCharacterSet()
+   : SerializableArrayElement(FontCharacterSetClassName)
+   , Object(0u)
+   , mUOffset(0.0f)
+   , mVOffset(0.0f)
+   , mUScale(1.0f)
+   , mVScale(1.0f)
 {
-   char sSubDir[256];
-   sprintf(sSubDir, "Fonts/%s", GroupName.getString());
-
-   mGlyphs.resize(1);
-   mKernings.resize(1);
-
-   ContentData cFontData;
-   Device::readContentFile(ContentType::FontData, sSubDir, Name.getString(), "fnt", &cFontData);
-   pugi::xml_document xml;
-   xml.load_buffer(cFontData.getData(), cFontData.getDataSize());
-   loadFontData(0, xml.child("font"));
-
-   ImageData cImageData;
-   Device::readContentFile(ContentType::FontTexture, sSubDir, Name.getString(), "png", &cImageData);
-   createFontTexture(cImageData);
-   cImageData.unload();
+   GERegisterProperty(ObjectName, Name);
+   GERegisterProperty(Float, UOffset);
+   GERegisterProperty(Float, VOffset);
+   GERegisterProperty(Float, UScale);
+   GERegisterProperty(Float, VScale);
 }
 
-Font::Font(const ObjectName& Name, const ObjectName& GroupName, std::istream& Stream, void* RenderDevice)
+FontCharacterSet::~FontCharacterSet()
+{
+}
+
+
+//
+//  Font
+//
+const ObjectName Font::TypeName = ObjectName("Font");
+
+Font::Font(const ObjectName& Name, const ObjectName& GroupName)
    : Resource(Name, GroupName, TypeName)
-   , pRenderDevice(RenderDevice)
+   , pRenderDevice(0)
    , cTexture(0)
    , fOffsetYMin(0.0f)
-   , fOffsetYMax(0.0f)
+   , fOffsetYMax(0.0f) 
 {
-   mGlyphs.resize(1);
-   mKernings.resize(1);
-
-   loadFontData(0, Stream);
-
-   ImageData cImageData;
-   uint iTextureDataSize = Value::fromStream(ValueType::UInt, Stream).getAsUInt();
-   cImageData.load(iTextureDataSize, Stream);
-   createFontTexture(cImageData);
-   cImageData.unload();
+   GERegisterPropertyArray(FontCharacterSet);
 }
 
 Font::~Font()
 {
    releaseFontTexture();
+
+   GEReleasePropertyArray(FontCharacterSet);
 }
 
-void Font::loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData)
+void Font::load(void* pRenderDevice)
 {
+   this->pRenderDevice = pRenderDevice;
+
+   if(getFontCharacterSetCount() == 0)
+   {
+      addFontCharacterSet();
+   }
+
+   char sSubDir[256];
+   sprintf(sSubDir, "Fonts/%s", cGroupName.getString());
+
+   const uint32_t charSetsCount = getFontCharacterSetCount();
+
+   mGlyphs.resize(charSetsCount);
+   mKernings.resize(charSetsCount);
+
+   for(uint32_t i = 0; i < charSetsCount; i++)
+   {
+      FontCharacterSet* charSet = getFontCharacterSet(i);
+      mCharSets.add(charSet);
+
+      char fileNameBuffer[64];
+      const char* fileName = cName.getString();
+
+      if(!charSet->getName().isEmpty())
+      {
+         sprintf(fileNameBuffer, "%s_%s", cName.getString(), charSet->getName().getString());
+         fileName = fileNameBuffer;
+      }
+
+      ContentData cFontData;
+      Device::readContentFile(ContentType::FontData, sSubDir, fileName, "fnt", &cFontData);
+      pugi::xml_document xml;
+      xml.load_buffer(cFontData.getData(), cFontData.getDataSize());
+      loadFontData(i, xml.child("font"));
+   }
+
+   ImageData cImageData;
+   Device::readContentFile(ContentType::FontTexture, sSubDir, cName.getString(), "png", &cImageData);
+   createFontTexture(cImageData);
+   cImageData.unload();
+}
+
+void Font::load(std::istream& pStream, void* pRenderDevice)
+{
+   this->pRenderDevice = pRenderDevice;
+
+   mGlyphs.resize(1);
+   mKernings.resize(1);
+
+   loadFontData(0, pStream);
+
+   ImageData cImageData;
+   uint iTextureDataSize = Value::fromStream(ValueType::UInt, pStream).getAsUInt();
+   cImageData.load(iTextureDataSize, pStream);
+   createFontTexture(cImageData);
+   cImageData.unload();
+}
+
+void Font::loadFontData(uint32_t pCharSetIndex, const pugi::xml_node& pXmlFontData)
+{
+   FontCharacterSet* charSet = getFontCharacterSet(pCharSetIndex);
+
    const pugi::xml_node& xmlCommon = pXmlFontData.child("common");
 
    float fTextureWidth = Parser::parseFloat(xmlCommon.attribute("scaleW").value());
@@ -103,7 +164,12 @@ void Font::loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData)
       sGlyph.UV.V0 = Parser::parseFloat(xmlChar.attribute("y").value()) / fTextureHeight;
       sGlyph.UV.V1 = sGlyph.UV.V0 + (Parser::parseFloat(xmlChar.attribute("height").value()) / fTextureHeight);
 
-      mGlyphs[pCharSet][iCharId] = sGlyph;
+      sGlyph.UV.U0 = charSet->getUOffset() + (sGlyph.UV.U0 * charSet->getUScale());
+      sGlyph.UV.U1 = charSet->getUOffset() + (sGlyph.UV.U1 * charSet->getUScale());
+      sGlyph.UV.V0 = charSet->getUOffset() + (sGlyph.UV.V0 * charSet->getUScale());
+      sGlyph.UV.V1 = charSet->getUOffset() + (sGlyph.UV.V1 * charSet->getUScale());
+
+      mGlyphs[pCharSetIndex][iCharId] = sGlyph;
    }
 
    const pugi::xml_node& xmlKernings = pXmlFontData.child("kernings");
@@ -114,12 +180,12 @@ void Font::loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData)
        byte iKerningSecondCharId = (byte)Parser::parseUInt(xmlKerning.attribute("second").value());
        int iKerningAmount = Parser::parseInt(xmlKerning.attribute("amount").value());
 
-       KerningsMap::iterator it = mKernings[pCharSet].find(iKerningFirstCharId);
+       KerningsMap::iterator it = mKernings[pCharSetIndex].find(iKerningFirstCharId);
 
-       if(it == mKernings[pCharSet].end())
+       if(it == mKernings[pCharSetIndex].end())
        {
-           mKernings[pCharSet][iKerningFirstCharId] = CharKerningsMap();
-           it = mKernings[pCharSet].find(iKerningFirstCharId);
+           mKernings[pCharSetIndex][iKerningFirstCharId] = CharKerningsMap();
+           it = mKernings[pCharSetIndex].find(iKerningFirstCharId);
        }
 
        CharKerningsMap& mCharKernings = it->second;
@@ -127,7 +193,7 @@ void Font::loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData)
    }
 }
 
-void Font::loadFontData(uint32_t pCharSet, std::istream& pStream)
+void Font::loadFontData(uint32_t pCharSetIndex, std::istream& pStream)
 {
    float fTextureWidth = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
    float fTextureHeight = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
@@ -161,7 +227,7 @@ void Font::loadFontData(uint32_t pCharSet, std::istream& pStream)
       sGlyph.UV.V0 = y / fTextureHeight;
       sGlyph.UV.V1 = sGlyph.UV.V0 + (sGlyph.Height / fTextureHeight);
 
-      mGlyphs[pCharSet][iCharId] = sGlyph;
+      mGlyphs[pCharSetIndex][iCharId] = sGlyph;
    }
 
    uint iKerningsCount = (uint)Value::fromStream(ValueType::Short, pStream).getAsShort();
@@ -172,12 +238,12 @@ void Font::loadFontData(uint32_t pCharSet, std::istream& pStream)
       byte iKerningSecondCharId = Value::fromStream(ValueType::Byte, pStream).getAsByte();
       int iKerningAmount = (int)Value::fromStream(ValueType::Short, pStream).getAsShort();
 
-      KerningsMap::iterator it = mKernings[pCharSet].find(iKerningFirstCharId);
+      KerningsMap::iterator it = mKernings[pCharSetIndex].find(iKerningFirstCharId);
 
-      if(it == mKernings[pCharSet].end())
+      if(it == mKernings[pCharSetIndex].end())
       {
-         mKernings[pCharSet][iKerningFirstCharId] = CharKerningsMap();
-         it = mKernings[pCharSet].find(iKerningFirstCharId);
+         mKernings[pCharSetIndex][iKerningFirstCharId] = CharKerningsMap();
+         it = mKernings[pCharSetIndex].find(iKerningFirstCharId);
       }
 
       CharKerningsMap& mCharKernings = it->second;
@@ -195,25 +261,47 @@ const void* Font::getHandler()
    return pRenderDevice;
 }
 
-const Glyph& Font::getGlyph(uint32_t pCharSet, GE::byte pCharacter)
+const ObjectRegistry* Font::getCharacterSetRegistry() const
 {
-   pCharSet = pCharSet < (uint32_t)mGlyphs.size() ? pCharSet : 0;
-   return mGlyphs[pCharSet][pCharacter];
+   return mCharSets.getObjectRegistry();
 }
 
-float Font::getKerning(uint32_t pCharSet, GE::byte pChar1, GE::byte pChar2) const
+uint32_t Font::getCharacterSetIndex(const ObjectName& pCharacterSetName) const
 {
-   pCharSet = pCharSet < (uint32_t)mKernings.size() ? pCharSet : 0;
+   for(uint32_t i = 0; i < getFontCharacterSetCount(); i++)
+   {
+      const FontCharacterSet* charSet = getFontCharacterSetConst(i);
 
-   KerningsMap::const_iterator itChar1Kernings = mKernings[pCharSet].find(pChar1);
+      if(charSet->getName() == pCharacterSetName)
+      {
+         return i;
+      }
+   }
 
-   if(itChar1Kernings != mKernings[pCharSet].end())
+   return 0;
+}
+
+const Glyph& Font::getGlyph(uint32_t pCharSetIndex, GE::byte pCharacter)
+{
+   GEAssert(pCharSetIndex < (uint32_t)mGlyphs.size());
+   return mGlyphs[pCharSetIndex][pCharacter];
+}
+
+float Font::getKerning(uint32_t pCharSetIndex, GE::byte pChar1, GE::byte pChar2) const
+{
+   GEAssert(pCharSetIndex < (uint32_t)mGlyphs.size());
+
+   KerningsMap::const_iterator itChar1Kernings = mKernings[pCharSetIndex].find(pChar1);
+
+   if(itChar1Kernings != mKernings[pCharSetIndex].end())
    {
       const CharKerningsMap& sChar1Kernings = itChar1Kernings->second;
       CharKerningsMap::const_iterator itChar2Kerning = sChar1Kernings.find(pChar2);
 
       if(itChar2Kerning != sChar1Kernings.end())
+      {
          return (float)itChar2Kerning->second;
+      }
    }
 
    return 0.0f;

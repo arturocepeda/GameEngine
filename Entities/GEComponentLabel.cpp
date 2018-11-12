@@ -33,6 +33,7 @@ const unsigned char LineFeedChar = '~';
 ComponentLabel::ComponentLabel(Entity* Owner)
    : ComponentRenderable(Owner, RenderableType::Label)
    , cFont(0)
+   , mFontCharSetIndex(0)
    , fFontSize(12.0f)
    , iAlignment(Alignment::MiddleCenter)
    , eSettings(0)
@@ -57,6 +58,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
 #endif
 
    GERegisterProperty(ObjectName, FontName);
+   GERegisterProperty(ObjectName, FontCharacterSet);
    GERegisterProperty(Float, FontSize);
    GERegisterPropertyEnum(Alignment, Alignment);
    GERegisterProperty(Float, HorizontalSpacing);
@@ -152,6 +154,19 @@ void ComponentLabel::evaluateRichTextTag(Pen* pPen)
             pPen->mFontSize = (float)strtod(value, 0);
          }
       }
+      // charset
+      else if(strcmp(tag, "charset") == 0)
+      {
+         if(tagClosing)
+         {
+            pPen->mCharSet = mFontCharSetIndex;
+         }
+         else
+         {
+            const ObjectName charSetName = ObjectName(value);
+            pPen->mCharSet = cFont ? cFont->getCharacterSetIndex(charSetName) : 0;
+         }
+      }
 
       pPen->mCharIndex = (uint32_t)i + 1;
    }
@@ -197,7 +212,7 @@ void ComponentLabel::generateVertexData()
    Pen sPen;
    sPen.mColor = cColor;
    sPen.mFontSize = fFontSize;
-   sPen.mCharSet = 0;
+   sPen.mCharSet = mFontCharSetIndex;
    sPen.mCharIndex = 0;
 
    const uint iTextLength = (uint)sText.length();
@@ -334,7 +349,7 @@ void ComponentLabel::generateVertexData()
 
    sPen.mColor = cColor;
    sPen.mFontSize = fFontSize;
-   sPen.mCharSet = 0;
+   sPen.mCharSet = mFontCharSetIndex;
    sPen.mCharIndex = 0;
 
    vVertexData.clear();
@@ -517,6 +532,11 @@ const ObjectName& ComponentLabel::getFontName() const
    return cFont ? cFont->getName() : ObjectName::Empty;
 }
 
+const ObjectName& ComponentLabel::getFontCharacterSet() const
+{
+   return cFont ? cFont->getFontCharacterSet(mFontCharSetIndex)->getName() : ObjectName::Empty;
+}
+
 float ComponentLabel::getFontSize() const
 {
    return fFontSize;
@@ -566,6 +586,16 @@ void ComponentLabel::setFontName(const Core::ObjectName& FontName)
 {
    cFont = RenderSystem::getInstance()->getFont(FontName);
 
+#if defined (GE_EDITOR_SUPPORT)
+   const ObjectName propertyName = ObjectName("FontCharacterSet");
+   Property* cProperty = const_cast<Property*>(getProperty(propertyName));
+   cProperty->DataPtr = cFont ? (void*)cFont->getCharacterSetRegistry() : 0;
+
+   EventArgs sArgs;
+   sArgs.Data = cOwner;
+   EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &sArgs);
+#endif
+
    if(!cFont)
    {
       Log::log(LogType::Warning, "No font found in '%s'. The entity will not be rendered.", cOwner->getFullName().getString());
@@ -575,6 +605,20 @@ void ComponentLabel::setFontName(const Core::ObjectName& FontName)
 
    if(!sText.empty())
    {
+      generateVertexData();
+   }
+}
+
+void ComponentLabel::setFontCharacterSet(const ObjectName& pCharSetName)
+{
+   if(pCharSetName == getFontCharacterSet())
+      return;
+
+   mFontCharSetIndex = 0;
+
+   if(cFont)
+   {
+      mFontCharSetIndex = cFont->getCharacterSetIndex(pCharSetName);
       generateVertexData();
    }
 }

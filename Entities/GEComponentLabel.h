@@ -41,6 +41,7 @@ namespace GE { namespace Entities
       };
 
       Rendering::Font* cFont;
+      uint32_t mFontCharSetIndex;
       float fFontSize;
       Alignment iAlignment;
       uint8_t eSettings;
@@ -71,6 +72,7 @@ namespace GE { namespace Entities
 
       Rendering::Font* getFont() const;
       const Core::ObjectName& getFontName() const;
+      const Core::ObjectName& getFontCharacterSet() const;
       float getFontSize() const;
       Alignment getAlignment() const;
       const char* getText() const;
@@ -82,6 +84,7 @@ namespace GE { namespace Entities
 
       void setFont(Rendering::Font* TextFont);
       void setFontName(const Core::ObjectName& FontName);
+      void setFontCharacterSet(const Core::ObjectName& pCharSetName);
       void setFontSize(float FontSize);
       void setAlignment(Alignment Align);
       void setText(const char* Text);

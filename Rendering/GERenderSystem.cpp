@@ -58,12 +58,11 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    , iDrawCalls(0)
 {
    memset(pBoundTexture, 0, sizeof(Texture*) * (GE::uint)TextureSlot::Count);
-
-   ResourcesManager::getInstance()->registerObjectManager<Font>(Font::TypeName, &mFonts);
    
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<ShaderProgram>(&mShaderPrograms);
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<Texture>(&mTextures);
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<Material>(&mMaterials);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<Font>(&mFonts);
 
    // Position (3) + UV (2)
    sGPUBufferPairs[GeometryGroup::SpriteStatic].VertexStride = (3 + 2) * sizeof(float);
@@ -599,8 +598,9 @@ void RenderSystem::loadFonts(const char* FileName)
          const char* sFontName = xmlFont.attribute("name").value();
 
          Font* fFont = Allocator::alloc<Font>();
-         GEInvokeCtor(Font, fFont)(sFontName, cGroupName, pDevice);
+         GEInvokeCtor(Font, fFont)(sFontName, cGroupName);
          fFont->loadFromXml(xmlFont);
+         fFont->load(pDevice);
          mFonts.add(fFont);
          pBoundTexture[(GE::uint)TextureSlot::Diffuse] = const_cast<Texture*>(fFont->getTexture());
       }
@@ -620,7 +620,9 @@ void RenderSystem::loadFonts(const char* FileName)
       {
          ObjectName cFontName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
          Font* fFont = Allocator::alloc<Font>();
-         GEInvokeCtor(Font, fFont)(cFontName, cGroupName, sStream, pDevice);
+         GEInvokeCtor(Font, fFont)(cFontName, cGroupName);
+         fFont->loadFromStream(sStream);
+         fFont->load(sStream, pDevice);
          mFonts.add(fFont);
          pBoundTexture[(GE::uint)TextureSlot::Diffuse] = const_cast<Texture*>(fFont->getTexture());
       }

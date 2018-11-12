@@ -32,11 +32,39 @@ namespace GE { namespace Rendering
    };
 
 
+   class FontCharacterSet : public Core::SerializableArrayElement, public Core::Object
+   {
+   private:
+      float mUOffset;
+      float mVOffset;
+      float mUScale;
+      float mVScale;
+
+   public:
+      FontCharacterSet();
+      ~FontCharacterSet();
+
+      void setName(Core::ObjectName& pName) { cName = pName; }
+
+      GEDefaultGetter(float, UOffset)
+      GEDefaultGetter(float, VOffset)
+      GEDefaultGetter(float, UScale)
+      GEDefaultGetter(float, VScale)
+
+      GEDefaultSetter(float, UOffset)
+      GEDefaultSetter(float, VOffset)
+      GEDefaultSetter(float, UScale)
+      GEDefaultSetter(float, VScale)
+   };
+
+
    class Font : public Content::Resource
    {
    private:
       Texture* cTexture;
       void* pRenderDevice;
+
+      Core::ObjectManager<FontCharacterSet> mCharSets;
 
       typedef GESTLMap(byte, Glyph) GlyphsMap;
       GESTLVector(GlyphsMap) mGlyphs;
@@ -57,16 +85,24 @@ namespace GE { namespace Rendering
    public:
       static const Core::ObjectName TypeName;
 
-      Font(const Core::ObjectName& Name, const Core::ObjectName& GroupName, void* RenderDevice = 0);
-      Font(const Core::ObjectName& Name, const Core::ObjectName& GroupName, std::istream& Stream, void* RenderDevice = 0);
+      Font(const Core::ObjectName& pName, const Core::ObjectName& pGroupName);
       ~Font();
+
+      void load(void* pRenderDevice);
+      void load(std::istream& pStream, void* pRenderDevice);
 
       const Texture* getTexture();
       const void* getHandler();
-      const Glyph& getGlyph(uint32_t pCharSet, byte pCharacter);
-      float getKerning(uint32_t pCharSet, byte pChar1, byte pChar2) const;
+
+      const Core::ObjectRegistry* getCharacterSetRegistry() const;
+      uint32_t getCharacterSetIndex(const Core::ObjectName& pCharacterSetName) const;
+
+      const Glyph& getGlyph(uint32_t pCharSetIndex, byte pCharacter);
+      float getKerning(uint32_t pCharSetIndex, byte pChar1, byte pChar2) const;
 
       float getOffsetYMin() const;
       float getOffsetYMax() const;
+
+      GEPropertyArray(FontCharacterSet, FontCharacterSet)
    };
 }}
