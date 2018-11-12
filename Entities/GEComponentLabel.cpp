@@ -80,7 +80,7 @@ void ComponentLabel::evaluateRichTextTag(Pen* pPen)
 {
    unsigned char character = sText[pPen->mCharIndex];
 
-   if(character == '<')
+   while(character == '<')
    {
       size_t i = (size_t)pPen->mCharIndex + 1;
 
@@ -169,6 +169,11 @@ void ComponentLabel::evaluateRichTextTag(Pen* pPen)
       }
 
       pPen->mCharIndex = (uint32_t)i + 1;
+
+      if(pPen->mCharIndex < (uint32_t)sText.size())
+      {
+         character = sText[pPen->mCharIndex];
+      }
    }
 }
 
