@@ -130,8 +130,6 @@ void LocalizedStringsManager::unloadStringsSet(const char* Name)
          const char* sStringID = xmlString.attribute("id").value();
 
          ObjectName cStringID = ObjectName(sStringID);
-         GEAssert(get(cStringID));
-
          remove(cStringID);
       }
    }
