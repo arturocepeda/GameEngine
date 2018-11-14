@@ -397,7 +397,7 @@ void RenderSystem::unloadTextures(const char* FileName)
 
       pugi::xml_document xml;
       xml.load_buffer(cTexturesData.getData(), cTexturesData.getDataSize());
-      const pugi::xml_node& xmlTextures = xml.child("Textures");
+      const pugi::xml_node& xmlTextures = xml.child("TextureList");
 
       for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
       {
@@ -642,7 +642,7 @@ void RenderSystem::unloadFonts(const char* FileName)
 
       pugi::xml_document xml;
       xml.load_buffer(cFontsData.getData(), cFontsData.getDataSize());
-      const pugi::xml_node& xmlFonts = xml.child("Fonts");
+      const pugi::xml_node& xmlFonts = xml.child("FontList");
 
       for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
       {
