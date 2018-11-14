@@ -167,6 +167,18 @@ void ComponentLabel::evaluateRichTextTag(Pen* pPen)
             pPen->mCharSet = cFont ? cFont->getCharacterSetIndex(charSetName) : 0;
          }
       }
+      // yoffset
+      else if(strcmp(tag, "yoffset") == 0)
+      {
+         if(tagClosing)
+         {
+            pPen->mYOffset = 0.0f;
+         }
+         else
+         {
+            pPen->mYOffset = (float)strtod(value, 0);
+         }
+      }
 
       pPen->mCharIndex = (uint32_t)i + 1;
 
@@ -217,6 +229,7 @@ void ComponentLabel::generateVertexData()
    Pen sPen;
    sPen.mColor = cColor;
    sPen.mFontSize = fFontSize;
+   sPen.mYOffset = 0.0f;
    sPen.mCharSet = mFontCharSetIndex;
    sPen.mCharIndex = 0;
 
@@ -354,6 +367,7 @@ void ComponentLabel::generateVertexData()
 
    sPen.mColor = cColor;
    sPen.mFontSize = fFontSize;
+   sPen.mYOffset = 0.0f;
    sPen.mCharSet = mFontCharSetIndex;
    sPen.mCharIndex = 0;
 
@@ -419,17 +433,17 @@ void ComponentLabel::generateVertexData()
       {
          fPosX += getKerning(sPen);
 
-         float fGlyphWidth = sGlyph.Width * fCharacterSize;
-         float fGlyphHeight = sGlyph.Height * fCharacterSize;
+         const float fGlyphWidth = sGlyph.Width * fCharacterSize;
+         const float fGlyphHeight = sGlyph.Height * fCharacterSize;
 
-         float fHalfGlyphWidth = fGlyphWidth * 0.5f;
-         float fHalfGlyphHeight = fGlyphHeight * 0.5f;
-         float fHalfGlyphOffsetX = (sGlyph.OffsetX * fCharacterSize) * 0.5f;
-         float fHalfGlyphOffsetY = (sGlyph.OffsetY * fCharacterSize) * 0.5f;
-         float fHalfAdvanceX = fAdvanceX * 0.5f;
+         const float fHalfGlyphWidth = fGlyphWidth * 0.5f;
+         const float fHalfGlyphHeight = fGlyphHeight * 0.5f;
+         const float fHalfGlyphOffsetX = (sGlyph.OffsetX * fCharacterSize) * 0.5f;
+         const float fHalfGlyphOffsetY = (sGlyph.OffsetY * fCharacterSize) * 0.5f;
+         const float fHalfAdvanceX = fAdvanceX * 0.5f;
 
          vVertexData.push_back(fPosX - fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
-         vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY);
+         vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY + sPen.mYOffset);
          vVertexData.push_back(0.0f);
          vVertexData.push_back(sPen.mColor.Red);
          vVertexData.push_back(sPen.mColor.Green);
@@ -438,7 +452,7 @@ void ComponentLabel::generateVertexData()
          vVertexData.push_back(sGlyph.UV.U0); vVertexData.push_back(sGlyph.UV.V1);
 
          vVertexData.push_back(fPosX + fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
-         vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY);
+         vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY + sPen.mYOffset);
          vVertexData.push_back(0.0f);
          vVertexData.push_back(sPen.mColor.Red);
          vVertexData.push_back(sPen.mColor.Green);
@@ -447,7 +461,7 @@ void ComponentLabel::generateVertexData()
          vVertexData.push_back(sGlyph.UV.U1); vVertexData.push_back(sGlyph.UV.V1);
 
          vVertexData.push_back(fPosX - fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
-         vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY);
+         vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY + sPen.mYOffset);
          vVertexData.push_back(0.0f);
          vVertexData.push_back(sPen.mColor.Red);
          vVertexData.push_back(sPen.mColor.Green);
@@ -456,7 +470,7 @@ void ComponentLabel::generateVertexData()
          vVertexData.push_back(sGlyph.UV.U0); vVertexData.push_back(sGlyph.UV.V0);
 
          vVertexData.push_back(fPosX + fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
-         vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY);
+         vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY + sPen.mYOffset);
          vVertexData.push_back(0.0f);
          vVertexData.push_back(sPen.mColor.Red);
          vVertexData.push_back(sPen.mColor.Green);

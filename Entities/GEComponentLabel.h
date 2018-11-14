@@ -36,6 +36,7 @@ namespace GE { namespace Entities
       {
          Color mColor;
          float mFontSize;
+         float mYOffset;
          uint32_t mCharSet;
          uint32_t mCharIndex;
       };
