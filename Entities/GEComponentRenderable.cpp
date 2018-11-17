@@ -13,6 +13,7 @@
 #include "GEComponentRenderable.h"
 #include "GEEntity.h"
 #include "Core/GEAllocator.h"
+#include "Core/GEEvents.h"
 #include "Rendering/GERenderSystem.h"
 
 using namespace GE;
@@ -126,6 +127,7 @@ void ComponentRenderable::setRenderPriority(uint8_t Priority)
 void ComponentRenderable::setColor(const Color& C)
 {
    cColor = C;
+   cOwner->triggerEvent(Events::RenderableColorChanged);
 }
 
 void ComponentRenderable::setVisible(bool Visible)

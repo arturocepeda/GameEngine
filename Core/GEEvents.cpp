@@ -32,6 +32,7 @@ const ObjectName Events::ResourceDestroyed = ObjectName("ResourceDestroyed");
 //  Rendering
 //
 const ObjectName Events::RenderingSurfaceChanged = ObjectName("RenderingSurfaceChanged");
+const ObjectName Events::RenderableColorChanged = ObjectName("RenderableColorChanged");
 
 
 //

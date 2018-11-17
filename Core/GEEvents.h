@@ -28,6 +28,7 @@ namespace GE { namespace Core
 
       // Rendering
       static const ObjectName RenderingSurfaceChanged;
+      static const ObjectName RenderableColorChanged;
 
       // Scene
       static const ObjectName ActiveSceneSet;
