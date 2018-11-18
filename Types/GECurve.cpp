@@ -60,6 +60,8 @@ void CurveKey::setValue(float Value)
 //  Curve
 //
 const ObjectName Curve::TypeName = ObjectName("Curve");
+const char* Curve::SubDir = "Data";
+const char* Curve::Extension = "curves";
 
 Curve::Curve(const ObjectName& Name, const ObjectName& GroupName)
    : Resource(Name, GroupName, TypeName)

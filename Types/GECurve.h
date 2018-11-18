@@ -52,6 +52,8 @@ namespace GE
 
    public:
       static const Core::ObjectName TypeName;
+      static const char* SubDir;
+      static const char* Extension;
 
       Curve(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
       ~Curve();

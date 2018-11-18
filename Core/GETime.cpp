@@ -23,6 +23,8 @@ using namespace GE::Content;
 //  Clock
 //
 const ObjectName Clock::TypeName = ObjectName("Clock");
+const char* Clock::SubDir = "Data";
+const char* Clock::Extension = "clocks";
 const float Clock::MaxDelta = 0.1f;
 
 Clock::Clock(const ObjectName& Name, const ObjectName& GroupName)

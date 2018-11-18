@@ -30,12 +30,14 @@ using namespace GE::Rendering;
 //  Mesh
 //
 const ObjectName Mesh::TypeName = ObjectName("Mesh");
+const char* Mesh::SubDir = "Meshes";
+const char* Mesh::Extension = "meshes";
 
-Mesh::Mesh(const char* FileName)
-   : Resource(FileName, ObjectName::Empty, TypeName)
+Mesh::Mesh(const ObjectName& Name, const ObjectName& GroupName)
+   : Resource(Name, GroupName, TypeName)
    , cSkinningData(0)
 {
-   loadFromFile(FileName);
+   loadFromFile(GroupName.getString(), Name.getString());
 }
 
 Mesh::Mesh(const Primitive& P, const ObjectName& Name)
@@ -48,19 +50,28 @@ Mesh::Mesh(const Primitive& P, const ObjectName& Name)
 Mesh::~Mesh()
 {
    if(sGeometryData.VertexData)
+   {
       Allocator::free(sGeometryData.VertexData);
+   }
 
    if(sGeometryData.Indices)
+   {
       Allocator::free(sGeometryData.Indices);
+   }
 
    if(cSkinningData)
+   {
       Allocator::free(cSkinningData);
+   }
 }
 
-void Mesh::loadFromFile(const char* Filename)
+void Mesh::loadFromFile(const char* GroupName, const char* FileName)
 {
+   char subdir[256];
+   sprintf(subdir, "Meshes/%s", GroupName);
+
    ContentData cContent;
-   Device::readContentFile(Content::ContentType::GenericBinaryData, "Models", Filename, "mesh.ge", &cContent);
+   Device::readContentFile(Content::ContentType::GenericBinaryData, subdir, FileName, "mesh.ge", &cContent);
 
    char* pData = cContent.getData();
 

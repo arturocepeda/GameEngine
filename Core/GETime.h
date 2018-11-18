@@ -27,6 +27,8 @@ namespace GE { namespace Core
 
    public:
       static const ObjectName TypeName;
+      static const char* SubDir;
+      static const char* Extension;
 
       Clock(const ObjectName& Name, const ObjectName& GroupName);
       ~Clock();

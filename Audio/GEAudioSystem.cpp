@@ -47,35 +47,35 @@ AudioSystem::~AudioSystem()
 
 void AudioSystem::loadAudioEventEntries()
 {
-   const char* subdir = "Audio";
-   const char* extension = "events.xml";
+   char extension[32];
+   sprintf(extension, "%s.xml", AudioEvent::Extension);
 
-   const uint32_t groupsCount = Device::getContentFilesCount(subdir, extension);
+   const uint32_t groupsCount = Device::getContentFilesCount(AudioEvent::SubDir, extension);
 
    for(uint32_t i = 0; i < groupsCount; i++)
    {
       char fileName[256];
-      Device::getContentFileName(subdir, extension, i, fileName);
+      Device::getContentFileName(AudioEvent::SubDir, extension, i, fileName);
 
       const ObjectName groupName = ObjectName(fileName);
-      SerializableResourcesManager::getInstance()->loadFromXml<AudioEvent>(AudioEvent::TypeName, groupName, subdir, fileName, extension);
+      SerializableResourcesManager::getInstance()->load<AudioEvent>(groupName);
    }
 }
 
 void AudioSystem::loadAudioBankEntries()
 {
-   const char* subdir = "Audio";
-   const char* extension = "banks.xml";
+   char extension[32];
+   sprintf(extension, "%s.xml", AudioBank::Extension);
 
-   const uint32_t groupsCount = Device::getContentFilesCount(subdir, extension);
+   const uint32_t groupsCount = Device::getContentFilesCount(AudioBank::SubDir, extension);
 
    for(uint32_t i = 0; i < groupsCount; i++)
    {
       char fileName[256];
-      Device::getContentFileName(subdir, extension, i, fileName);
+      Device::getContentFileName(AudioBank::SubDir, extension, i, fileName);
 
       const ObjectName groupName = ObjectName(fileName);
-      SerializableResourcesManager::getInstance()->loadFromXml<AudioBank>(AudioBank::TypeName, groupName, subdir, fileName, extension);
+      SerializableResourcesManager::getInstance()->load<AudioBank>(groupName);
    }
 }
 

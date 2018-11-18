@@ -43,6 +43,8 @@ namespace GE { namespace Audio
 
    public:
       static const Core::ObjectName TypeName;
+      static const char* SubDir;
+      static const char* Extension;
 
       AudioBank(const Core::ObjectName& pName, const Core::ObjectName& pGroupName);
       ~AudioBank();

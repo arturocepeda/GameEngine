@@ -49,6 +49,8 @@ namespace GE { namespace Audio
 
    public:
       static const Core::ObjectName TypeName;
+      static const char* SubDir;
+      static const char* Extension;
 
       AudioEvent(const Core::ObjectName& pName, const Core::ObjectName& pGroupName);
       ~AudioEvent();

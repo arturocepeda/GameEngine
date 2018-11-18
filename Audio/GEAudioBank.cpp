@@ -38,6 +38,8 @@ AudioEventEntry::~AudioEventEntry()
 //  AudioBank
 //
 const ObjectName AudioBank::TypeName = ObjectName("AudioBank");
+const char* AudioBank::SubDir = "Audio";
+const char* AudioBank::Extension = "banks";
 
 AudioBank::AudioBank(const ObjectName& pName, const ObjectName& pGroupName)
    : Resource(pName, pGroupName, TypeName)

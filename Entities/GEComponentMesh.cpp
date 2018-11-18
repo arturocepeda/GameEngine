@@ -55,20 +55,23 @@ const Core::ObjectName& ComponentMesh::getMeshName() const
 
 void ComponentMesh::setMeshName(const ObjectName& MeshName)
 {
+   cMesh = 0;
+
    if(MeshName.isEmpty())
    {
-      cMesh = 0;
       return;
    }
 
-   Mesh* cMesh = ResourcesManager::getInstance()->get<Mesh>(MeshName);
+   Mesh* mesh = SerializableResourcesManager::getInstance()->get<Mesh>(MeshName);
 
-   if(!cMesh)
+   if(mesh)
    {
-      cMesh = ResourcesManager::getInstance()->load<Mesh>(MeshName.getString());
+      loadMesh(mesh);
    }
-
-   loadMesh(cMesh);
+   else
+   {
+      Log::log(LogType::Warning, "The '%s' mesh has not been loaded", MeshName.getString());
+   }
 }
 
 void ComponentMesh::loadMesh(Mesh* M)

@@ -38,18 +38,20 @@ namespace GE { namespace Content
       GeometryData sGeometryData;
       VertexBoneAttachment* cSkinningData;
 
-      void loadFromFile(const char* Filename);
+      void loadFromFile(const char* GroupName, const char* FileName);
       void loadFromArrays(uint NumVertices, float* Vertex, float* Normals, float* TextureCoordinate,
          uint NumIndices, ushort* Indices);
       void loadFromPrimivite(const Rendering::Primitive& P);
 
    public:
       static const Core::ObjectName TypeName;
+      static const char* SubDir;
+      static const char* Extension;
 
       static const uint BoneAttachmentsPerVertex = 4;
       static const uint FileFormatHeaderReservedBytes = 36;
 
-      Mesh(const char* FileName);
+      Mesh(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
       Mesh(const Rendering::Primitive& P, const Core::ObjectName& Name);
       ~Mesh();
 

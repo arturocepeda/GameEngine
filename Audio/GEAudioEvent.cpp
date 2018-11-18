@@ -39,6 +39,8 @@ AudioFileEntry::~AudioFileEntry()
 //  AudioEvent
 //
 const ObjectName AudioEvent::TypeName = ObjectName("AudioEvent");
+const char* AudioEvent::SubDir = "Audio";
+const char* AudioEvent::Extension = "events";
 
 AudioEvent::AudioEvent(const ObjectName& pName, const ObjectName& pGroupName)
    : Resource(pName, pGroupName, TypeName)

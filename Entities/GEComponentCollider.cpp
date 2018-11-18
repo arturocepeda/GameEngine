@@ -179,7 +179,7 @@ const ObjectName& ComponentColliderMesh::getMeshName() const
 
 void ComponentColliderMesh::setMeshName(const ObjectName& MeshName)
 {
-   cMesh = ResourcesManager::getInstance()->get<Mesh>(MeshName);
+   cMesh = SerializableResourcesManager::getInstance()->get<Mesh>(MeshName);
 }
 
 bool ComponentColliderMesh::checkCollision(const Physics::Ray& R, Physics::HitInfo* OutHitInfo) const

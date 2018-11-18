@@ -25,14 +25,7 @@ using namespace GE::Rendering;
 //
 ResourcesManager::ResourcesManager()
 {
-   mSimpleResourceManagersRegistry[Mesh::TypeName.getID()] = &mMeshes;
-   mSimpleResourceManagersRegistry[Skeleton::TypeName.getID()] = &mSkeletons;
-   mSimpleResourceManagersRegistry[AnimationSet::TypeName.getID()] = &mAnimationSets;
-
-   registerObjectManager<Mesh>(Mesh::TypeName, &mMeshes);
-   registerObjectManager<Skeleton>(Skeleton::TypeName, &mSkeletons);
-   registerObjectManager<AnimationSet>(AnimationSet::TypeName, &mAnimationSets);
-
+   registerSimpleResourceTypes();
    registerSerializableResourceTypes();
 
    loadBuiltInMeshes();
@@ -40,13 +33,22 @@ ResourcesManager::ResourcesManager()
 
 ResourcesManager::~ResourcesManager()
 {
-   mMeshes.clear();
    mSkeletons.clear();
    mAnimationSets.clear();
 }
 
+void ResourcesManager::registerSimpleResourceTypes()
+{
+   mSimpleResourceManagersRegistry[Skeleton::TypeName.getID()] = &mSkeletons;
+   registerObjectManager<Skeleton>(Skeleton::TypeName, &mSkeletons);
+
+   mSimpleResourceManagersRegistry[AnimationSet::TypeName.getID()] = &mAnimationSets;
+   registerObjectManager<AnimationSet>(AnimationSet::TypeName, &mAnimationSets);
+}
+
 void ResourcesManager::registerSerializableResourceTypes()
 {
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<Mesh>(&mMeshes);
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<Curve>(&mCurves);
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<BezierCurve>(&mBezierCurves);
 }
@@ -56,17 +58,17 @@ void ResourcesManager::loadBuiltInMeshes()
    Sphere cSphere(1.0f, 48, 24);
    Mesh* cBuiltInMesh = Allocator::alloc<Mesh>();
    GEInvokeCtor(Mesh, cBuiltInMesh)(cSphere, ObjectName("Sphere"));
-   add<Mesh>(cBuiltInMesh);
+   SerializableResourcesManager::getInstance()->add<Mesh>(cBuiltInMesh);
 
    Quad cQuad(1.0f);
    cBuiltInMesh = Allocator::alloc<Mesh>();
    GEInvokeCtor(Mesh, cBuiltInMesh)(cQuad, ObjectName("Quad"));
-   add<Mesh>(cBuiltInMesh);
+   SerializableResourcesManager::getInstance()->add<Mesh>(cBuiltInMesh);
 
    Cube cCube(1.0f);
    cBuiltInMesh = Allocator::alloc<Mesh>();
    GEInvokeCtor(Mesh, cBuiltInMesh)(cCube, ObjectName("Cube"));
-   add<Mesh>(cBuiltInMesh);
+   SerializableResourcesManager::getInstance()->add<Mesh>(cBuiltInMesh);
 }
 
 

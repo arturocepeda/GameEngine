@@ -37,6 +37,7 @@ namespace GE { namespace Content
       Core::ObjectManager<Skeleton> mSkeletons;
       Core::ObjectManager<AnimationSet> mAnimationSets;
 
+      void registerSimpleResourceTypes();
       void registerSerializableResourceTypes();
 
       void loadBuiltInMeshes();
@@ -194,28 +195,87 @@ namespace GE { namespace Content
       SerializableResourceManagerObjects* getEntry(const Core::ObjectName& ResourceTypeName);
 
       template<typename T>
-      void loadFromXml(const Core::ObjectName& TypeName, const Core::ObjectName& GroupName,
-         const char* SubDir, const char* FileName, const char* FileExtension)
+      void add(T* pEntry)
       {
+         SerializableResourceManagerObjects* cObjects = getEntry(T::TypeName);
+         (*cObjects->Registry)[pEntry->getName().getID()] = pEntry;
+      }
+
+      template<typename T>
+      T* get(const Core::ObjectName& Name)
+      {
+         SerializableResourceManagerObjects* cObjects = getEntry(T::TypeName);
+         ObjectRegistry::const_iterator it = cObjects->Registry->find(Name.getID());
+
+         if(it != cObjects->Registry->end())
+         {
+            return static_cast<T*>(it->second);
+         }
+
+         return 0;
+      }
+
+      template<typename T>
+      void load(const Core::ObjectName& GroupName)
+      {
+         char extension[32];
+         sprintf(extension, "%s.xml", T::Extension);
+
          ContentData cContentData;
-         Core::Device::readContentFile(ContentType::GenericTextData, SubDir, FileName, FileExtension, &cContentData);
+         Core::Device::readContentFile(ContentType::GenericTextData,
+            T::SubDir, GroupName.getString(), extension, &cContentData);
 
          char sRootNode[32];
-         sprintf(sRootNode, "%sList", TypeName.getString());
+         sprintf(sRootNode, "%sList", T::TypeName.getString());
 
          pugi::xml_document xml;
          xml.load_buffer(cContentData.getData(), cContentData.getDataSize());
          pugi::xml_node xmlEntries = xml.child(sRootNode);
 
          SerializableResourceManagerObjects* cObjects =
-            SerializableResourcesManager::getInstance()->getEntry(TypeName.getString());
+            SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
 
-         for(const pugi::xml_node& xmlEntry : xmlEntries.children(TypeName.getString()))
+         for(const pugi::xml_node& xmlEntry : xmlEntries.children(T::TypeName.getString()))
          {
             T* cInstance = Core::Allocator::alloc<T>();
             GEInvokeCtor(T, cInstance)(xmlEntry.attribute("name").value(), GroupName);
             cInstance->loadFromXml(xmlEntry);
             (*cObjects->Registry)[cInstance->getName().getID()] = cInstance;
+         }
+      }
+
+      template<typename T>
+      void unload(const Core::ObjectName& GroupName)
+      {
+         char extension[32];
+         sprintf(extension, "%s.xml", T::Extension);
+
+         ContentData cContentData;
+         Core::Device::readContentFile(ContentType::GenericTextData,
+            T::SubDir, GroupName.getString(), extension, &cContentData);
+
+         char sRootNode[32];
+         sprintf(sRootNode, "%sList", T::TypeName.getString());
+
+         pugi::xml_document xml;
+         xml.load_buffer(cContentData.getData(), cContentData.getDataSize());
+         pugi::xml_node xmlEntries = xml.child(sRootNode);
+
+         SerializableResourceManagerObjects* cObjects =
+            SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
+
+         for(const pugi::xml_node& xmlEntry : xmlEntries.children(T::TypeName.getString()))
+         {
+            const Core::ObjectName entryName = Core::ObjectName(xmlEntry.attribute("name").value());
+            ObjectRegistry::const_iterator it = cObjects->Registry->find(entryName.getID());
+
+            if(it != cObjects->Registry->end())
+            {
+               T* entry = static_cast<T*>(it->second);
+               GEInvokeDtor(T, entry);
+               Allocator::free(entry);
+               cObjects->Registry->erase(entryName.getID());
+            }
          }
       }
    };
