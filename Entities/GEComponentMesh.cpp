@@ -15,6 +15,7 @@
 #include "Core/GEDevice.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEGeometry.h"
+#include "Core/GELog.h"
 #include "Content/GEResourcesManager.h"
 
 using namespace GE;

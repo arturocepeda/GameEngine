@@ -58,5 +58,7 @@ namespace GE { namespace Content
       const GeometryData& getGeometryData() const;
       bool isSkinned() const;
       VertexBoneAttachment* getVertexBoneAttachment(uint Index);
+
+      uint32_t getVertexCount() const;
    };
 }}

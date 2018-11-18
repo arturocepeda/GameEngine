@@ -38,6 +38,10 @@ Mesh::Mesh(const ObjectName& Name, const ObjectName& GroupName)
    , cSkinningData(0)
 {
    loadFromFile(GroupName.getString(), Name.getString());
+
+#if defined (GE_EDITOR_SUPPORT)
+   GERegisterPropertyReadonly(UInt, VertexCount);
+#endif
 }
 
 Mesh::Mesh(const Primitive& P, const ObjectName& Name)
@@ -45,6 +49,10 @@ Mesh::Mesh(const Primitive& P, const ObjectName& Name)
    , cSkinningData(0)
 {
    loadFromPrimivite(P);
+
+#if defined (GE_EDITOR_SUPPORT)
+   GERegisterPropertyReadonly(UInt, VertexCount);
+#endif
 }
 
 Mesh::~Mesh()
@@ -198,4 +206,9 @@ VertexBoneAttachment* Mesh::getVertexBoneAttachment(uint Index)
 {
    GEAssert(Index < (sGeometryData.NumVertices * BoneAttachmentsPerVertex));
    return &cSkinningData[Index];
+}
+
+uint32_t Mesh::getVertexCount() const
+{
+   return sGeometryData.NumVertices;
 }
