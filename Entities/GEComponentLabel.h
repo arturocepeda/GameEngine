@@ -24,8 +24,9 @@ namespace GE { namespace Entities
       Justify              = 1 << 0,
       VariableReplacement  = 1 << 1,
       RichTextSupport      = 1 << 2,
+      FitSizeToLineWidth   = 1 << 3,
 
-      Count = 3
+      Count = 4
    };
 
 
@@ -52,6 +53,7 @@ namespace GE { namespace Entities
       float fHorizontalSpacing;
       float fVerticalSpacing;
       float fLineWidth;
+      float mFontResizeFactor;
 
       GESTLVector(float) vLineWidths;
       GESTLVector(uint) vLineFeedIndices;

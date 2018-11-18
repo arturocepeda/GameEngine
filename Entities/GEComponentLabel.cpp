@@ -40,6 +40,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    , fHorizontalSpacing(0.0f)
    , fVerticalSpacing(0.0f)
    , fLineWidth(0.0f)
+   , mFontResizeFactor(1.0f)
 {
    cClassName = ObjectName("Label");
 
@@ -159,11 +160,11 @@ void ComponentLabel::evaluateRichTextTag(Pen* pPen)
       {
          if(tagClosing)
          {
-            pPen->mFontSize = fFontSize;
+            pPen->mFontSize = fFontSize * mFontResizeFactor;
          }
          else
          {
-            pPen->mFontSize = (float)strtod(value, 0);
+            pPen->mFontSize = (float)strtod(value, 0) * mFontResizeFactor;
          }
       }
       // charset
@@ -249,6 +250,7 @@ void ComponentLabel::generateVertexData()
 
    const bool bJustifyText = GEHasFlag(eSettings, LabelSettingsBitMask::Justify);
    const bool bRichTextSupport = GEHasFlag(eSettings, LabelSettingsBitMask::RichTextSupport);
+   const bool bFixSizeToLineWidth = GEHasFlag(eSettings, LabelSettingsBitMask::FitSizeToLineWidth);
 
    vLineWidths.clear();
    vLineFeedIndices.clear();
@@ -295,7 +297,10 @@ void ComponentLabel::generateVertexData()
 
       fCurrentLineWidth += fCharWidth;
 
-      if(fLineWidth > GE_EPSILON && fCurrentLineWidth > fLineWidth && iLastSpaceIndex >= 0)
+      if(fLineWidth > GE_EPSILON &&
+         !bFixSizeToLineWidth &&
+         fCurrentLineWidth > fLineWidth &&
+         iLastSpaceIndex >= 0)
       {
          vLineWidths.push_back(fLineWidthAtLastSpace);
          vLineFeedIndices.push_back((uint32_t)iLastSpaceIndex);
@@ -343,6 +348,27 @@ void ComponentLabel::generateVertexData()
    vLineFeedIndices.push_back(iTextLength);
    vLineJustifySpaces.push_back(0);
 
+   mFontResizeFactor = 1.0f;
+
+   if(fLineWidth > GE_EPSILON && bFixSizeToLineWidth)
+   {
+      float maxLineWidth = vLineWidths[0];
+
+      for(size_t i = 1; i < vLineWidths.size(); i++)
+      {
+         if(vLineWidths[i] > maxLineWidth)
+         {
+            maxLineWidth = vLineWidths[i];
+         }
+      }
+
+      if(maxLineWidth > fLineWidth)
+      {
+         mFontResizeFactor = fLineWidth / maxLineWidth;
+         sPen.mFontSize *= mFontResizeFactor;
+      }
+   }
+
    float fPosX;
    float fPosY;
 
@@ -375,7 +401,8 @@ void ComponentLabel::generateVertexData()
       break;
    }
 
-   const float fFontOffsetY = (cFont->getOffsetYMin() + cFont->getOffsetYMax()) * 0.5f * fFontSize * FontSizeScale;
+   const float fFontOffsetY =
+      (cFont->getOffsetYMin() + cFont->getOffsetYMax()) * 0.5f * fFontSize * FontSizeScale * mFontResizeFactor;
    const float fHalfFontOffsetY = fFontOffsetY * 0.5f;
    const float fLineHeight = fFontOffsetY + fVerticalSpacing;
 
@@ -406,7 +433,7 @@ void ComponentLabel::generateVertexData()
    uint32_t iCurrentLineIndex = 0;
 
    sPen.mColor = cColor;
-   sPen.mFontSize = fFontSize;
+   sPen.mFontSize = fFontSize * mFontResizeFactor;
    sPen.mYOffset = 0.0f;
    sPen.mCharSet = mFontCharSetIndex;
    sPen.mCharIndex = 0;

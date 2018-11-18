@@ -149,7 +149,8 @@ namespace GE { namespace Entities
    {
       "Justify",
       "VariableReplacement",
-      "RichTextSupport"
+      "RichTextSupport",
+      "FitSizeToLineWidth"
    };
 
    const char* strScriptSettingsBitMask[] =
