@@ -38,53 +38,56 @@ struct AudioDataStream
 # include "Externals/libogg/include/os_types.h"
 # include "Externals/libvorbis/include/vorbisfile.h"
 
-//
-//  Ogg Vorbis functions
-//
-size_t ovRead(void* pDestination, size_t pSize, size_t pNumMembers, void* pDataSource)
+namespace GE { namespace internal
 {
-   AudioDataStream* stream = static_cast<AudioDataStream*>(pDataSource);
-
-   // calculate number of bytes to read
-   const size_t iBytesToRead = GEMin(pSize * pNumMembers, stream->Size - stream->Cursor);
-
-   // read the data
-   memcpy(pDestination, stream->Data + stream->Cursor, iBytesToRead);
-   stream->Cursor += iBytesToRead;
-
-   return iBytesToRead;
-}
-
-int ovSeek(void* pDataSource, ogg_int64_t pOffset, int pWhence)
-{
-   AudioDataStream* stream = static_cast<AudioDataStream*>(pDataSource);
-
-   switch(pWhence)
+   //
+   //  Ogg Vorbis functions
+   //
+   size_t ovRead(void* pDestination, size_t pSize, size_t pNumMembers, void* pDataSource)
    {
-   case SEEK_SET:
-      stream->Cursor = GEMin((unsigned int)pOffset, stream->Size);
-      break;
+      AudioDataStream* stream = static_cast<AudioDataStream*>(pDataSource);
 
-   case SEEK_CUR:
-      stream->Cursor = GEMin(stream->Cursor + (unsigned int)pOffset, stream->Size);
-      break;
+      // calculate number of bytes to read
+      const size_t iBytesToRead = GEMin(pSize * pNumMembers, stream->Size - stream->Cursor);
 
-   case SEEK_END:
-      stream->Cursor = stream->Size;
-      break;
+      // read the data
+      memcpy(pDestination, stream->Data + stream->Cursor, iBytesToRead);
+      stream->Cursor += iBytesToRead;
 
-   default:
-      return -1;
+      return iBytesToRead;
    }
 
-   return 0;
-}
+   int ovSeek(void* pDataSource, ogg_int64_t pOffset, int pWhence)
+   {
+      AudioDataStream* stream = static_cast<AudioDataStream*>(pDataSource);
 
-long ovTell(void* pDataSource)
-{
-   AudioDataStream* stream = static_cast<AudioDataStream*>(pDataSource);
-   return (long)stream->Cursor;
-}
+      switch(pWhence)
+      {
+      case SEEK_SET:
+         stream->Cursor = GEMin((unsigned int)pOffset, stream->Size);
+         break;
+
+      case SEEK_CUR:
+         stream->Cursor = GEMin(stream->Cursor + (unsigned int)pOffset, stream->Size);
+         break;
+
+      case SEEK_END:
+         stream->Cursor = stream->Size;
+         break;
+
+      default:
+         return -1;
+      }
+
+      return 0;
+   }
+
+   long ovTell(void* pDataSource)
+   {
+      AudioDataStream* stream = static_cast<AudioDataStream*>(pDataSource);
+      return (long)stream->Cursor;
+   }
+}}
 #endif
 
 
@@ -183,9 +186,9 @@ void AudioData::loadOggData(uint32_t Size, const char* Data)
    ov_callbacks ovCallbacks;
 
    // set our functions to handle Vorbis OGG data
-   ovCallbacks.read_func = ovRead;
-   ovCallbacks.seek_func = ovSeek;
-   ovCallbacks.tell_func = ovTell;
+   ovCallbacks.read_func = GE::internal::ovRead;
+   ovCallbacks.seek_func = GE::internal::ovSeek;
+   ovCallbacks.tell_func = GE::internal::ovTell;
    ovCallbacks.close_func = 0;
 
    // attach audio file data with the ovFile struct
