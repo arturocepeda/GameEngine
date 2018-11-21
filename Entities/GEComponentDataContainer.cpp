@@ -80,6 +80,7 @@ void ComponentDataContainer::setVariable(const ObjectName& VariableName, const V
    if(!cVariableToSet)
    {
       cVariableToSet = addDataContainerVariable();
+      cVariableToSet->setName(VariableName);
    }
 
    cVariableToSet->setValue(Val);
