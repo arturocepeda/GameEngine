@@ -884,53 +884,7 @@ void Scene::setupEntity(const pugi::xml_node& xmlEntity, Entity* cEntity)
       {
          addEntity(xmlNode, cEntity);
       }
-      // model (TODO: remove, use prefabs instead!)
-      else if(strcmp(sNodeType, "Model") == 0)
-      {
-         const char* sModelName = xmlNode.attribute("name").value();
-         loadModel(cEntity, sModelName);
-      }
    }
-}
-
-void Scene::loadModel(Entity* cEntity, const char* FileName)
-{
-   ComponentTransform* cTransform = cEntity->getOrAddComponent<ComponentTransform>();
-
-   char sFileName[64];
-   sprintf(sFileName, "%s.model", FileName);
-
-   ContentData cModelData;
-   Device::readContentFile(ContentType::GenericTextData, "Models", sFileName, "xml", &cModelData);
-
-   pugi::xml_document xml;
-   xml.load_buffer(cModelData.getData(), cModelData.getDataSize());
-   const pugi::xml_node& xmlModel = xml.child("Model");
-   uint iSubMeshesCount = 0;
-
-   for(pugi::xml_node_iterator it = xmlModel.begin(); it != xmlModel.end(); it++)
-      iSubMeshesCount++;
-
-   if(iSubMeshesCount > 1)
-   {
-      for(pugi::xml_node_iterator it = xmlModel.begin(); it != xmlModel.end(); it++)
-      {
-         const pugi::xml_node& xmlMesh = *it;
-
-         const char* sMeshName = xmlMesh.attribute("name").value();
-         Entity* cSubMeshEntity = addEntity(sMeshName, cEntity);
-         cSubMeshEntity->addComponent<ComponentTransform>();
-         addMesh(xmlMesh, cSubMeshEntity);
-      }
-   }
-   else
-   {
-      const pugi::xml_node& xmlMesh = *xmlModel.begin();
-      cEntity->getOrAddComponent<ComponentTransform>();
-      addMesh(xmlMesh, cEntity);
-   }
-
-   cTransform->updateWorldMatrix();
 }
 
 void Scene::addMesh(const pugi::xml_node& xmlMesh, Entity* cEntity)

@@ -129,6 +129,5 @@ namespace GE { namespace Entities
       void queueForRendering();
 
       void load(const char* FileName);
-      void loadModel(Entity* cEntity, const char* FileName);
    };
 }}
