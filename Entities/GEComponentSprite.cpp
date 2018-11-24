@@ -347,10 +347,10 @@ bool ComponentSprite::isOver(const Vector2& ScreenPosition) const
       const float fHalfSizeY = vSize.Y * vScale.Y * 0.5f;
 
       return
-         ScreenPosition.X > (vPosition.X - fHalfSizeX) &&
-         ScreenPosition.X < (vPosition.X + fHalfSizeX) &&
-         ScreenPosition.Y > (vPosition.Y - fHalfSizeY) &&
-         ScreenPosition.Y < (vPosition.Y + fHalfSizeY);
+         ScreenPosition.X > (vPosition.X - vCenter.X - fHalfSizeX) &&
+         ScreenPosition.X < (vPosition.X - vCenter.X + fHalfSizeX) &&
+         ScreenPosition.Y > (vPosition.Y - vCenter.Y - fHalfSizeY) &&
+         ScreenPosition.Y < (vPosition.Y - vCenter.Y + fHalfSizeY);
    }
 
    Vector3 vVertices[4];
