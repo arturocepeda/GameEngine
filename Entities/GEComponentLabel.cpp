@@ -40,6 +40,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    , fHorizontalSpacing(0.0f)
    , fVerticalSpacing(0.0f)
    , fLineWidth(0.0f)
+   , mCharacterCountLimit(0u)
    , mFontResizeFactor(1.0f)
 {
    cClassName = ObjectName("Label");
@@ -75,6 +76,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    GERegisterProperty(Float, HorizontalSpacing);
    GERegisterProperty(Float, VerticalSpacing);
    GERegisterProperty(Float, LineWidth);
+   GERegisterProperty(UInt, CharacterCountLimit);
    GERegisterPropertyBitMask(LabelSettingsBitMask, Settings);
    GERegisterProperty(String, Text);
    GERegisterProperty(ObjectName, StringID);
@@ -430,6 +432,7 @@ void ComponentLabel::generateVertexData()
       break;
    }
 
+   uint32_t iCurrentCharIndex = 0;
    uint32_t iCurrentLineIndex = 0;
 
    sPen.mColor = cColor;
@@ -555,6 +558,13 @@ void ComponentLabel::generateVertexData()
          sGeometryData.NumVertices += 4;
       }
 
+      iCurrentCharIndex++;
+
+      if(iCurrentCharIndex == mCharacterCountLimit)
+      {
+         break;
+      }
+
       if(bJustifyText && fLineWidth > GE_EPSILON && vLineJustifySpaces[iCurrentLineIndex] > 0)
       {
          fAdvanceX += (fLineWidth - vLineWidths[iCurrentLineIndex]) / vLineJustifySpaces[iCurrentLineIndex];
@@ -656,6 +666,11 @@ float ComponentLabel::getVerticalSpacing() const
 float ComponentLabel::getLineWidth() const
 {
    return fLineWidth;
+}
+
+uint32_t ComponentLabel::getCharacterCountLimit() const
+{
+   return mCharacterCountLimit;
 }
 
 uint8_t ComponentLabel::getSettings() const
@@ -796,6 +811,16 @@ void ComponentLabel::setVerticalSpacing(float VerticalSpacing)
 void ComponentLabel::setLineWidth(float LineWidth)
 {
    fLineWidth = LineWidth;
+
+   if(!sText.empty())
+   {
+      generateVertexData();
+   }
+}
+
+void ComponentLabel::setCharacterCountLimit(uint32_t Limit)
+{
+   mCharacterCountLimit = Limit;
 
    if(!sText.empty())
    {

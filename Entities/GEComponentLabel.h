@@ -53,6 +53,8 @@ namespace GE { namespace Entities
       float fHorizontalSpacing;
       float fVerticalSpacing;
       float fLineWidth;
+      uint32_t mCharacterCountLimit;
+
       float mFontResizeFactor;
 
       GESTLVector(float) vLineWidths;
@@ -83,6 +85,7 @@ namespace GE { namespace Entities
       float getHorizontalSpacing() const;
       float getVerticalSpacing() const;
       float getLineWidth() const;
+      uint32_t getCharacterCountLimit() const;
       uint8_t getSettings() const;
 
       void setFont(Rendering::Font* TextFont);
@@ -95,6 +98,7 @@ namespace GE { namespace Entities
       void setHorizontalSpacing(float HorizontalSpacing);
       void setVerticalSpacing(float VerticalSpacing);
       void setLineWidth(float LineWidth);
+      void setCharacterCountLimit(uint32_t Limit);
       void setSettings(uint8_t Settings);
    };
 }}
