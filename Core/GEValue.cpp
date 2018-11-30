@@ -181,6 +181,46 @@ Value::Value(ValueType Type, const char* ValueAsString)
    }
 }
 
+ValueType Value::getType() const
+{
+   return eType;
+}
+
+uint Value::getSize() const
+{
+   switch(eType)
+   {
+   case ValueType::Int:
+      return (uint)sizeof(int);
+   case ValueType::UInt:
+      return (uint)sizeof(uint);
+   case ValueType::Float:
+      return (uint)sizeof(float);
+   case ValueType::Bool:
+      return (uint)sizeof(bool);
+   case ValueType::Byte:
+      return (uint)sizeof(byte);
+   case ValueType::Short:
+      return (uint)sizeof(short);
+   case ValueType::String:
+   case ValueType::ObjectName:
+      return (uint)strlen(sBuffer);
+   case ValueType::Vector2:
+      return (uint)sizeof(Vector2);
+   case ValueType::Vector3:
+      return (uint)sizeof(Vector3);
+   case ValueType::Color:
+      return (uint)sizeof(Color);
+   }
+
+   return 0;
+}
+
+const char* Value::getRawData() const
+{
+   return sBuffer;
+}
+
 void Value::setAsInt(int IntValue)
 {
    memcpy(sBuffer, &IntValue, sizeof(int));
@@ -246,46 +286,6 @@ void Value::setAsVector3(const GE::Vector3& Vector3Value)
 void Value::setAsColor(const GE::Color& ColorValue)
 {
    memcpy(sBuffer, &ColorValue, sizeof(GE::Color));
-}
-
-ValueType Value::getType() const
-{
-   return eType;
-}
-
-uint Value::getSize() const
-{
-   switch(eType)
-   {
-   case ValueType::Int:
-      return (uint)sizeof(int);
-   case ValueType::UInt:
-      return (uint)sizeof(uint);
-   case ValueType::Float:
-      return (uint)sizeof(float);
-   case ValueType::Bool:
-      return (uint)sizeof(bool);
-   case ValueType::Byte:
-      return (uint)sizeof(byte);
-   case ValueType::Short:
-      return (uint)sizeof(short);
-   case ValueType::String:
-   case ValueType::ObjectName:
-      return (uint)strlen(sBuffer);
-   case ValueType::Vector2:
-      return (uint)sizeof(Vector2);
-   case ValueType::Vector3:
-      return (uint)sizeof(Vector3);
-   case ValueType::Color:
-      return (uint)sizeof(Color);
-   }
-
-   return 0;
-}
-
-const char* Value::getRawData() const
-{
-   return sBuffer;
 }
 
 int Value::getAsInt() const

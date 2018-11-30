@@ -646,8 +646,18 @@ void ScriptingEnvironment::registerTypes()
       "Value"
       , sol::constructors<sol::types<bool>, sol::types<int>, sol::types<float>, sol::types<const char*>,
          sol::types<Vector2>, sol::types<Vector3>, sol::types<Color>>()
+      , "setAsBool", &Value::setAsBool
+      , "setAsInt", &Value::setAsInt
+      , "setAsUInt", &Value::setAsUInt
+      , "setAsFloat", &Value::setAsFloat
+      , "setAsString", &Value::setAsString
+      , "setAsVector2", &Value::setAsVector2
+      , "setAsVector3", &Value::setAsVector3
+      , "setAsColor", &Value::setAsColor
+      , "setAsObjectName", &Value::setAsObjectName
       , "getAsBool", &Value::getAsBool
       , "getAsInt", &Value::getAsInt
+      , "getAsUInt", &Value::getAsUInt
       , "getAsFloat", &Value::getAsFloat
       , "getAsString", &Value::getAsString
       , "getAsVector2", &Value::getAsVector2
@@ -793,6 +803,7 @@ void ScriptingEnvironment::registerTypes()
    (
       "Scene"
       , "getActiveScene", &Scene::getActiveScene
+      , "getPermanentScene", &Scene::getPermanentScene
       , "getEntity", &Scene::getEntity
       , "addEntity", (Entity* (Scene::*)(const ObjectName&, Entity*))&Scene::addEntity
       , "addPrefab", (Entity* (Scene::*)(const char*, const ObjectName&, Entity*))&Scene::addPrefab

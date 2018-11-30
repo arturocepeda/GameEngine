@@ -53,18 +53,6 @@ namespace GE { namespace Core
 
       Value(ValueType Type);
 
-      void setAsInt(int Val);
-      void setAsUInt(uint Val);
-      void setAsFloat(float Val);
-      void setAsBool(bool Val);
-      void setAsByte(byte Val);
-      void setAsShort(short Val);
-      void setAsString(const char* Val);
-      void setAsObjectName(const ObjectName& Val);
-      void setAsVector2(const GE::Vector2& Val);
-      void setAsVector3(const GE::Vector3& Val);
-      void setAsColor(const GE::Color& Val);
-
    public:
       Value();
 
@@ -86,6 +74,18 @@ namespace GE { namespace Core
       ValueType getType() const;
       uint getSize() const;
       const char* getRawData() const;
+
+      void setAsInt(int Val);
+      void setAsUInt(uint Val);
+      void setAsFloat(float Val);
+      void setAsBool(bool Val);
+      void setAsByte(byte Val);
+      void setAsShort(short Val);
+      void setAsString(const char* Val);
+      void setAsObjectName(const ObjectName& Val);
+      void setAsVector2(const GE::Vector2& Val);
+      void setAsVector3(const GE::Vector3& Val);
+      void setAsColor(const GE::Color& Val);
 
       int getAsInt() const;
       uint getAsUInt() const;
