@@ -807,6 +807,7 @@ void ScriptingEnvironment::registerTypes()
       , "getEntity", &Scene::getEntity
       , "addEntity", (Entity* (Scene::*)(const ObjectName&, Entity*))&Scene::addEntity
       , "addPrefab", (Entity* (Scene::*)(const char*, const ObjectName&, Entity*))&Scene::addPrefab
+      , "cloneEntity", &Scene::cloneEntity
       , "removeEntity", (bool (Scene::*)(const ObjectName&))&Scene::removeEntity
       , "renameEntity", &Scene::renameEntity
       , sol::base_classes, sol::bases<Serializable>()
