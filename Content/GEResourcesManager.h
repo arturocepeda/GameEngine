@@ -205,7 +205,7 @@ namespace GE { namespace Content
       T* get(const Core::ObjectName& Name)
       {
          SerializableResourceManagerObjects* cObjects = getEntry(T::TypeName);
-         ObjectRegistry::const_iterator it = cObjects->Registry->find(Name.getID());
+         Core::ObjectRegistry::const_iterator it = cObjects->Registry->find(Name.getID());
 
          if(it != cObjects->Registry->end())
          {
@@ -267,13 +267,13 @@ namespace GE { namespace Content
          for(const pugi::xml_node& xmlEntry : xmlEntries.children(T::TypeName.getString()))
          {
             const Core::ObjectName entryName = Core::ObjectName(xmlEntry.attribute("name").value());
-            ObjectRegistry::const_iterator it = cObjects->Registry->find(entryName.getID());
+            Core::ObjectRegistry::const_iterator it = cObjects->Registry->find(entryName.getID());
 
             if(it != cObjects->Registry->end())
             {
                T* entry = static_cast<T*>(it->second);
                GEInvokeDtor(T, entry);
-               Allocator::free(entry);
+               Core::Allocator::free(entry);
                cObjects->Registry->erase(entryName.getID());
             }
          }

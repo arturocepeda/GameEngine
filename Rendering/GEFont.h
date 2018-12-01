@@ -44,7 +44,7 @@ namespace GE { namespace Rendering
       FontCharacterSet();
       ~FontCharacterSet();
 
-      void setName(Core::ObjectName& pName) { cName = pName; }
+      void setName(const Core::ObjectName& pName) { cName = pName; }
 
       GEDefaultGetter(float, UOffset)
       GEDefaultGetter(float, VOffset)
