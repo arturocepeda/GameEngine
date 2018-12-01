@@ -28,6 +28,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    : ComponentRenderable(Owner, RenderableType::Sprite)
    , vCenter(0.0f, 0.0f)
    , vSize(1.0f, 1.0f)
+   , mScaledYSize(0.0f)
    , iLayer(SpriteLayer::GUI)
    , eUVMode(UVMode::Normal)
    , eFullScreenSizeMode(FullScreenSizeMode::None)
@@ -48,14 +49,23 @@ ComponentSprite::ComponentSprite(Entity* Owner)
       Serializable* cSerializable = static_cast<Serializable*>(args->Data);
 
       if(cSerializable == this)
+      {
          updateVertexData();
+      }
 
       return false;
    });
    EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
    {
       if(eFullScreenSizeMode != FullScreenSizeMode::None)
+      {
          setFullScreenSizeMode(eFullScreenSizeMode);
+      }
+
+      if(mScaledYSize > GE_EPSILON)
+      {
+         setScaledYSize(mScaledYSize);
+      }
 
       return false;
    });
@@ -63,6 +73,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
 
    GERegisterProperty(Vector2, Center);
    GERegisterProperty(Vector2, Size);
+   GERegisterProperty(Float, ScaledYSize);
    GERegisterPropertyEnum(SpriteLayer, Layer);
    GERegisterPropertyEnum(UVMode, UVMode);
    GERegisterPropertyEnum(FullScreenSizeMode, FullScreenSizeMode);
@@ -85,6 +96,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
       const float fAtlasRatio = (cAtlasEntry->UV.V1 - cAtlasEntry->UV.V0) / (cAtlasEntry->UV.U1 - cAtlasEntry->UV.U0);
       const float fRatio = fTextureRatio * fAtlasRatio;
 
+      mScaledYSize = 0.0f;
       vSize.Y = vSize.X * fRatio;
       bVertexDataDirty = true;
    });
@@ -229,6 +241,11 @@ const Vector2& ComponentSprite::getSize() const
    return vSize;
 }
 
+float ComponentSprite::getScaledYSize() const
+{
+   return mScaledYSize;
+}
+
 SpriteLayer ComponentSprite::getLayer() const
 {
    return iLayer;
@@ -259,6 +276,17 @@ void ComponentSprite::setSize(const Vector2& Size)
 {
    vSize = Size;
    bVertexDataDirty = true;
+}
+
+void ComponentSprite::setScaledYSize(float pSize)
+{
+   mScaledYSize = pSize;
+   
+   if(pSize > GE_EPSILON)
+   {
+      vSize.Y = Device::getAspectRatio() * pSize;
+      bVertexDataDirty = true;
+   }
 }
 
 void ComponentSprite::setLayer(SpriteLayer Layer)

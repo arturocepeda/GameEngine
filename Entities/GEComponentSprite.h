@@ -52,6 +52,7 @@ namespace GE { namespace Entities
    private:
       Vector2 vCenter;
       Vector2 vSize;
+      float mScaledYSize;
       Core::ObjectName cTextureAtlasName;
       SpriteLayer iLayer;
       UVMode eUVMode;
@@ -68,6 +69,7 @@ namespace GE { namespace Entities
 
       const Vector2& getCenter() const;
       const Vector2& getSize() const;
+      float getScaledYSize() const;
       SpriteLayer getLayer() const;
       UVMode getUVMode() const;
       FullScreenSizeMode getFullScreenSizeMode() const;
@@ -75,6 +77,7 @@ namespace GE { namespace Entities
 
       void setCenter(const Vector2& Center);
       void setSize(const Vector2& Size);
+      void setScaledYSize(float pSize);
       void setLayer(SpriteLayer Layer);
       void setUVMode(UVMode Mode);
       void setFullScreenSizeMode(FullScreenSizeMode Mode);
