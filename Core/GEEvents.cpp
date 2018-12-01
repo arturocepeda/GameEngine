@@ -45,9 +45,7 @@ const ObjectName Events::EntityRemoved = ObjectName("EntityRemoved");
 const ObjectName Events::EntityParentChanged = ObjectName("EntityParentChanged");
 
 
-#if defined (GE_EDITOR_SUPPORT)
 //
-//  Development
+//  Localization
 //
 const ObjectName Events::LocalizedStringsReloaded = ObjectName("LocalizedStringsReloaded");
-#endif

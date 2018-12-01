@@ -57,7 +57,6 @@ ComponentLabel::ComponentLabel(Entity* Owner)
       return false;
    });
 
-#if defined (GE_EDITOR_SUPPORT)
    EventHandlingObject::connectStaticEventCallback(Events::LocalizedStringsReloaded, this, [this](const EventArgs* args) -> bool
    {
       if(!cStringID.isEmpty())
@@ -67,7 +66,6 @@ ComponentLabel::ComponentLabel(Entity* Owner)
 
       return false;
    });
-#endif
 
    GERegisterProperty(ObjectName, FontName);
    GERegisterProperty(ObjectName, FontCharacterSet);
@@ -86,9 +84,7 @@ ComponentLabel::~ComponentLabel()
 {
    cOwner->disconnectEventCallback(Events::RenderableColorChanged, this);
 
-#if defined (GE_EDITOR_SUPPORT)
    EventHandlingObject::disconnectStaticEventCallback(Events::LocalizedStringsReloaded, this);
-#endif
 }
 
 void ComponentLabel::evaluateRichTextTag(Pen* pPen)
@@ -354,13 +350,18 @@ void ComponentLabel::generateVertexData()
 
    if(fLineWidth > GE_EPSILON && bFixSizeToLineWidth)
    {
-      float maxLineWidth = vLineWidths[0];
+      float maxLineWidth = 0.0f;
 
-      for(size_t i = 1; i < vLineWidths.size(); i++)
+      for(size_t i = 0; i < vLineWidths.size(); i++)
       {
          if(vLineWidths[i] > maxLineWidth)
          {
             maxLineWidth = vLineWidths[i];
+         }
+
+         if(vLineWidths[i] > fLineWidth)
+         {
+            vLineWidths[i] = fLineWidth;
          }
       }
 
