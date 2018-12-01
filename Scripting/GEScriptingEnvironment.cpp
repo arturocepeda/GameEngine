@@ -901,9 +901,11 @@ void ScriptingEnvironment::registerTypes()
       "ComponentSprite"
       , "isOver", &ComponentSprite::isOver
       , "getTextureAtlasName", &ComponentSprite::getTextureAtlasName
-      , "setTextureAtlasName", &ComponentSprite::setTextureAtlasName
       , "getSize", &ComponentSprite::getSize
+      , "getScaledYSize", &ComponentSprite::getScaledYSize
+      , "setTextureAtlasName", &ComponentSprite::setTextureAtlasName
       , "setSize", &ComponentSprite::setSize
+      , "setScaledYSize", &ComponentSprite::setScaledYSize
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
    lua.new_simple_usertype<ComponentLabel>
@@ -949,6 +951,15 @@ void ScriptingEnvironment::registerTypes()
       , "getAlpha", &ComponentUIElement::getAlpha
       , "setAlpha", &ComponentUIElement::setAlpha
       , sol::base_classes, sol::bases<Component, Serializable>()
+   );
+   lua.new_simple_usertype<ComponentUI2DElement>
+   (
+      "ComponentUI2DElement"
+      , "getOffset", &ComponentUI2DElement::getOffset
+      , "getScaledYOffset", &ComponentUI2DElement::getScaledYOffset
+      , "setOffset", &ComponentUI2DElement::setOffset
+      , "setScaledYOffset", &ComponentUI2DElement::setScaledYOffset
+      , sol::base_classes, sol::bases<ComponentUIElement, Component, Serializable>()
    );
    lua.new_simple_usertype<ComponentUI3DElement>
    (
