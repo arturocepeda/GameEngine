@@ -830,6 +830,7 @@ void ScriptingEnvironment::registerTypes()
       , "addComponentUI2DElement", &Entity::addComponent<ComponentUI2DElement>
       , "addComponentUI3DElement", &Entity::addComponent<ComponentUI3DElement>
       , "addComponentSkeleton", &Entity::addComponent<ComponentSkeleton>
+      , "addComponentDataContainer", &Entity::addComponent<ComponentDataContainer>
       , "addComponentScript", &Entity::addComponent<ComponentScript>
       , "getComponentTransform", &Entity::getComponent<ComponentTransform>
       , "getComponentRenderable", &Entity::getComponent<ComponentRenderable>

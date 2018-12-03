@@ -375,6 +375,9 @@ void ScriptInstance::setScriptProperty(const ObjectName& pName, const Value& pVa
    case ValueType::Bool:
       cEnv->setVariable<bool>(pName, pValue.getAsBool());
       break;
+   case ValueType::UInt:
+      cEnv->setVariable<uint32_t>(pName, pValue.getAsUInt());
+      break;
    case ValueType::Int:
       cEnv->setVariable<int>(pName, pValue.getAsInt());
       break;
