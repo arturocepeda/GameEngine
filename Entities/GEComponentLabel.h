@@ -53,6 +53,7 @@ namespace GE { namespace Entities
       float fHorizontalSpacing;
       float fVerticalSpacing;
       float fLineWidth;
+      uint32_t mTextLength;
       uint32_t mCharacterCountLimit;
 
       float mFontResizeFactor;
@@ -85,6 +86,7 @@ namespace GE { namespace Entities
       float getHorizontalSpacing() const;
       float getVerticalSpacing() const;
       float getLineWidth() const;
+      uint32_t getTextLength() const;
       uint32_t getCharacterCountLimit() const;
       uint8_t getSettings() const;
 

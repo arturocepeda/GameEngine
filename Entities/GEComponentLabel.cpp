@@ -40,6 +40,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    , fHorizontalSpacing(0.0f)
    , fVerticalSpacing(0.0f)
    , fLineWidth(0.0f)
+   , mTextLength(0u)
    , mCharacterCountLimit(0u)
    , mFontResizeFactor(1.0f)
 {
@@ -78,6 +79,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    GERegisterPropertyBitMask(LabelSettingsBitMask, Settings);
    GERegisterProperty(String, Text);
    GERegisterProperty(ObjectName, StringID);
+   GERegisterPropertyReadonly(UInt, TextLength);
 }
 
 ComponentLabel::~ComponentLabel()
@@ -234,6 +236,8 @@ void ComponentLabel::processVariables()
 
 void ComponentLabel::generateVertexData()
 {
+   mTextLength = 0u;
+
    if(!cFont)
       return;
 
@@ -586,6 +590,8 @@ void ComponentLabel::generateVertexData()
       sGeometryData.VertexData = 0;
       sGeometryData.Indices = 0;
    }
+
+   mTextLength = iCurrentCharIndex;
 }
 
 float ComponentLabel::measureCharacter(const Pen& pPen)
@@ -677,6 +683,11 @@ uint32_t ComponentLabel::getCharacterCountLimit() const
 uint8_t ComponentLabel::getSettings() const
 {
    return eSettings;
+}
+
+uint32_t ComponentLabel::getTextLength() const
+{
+   return mTextLength;
 }
 
 void ComponentLabel::setFont(Font* TextFont)
