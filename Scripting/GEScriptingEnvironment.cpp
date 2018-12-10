@@ -644,9 +644,11 @@ void ScriptingEnvironment::registerTypes()
    lua.new_simple_usertype<Value>
    (
       "Value"
-      , sol::constructors<sol::types<bool>, sol::types<int>, sol::types<float>, sol::types<const char*>,
-         sol::types<Vector2>, sol::types<Vector3>, sol::types<Color>>()
+      , sol::constructors<sol::types<bool>, sol::types<uint8_t>, sol::types<int>, sol::types<uint32_t>,
+         sol::types<float>, sol::types<const char*>,
+         sol::types<Vector2>, sol::types<Vector3>, sol::types<Color>, sol::types<const ObjectName&>>()
       , "setAsBool", &Value::setAsBool
+      , "setAsByte", &Value::setAsByte
       , "setAsInt", &Value::setAsInt
       , "setAsUInt", &Value::setAsUInt
       , "setAsFloat", &Value::setAsFloat
@@ -656,6 +658,7 @@ void ScriptingEnvironment::registerTypes()
       , "setAsColor", &Value::setAsColor
       , "setAsObjectName", &Value::setAsObjectName
       , "getAsBool", &Value::getAsBool
+      , "getAsByte", &Value::getAsByte
       , "getAsInt", &Value::getAsInt
       , "getAsUInt", &Value::getAsUInt
       , "getAsFloat", &Value::getAsFloat
