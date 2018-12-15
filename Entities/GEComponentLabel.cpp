@@ -30,8 +30,10 @@ using namespace GE::Content;
 const float FontSizeScale = 0.0001f;
 const unsigned char LineFeedChar = '~';
 
+const ObjectName ComponentLabel::ClassName = ObjectName("Label");
+
 ComponentLabel::ComponentLabel(Entity* Owner)
-   : ComponentRenderable(Owner, RenderableType::Label)
+   : ComponentRenderable(Owner)
    , cFont(0)
    , mFontCharSetIndex(0)
    , fFontSize(12.0f)
@@ -44,7 +46,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    , mCharacterCountLimit(0u)
    , mFontResizeFactor(1.0f)
 {
-   cClassName = ObjectName("Label");
+   mClassNames.push_back(ClassName);
 
    sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
 

@@ -25,18 +25,18 @@ using namespace GE::Content;
 //
 //  ComponentRenderable
 //
-ushort ComponentRenderable::QuadIndices[6] = { 0, 1, 2, 3, 2, 1 };
+const ushort ComponentRenderable::QuadIndices[6] = { 0, 1, 2, 3, 2, 1 };
+const ObjectName ComponentRenderable::ClassName = ObjectName("Renderable");
 
-ComponentRenderable::ComponentRenderable(Entity* Owner, RenderableType RType)
+ComponentRenderable::ComponentRenderable(Entity* Owner)
    : Component(Owner)
-   , iRenderableType(RType)
    , eGeometryType(GeometryType::Dynamic)
    , eRenderingMode(RenderingMode::_2D)
    , iRenderPriority(128)
    , cColor(1.0f, 1.0f, 1.0f)
    , iInternalFlags((uint8_t)InternalFlags::Visible)
 {
-   cClassName = ObjectName("Renderable");
+   mClassNames.push_back(ClassName);
 
    cTransform = cOwner->getComponent<ComponentTransform>();
    GEAssert(cTransform);
@@ -62,11 +62,6 @@ void ComponentRenderable::show()
 void ComponentRenderable::hide()
 {
    GEResetFlag(iInternalFlags, InternalFlags::Visible);
-}
-
-RenderableType ComponentRenderable::getRenderableType() const
-{
-   return iRenderableType;
 }
 
 GeometryType ComponentRenderable::getGeometryType() const

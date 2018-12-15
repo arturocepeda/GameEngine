@@ -241,6 +241,8 @@ namespace GE { namespace Entities
       static Vector3 getRandomPointInTriangle(const Vector3& P1, const Vector3& P2, const Vector3& P3);
 
    public:
+      static const Core::ObjectName ClassName;
+
       ComponentParticleSystem(Entity* Owner);
       ~ComponentParticleSystem();
 

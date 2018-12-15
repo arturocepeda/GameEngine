@@ -670,6 +670,7 @@ void ScriptingEnvironment::registerTypes()
    lua.new_simple_usertype<Serializable>
    (
       "Serializable"
+      , "is", &Serializable::is
       , "get", &Serializable::get
       , "set", &Serializable::set
       , "executeAction", &Serializable::executeAction

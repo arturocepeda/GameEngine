@@ -672,7 +672,7 @@ void Scene::queueUpdateJobs()
    {
       ComponentRenderable* cRenderable = static_cast<ComponentRenderable*>(vRenderables[i]);
 
-      if(cRenderable->getVisible() && cRenderable->getRenderableType() == RenderableType::ParticleSystem)
+      if(cRenderable->getVisible() && cRenderable->getClassName() == ComponentParticleSystem::ClassName)
       {
          ComponentParticleSystem* cParticleSystem = static_cast<ComponentParticleSystem*>(cRenderable);
 #if defined (GE_SCENE_JOBIFIED_UPDATE)
@@ -776,7 +776,7 @@ void Scene::update()
    {
       ComponentRenderable* cRenderable = static_cast<ComponentRenderable*>(vRenderables[i]);
 
-      if(cRenderable->getVisible() && cRenderable->getRenderableType() == RenderableType::Sprite)
+      if(cRenderable->getVisible() && cRenderable->getClassName() == ComponentSprite::ClassName)
       {
          ComponentSprite* cSprite = static_cast<ComponentSprite*>(cRenderable);
          cSprite->update();

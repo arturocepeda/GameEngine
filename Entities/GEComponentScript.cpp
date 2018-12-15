@@ -593,7 +593,7 @@ bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 ComponentScript::ComponentScript(Entity* Owner)
    : Component(Owner)
 {
-   cClassName = ObjectName("Script");
+   mClassNames.push_back(ObjectName("Script"));
 
    GERegisterPropertyArray(ScriptInstance);
 

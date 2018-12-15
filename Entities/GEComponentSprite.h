@@ -62,6 +62,8 @@ namespace GE { namespace Entities
       void updateVertexData();
 
    public:
+      static const Core::ObjectName ClassName;
+
       ComponentSprite(Entity* Owner);
       ~ComponentSprite();
 

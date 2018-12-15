@@ -29,14 +29,6 @@ using namespace GE::Content;
 using namespace GE::Entities;
 using namespace GE::Rendering;
 
-const GLenum glIndexTypes[(uint)RenderableType::Count] =
-{
-   GL_UNSIGNED_INT,     // Mesh
-   GL_UNSIGNED_SHORT,   // Sprite
-   GL_UNSIGNED_SHORT,   // Label
-   GL_UNSIGNED_INT,     // ParticleSystem
-};
-
 // buffers
 void* iCurrentVertexBuffer = 0;
 void* iCurrentIndexBuffer = 0;
@@ -51,6 +43,10 @@ Texture* cDepthTexture = 0;
 
 // shaders
 ShaderProgramES20* cActiveProgram = 0;
+
+const ObjectName _Mesh_ = ObjectName("Mesh");
+const ObjectName _Label_ = ObjectName("Label");
+const ObjectName _ParticleSystem_ = ObjectName("ParticleSystem");
 
 RenderSystemES20::RenderSystemES20()
    : RenderSystem(nullptr, false, Device::getTouchPadWidth(), Device::getTouchPadHeight())
@@ -605,7 +601,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       : mat2DViewProjection;
    glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::ViewProjectionMatrix), 1, 0, mViewProjection.m);
 
-   if(cRenderable->getRenderableType() == RenderableType::ParticleSystem)
+   if(cRenderable->getClassName() == _ParticleSystem_)
    {
       matModelViewProjection = mViewProjection;
 
@@ -623,7 +619,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
       glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::WorldMatrix), 1, 0, matModel.m);
 
-      if(cRenderable->getRenderableType() == RenderableType::Mesh)
+      if(cRenderable->getClassName() == _Mesh_)
       {
          cMesh = static_cast<ComponentMesh*>(cRenderable);
          calculate3DInverseTransposeMatrix(matModel);
@@ -655,7 +651,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseColor), 1, &cDiffuseColor.Red);
    glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::SpecularColor), 1, &cMaterial->getSpecularColor().Red);
 
-   if(cRenderable->getRenderableType() == RenderableType::Mesh)
+   if(cRenderable->getClassName() == _Mesh_)
    {
       if(vLightsToRender.empty())
       {
@@ -677,7 +673,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       }
    }
 
-   if(cRenderable->getRenderableType() == RenderableType::Label)
+   if(cRenderable->getClassName() == _Label_)
    {
       bindTexture(TextureSlot::Diffuse, static_cast<ComponentLabel*>(cRenderable)->getFont()->getTexture());
       glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), (uint)TextureSlot::Diffuse);
@@ -695,10 +691,14 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    }
 
    if(cMaterialPass->hasVertexParameters())
+   {
       glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::VertexParameters), 1, 0, (const GLfloat*)cMaterialPass->getConstantBufferDataVertex());
+   }
 
    if(cMaterialPass->hasFragmentParameters())
+   {
       glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::FragmentParameters), 1, 0, (const GLfloat*)cMaterialPass->getConstantBufferDataFragment());
+   }
 
    // bind buffers and get index offset
    GESTLMap(uint, GeometryRenderInfo)* mGeometryToRenderMap = cRenderable->getGeometryType() == GeometryType::Static
@@ -714,7 +714,9 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    static_cast<RenderSystemES20*>(this)->setVertexDeclaration(sRenderOperation);
 
    // draw
-   GLenum glIndexType = glIndexTypes[(uint)cRenderable->getRenderableType()];
+   const GLenum glIndexType = cRenderable->getClassName() == _Mesh_ || cRenderable->getClassName() == _ParticleSystem_
+      ? GL_UNSIGNED_INT
+      : GL_UNSIGNED_SHORT;
    glDrawElements(GL_TRIANGLES, sRenderOperation.Data.NumIndices, glIndexType, pOffset);
    iDrawCalls++;
 }

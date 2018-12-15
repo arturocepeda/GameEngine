@@ -21,8 +21,8 @@ using namespace GE::Core;
 //  Serializable
 //
 Serializable::Serializable(const ObjectName& ClassName)
-   : cClassName(ClassName)
 {
+   mClassNames.push_back(ClassName);
 }
 
 Serializable::~Serializable()
@@ -41,7 +41,7 @@ Property* Serializable::registerProperty(const ObjectName& PropertyName, ValueTy
       Getter,
       Setter,
 #if defined (GE_EDITOR_SUPPORT)
-      cClassName,
+      mClassNames.back(),
       Editor,
       Getter(),
       Flags,
@@ -94,11 +94,6 @@ void Serializable::removeAction(uint ActionIndex)
 {
    GEAssert(ActionIndex < (uint)vActions.size());
    vActions.erase(vActions.begin() + ActionIndex);
-}
-
-const ObjectName& Serializable::getClassName() const
-{
-   return cClassName;
 }
 
 uint Serializable::getPropertiesCount() const
@@ -154,6 +149,19 @@ const Action& Serializable::getAction(uint ActionIndex) const
 {
    GEAssert(ActionIndex < (uint)vActions.size());
    return vActions[ActionIndex];
+}
+
+bool Serializable::is(const ObjectName& ClassName) const
+{
+   for(int i = (int)mClassNames.size() - 1; i >= 0; i--)
+   {
+      if(mClassNames[i] == ClassName)
+      {
+         return true;
+      }
+   }
+
+   return false;
 }
 
 Value Serializable::get(const ObjectName& PropertyName)

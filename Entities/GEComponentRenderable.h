@@ -21,18 +21,6 @@ namespace GE { namespace Entities
 {
    using namespace Rendering;
 
-
-   enum class RenderableType
-   {
-      Mesh,
-      Sprite,
-      Label,
-      ParticleSystem,
-
-      Count
-   };
-
-
    class ComponentRenderable : public Component
    {
    public:
@@ -43,9 +31,8 @@ namespace GE { namespace Entities
       };
 
    protected:
-      static ushort QuadIndices[6];
+      static const ushort QuadIndices[6];
 
-      RenderableType iRenderableType;
       GeometryType eGeometryType;
       RenderingMode eRenderingMode;
       uint8_t iRenderPriority;
@@ -56,16 +43,17 @@ namespace GE { namespace Entities
 
       uint8_t iInternalFlags;
 
-      ComponentRenderable(Entity* Owner, RenderableType RType);
+      ComponentRenderable(Entity* Owner);
       ~ComponentRenderable();
 
    public:
+      static const Core::ObjectName ClassName;
+
       static ComponentType getType() { return ComponentType::Renderable; }
 
       void show();
       void hide();
     
-      RenderableType getRenderableType() const;
       GeometryType getGeometryType() const;
       RenderingMode getRenderingMode() const;
       uint8_t getRenderPriority() const;

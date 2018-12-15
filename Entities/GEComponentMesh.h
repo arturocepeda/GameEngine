@@ -38,6 +38,8 @@ namespace GE { namespace Entities
       ComponentSkeleton* cSkeleton;
 
    public:
+      static const Core::ObjectName ClassName;
+
       ComponentMesh(Entity* Owner);
       ~ComponentMesh();
 

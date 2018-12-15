@@ -29,7 +29,7 @@ ComponentCollider::ComponentCollider(Entity* Owner, ColliderType Type)
    , eColliderType(Type)
    , iCollisionGroup(0)
 {
-   cClassName = ObjectName("Collider");
+   mClassNames.push_back(ObjectName("Collider"));
 
    GERegisterProperty(UInt, CollisionGroup);
 }
@@ -61,7 +61,7 @@ ComponentColliderSphere::ComponentColliderSphere(Entity* Owner)
    : ComponentCollider(Owner, ColliderType::Sphere)
    , fRadius(1.0f)
 {
-   cClassName = ObjectName("ColliderSphere");
+   mClassNames.push_back(ObjectName("ColliderSphere"));
 
    GERegisterProperty(Float, Radius);
 }
@@ -120,7 +120,7 @@ ComponentColliderCapsule::ComponentColliderCapsule(Entity* Owner)
    , fRadius(0.0f)
    , fHeight(0.0f)
 {
-   cClassName = ObjectName("ColliderCapsule");
+   mClassNames.push_back(ObjectName("ColliderCapsule"));
 
    GERegisterProperty(Float, Radius);
    GERegisterProperty(Float, Height);
@@ -163,7 +163,7 @@ ComponentColliderMesh::ComponentColliderMesh(Entity* Owner)
    : ComponentCollider(Owner, ColliderType::Mesh)
    , cMesh(0)
 {
-   cClassName = ObjectName("ColliderMesh");
+   mClassNames.push_back(ObjectName("ColliderMesh"));
 
    GERegisterProperty(ObjectName, MeshName);
 }

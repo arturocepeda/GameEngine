@@ -38,7 +38,7 @@ ComponentSkeleton::ComponentSkeleton(Entity* Owner)
    , fDefaultBlendingTime(0.0f)
    , fAnimationSpeedFactor(1.0f)
 {
-   cClassName = ObjectName("Skeleton");
+   mClassNames.push_back(ObjectName("Skeleton"));
 
    GERegisterProperty(ObjectName, SkeletonName);
    GERegisterProperty(ObjectName, AnimationSetName);
@@ -196,24 +196,28 @@ void ComponentSkeleton::updateSkinnedMeshes()
 {
    ComponentRenderable* cRenderable = cOwner->getComponent<ComponentRenderable>();
 
-   if(cRenderable && cRenderable->getRenderableType() == RenderableType::Mesh)
+   if(cRenderable && cRenderable->getClassName() == ComponentMesh::ClassName)
    {
       ComponentMesh* cMesh = static_cast<ComponentMesh*>(cRenderable);
 
       if(cMesh->getMesh()->isSkinned())
+      {
          cMesh->updateSkinning();
+      }
    }
 
    for(uint i = 0; i < cOwner->getChildrenCount(); i++)
    {
       cRenderable = cOwner->getChildByIndex(i)->getComponent<ComponentRenderable>();
 
-      if(cRenderable && cRenderable->getRenderableType() == RenderableType::Mesh)
+      if(cRenderable && cRenderable->getClassName() == ComponentMesh::ClassName)
       {
          ComponentMesh* cMesh = static_cast<ComponentMesh*>(cRenderable);
 
          if(cMesh->getMesh()->isSkinned())
+         {
             cMesh->updateSkinning();
+         }
       }
    }
 }

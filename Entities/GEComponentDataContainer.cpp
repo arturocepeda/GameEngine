@@ -21,7 +21,7 @@ using namespace GE::Core;
 ComponentDataContainer::ComponentDataContainer(Entity* Owner)
    : Component(Owner)
 {
-   cClassName = ObjectName("DataContainer");
+   mClassNames.push_back(ObjectName("DataContainer"));
 
    GERegisterPropertyArray(DataContainerVariable);
 }

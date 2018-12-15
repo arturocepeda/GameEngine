@@ -28,7 +28,7 @@ ComponentLight::ComponentLight(Entity* Owner)
    , fSpotAngle(1.0f)
    , fShadowIntensity(0.0f)
 {
-   cClassName = ObjectName("Light");
+   mClassNames.push_back(ObjectName("Light"));
 
    cTransform = cOwner->getComponent<ComponentTransform>();
 

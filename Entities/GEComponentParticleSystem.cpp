@@ -50,8 +50,10 @@ const ObjectName ParticleEmissionName = ObjectName("ParticleEmission");
 const ObjectName ParticleSizeName = ObjectName("ParticleSize");
 const ObjectName ParticleVelocityName = ObjectName("ParticleVelocity");
 
+const ObjectName ComponentParticleSystem::ClassName = ObjectName("ParticleSystem");
+
 ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
-   : ComponentRenderable(Owner, RenderableType::ParticleSystem)
+   : ComponentRenderable(Owner)
    , iMaxParticles(256)
    , bVertexDataReallocationPending(true)
    , fElapsedTimeSinceLastEmission(0.0f)
@@ -69,7 +71,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , fParticleInitialAngleMax(0.0f)
    , fParticleSizeMultiplier(1.0f)
 {
-   cClassName = ObjectName("ParticleSystem");
+   mClassNames.push_back(ClassName);
 
    GERegisterProperty(UInt, MaxParticles);
    GERegisterPropertyReadonly(UInt, ParticlesCount);

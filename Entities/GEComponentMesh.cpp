@@ -28,14 +28,16 @@ using namespace GE::Rendering;
 //
 //  ComponentMesh
 //
+const ObjectName ComponentMesh::ClassName = ObjectName("Mesh");
+
 ComponentMesh::ComponentMesh(Entity* Owner)
-   : ComponentRenderable(Owner, RenderableType::Mesh)
+   : ComponentRenderable(Owner)
    , cMesh(0)
    , eDynamicShadows(0)
    , eSettings(0)
    , cSkeleton(0)
 {
-   cClassName = ObjectName("Mesh");
+   mClassNames.push_back(ClassName);
 
    eRenderingMode = RenderingMode::_3D;
 

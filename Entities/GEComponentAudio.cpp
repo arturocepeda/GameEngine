@@ -38,7 +38,7 @@ ComponentAudioListener::ComponentAudioListener(Entity* pOwner)
    : ComponentAudio(pOwner)
    , mActive(true)
 {
-   cClassName = ObjectName("AudioListener");
+   mClassNames.push_back(ObjectName("AudioListener"));
 
    GERegisterProperty(Bool, Active);
 }
@@ -71,7 +71,7 @@ const ObjectName StopAllAudioEventsName = ObjectName("StopAllAudioEvents");
 ComponentAudioSource::ComponentAudioSource(Entity* pOwner)
    : ComponentAudio(pOwner)
 {
-   cClassName = ObjectName("AudioSource");
+   mClassNames.push_back(ObjectName("AudioSource"));
 
    GERegisterProperty(ObjectName, AudioBankName);
    GERegisterProperty(ObjectName, AudioEventName);
@@ -168,7 +168,7 @@ ComponentAudioSource2D::ComponentAudioSource2D(Entity* pOwner)
    : ComponentAudioSource(pOwner)
    , mVolume(1.0f)
 {
-   cClassName = ObjectName("AudioSource2D");
+   mClassNames.push_back(ObjectName("AudioSource2D"));
 
    GERegisterProperty(Float, Volume);
 }
@@ -207,7 +207,7 @@ ComponentAudioSource3D::ComponentAudioSource3D(Entity* pOwner)
    , mMinDistance(2.0f)
    , mMaxDistance(20.0f)
 {
-   cClassName = ObjectName("AudioSource3D");
+   mClassNames.push_back(ObjectName("AudioSource3D"));
 
    GERegisterProperty(Float, MinDistance);
    GERegisterProperty(Float, MaxDistance);

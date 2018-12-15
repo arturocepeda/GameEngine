@@ -24,8 +24,10 @@ using namespace GE::Rendering;
 //
 //  ComponentSprite
 //
+const ObjectName ComponentSprite::ClassName = ObjectName("Sprite");
+
 ComponentSprite::ComponentSprite(Entity* Owner)
-   : ComponentRenderable(Owner, RenderableType::Sprite)
+   : ComponentRenderable(Owner)
    , vCenter(0.0f, 0.0f)
    , vSize(1.0f, 1.0f)
    , mScaledYSize(0.0f)
@@ -34,14 +36,14 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    , eFullScreenSizeMode(FullScreenSizeMode::None)
    , bVertexDataDirty(true)
 {
-   cClassName = ObjectName("Sprite");
+   mClassNames.push_back(ClassName);
 
    sGeometryData.NumVertices = 4;
    sGeometryData.VertexStride = (3 + 2) * sizeof(float);
    sGeometryData.VertexData = Allocator::alloc<float>(sGeometryData.VertexStride * sGeometryData.NumVertices);
 
    sGeometryData.NumIndices = 6;
-   sGeometryData.Indices = QuadIndices;
+   sGeometryData.Indices = const_cast<ushort*>(QuadIndices);
 
 #if defined (GE_EDITOR_SUPPORT)
    EventHandlingObject::connectStaticEventCallback(Events::PropertiesUpdated, this, [this](const EventArgs* args) -> bool

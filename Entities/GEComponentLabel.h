@@ -73,6 +73,8 @@ namespace GE { namespace Entities
       float getKerning(const Pen& pPen);
 
    public:
+      static const Core::ObjectName ClassName;
+
       ComponentLabel(Entity* Owner);
       ~ComponentLabel();
 

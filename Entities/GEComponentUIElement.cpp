@@ -22,12 +22,13 @@ using namespace GE::Entities;
 //
 //  ComponentUIElement
 //
+const ObjectName ComponentUIElement::ClassName = ObjectName("UIElement");
+
 ComponentUIElement::ComponentUIElement(Entity* Owner)
    : Component(Owner)
    , fAlpha(1.0f)
-   , eUIElementType(UIElementType::_2D)
 {
-   cClassName = ObjectName("UIElement");
+   mClassNames.push_back(ClassName);
 
    GEAssert(cOwner->getComponent<ComponentTransform>());
 
@@ -36,11 +37,6 @@ ComponentUIElement::ComponentUIElement(Entity* Owner)
 
 ComponentUIElement::~ComponentUIElement()
 {
-}
-
-UIElementType ComponentUIElement::getUIElementType() const
-{
-   return eUIElementType;
 }
 
 float ComponentUIElement::getAlpha() const
@@ -75,14 +71,15 @@ void ComponentUIElement::setAlpha(float Alpha)
 //
 //  ComponentUI2DElement
 //
+const ObjectName ComponentUI2DElement::ClassName = ObjectName("UI2DElement");
+
 ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
    : ComponentUIElement(Owner)
    , eAnchor(Alignment::None)
    , vOffset(Vector2::Zero)
    , fScaledYOffset(0.0f)
 {
-   cClassName = ObjectName("UI2DElement");
-   eUIElementType = UIElementType::_2D;
+   mClassNames.push_back(ClassName);
 
 #if defined (GE_EDITOR_SUPPORT)
    EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
@@ -189,12 +186,13 @@ void ComponentUI2DElement::setScaledYOffset(float Offset)
 //
 //  ComponentUI3DElement
 //
+const ObjectName ComponentUI3DElement::ClassName = ObjectName("UI3DElement");
+
 ComponentUI3DElement::ComponentUI3DElement(Entity* Owner)
    : ComponentUIElement(Owner)
    , iCanvasIndex(0)
 {
-   cClassName = ObjectName("UI3DElement");
-   eUIElementType = UIElementType::_3D;
+   mClassNames.push_back(ClassName);
 
    Entity* cParent = cOwner->getParent();
 
@@ -202,9 +200,7 @@ ComponentUI3DElement::ComponentUI3DElement(Entity* Owner)
    {
       ComponentUIElement* cUIElement = cParent->getComponent<ComponentUIElement>();
 
-      if(cUIElement &&
-         (cUIElement->getUIElementType() == UIElementType::_3D ||
-         cUIElement->getUIElementType() == UIElementType::_3DCanvas))
+      if(cUIElement && cUIElement->is(ComponentUI3DElement::ClassName))
       {
          iCanvasIndex = static_cast<ComponentUI3DElement*>(cUIElement)->getCanvasIndex();
       }
@@ -230,7 +226,7 @@ void ComponentUI3DElement::setCanvasIndex(uint8_t Index)
    {
       ComponentUIElement* cUIElement = cOwner->getChildByIndex(i)->getComponent<ComponentUIElement>();
 
-      if(cUIElement && cUIElement->getUIElementType() != UIElementType::_2D)
+      if(cUIElement && cUIElement->is(ComponentUI3DElement::ClassName))
       {
          static_cast<ComponentUI3DElement*>(cUIElement)->setCanvasIndex(Index);
       }
@@ -241,12 +237,13 @@ void ComponentUI3DElement::setCanvasIndex(uint8_t Index)
 //
 //  ComponentUI3DCanvas
 //
+const ObjectName ComponentUI3DCanvas::ClassName = ObjectName("UI3DCanvas");
+
 ComponentUI3DCanvas::ComponentUI3DCanvas(Entity* Owner)
    : ComponentUI3DElement(Owner)
    , eSettings(0)
 {
-   cClassName = ObjectName("UI3DCanvas");
-   eUIElementType = UIElementType::_3DCanvas;
+   mClassNames.push_back(ClassName);
 
    GERegisterPropertyBitMask(CanvasSettingsBitMask, Settings);
 }

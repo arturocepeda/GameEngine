@@ -16,28 +16,20 @@
 
 namespace GE { namespace Entities
 {
-   enum class UIElementType : unsigned char
-   {
-      _2D,
-      _3D,
-      _3DCanvas
-   };
-
-
    class ComponentUIElement : public Component
    {
    protected:
       float fAlpha;
-      UIElementType eUIElementType;
 
       ComponentUIElement(Entity* Owner);
 
    public:
+      static const Core::ObjectName ClassName;
+
       static ComponentType getType() { return ComponentType::UIElement; }
 
       virtual ~ComponentUIElement();
 
-      UIElementType getUIElementType() const;
       float getAlpha() const;
       float getAlphaInHierarchy() const;
 
@@ -55,6 +47,8 @@ namespace GE { namespace Entities
       void updateTransformPosition();
 
    public:
+      static const Core::ObjectName ClassName;
+
       ComponentUI2DElement(Entity* Owner);
       virtual ~ComponentUI2DElement();
 
@@ -75,6 +69,7 @@ namespace GE { namespace Entities
 
    public:
       static const uint32_t CanvasCount = 32;
+      static const Core::ObjectName ClassName;
 
       ComponentUI3DElement(Entity* Owner);
       virtual ~ComponentUI3DElement();
@@ -98,6 +93,8 @@ namespace GE { namespace Entities
       uint8_t eSettings;
 
    public:
+      static const Core::ObjectName ClassName;
+
       ComponentUI3DCanvas(Entity* Owner);
       virtual ~ComponentUI3DCanvas();
 

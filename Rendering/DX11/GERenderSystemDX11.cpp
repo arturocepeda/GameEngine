@@ -69,7 +69,11 @@ ShaderConstantsTransform sShaderConstantsTransform;
 ShaderConstantsMaterial sShaderConstantsMaterial;
 ShaderConstantsLighting sShaderConstantsLighting;
 
-RenderTextureDX11* cShadowMap;
+RenderTextureDX11* cShadowMap = 0;
+
+const ObjectName _Mesh_ = ObjectName("Mesh");
+const ObjectName _Label_ = ObjectName("Label");
+const ObjectName _ParticleSystem_ = ObjectName("ParticleSystem");
 
 #if defined(GE_PLATFORM_WP8)
 RenderSystemDX11::RenderSystemDX11(Windows::UI::Core::CoreWindow^ window)
@@ -872,7 +876,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
    if(cRenderable)
    {
-      if(cRenderable->getRenderableType() != RenderableType::ParticleSystem)
+      if(cRenderable->getClassName() != _ParticleSystem_)
       {
          // get model matrix from the renderable
          ComponentTransform* cTransform = cRenderable->getTransform();
@@ -897,7 +901,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
          }
 
          // if the renderable is a 3D mesh, calculate the inverse transpose matrix
-         if(cRenderable->getRenderableType() == RenderableType::Mesh)
+         if(cRenderable->getClassName() == _Mesh_)
          {
             cMesh = static_cast<ComponentMesh*>(cRenderable);
             calculate3DInverseTransposeMatrix(matModel);
@@ -935,7 +939,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       dxContext->UpdateSubresource(dxConstantBufferFragmentParameters, 0, NULL, cMaterialPass->getConstantBufferDataFragment(), 0, 0);
 
    // bind diffuse texture
-   if(cRenderable->getRenderableType() == RenderableType::Label)
+   if(cRenderable->getClassName() == _Label_)
    {
       bindTexture(TextureSlot::Diffuse, static_cast<ComponentLabel*>(cRenderable)->getFont()->getTexture());
    }

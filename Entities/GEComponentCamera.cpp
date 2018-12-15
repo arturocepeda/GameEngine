@@ -33,7 +33,7 @@ ComponentCamera::ComponentCamera(Entity* Owner)
    , fNearZ(DefaultNearZ)
    , fFarZ(DefaultFarZ)
 {
-   cClassName = ObjectName("Camera");
+   mClassNames.push_back(ObjectName("Camera"));
    cTransform = cOwner->getComponent<ComponentTransform>();
    calculateProjectionMatrix();
 

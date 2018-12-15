@@ -105,7 +105,7 @@ namespace GE { namespace Core
       ActionsList vActions;
 
    protected:
-      ObjectName cClassName;
+      GESTLVector(ObjectName) mClassNames;
 
       Serializable(const ObjectName& ClassName);
       virtual ~Serializable();
@@ -125,7 +125,7 @@ namespace GE { namespace Core
       void removeAction(uint ActionIndex);
 
    public:
-      const ObjectName& getClassName() const;
+      inline const ObjectName& getClassName() const { return mClassNames.back(); }
 
       uint getPropertiesCount() const;
       const Property& getProperty(uint PropertyIndex) const;
@@ -137,6 +137,8 @@ namespace GE { namespace Core
 
       uint getActionsCount() const;
       const Action& getAction(uint ActionIndex) const;
+
+      bool is(const ObjectName& ClassName) const;
 
       Value get(const ObjectName& PropertyName);
       void set(const ObjectName& PropertyName, const Value& PropertyValue);

@@ -27,7 +27,7 @@ ComponentTransform::ComponentTransform(Entity* Owner)
    , vForward(Vector3::UnitZ)
    , vUp(Vector3::UnitY)
 {
-   cClassName = ObjectName("Transform");
+   mClassNames.push_back(ObjectName("Transform"));
 
    updateWorldMatrix();
 
