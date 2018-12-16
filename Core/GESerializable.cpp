@@ -214,7 +214,7 @@ void Serializable::executeAction(const ObjectName& ActionName)
 
 void Serializable::copy(Serializable* cSource)
 {
-   GEAssert(cSource->cClassName == cClassName);
+   GEAssert(cSource->is(getClassName()));
 
    for(uint i = 0; i < cSource->getPropertyArraysCount(); i++)
    {
