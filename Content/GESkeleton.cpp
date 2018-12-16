@@ -115,7 +115,7 @@ Skeleton::Skeleton(const char* FileName)
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      Device::readContentFile(Content::ContentType::GenericTextData, "Models", FileName, "skeleton.xml", &cSkeletonData);
+      Device::readContentFile(Content::ContentType::GenericTextData, "Meshes", FileName, "skeleton.xml", &cSkeletonData);
 
       pugi::xml_document xml;
       xml.load_buffer(cSkeletonData.getData(), cSkeletonData.getDataSize());
@@ -160,7 +160,7 @@ Skeleton::Skeleton(const char* FileName)
    }
    else
    {
-      Device::readContentFile(Content::ContentType::GenericBinaryData, "Models", FileName, "skeleton.ge", &cSkeletonData);
+      Device::readContentFile(Content::ContentType::GenericBinaryData, "Meshes", FileName, "skeleton.ge", &cSkeletonData);
       ContentDataMemoryBuffer sMemoryBuffer(cSkeletonData);
       std::istream sStream(&sMemoryBuffer);
 
