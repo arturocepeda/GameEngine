@@ -690,6 +690,7 @@ void ScriptingEnvironment::registerTypes()
       , "animate", &PropertyInterpolator<float>::animate
       , "alternate", &PropertyInterpolator<float>::alternate
       , "update", &PropertyInterpolator<float>::update
+      , "getActive", &PropertyInterpolator<float>::getActive
    );
    lua.new_simple_usertype<PropertyInterpolator<Vector2>>
    (
@@ -698,6 +699,7 @@ void ScriptingEnvironment::registerTypes()
       , "animate", &PropertyInterpolator<Vector2>::animate
       , "alternate", &PropertyInterpolator<Vector2>::alternate
       , "update", &PropertyInterpolator<Vector2>::update
+      , "getActive", &PropertyInterpolator<Vector2>::getActive
    );
    lua.new_simple_usertype<PropertyInterpolator<Vector3>>
    (
@@ -706,6 +708,7 @@ void ScriptingEnvironment::registerTypes()
       , "animate", &PropertyInterpolator<Vector3>::animate
       , "alternate", &PropertyInterpolator<Vector3>::alternate
       , "update", &PropertyInterpolator<Vector3>::update
+      , "getActive", &PropertyInterpolator<Vector3>::getActive
    );
    lua.new_simple_usertype<PropertyInterpolator<Color>>
    (
@@ -714,6 +717,7 @@ void ScriptingEnvironment::registerTypes()
       , "animate", &PropertyInterpolator<Color>::animate
       , "alternate", &PropertyInterpolator<Color>::alternate
       , "update", &PropertyInterpolator<Color>::update
+      , "getActive", &PropertyInterpolator<Color>::getActive
    );
    lua.new_simple_usertype<CurveKey>
    (
@@ -750,6 +754,7 @@ void ScriptingEnvironment::registerTypes()
       , "animate", &CurvePropertyInterpolator::animate
       , "animateInverse", &CurvePropertyInterpolator::animateInverse
       , "update", &CurvePropertyInterpolator::update
+      , "getActive", &CurvePropertyInterpolator::getActive
    );
    lua.new_simple_usertype<BezierCurve>
    (
@@ -763,6 +768,7 @@ void ScriptingEnvironment::registerTypes()
       , "animate", &BezierPropertyInterpolator::animate
       , "animateInverse", &BezierPropertyInterpolator::animateInverse
       , "update", &BezierPropertyInterpolator::update
+      , "getActive", &BezierPropertyInterpolator::getActive
    );
    lua.new_simple_usertype<Physics::Ray>
    (
