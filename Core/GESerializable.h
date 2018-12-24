@@ -175,10 +175,12 @@ namespace GE { namespace Core
 //
 //  Definition of default getters and setters
 //
-#define GEDefaultGetter(PropertyCppType, PropertyName) \
-   inline PropertyCppType get##PropertyName() const { return m##PropertyName; }
-#define GEDefaultSetter(PropertyCppType, PropertyName) \
-   inline void set##PropertyName(PropertyCppType Value) { m##PropertyName = Value; }
+#define GEDefaultGetter(PropertyCppType, PropertyName, MemberPrefix) \
+   inline PropertyCppType get##PropertyName() const { return MemberPrefix##PropertyName; }
+#define GEDefaultSetter(PropertyCppType, PropertyName, MemberPrefix) \
+   inline void set##PropertyName(PropertyCppType Value) { MemberPrefix##PropertyName = Value; }
+#define GEDefaultSetterString(PropertyCppType, PropertyName, MemberPrefix) \
+   inline void set##PropertyName(PropertyCppType Value) { strcpy(MemberPrefix##PropertyName, Value); }
 
 
 //

@@ -46,15 +46,15 @@ namespace GE { namespace Rendering
 
       void setName(const Core::ObjectName& pName) { cName = pName; }
 
-      GEDefaultGetter(float, UOffset)
-      GEDefaultGetter(float, VOffset)
-      GEDefaultGetter(float, UScale)
-      GEDefaultGetter(float, VScale)
+      GEDefaultGetter(float, UOffset, m)
+      GEDefaultGetter(float, VOffset, m)
+      GEDefaultGetter(float, UScale, m)
+      GEDefaultGetter(float, VScale, m)
 
-      GEDefaultSetter(float, UOffset)
-      GEDefaultSetter(float, VOffset)
-      GEDefaultSetter(float, UScale)
-      GEDefaultSetter(float, VScale)
+      GEDefaultSetter(float, UOffset, m)
+      GEDefaultSetter(float, VOffset, m)
+      GEDefaultSetter(float, UScale, m)
+      GEDefaultSetter(float, VScale, m)
    };
 
 

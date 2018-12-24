@@ -510,11 +510,8 @@ void ComponentLabel::generateVertexData()
       {
          fPosX += getKerning(sPen);
 
-         const float fGlyphWidth = sGlyph.Width * fCharacterSize;
-         const float fGlyphHeight = sGlyph.Height * fCharacterSize;
-
-         const float fHalfGlyphWidth = fGlyphWidth * 0.5f;
-         const float fHalfGlyphHeight = fGlyphHeight * 0.5f;
+         const float fHalfGlyphWidth = (sGlyph.Width * fCharacterSize) * 0.5f;
+         const float fHalfGlyphHeight = (sGlyph.Height * fCharacterSize) * 0.5f;
          const float fHalfGlyphOffsetX = (sGlyph.OffsetX * fCharacterSize) * 0.5f;
          const float fHalfGlyphOffsetY = (sGlyph.OffsetY * fCharacterSize) * 0.5f;
          const float fHalfAdvanceX = fAdvanceX * 0.5f;

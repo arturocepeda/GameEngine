@@ -28,8 +28,8 @@ namespace GE { namespace Audio
       AudioEventEntry();
       ~AudioEventEntry();
 
-      GEDefaultGetter(const Core::ObjectName&, EventName)
-      GEDefaultSetter(const Core::ObjectName&, EventName)
+      GEDefaultGetter(const Core::ObjectName&, EventName, m)
+      GEDefaultSetter(const Core::ObjectName&, EventName, m)
    };
 
 
@@ -54,8 +54,8 @@ namespace GE { namespace Audio
       void load(Core::ObjectManager<AudioEvent>& pAudioEventManager);
       void unload();
 
-      GEDefaultGetter(bool, Loaded)
-      GEDefaultGetter(const GESTLVector(Core::ObjectName)&, AudioFileNames)
+      GEDefaultGetter(bool, Loaded, m)
+      GEDefaultGetter(const GESTLVector(Core::ObjectName)&, AudioFileNames, m)
 
       AudioEvent* getAudioEvent(const Core::ObjectName& pAudioEventName);
    };

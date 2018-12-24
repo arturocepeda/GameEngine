@@ -26,8 +26,8 @@ namespace GE { namespace Audio
       AudioFileEntry();
       ~AudioFileEntry();
 
-      GEDefaultGetter(const Core::ObjectName&, FileName)
-      GEDefaultSetter(const Core::ObjectName&, FileName)
+      GEDefaultGetter(const Core::ObjectName&, FileName, m)
+      GEDefaultSetter(const Core::ObjectName&, FileName, m)
    };
 
 
@@ -55,13 +55,13 @@ namespace GE { namespace Audio
       AudioEvent(const Core::ObjectName& pName, const Core::ObjectName& pGroupName);
       ~AudioEvent();
 
-      GEDefaultGetter(AudioEventPlayMode, PlayMode)
-      GEDefaultGetter(float, FadeInTime)
-      GEDefaultGetter(float, FadeOutTime)
+      GEDefaultGetter(AudioEventPlayMode, PlayMode, m)
+      GEDefaultGetter(float, FadeInTime, m)
+      GEDefaultGetter(float, FadeOutTime, m)
 
-      GEDefaultSetter(AudioEventPlayMode, PlayMode)
-      GEDefaultSetter(float, FadeInTime)
-      GEDefaultSetter(float, FadeOutTime)
+      GEDefaultSetter(AudioEventPlayMode, PlayMode, m)
+      GEDefaultSetter(float, FadeInTime, m)
+      GEDefaultSetter(float, FadeOutTime, m)
 
       GEPropertyArray(AudioFileEntry, AudioFile)
    };
