@@ -18,7 +18,8 @@
 
 namespace GE { namespace Scripting
 {
-   class ScriptingEnvironment;
+   class Namespace;
+   class Environment;
 }}
 
 namespace GE { namespace Entities
@@ -36,15 +37,17 @@ namespace GE { namespace Entities
    class ScriptInstance : public Core::SerializableArrayElement
    {
    private:
-      Scripting::ScriptingEnvironment* cEnv;
-      Core::ObjectName cScriptName;
-      uint8_t eScriptSettings;
+      Core::ObjectName mNamespaceName;
+      Scripting::Namespace* mNamespace;
+      Core::ObjectName mScriptName;
+      uint8_t mScriptSettings;
 
-      uint iBasePropertiesCount;
-      uint iBaseActionsCount;
+      uint mBasePropertiesCount;
+      uint mBaseActionsCount;
 
-      bool bInitialized;
+      bool mInitialized;
 
+#if defined (GE_EDITOR_SUPPORT)
       struct CachedPropertyValue
       {
          Core::ObjectName PropertyName;
@@ -52,11 +55,8 @@ namespace GE { namespace Entities
 
          CachedPropertyValue() : PropertyValue(0) {}
       };
-      GESTLVector(CachedPropertyValue) vInstancePropertyValues;
-
-#if defined (GE_EDITOR_SUPPORT)
-      GESTLVector(CachedPropertyValue) vCachedPropertyValues;
-      uint iDebugBreakpointLine;
+      GESTLVector(CachedPropertyValue) mCachedPropertyValues;
+      uint mDebugBreakpointLine;
 #endif
 
       void registerScriptProperties();
@@ -65,37 +65,34 @@ namespace GE { namespace Entities
       void setScriptProperty(const Core::ObjectName& pName, const Core::Value& pValue);
       Core::Value getScriptProperty(const Core::ObjectName& pName, Core::ValueType pType);
 
-      void updateEnvironmentContext();
-      void updateInstancePropertyValues();
-
       void cachePropertyValues();
 
    public:
       ScriptInstance();
       ~ScriptInstance();
 
-      void setScriptName(const Core::ObjectName& Name);
+      void setScriptName(const Core::ObjectName& pName);
       const Core::ObjectName& getScriptName() const;
 
-      void setScriptSettings(uint8_t BitMask);
+      void setScriptSettings(uint8_t pBitMask);
       uint8_t getScriptSettings() const;
 
 #if defined (GE_EDITOR_SUPPORT)
-      void setDebugBreakpointLine(uint Line);
+      void setDebugBreakpointLine(uint pLine);
       uint getDebugBreakpointLine() const;
 #endif
 
-      void setActive(bool Value);
+      void setActive(bool pValue);
       bool getActive() const;
       bool getThreadSafe() const;
 
       void update();
 
-      bool inputMouse(const Vector2& Point);
+      bool inputMouse(const Vector2& pPoint);
 
-      bool inputTouchBegin(int ID, const Vector2& Point);
-      bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint);
-      bool inputTouchEnd(int ID, const Vector2& Point);
+      bool inputTouchBegin(int pID, const Vector2& pPoint);
+      bool inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint);
+      bool inputTouchEnd(int pID, const Vector2& pPoint);
    };
 
 

@@ -54,260 +54,409 @@ using namespace GE::Audio;
 using namespace GE::Input;
 
 
+GESTLSet(uint32_t) gPredefinedGlobalSymbols;
+
+
 //
-//  ScriptingEnvironment
+//  Namespace
+//
+Namespace::Namespace()
+   : mState(0)
+   , mParent(0)
+{
+}
+
+Namespace::Namespace(State* pState, const char* pName)
+   : mName(pName)
+   , mState(pState)
+   , mParent(0)
+{
+}
+
+Namespace::~Namespace()
+{
+}
+
+void Namespace::load(Namespace* pParent)
+{
+   mParent = pParent;
+   mTable = pParent ? pParent->mTable[mName.c_str()] : mState->globals();
+
+   collectSymbols();
+}
+
+void Namespace::unload()
+{
+   mTable = sol::nil;
+   mParent = 0;
+}
+
+Namespace* Namespace::addNamespace(const ObjectName& pName)
+{
+    mTable.create(pName.getString());
+
+    mNamespaces[pName.getID()] = Namespace(mState, pName.getString());
+    Namespace* ns = &mNamespaces.find(pName.getID())->second;
+    ns->load(this);
+
+    return ns;
+}
+
+Namespace* Namespace::addNamespaceFromModule(const ObjectName& pName, const char* pModuleName)
+{
+   ContentData contentData;
+
+   if(!Environment::loadModuleContent(&contentData, pModuleName))
+      return 0;
+
+   const uint32_t codeSize = Application::ContentType == ApplicationContentType::Xml
+      ? contentData.getDataSize() - 1
+      : contentData.getDataSize();
+
+   sol::load_result loadFunction = mState->load_buffer(contentData.getData(), codeSize, pModuleName);
+
+   if(loadFunction.valid())
+   {
+      mTable[pName.getString()] = loadFunction();
+   }
+
+   mNamespaces[pName.getID()] = Namespace(mState, pName.getString());
+   Namespace* ns = &mNamespaces.find(pName.getID())->second;
+   ns->load(this);
+
+   return ns;
+}
+
+Namespace* Namespace::getNamespace(const ObjectName& pName)
+{
+   GESTLMap(uint32_t, Namespace)::iterator it = mNamespaces.find(pName.getID());
+   return it != mNamespaces.end() ? &it->second : 0;
+}
+
+void Namespace::removeNamespace(const ObjectName& pName)
+{
+   GESTLMap(uint32_t, Namespace)::iterator it = mNamespaces.find(pName.getID());
+
+   if(it != mNamespaces.end())
+   {
+      mTable[pName.getString()] = sol::nil;
+      mNamespaces.erase(it);
+   }
+}
+
+ValueType Namespace::getVariableType(const ObjectName& pVariableName) const
+{
+   lua_State* luaState = mState->lua_state();
+   sol::object variableRef = mTable[pVariableName.getString()];
+   variableRef.push();
+
+   ValueType valueType = ValueType::Count;
+   bool userDataType = false;
+   const int index = lua_gettop(luaState);
+
+   if(lua_isboolean(luaState, index))
+      valueType = ValueType::Bool;
+   else if(lua_isinteger(luaState, index))
+      valueType = ValueType::Int;
+   else if(lua_isnumber(luaState, index))
+      valueType = ValueType::Float;
+   else if(lua_isstring(luaState, index))
+      valueType = ValueType::String;
+   else if(lua_isuserdata(luaState, index))
+      userDataType = true;
+   
+   lua_pop(luaState, 1);
+
+   if(userDataType)
+   {
+      if(variableRef.is<Vector3>())
+         valueType = ValueType::Vector3;
+      else if(variableRef.is<Vector2>())
+         valueType = ValueType::Vector2;
+      else if(variableRef.is<Color>())
+         valueType = ValueType::Color;
+   }
+
+   return valueType;
+}
+
+bool Namespace::isFunctionDefined(const ObjectName& pFunctionName) const
+{
+   return mFunctions.find(pFunctionName.getID()) != mFunctions.end();
+}
+
+uint32_t Namespace::getFunctionParametersCount(const ObjectName& FunctionName) const
+{
+   lua_State* luaState = mState->lua_state();
+   lua_Debug luaDebug;
+
+   Function function = mTable[FunctionName.getString()];
+   function.push();
+
+   lua_getinfo(luaState, ">u", &luaDebug);
+
+   lua_pop(luaState, 1);
+
+   return (uint32_t)luaDebug.nparams;
+}
+
+bool Namespace::alphabeticalComparison(const ObjectName& pL, const ObjectName& pR)
+{
+   return strcmp(pL.getString(), pR.getString()) < 0;
+}
+
+void Namespace::collectSymbols()
+{
+   GEProfilerMarker("Namespace::collectSymbols()");
+
+   mGlobalVariableNames.clear();
+   mGlobalFunctionNames.clear();
+   mFunctions.clear();
+   mNamespaces.clear();
+
+   GESTLVector(ObjectName) tableNames;
+
+   lua_State* luaState = mState->lua_state();
+
+   mTable.push();
+   lua_pushnil(luaState);
+
+   while(lua_next(luaState, -2))
+   {
+      if(lua_type(luaState, -2) == LUA_TSTRING)
+      {
+         const char* symbolString = lua_tostring(luaState, -2);
+         const ObjectName symbolName = ObjectName(symbolString);
+
+         if(gPredefinedGlobalSymbols.find(symbolName.getID()) == gPredefinedGlobalSymbols.end())
+         {         
+            const int stackTop = lua_gettop(luaState);
+
+            if(lua_istable(luaState, stackTop))
+            {
+               tableNames.push_back(symbolName);
+            }
+            else if(lua_isfunction(luaState, stackTop))
+            {
+               mGlobalFunctionNames.push_back(symbolName);
+               mFunctions[symbolName.getID()] = mTable[symbolString];
+            }
+            else
+            {
+               mGlobalVariableNames.push_back(symbolName);
+            }
+         }
+      }
+
+      lua_pop(luaState, 1);
+   }
+
+   lua_pop(luaState, 1);
+
+   if(!tableNames.empty())
+   {
+      for(size_t i = 0; i < tableNames.size(); i++)
+      {
+         const ObjectName& tableName = tableNames[i];
+         mNamespaces[tableName.getID()] = Namespace(mState, tableName.getString());
+         Namespace* ns = &mNamespaces.find(tableName.getID())->second;
+         ns->load(this);
+      }
+   }
+
+#if defined (GE_EDITOR_SUPPORT)
+   std::sort(mGlobalVariableNames.begin(), mGlobalVariableNames.end(), alphabeticalComparison);
+   std::sort(mGlobalFunctionNames.begin(), mGlobalFunctionNames.end(), alphabeticalComparison);
+#endif
+}
+
+
+
+//
+//  Environment
 //
 const size_t MemoryPoolSize = 16 * 1024 * 1024;
 
-void* ScriptingEnvironment::pAllocatorBuffer = 0;
-tlsf_t ScriptingEnvironment::pAllocator = 0;
+void* Environment::smAllocatorBuffer = 0;
+tlsf_t Environment::smAllocator = 0;
 GEMutex mAllocatorMutex;
 
-GESTLSet(uint) ScriptingEnvironment::sPredefinedGlobalSymbols;
-GESTLVector(ScriptingEnvironment::registerTypesExtension) ScriptingEnvironment::vRegisterTypesExtensions;
+GESTLVector(Environment::registerTypesExtension) Environment::smRegisterTypesExtensions;
 
-GESTLMap(uint32_t, ScriptingEnvironment::SharedEnvironment) ScriptingEnvironment::mSharedEnvironments;
-
-ScriptingEnvironment::ScriptingEnvironment()
-   : bReset(true)
+Environment::Environment()
+   : mLua(sol::default_at_panic, customAlloc)
+   , mGlobalNamespace(&mLua, "_G")
 #if defined (GE_EDITOR_SUPPORT)
-   , iDebugBreakpointLine(0)
-   , bDebuggerActive(false)
+   , mDebugBreakpointLine(0)
+   , mDebuggerActive(false)
 #endif
 {
-   GEMutexInit(mAccessMutex);
-
-   lua.open_libraries();
+   mLua.open_libraries();
    registerTypes();
 }
 
-ScriptingEnvironment::~ScriptingEnvironment()
+Environment::~Environment()
 {
-   GEMutexDestroy(mAccessMutex);
 }
 
-void ScriptingEnvironment::initStaticData()
+void Environment::initStaticData()
 {
-   GEAssert(!pAllocatorBuffer);
-   GEAssert(!pAllocator);
+   GEAssert(!smAllocatorBuffer);
+   GEAssert(!smAllocator);
 
    // initialize allocator
-   pAllocatorBuffer = Allocator::alloc<char>(MemoryPoolSize, AllocationCategory::Scripting);
-   pAllocator = tlsf_create_with_pool(pAllocatorBuffer, MemoryPoolSize);
+   smAllocatorBuffer = Allocator::alloc<char>(MemoryPoolSize, AllocationCategory::Scripting);
+   smAllocator = tlsf_create_with_pool(smAllocatorBuffer, MemoryPoolSize);
    GEMutexInit(mAllocatorMutex);
 
    // collect predefined global symbols
    collectPredefinedGlobalSymbols();
 }
 
-void ScriptingEnvironment::releaseStaticData()
+void Environment::releaseStaticData()
 {
    // clear predefined global symbols
-   sPredefinedGlobalSymbols.clear();
+   gPredefinedGlobalSymbols.clear();
 
    // release allocator
    GEMutexDestroy(mAllocatorMutex);
-   tlsf_destroy(pAllocator);
-   pAllocator = 0;
-   Allocator::free(pAllocatorBuffer);
-   pAllocatorBuffer = 0;
+   tlsf_destroy(smAllocator);
+   smAllocator = 0;
+   Allocator::free(smAllocatorBuffer);
+   smAllocatorBuffer = 0;
 }
 
-void ScriptingEnvironment::addRegisterTypesExtension(registerTypesExtension Extension)
+void Environment::addRegisterTypesExtension(registerTypesExtension pExtension)
 {
-   vRegisterTypesExtensions.push_back(Extension);
-   collectPredefinedGlobalSymbols();
+   smRegisterTypesExtensions.push_back(pExtension);
 }
 
-ScriptingEnvironment* ScriptingEnvironment::requestSharedEnvironment(const Core::ObjectName& Name)
+bool Environment::loadModuleContent(ContentData* pContentData, const char* pModuleName)
 {
-   ScriptingEnvironment* env = 0;
-
-   GESTLMap(uint32_t, SharedEnvironment)::iterator it = mSharedEnvironments.find(Name.getID());
-
-   if(it == mSharedEnvironments.end())
+   if(Application::ContentType == ApplicationContentType::Xml)
    {
-      env = Allocator::alloc<ScriptingEnvironment>();
-      GEInvokeCtor(ScriptingEnvironment, env)();
+      if(!Device::contentFileExists("Scripts", pModuleName, "lua"))
+         return false;
 
-      SharedEnvironment sharedEnv;
-      sharedEnv.Env = env;
-      sharedEnv.Refs = 1;
-
-      std::pair<uint32_t, SharedEnvironment> sharedEnvironmentPair;
-      sharedEnvironmentPair.first = Name.getID();
-      sharedEnvironmentPair.second = sharedEnv;
-
-      mSharedEnvironments.insert(sharedEnvironmentPair);
+      Device::readContentFile(ContentType::GenericTextData, "Scripts", pModuleName, "lua", pContentData);
    }
    else
    {
-      env = it->second.Env;
-      it->second.Refs++;
-   }
+#if defined (GE_64_BIT)
+      char sFileNamex64[64];
+      sprintf(sFileNamex64, "x64_%s", pModuleName);
 
-   return env;
-}
+      if(!Device::contentFileExists("Scripts", sFileNamex64, "luabc"))
+         return false;
 
-void ScriptingEnvironment::leaveSharedEnvironment(const Core::ObjectName& Name)
-{
-   GESTLMap(uint32_t, SharedEnvironment)::iterator it = mSharedEnvironments.find(Name.getID());
+      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sFileNamex64, "luabc", pContentData);
+#else
+      if(!Device::contentFileExists("Scripts", pModuleName, "luabc"))
+         return false;
 
-   if(it != mSharedEnvironments.end())
-   {
-      it->second.Refs--;
-
-      if(it->second.Refs == 0)
-      {
-         GEInvokeDtor(ScriptingEnvironment, it->second.Env);
-         Allocator::free(it->second.Env);
-
-         mSharedEnvironments.erase(it);
-      }
-   }
-}
-
-void ScriptingEnvironment::handleScriptError(const char* ScriptName, const char* Msg)
-{
-   if(Msg)
-   {
-      Log::log(LogType::Error, "Lua error (the '%s' script could not be loaded): %s", ScriptName, Msg);
-   }
-   else
-   {
-      Log::log(LogType::Error, "Lua error (the '%s' script could not be loaded)", ScriptName);
-   }
-}
-
-void ScriptingEnvironment::handleFunctionError(const char* FunctionName, const char* Msg)
-{
-   if(Msg)
-   {
-      Log::log(LogType::Error, "Lua error ('%s' function): %s", FunctionName, Msg);
-   }
-   else
-   {
-      Log::log(LogType::Error, "Lua error ('%s' function)", FunctionName);
-   }
-}
-
-void ScriptingEnvironment::reset()
-{
-   if(bReset)
-      return;
-
-   GEProfilerMarker("ScriptingEnvironment::reset()");
-
-   vGlobalVariableNames.clear();
-   vGlobalFunctionNames.clear();
-   mFunctions.clear();
-
-   lua = sol::state(sol::default_at_panic, customAlloc);
-   lua.open_libraries();
-   registerTypes();
-
-   bReset = true;
-}
-
-void ScriptingEnvironment::collectGarbage()
-{
-   lua.collect_garbage();
-}
-
-void ScriptingEnvironment::loadFromCode(const GESTLString& Code)
-{
-   lua.script(Code.c_str());
-   collectGlobalSymbols();
-   bReset = false;
-}
-
-bool ScriptingEnvironment::loadFromFile(const char* FileName)
-{
-   GEProfilerMarker("ScriptingEnvironment::loadFromFile()");
-
-   sol::table returnValue;
-
-   if(!loadModule(FileName, &returnValue))
-      return false;
-
-#if defined (GE_EDITOR_SUPPORT)
-   loadModule("_ed_debug", &returnValue);
+      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", pModuleName, "luabc", pContentData);
 #endif
-
-   collectGlobalSymbols();
-   bReset = false;
+   }
 
    return true;
 }
 
-ValueType ScriptingEnvironment::getVariableType(const ObjectName& VariableName) const
+bool Environment::loadModule(State* pState, const char* pModuleName, Table* pOutReturnValue)
 {
-   lua_State* luaState = lua.lua_state();
-   lua_getglobal(luaState, VariableName.getString());
+   GEProfilerMarker("Environment::loadModule()");
 
-   ValueType eValueType = ValueType::Count;
-   bool bUserDataType = false;
-   int iIndex = lua_gettop(luaState);
+   ContentData contentData;
 
-   if(lua_isboolean(luaState, iIndex))
-      eValueType = ValueType::Bool;
-   else if(lua_isinteger(luaState, iIndex))
-      eValueType = ValueType::Int;
-   else if(lua_isnumber(luaState, iIndex))
-      eValueType = ValueType::Float;
-   else if(lua_isstring(luaState, iIndex))
-      eValueType = ValueType::String;
-   else if(lua_isuserdata(luaState, iIndex))
-      bUserDataType = true;
-   
-   lua_pop(luaState, 1);
+   if(!loadModuleContent(&contentData, pModuleName))
+      return false;
 
-   if(bUserDataType)
+   const uint32_t codeSize = Application::ContentType == ApplicationContentType::Xml
+      ? contentData.getDataSize() - 1
+      : contentData.getDataSize();
+
+   sol::load_result loadFunction = pState->load_buffer(contentData.getData(), codeSize, pModuleName);
+
+   if(!loadFunction.valid())
    {
-      const sol::object& cVariableRef = lua[VariableName.getString()];
-
-      if(cVariableRef.is<Vector3>())
-         eValueType = ValueType::Vector3;
-      else if(cVariableRef.is<Vector2>())
-         eValueType = ValueType::Vector2;
-      else if(cVariableRef.is<Color>())
-         eValueType = ValueType::Color;
+      sol::error luaError = loadFunction;
+      handleScriptError(pModuleName, luaError.what());
+      return false;
    }
 
-   return eValueType;
+   *pOutReturnValue = loadFunction();
+
+   return true;
 }
 
-bool ScriptingEnvironment::isFunctionDefined(const ObjectName& FunctionName) const
+void Environment::handleScriptError(const char* pScriptName, const char* pMsg)
 {
-   return mFunctions.find(FunctionName.getID()) != mFunctions.end();
+   if(pMsg)
+   {
+      Log::log(LogType::Error, "Lua error (the '%s' script could not be loaded): %s", pScriptName, pMsg);
+   }
+   else
+   {
+      Log::log(LogType::Error, "Lua error (the '%s' script could not be loaded)", pScriptName);
+   }
 }
 
-uint ScriptingEnvironment::getFunctionParametersCount(const ObjectName& FunctionName) const
+void Environment::handleFunctionError(const char* pFunctionName, const char* pMsg)
 {
-   lua_State* luaState = lua.lua_state();
-   lua_Debug luaDebug;
+   if(pMsg)
+   {
+      Log::log(LogType::Error, "Lua error ('%s' function): %s", pFunctionName, pMsg);
+   }
+   else
+   {
+      Log::log(LogType::Error, "Lua error ('%s' function)", pFunctionName);
+   }
+}
 
-   lua_getglobal(luaState, FunctionName.getString());
-   lua_getinfo(luaState, ">u", &luaDebug);
+void Environment::load()
+{
+   mGlobalNamespace.load(0);
+}
 
-   return (uint)luaDebug.nparams;
+void Environment::collectGarbage()
+{
+   mLua.collect_garbage();
+}
+
+void Environment::loadFromCode(const GESTLString& pCode)
+{
+   mLua.script(pCode.c_str());
+   mGlobalNamespace.load(0);
+}
+
+bool Environment::loadFromFile(const char* pFileName)
+{
+   GEProfilerMarker("Environment::loadFromFile()");
+
+   Table returnValue;
+
+   if(!loadModule(&mLua, pFileName, &returnValue))
+      return false;
+
+   mGlobalNamespace.load(0);
+
+   return true;
 }
 
 #if defined (GE_EDITOR_SUPPORT)
-void ScriptingEnvironment::setDebugBreakpointLine(uint Line)
+void Environment::setDebugBreakpointLine(uint32_t pLine)
 {
-   iDebugBreakpointLine = Line;
+   mDebugBreakpointLine = pLine;
 }
 
-void ScriptingEnvironment::enableDebugger()
+void Environment::enableDebugger()
 {
-   lua["debugger"] = [this](int iEvent, int iLine)
+   mLua["debugger"] = [this](int pEvent, int pLine)
    {
-      if(!bDebuggerActive)
+      if(!mDebuggerActive)
       {
-         if(iDebugBreakpointLine == 0 || iDebugBreakpointLine == (uint)iLine)
+         if(mDebugBreakpointLine == 0 || mDebugBreakpointLine == (uint32_t)pLine)
          {
-            bDebuggerActive = true;
+            mDebuggerActive = true;
          }
          else
          {
@@ -315,7 +464,7 @@ void ScriptingEnvironment::enableDebugger()
          }
       }
 
-      std::string sCodeStr = lua.script("return debug.getinfo(3).source");
+      std::string sCodeStr = mLua.script("return debug.getinfo(3).source");
       size_t iCodeLength = sCodeStr.length();
 
       char sCodeLine[256];
@@ -336,9 +485,9 @@ void ScriptingEnvironment::enableDebugger()
          sCodeLine[iCodeLineCharIndex] = '\0';
          iCodeLineCharIndex = 0;
 
-         if(abs(iCurrentLine - iLine) < 10)
+         if(abs(iCurrentLine - pLine) < 10)
          {
-            printf("%c%4d: %s\n", iCurrentLine == iLine ? '>' : ' ', iCurrentLine, sCodeLine);
+            printf("%c%4d: %s\n", iCurrentLine == pLine ? '>' : ' ', iCurrentLine, sCodeLine);
          }
 
          iCurrentLine++;
@@ -364,32 +513,32 @@ void ScriptingEnvironment::enableDebugger()
          }
          else
          {
-            lua.script(sCommandBuffer);
+            mLua.script(sCommandBuffer);
             bContinue = false;
          }
       }
       while(!bContinue);
    };
-   lua.script("debug.sethook(debugger, \"l\")");
+   mLua.script("debug.sethook(debugger, \"l\")");
 }
 
-void ScriptingEnvironment::disableDebugger()
+void Environment::disableDebugger()
 {
-   lua.script("debug.sethook()");
-   lua["debugger"] = nullptr;
-   bDebuggerActive = false;
+   mLua.script("debug.sethook()");
+   mLua["debugger"] = nullptr;
+   mDebuggerActive = false;
 }
 #endif
 
-void* ScriptingEnvironment::customAlloc(void*, void* ptr, size_t, size_t nsize)
+void* Environment::customAlloc(void*, void* pPtr, size_t, size_t pNewSize)
 {
    GEMutexLock(mAllocatorMutex);
 
-   if(nsize == 0)
+   if(pNewSize == 0)
    {
-      if(ptr)
+      if(pPtr)
       {
-         tlsf_free(pAllocator, ptr);
+         tlsf_free(smAllocator, pPtr);
       }
 
       GEMutexUnlock(mAllocatorMutex);
@@ -397,185 +546,76 @@ void* ScriptingEnvironment::customAlloc(void*, void* ptr, size_t, size_t nsize)
       return 0;
    }
 
-   void* pMemoryBlock = ptr
-      ? tlsf_realloc(pAllocator, ptr, nsize)
-      : tlsf_malloc(pAllocator, nsize);
+   void* pMemoryBlock = pPtr
+      ? tlsf_realloc(smAllocator, pPtr, pNewSize)
+      : tlsf_malloc(smAllocator, pNewSize);
 
    GEMutexUnlock(mAllocatorMutex);
 
    return pMemoryBlock;
 }
 
-bool ScriptingEnvironment::alphabeticalComparison(const ObjectName& l, const ObjectName& r)
+void Environment::collectPredefinedGlobalSymbols()
 {
-   return strcmp(l.getString(), r.getString()) < 0;
-}
+   gPredefinedGlobalSymbols.clear();
 
-void ScriptingEnvironment::collectPredefinedGlobalSymbols()
-{
-   sPredefinedGlobalSymbols.clear();
-
-   ScriptingEnvironment cDefaultEnv;
-   lua_State* luaState = cDefaultEnv.lua.lua_state();
+   Environment cDefaultEnv;
+   lua_State* luaState = cDefaultEnv.mLua.lua_state();
 
    lua_pushglobaltable(luaState);
    lua_pushnil(luaState);
 
-   while(lua_next(luaState, -2) != 0)
+   while(lua_next(luaState, -2))
    {
       const char* sVariableName = lua_tostring(luaState, -2);
-      ObjectName cVariableName = ObjectName(sVariableName);
+      const ObjectName cVariableName = ObjectName(sVariableName);
       addPredefinedGlobalSymbol(cVariableName);
       lua_pop(luaState, 1);
    }
 
    lua_pop(luaState, 1);
-
-   // add GE variable names
-   addPredefinedGlobalSymbol(ObjectName("deltaTime"));
-   addPredefinedGlobalSymbol(ObjectName("entity"));
-   addPredefinedGlobalSymbol(ObjectName("this"));
 }
 
-void ScriptingEnvironment::addPredefinedGlobalSymbol(const ObjectName& Symbol)
+void Environment::addPredefinedGlobalSymbol(const ObjectName& pSymbol)
 {
-   sPredefinedGlobalSymbols.insert(Symbol.getID());
+   gPredefinedGlobalSymbols.insert(pSymbol.getID());
 }
 
-bool ScriptingEnvironment::loadModule(const char* sModuleName, sol::table* pOutReturnValue)
+void Environment::registerTypes()
 {
-   GEProfilerMarker("ScriptingEnvironment::loadModule()");
-
-   ContentData cContentData;
-   uint32_t codeSize = 0;
-
-   if(Application::ContentType == ApplicationContentType::Xml)
-   {
-      if(!Device::contentFileExists("Scripts", sModuleName, "lua"))
-         return false;
-
-      Device::readContentFile(ContentType::GenericTextData, "Scripts", sModuleName, "lua", &cContentData);
-      codeSize = cContentData.getDataSize() - 1;
-   }
-   else
-   {
-#if defined (GE_64_BIT)
-      char sFileNamex64[64];
-      sprintf(sFileNamex64, "x64_%s", sModuleName);
-
-      if(!Device::contentFileExists("Scripts", sFileNamex64, "luabc"))
-         return false;
-
-      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sFileNamex64, "luabc", &cContentData);
-#else
-      if(!Device::contentFileExists("Scripts", sModuleName, "luabc"))
-         return false;
-
-      Device::readContentFile(ContentType::GenericBinaryData, "Scripts", sModuleName, "luabc", &cContentData);
-#endif
-      codeSize = cContentData.getDataSize();
-   }
-
-   sol::load_result loadFunction = lua.load_buffer(cContentData.getData(), codeSize, sModuleName);
-
-   if(!loadFunction.valid())
-   {
-      sol::error luaError = loadFunction;
-      handleScriptError(sModuleName, luaError.what());
-      return false;
-   }
-
-   *pOutReturnValue = loadFunction();
-
-   return true;
-}
-
-void ScriptingEnvironment::collectGlobalSymbols()
-{
-   GEProfilerMarker("ScriptingEnvironment::collectGlobalSymbols()");
-
-   // collect all global user symbols
-   GESTLVector(ObjectName) vGlobalUserSymbols;
-
-   lua_State* luaState = lua.lua_state();
-
-   lua_pushglobaltable(luaState);
-   lua_pushnil(luaState);
-
-   while(lua_next(luaState, -2) != 0)
-   {
-      const char* sVariableName = lua_tostring(luaState, -2);
-      ObjectName cVariableName = ObjectName(sVariableName);
-
-      if(sPredefinedGlobalSymbols.find(cVariableName.getID()) == sPredefinedGlobalSymbols.end())
-      {
-         vGlobalUserSymbols.push_back(cVariableName);
-      }
-
-      lua_pop(luaState, 1);
-   }
-
-   lua_pop(luaState, 1);
-
-   // fill the lists of variables and functions
-   for(uint i = 0; i < vGlobalUserSymbols.size(); i++)
-   {
-      lua_getglobal(luaState, vGlobalUserSymbols[i].getString());
-      
-      if(lua_isfunction(luaState, lua_gettop(luaState)))
-      {
-         vGlobalFunctionNames.push_back(vGlobalUserSymbols[i]);
-         mFunctions[vGlobalUserSymbols[i].getID()] = lua[vGlobalUserSymbols[i].getString()];
-      }
-      else
-      {
-         vGlobalVariableNames.push_back(vGlobalUserSymbols[i]);
-      }
-
-      lua_pop(luaState, 1);
-   }
-
-#if defined (GE_EDITOR_SUPPORT)
-   std::sort(vGlobalVariableNames.begin(), vGlobalVariableNames.end(), alphabeticalComparison);
-   std::sort(vGlobalFunctionNames.begin(), vGlobalFunctionNames.end(), alphabeticalComparison);
-#endif
-}
-
-void ScriptingEnvironment::registerTypes()
-{
-   GEProfilerMarker("ScriptingEnvironment::registerTypes()");
+   GEProfilerMarker("Environment::registerTypes()");
 
    //
    //  Module loading
    //
-   lua["packageSearcher"] = [this](const char* sModuleName)
+   mLua["packageSearcher"] = [this](const char* sModuleName)
    {
       char moduleLoaderName[64];
       sprintf(moduleLoaderName, "%sLoader", sModuleName);
-      lua[moduleLoaderName] = [this, sModuleName]() -> sol::table
+      mLua[moduleLoaderName] = [this, sModuleName]() -> sol::table
       {
-         sol::table returnValue;
-         loadModule(sModuleName, &returnValue);
+         Table returnValue;
+         loadModule(&mLua, sModuleName, &returnValue);
          return returnValue;
       };
 
       char codeBuffer[256];
       sprintf(codeBuffer, "package.preload['%s'] = %s", sModuleName, moduleLoaderName);
-      lua.script(codeBuffer);
+      mLua.script(codeBuffer);
    };
-   lua.script("table.insert(package.searchers, 1, packageSearcher)");
+   mLua.script("table.insert(package.searchers, 1, packageSearcher)");
 
    //
    //  Global functions
    //
-   lua["logInfo"] = [](const char* sMessage){ Log::log(LogType::Info, "[Lua] %s", sMessage); };
-   lua["logWarning"] = [](const char* sMessage){ Log::log(LogType::Warning, "[Lua] %s", sMessage); };
-   lua["logError"] = [](const char* sMessage){ Log::log(LogType::Error, "[Lua] %s", sMessage); };
+   mLua["logInfo"] = [](const char* sMessage){ Log::log(LogType::Info, "[Lua] %s", sMessage); };
+   mLua["logWarning"] = [](const char* sMessage){ Log::log(LogType::Warning, "[Lua] %s", sMessage); };
+   mLua["logError"] = [](const char* sMessage){ Log::log(LogType::Error, "[Lua] %s", sMessage); };
 
    //
    //  GE
    //
-   lua.new_simple_usertype<Vector2>
+   mLua.new_simple_usertype<Vector2>
    (
       "Vector2"
       , sol::constructors<sol::types<>, sol::types<float, float>>()
@@ -591,7 +631,7 @@ void ScriptingEnvironment::registerTypes()
       , sol::meta_method::multiplication, (Vector2 (Vector2::*)(const float) const)&Vector2::operator*
       , sol::meta_method::unary_minus, (Vector2 (Vector2::*)())&Vector2::operator-
    );
-   lua.new_simple_usertype<Vector3>
+   mLua.new_simple_usertype<Vector3>
    (
       "Vector3"
       , sol::constructors<sol::types<>, sol::types<float, float, float>, sol::types<float>>()
@@ -610,7 +650,7 @@ void ScriptingEnvironment::registerTypes()
       , sol::meta_method::multiplication, (Vector3 (Vector3::*)(const float) const)&Vector3::operator*
       , sol::meta_method::unary_minus, (Vector3 (Vector3::*)())&Vector3::operator-
    );
-   lua.new_simple_usertype<Rotation>
+   mLua.new_simple_usertype<Rotation>
    (
       "Rotation"
       , sol::constructors<sol::types<>, sol::types<const Vector3&>, sol::types<const Vector3&, float>>()
@@ -618,7 +658,7 @@ void ScriptingEnvironment::registerTypes()
       , "setFromAxisAngle", &Rotation::setFromAxisAngle
       , "setFromQuaternion", &Rotation::setFromQuaternion
    );
-   lua.new_simple_usertype<Color>
+   mLua.new_simple_usertype<Color>
    (
       "Color"
       , sol::constructors<sol::types<>, sol::types<float, float, float, float>>()
@@ -632,7 +672,7 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Core
    //
-   lua.new_simple_usertype<ObjectName>
+   mLua.new_simple_usertype<ObjectName>
    (
       "ObjectName"
       , sol::constructors<sol::types<>, sol::types<const char*>>()
@@ -641,7 +681,7 @@ void ScriptingEnvironment::registerTypes()
       , "isEmpty", &ObjectName::isEmpty
       , sol::meta_method::equal_to, &ObjectName::operator==
    );
-   lua.new_simple_usertype<Value>
+   mLua.new_simple_usertype<Value>
    (
       "Value"
       , sol::constructors<sol::types<bool>, sol::types<int>, sol::types<float>, sol::types<const char*>,
@@ -667,7 +707,7 @@ void ScriptingEnvironment::registerTypes()
       , "getAsColor", &Value::getAsColor
       , "getAsObjectName", &Value::getAsObjectName
    );
-   lua.new_simple_usertype<Serializable>
+   mLua.new_simple_usertype<Serializable>
    (
       "Serializable"
       , "is", &Serializable::is
@@ -675,7 +715,7 @@ void ScriptingEnvironment::registerTypes()
       , "set", &Serializable::set
       , "executeAction", &Serializable::executeAction
    );
-   lua.new_enum
+   mLua.new_enum
    (
       "InterpolationMode"
       , "Linear", InterpolationMode::Linear
@@ -683,7 +723,7 @@ void ScriptingEnvironment::registerTypes()
       , "QuadraticInverse", InterpolationMode::QuadraticInverse
       , "Logarithmic", InterpolationMode::Logarithmic
    );
-   lua.new_simple_usertype<PropertyInterpolator<float>>
+   mLua.new_simple_usertype<PropertyInterpolator<float>>
    (
       "PropertyInterpolatorFloat"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
@@ -692,7 +732,7 @@ void ScriptingEnvironment::registerTypes()
       , "update", &PropertyInterpolator<float>::update
       , "getActive", &PropertyInterpolator<float>::getActive
    );
-   lua.new_simple_usertype<PropertyInterpolator<Vector2>>
+   mLua.new_simple_usertype<PropertyInterpolator<Vector2>>
    (
       "PropertyInterpolatorVector2"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
@@ -701,7 +741,7 @@ void ScriptingEnvironment::registerTypes()
       , "update", &PropertyInterpolator<Vector2>::update
       , "getActive", &PropertyInterpolator<Vector2>::getActive
    );
-   lua.new_simple_usertype<PropertyInterpolator<Vector3>>
+   mLua.new_simple_usertype<PropertyInterpolator<Vector3>>
    (
       "PropertyInterpolatorVector3"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
@@ -710,7 +750,7 @@ void ScriptingEnvironment::registerTypes()
       , "update", &PropertyInterpolator<Vector3>::update
       , "getActive", &PropertyInterpolator<Vector3>::getActive
    );
-   lua.new_simple_usertype<PropertyInterpolator<Color>>
+   mLua.new_simple_usertype<PropertyInterpolator<Color>>
    (
       "PropertyInterpolatorColor"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
@@ -719,7 +759,7 @@ void ScriptingEnvironment::registerTypes()
       , "update", &PropertyInterpolator<Color>::update
       , "getActive", &PropertyInterpolator<Color>::getActive
    );
-   lua.new_simple_usertype<CurveKey>
+   mLua.new_simple_usertype<CurveKey>
    (
       "CurveKey"
       , "getTimePosition", &CurveKey::getTimePosition
@@ -727,14 +767,14 @@ void ScriptingEnvironment::registerTypes()
       , "setTimePosition", &CurveKey::setTimePosition
       , "setValue", &CurveKey::setValue
    );
-   lua.new_simple_usertype<Curve>
+   mLua.new_simple_usertype<Curve>
    (
       "Curve"
       , "getValue", &Curve::getValue
       , "getCurveKeyCount", &Curve::getCurveKeyCount
       , "getCurveKey", &Curve::getCurveKey
    );
-   lua.new_enum
+   mLua.new_enum
    (
       "PropertyValueComponent"
       , "None", PropertyValueComponent::None
@@ -746,7 +786,7 @@ void ScriptingEnvironment::registerTypes()
       , "Blue", PropertyValueComponent::Blue
       , "Alpha", PropertyValueComponent::Alpha
    );
-   lua.new_simple_usertype<CurvePropertyInterpolator>
+   mLua.new_simple_usertype<CurvePropertyInterpolator>
    (
       "CurvePropertyInterpolator"
       , sol::constructors<sol::types<Curve*, Serializable*, const ObjectName&, PropertyValueComponent>>()
@@ -756,12 +796,12 @@ void ScriptingEnvironment::registerTypes()
       , "update", &CurvePropertyInterpolator::update
       , "getActive", &CurvePropertyInterpolator::getActive
    );
-   lua.new_simple_usertype<BezierCurve>
+   mLua.new_simple_usertype<BezierCurve>
    (
       "BezierCurve"
       , "getPoint", &BezierCurve::getPoint
    );
-   lua.new_simple_usertype<BezierPropertyInterpolator>
+   mLua.new_simple_usertype<BezierPropertyInterpolator>
    (
       "BezierPropertyInterpolator"
       , sol::constructors<sol::types<BezierCurve*, Serializable*, const ObjectName&, InterpolationMode>>()
@@ -770,12 +810,12 @@ void ScriptingEnvironment::registerTypes()
       , "update", &BezierPropertyInterpolator::update
       , "getActive", &BezierPropertyInterpolator::getActive
    );
-   lua.new_simple_usertype<Physics::Ray>
+   mLua.new_simple_usertype<Physics::Ray>
    (
       "Ray"
       , sol::constructors<sol::types<const Vector3&, const Vector3&>>()
    );
-   lua.new_simple_usertype<Physics::HitInfo>
+   mLua.new_simple_usertype<Physics::HitInfo>
    (
       "HitInfo"
       , sol::constructors<sol::types<>>()
@@ -788,7 +828,7 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Content
    //
-   lua.new_simple_usertype<Skeleton>
+   mLua.new_simple_usertype<Skeleton>
    (
       "Skeleton"
       , "getBonesCount", &Skeleton::getBonesCount
@@ -797,7 +837,7 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Input
    //
-   lua.new_simple_usertype<InputSystem>
+   mLua.new_simple_usertype<InputSystem>
    (
       "InputSystem"
       , "getInstance", &InputSystem::getInstance
@@ -808,7 +848,7 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Entities
    //
-   lua.new_simple_usertype<Scene>
+   mLua.new_simple_usertype<Scene>
    (
       "Scene"
       , "getActiveScene", &Scene::getActiveScene
@@ -821,7 +861,7 @@ void ScriptingEnvironment::registerTypes()
       , "renameEntity", &Scene::renameEntity
       , sol::base_classes, sol::bases<Serializable>()
    );
-   lua.new_simple_usertype<Entity>
+   mLua.new_simple_usertype<Entity>
    (
       "Entity"
       , "getName", &Entity::getName
@@ -863,13 +903,13 @@ void ScriptingEnvironment::registerTypes()
       , "init", &Entity::init
       , sol::base_classes, sol::bases<Serializable>()
    );
-   lua.new_simple_usertype<Component>
+   mLua.new_simple_usertype<Component>
    (
       "Component"
       , "getOwner", &Component::getOwner
       , sol::base_classes, sol::bases<Serializable>()
    );
-   lua.new_simple_usertype<ComponentTransform>
+   mLua.new_simple_usertype<ComponentTransform>
    (
       "ComponentTransform"
       , "move", (void (ComponentTransform::*)(const Vector3&))&ComponentTransform::move
@@ -892,7 +932,7 @@ void ScriptingEnvironment::registerTypes()
       , "setForwardVector", &ComponentTransform::setForwardVector
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentRenderable>
+   mLua.new_simple_usertype<ComponentRenderable>
    (
       "ComponentRenderable"
       , "getMaterialPassCount", &ComponentRenderable::getMaterialPassCount
@@ -907,7 +947,7 @@ void ScriptingEnvironment::registerTypes()
       , "setRenderPriority", &ComponentRenderable::setRenderPriority
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentSprite>
+   mLua.new_simple_usertype<ComponentSprite>
    (
       "ComponentSprite"
       , "isOver", &ComponentSprite::isOver
@@ -919,7 +959,7 @@ void ScriptingEnvironment::registerTypes()
       , "setScaledYSize", &ComponentSprite::setScaledYSize
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentLabel>
+   mLua.new_simple_usertype<ComponentLabel>
    (
       "ComponentLabel"
       , "getText", &ComponentLabel::getText
@@ -928,14 +968,14 @@ void ScriptingEnvironment::registerTypes()
       , "setStringID", &ComponentLabel::setStringID
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentMesh>
+   mLua.new_simple_usertype<ComponentMesh>
    (
       "ComponentMesh"
       , "getMeshName", &ComponentMesh::getMeshName
       , "setMeshName", &ComponentMesh::setMeshName
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentParticleSystem>
+   mLua.new_simple_usertype<ComponentParticleSystem>
    (
       "ComponentParticleSystem"
       , "getEmitterActive", &ComponentParticleSystem::getEmitterActive
@@ -943,27 +983,27 @@ void ScriptingEnvironment::registerTypes()
       , "burst", &ComponentParticleSystem::burst
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentCamera>
+   mLua.new_simple_usertype<ComponentCamera>
    (
       "ComponentCamera"
       , "getScreenRay", &ComponentCamera::getScreenRay
       , "worldToScreen", &ComponentCamera::worldToScreen
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentCollider>
+   mLua.new_simple_usertype<ComponentCollider>
    (
       "ComponentCollider"
       , "checkCollision", &ComponentCollider::checkCollision
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentUIElement>
+   mLua.new_simple_usertype<ComponentUIElement>
    (
       "ComponentUIElement"
       , "getAlpha", &ComponentUIElement::getAlpha
       , "setAlpha", &ComponentUIElement::setAlpha
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentUI2DElement>
+   mLua.new_simple_usertype<ComponentUI2DElement>
    (
       "ComponentUI2DElement"
       , "getOffset", &ComponentUI2DElement::getOffset
@@ -972,14 +1012,14 @@ void ScriptingEnvironment::registerTypes()
       , "setScaledYOffset", &ComponentUI2DElement::setScaledYOffset
       , sol::base_classes, sol::bases<ComponentUIElement, Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentUI3DElement>
+   mLua.new_simple_usertype<ComponentUI3DElement>
    (
       "ComponentUI3DElement"
       , "getCanvasIndex", &ComponentUI3DElement::getCanvasIndex
       , "setCanvasIndex", &ComponentUI3DElement::setCanvasIndex
       , sol::base_classes, sol::bases<ComponentUIElement, Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentSkeleton>
+   mLua.new_simple_usertype<ComponentSkeleton>
    (
       "ComponentSkeleton"
       , "getSkeleton", &ComponentSkeleton::getSkeleton
@@ -988,13 +1028,13 @@ void ScriptingEnvironment::registerTypes()
       , "playAnimation", &ComponentSkeleton::playAnimation
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_enum
+   mLua.new_enum
    (
       "AnimationPlayMode"
       , "Loop", AnimationPlayMode::Loop
       , "Once", AnimationPlayMode::Once
    );
-   lua.new_simple_usertype<AnimationPlayInfo>
+   mLua.new_simple_usertype<AnimationPlayInfo>
    (
       "AnimationPlayInfo"
       , "AnimationName", &AnimationPlayInfo::AnimationName
@@ -1002,20 +1042,20 @@ void ScriptingEnvironment::registerTypes()
       , "BlendTime", &AnimationPlayInfo::BlendTime
       , "Speed", &AnimationPlayInfo::Speed
    );
-   lua.new_simple_usertype<ComponentDataContainer>
+   mLua.new_simple_usertype<ComponentDataContainer>
    (
       "ComponentDataContainer"
       , "getVariable", (const Value* (ComponentDataContainer::*)(const ObjectName&))&ComponentDataContainer::getVariable
       , "setVariable", &ComponentDataContainer::setVariable
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentAudioSource>
+   mLua.new_simple_usertype<ComponentAudioSource>
    (
       "ComponentAudioSource"
       , "playAudioEvent", &ComponentAudioSource::playAudioEvent
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_simple_usertype<ComponentScript>
+   mLua.new_simple_usertype<ComponentScript>
    (
       "ComponentScript"
       , "getScriptInstanceCount", &ComponentScript::getScriptInstanceCount
@@ -1025,7 +1065,7 @@ void ScriptingEnvironment::registerTypes()
       , "removeScriptInstance", &ComponentScript::removeScriptInstance
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
-   lua.new_simple_usertype<ScriptInstance>
+   mLua.new_simple_usertype<ScriptInstance>
    (
       "ScriptInstance"
       , "getScriptName", &ScriptInstance::getScriptName
@@ -1038,19 +1078,19 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Rendering
    //
-   lua.new_simple_usertype<RenderSystem>
+   mLua.new_simple_usertype<RenderSystem>
    (
       "RenderSystem"
       , "getInstance", &RenderSystem::getInstance
       , "getActiveCamera", &RenderSystem::getActiveCamera
    );
-   lua.new_simple_usertype<Texture>
+   mLua.new_simple_usertype<Texture>
    (
       "Texture"
       , "getAtlasSize", &Texture::getAtlasSize
       , "getAtlasName", &Texture::getAtlasName
    );
-   lua.new_simple_usertype<Material>
+   mLua.new_simple_usertype<Material>
    (
       "Material"
       , "getShaderProgram", &Material::getShaderProgram
@@ -1058,7 +1098,7 @@ void ScriptingEnvironment::registerTypes()
       , "getDiffuseTexture", &Material::getDiffuseTexture
       , "getBlendingMode", &Material::getBlendingMode
    );
-   lua.new_simple_usertype<MaterialPass>
+   mLua.new_simple_usertype<MaterialPass>
    (
       "MaterialPass"
       , "getActive", &MaterialPass::getActive
@@ -1072,7 +1112,7 @@ void ScriptingEnvironment::registerTypes()
    //
    //  GE::Audio
    //
-   lua.new_simple_usertype<AudioSystem>
+   mLua.new_simple_usertype<AudioSystem>
    (
       "AudioSystem"
       , "getInstance", &AudioSystem::getInstance
@@ -1081,11 +1121,11 @@ void ScriptingEnvironment::registerTypes()
    );
 
    // Extensions
-   if(!vRegisterTypesExtensions.empty())
+   if(!smRegisterTypesExtensions.empty())
    {
-      for(uint i = 0; i < vRegisterTypesExtensions.size(); i++)
+      for(uint i = 0; i < smRegisterTypesExtensions.size(); i++)
       {
-         vRegisterTypesExtensions[i](lua);
+         smRegisterTypesExtensions[i](mLua);
       }
    }
 }

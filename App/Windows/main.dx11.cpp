@@ -80,7 +80,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
     Application::ContentType = ApplicationContentType::Bin;
 #endif
 
-    Application::startUp();
+    // initialize the application
+    StateManager cStateManager;
+    Application::startUp(initAppModule);
 
     // screen size
     int iFullscreenWidth = GetSystemMetrics(SM_CXSCREEN);
@@ -161,10 +163,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
     GEInvokeCtor(AudioSystem, cAudio);
     cAudio->init();
     cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
-
-    // initialize the application module
-    StateManager cStateManager;
-    initAppModule();
 
 #ifndef _DEBUG
     // hide the mouse pointer

@@ -72,7 +72,9 @@ int main(int argc, char* argv[])
     Application::ContentType = ApplicationContentType::Bin;
 #endif
 
-    Application::startUp();
+    // initialize the application
+    StateManager cStateManager;
+    Application::startUp(initAppModule);
 
     // screen size
     CGRect cgBounds = CGDisplayBounds(kCGDirectMainDisplay);
@@ -127,7 +129,6 @@ int main(int argc, char* argv[])
     //cAudio = Allocator::alloc<AudioSystemOpenAL>();
     //GEInvokeCtor(AudioSystemOpenAL, cAudio)();
     //cAudio->init();
-    //cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
 
     // timer
     cTimer.start();
@@ -136,10 +137,6 @@ int main(int argc, char* argv[])
     dTimeInterval = 1000000.0 / GE_FPS;
     dTimeDelta = 0.0;
     dTimeBefore = 0.0;
-
-    // initialize the application module
-    StateManager cStateManager;
-    initAppModule();
     
     // create the task manager
     TaskManager* cTaskManager = Allocator::alloc<TaskManager>();

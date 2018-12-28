@@ -84,7 +84,8 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
    Application::ContentType = ApplicationContentType::Bin;
 #endif
 
-   Application::startUp();
+   // initialize the application
+   Application::startUp(initAppModule);
 
    // screen size
    Device::ScreenWidth = width;
@@ -128,9 +129,6 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
    cAudio = new AudioSystem();
    cAudio->init();
 #endif
-
-   // initialize the application module
-   initAppModule();
 
    // start the timer
    cTimer.start();

@@ -713,7 +713,7 @@ void Scene::queueUpdateJobs()
          {
             ScriptInstance* cScriptInstance = cScript->getScriptInstance(j);
 
-            if(cScriptInstance->getThreadSafe())
+            if(false)
             {
 #if defined (GE_SCENE_JOBIFIED_UPDATE)
                JobDesc sJobDesc("UpdateScriptInstance");
@@ -761,7 +761,7 @@ void Scene::update()
          {
             ScriptInstance* cScriptInstance = cScript->getScriptInstance(j);
 
-            if(!cScriptInstance->getThreadSafe())
+            if(true)
             {
                cScriptInstance->update();
             }

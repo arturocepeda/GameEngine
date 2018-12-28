@@ -13,6 +13,7 @@
 #include "GEComponentScript.h"
 #include "Scripting/GEScriptingEnvironment.h"
 #include "Content/GEContentData.h"
+#include "Core/GEApplication.h"
 #include "Core/GETime.h"
 #include "Core/GEEvents.h"
 #include "Core/GEProfiler.h"
@@ -28,10 +29,6 @@ using namespace GE::Scripting;
 const ObjectName cRestartActionName = ObjectName("Restart");
 const ObjectName cReloadActionName = ObjectName("Reload");
 const ObjectName cDebugActionName = ObjectName("Debug");
-
-const ObjectName cThisVariableName = ObjectName("this");
-const ObjectName cEntityVariableName = ObjectName("entity");
-const ObjectName cDeltaTimeVariableName = ObjectName("deltaTime");
 
 const ObjectName cInitFunctionName = ObjectName("init");
 const ObjectName cUpdateFunctionName = ObjectName("update");
@@ -56,19 +53,23 @@ const uint iInternalFuncionNamesCount = sizeof(cInternalFunctionNames) / sizeof(
 //
 ScriptInstance::ScriptInstance()
    : SerializableArrayElement("ScriptInstance")
-   , cEnv(0)
-   , eScriptSettings((uint8_t)ScriptSettingsBitMask::Active)
-   , bInitialized(false)
+   , mNamespace(0)
+   , mScriptSettings((uint8_t)ScriptSettingsBitMask::Active)
+   , mInitialized(false)
 #if defined (GE_EDITOR_SUPPORT)
-   , iDebugBreakpointLine(0)
+   , mDebugBreakpointLine(0)
 #endif
 {
+   char namespaceNameBuffer[32];
+   sprintf(namespaceNameBuffer, "si%p", this);
+   mNamespaceName = ObjectName(namespaceNameBuffer);
+
    GERegisterPropertyBitMask(ScriptSettingsBitMask, ScriptSettings);
    GERegisterProperty(ObjectName, ScriptName);
 
    registerAction(cRestartActionName, [this]
    {
-      bInitialized = false;
+      mInitialized = false;
    });
 
 #if defined (GE_EDITOR_SUPPORT)
@@ -82,87 +83,51 @@ ScriptInstance::ScriptInstance()
 
    registerAction(cDebugActionName, [this]
    {
-      cEnv->enableDebugger();
+      //TODO: cEnv->enableDebugger();
    });
 #endif
 
-   iBasePropertiesCount = getPropertiesCount();
-   iBaseActionsCount = getActionsCount();
+   mBasePropertiesCount = getPropertiesCount();
+   mBaseActionsCount = getActionsCount();
 }
 
 ScriptInstance::~ScriptInstance()
 {
-   if(cEnv)
+   if(mNamespace)
    {
-      if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-      {
-         ScriptingEnvironment::leaveSharedEnvironment(cScriptName);
-      }
-      else
-      {
-         GEInvokeDtor(ScriptingEnvironment, cEnv);
-         Allocator::free(cEnv);
-      }
-
-      cEnv = 0;
+      mNamespace->getParent()->removeNamespace(mNamespaceName);
+      mNamespace = 0;
    }
 }
 
-void ScriptInstance::setScriptName(const ObjectName& Name)
+void ScriptInstance::setScriptName(const ObjectName& pName)
 {
-   if(Name.isEmpty())
+   if(pName.isEmpty())
       return;
 
-   bInitialized = false;
+   mInitialized = false;
 
-   if(cEnv)
+   if(mNamespace)
    {
-      if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-      {
-         ScriptingEnvironment::leaveSharedEnvironment(cScriptName);
-         cEnv = 0;
-      }
-      else
-      {
-         cEnv->reset();
+      mNamespace->getParent()->removeNamespace(mNamespaceName);
+      mNamespace = 0;
+   }
 
-         if(!cEnv->loadFromFile(Name.getString()))
-            return;
-      }
+   mScriptName = pName;
+
+   while(getPropertiesCount() > mBasePropertiesCount)
+   {
+      removeProperty(getPropertiesCount() - 1);
+   }
+
+   while(getActionsCount() > mBaseActionsCount)
+   {
+      removeAction(getActionsCount() - 1);
    }
    
-   if(!cEnv)
-   {
-      if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-      {
-         cEnv = ScriptingEnvironment::requestSharedEnvironment(Name);
-
-         if(cEnv->isReset())
-         {
-            if(!cEnv->loadFromFile(Name.getString()))
-            {
-               ScriptingEnvironment::leaveSharedEnvironment(Name);
-               return;
-            }
-         }
-      }
-      else
-      {
-         cEnv = Allocator::alloc<ScriptingEnvironment>();
-         GEInvokeCtor(ScriptingEnvironment, cEnv);
-
-         if(!cEnv->loadFromFile(Name.getString()))
-            return;
-      }
-   }
-
-   cScriptName = Name;
-
-   while(getPropertiesCount() > iBasePropertiesCount)
-      removeProperty(getPropertiesCount() - 1);
-
-   while(getActionsCount() > iBaseActionsCount)
-      removeAction(getActionsCount() - 1);
+   Environment* env = Application::getScriptingEnvironment(0);
+   Namespace* globalNS = env->getGlobalNamespace();
+   mNamespace = globalNS->addNamespaceFromModule(mNamespaceName, pName.getString());
 
    registerScriptProperties();
    registerScriptActions();
@@ -170,58 +135,34 @@ void ScriptInstance::setScriptName(const ObjectName& Name)
 
 const ObjectName& ScriptInstance::getScriptName() const
 {
-   return cScriptName;
+   return mScriptName;
 }
 
 void ScriptInstance::setScriptSettings(uint8_t BitMask)
 {
-   if(eScriptSettings == BitMask)
+   if(mScriptSettings == BitMask)
       return;
 
-   const bool bSharedEnvironmentBefore = GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment);
+   mScriptSettings = BitMask;
 
-   eScriptSettings = BitMask;
-
-   if(!cEnv)
-      return;
-
-   const bool bSharedEnvironmentNow = GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment);
-
-   if(bSharedEnvironmentBefore != bSharedEnvironmentNow)
-   {
-      cachePropertyValues();
-
-      if(bSharedEnvironmentBefore)
-      {
-         ScriptingEnvironment::leaveSharedEnvironment(cScriptName);
-         cEnv = 0;
-      }
-      else
-      {
-         GEInvokeDtor(ScriptingEnvironment, cEnv);
-         Allocator::free(cEnv);
-         cEnv = 0;
-      }
-
-      setScriptName(cScriptName);
-   }
+   //TODO: process settings change
 }
 
 uint8_t ScriptInstance::getScriptSettings() const
 {
-   return eScriptSettings;
+   return mScriptSettings;
 }
 
 #if defined (GE_EDITOR_SUPPORT)
 void ScriptInstance::setDebugBreakpointLine(uint Line)
 {
-   iDebugBreakpointLine = Line;
-   cEnv->setDebugBreakpointLine(Line);
+   mDebugBreakpointLine = Line;
+   //TODO: cEnv->setDebugBreakpointLine(Line);
 }
 
 uint ScriptInstance::getDebugBreakpointLine() const
 {
-   return iDebugBreakpointLine;
+   return mDebugBreakpointLine;
 }
 #endif
 
@@ -229,80 +170,54 @@ void ScriptInstance::setActive(bool Value)
 {
    if(Value)
    {
-      setScriptSettings(eScriptSettings | (uint8_t)ScriptSettingsBitMask::Active);
+      setScriptSettings(mScriptSettings | (uint8_t)ScriptSettingsBitMask::Active);
    }
    else
    {
-      setScriptSettings(eScriptSettings & ~((uint8_t)ScriptSettingsBitMask::Active));
+      setScriptSettings(mScriptSettings & ~((uint8_t)ScriptSettingsBitMask::Active));
    }
 }
 
 bool ScriptInstance::getActive() const
 {
-   return GEHasFlag(eScriptSettings, ScriptSettingsBitMask::Active);
+   return GEHasFlag(mScriptSettings, ScriptSettingsBitMask::Active);
 }
 
 bool ScriptInstance::getThreadSafe() const
 {
-   return GEHasFlag(eScriptSettings, ScriptSettingsBitMask::ThreadSafe);
+   return GEHasFlag(mScriptSettings, ScriptSettingsBitMask::ThreadSafe);
 }
 
 void ScriptInstance::registerScriptProperties()
 {
-   vInstancePropertyValues.clear();
-
-   const GESTLVector(ObjectName)& vGlobalVariableNames = cEnv->getGlobalVariableNames();
+   const GESTLVector(ObjectName)& vGlobalVariableNames = mNamespace->getGlobalVariableNames();
 
    for(uint i = 0; i < vGlobalVariableNames.size(); i++)
    {
       const ObjectName& cGlobalVariableName = vGlobalVariableNames[i];
       const char* sGlobalVariableName = cGlobalVariableName.getString();
-      const ValueType ePropertyType = cEnv->getVariableType(sGlobalVariableName);
+      const ValueType ePropertyType = mNamespace->getVariableType(sGlobalVariableName);
 
       if(ePropertyType == ValueType::Count)
          continue;
 
-      PropertySetter setter = nullptr;
-      PropertyGetter getter = nullptr;
-
-      if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
+      PropertySetter setter = [this, cGlobalVariableName](const Value& cValue)
       {
-         const size_t propertyIndex = vInstancePropertyValues.size();
+         setScriptProperty(cGlobalVariableName, cValue);
 
-         setter = [this, propertyIndex](const Value& cValue)
-         {
-            vInstancePropertyValues[propertyIndex].PropertyValue = cValue;
-         };
-         getter = [this, propertyIndex]() -> Value
-         {
-            return vInstancePropertyValues[propertyIndex].PropertyValue;
-         };
+         char sOnPropertySetFuncionNameStr[64];
+         sprintf(sOnPropertySetFuncionNameStr, "on%sSet", cGlobalVariableName.getString());
+         ObjectName cOnPropertySetFuncionName = ObjectName(sOnPropertySetFuncionNameStr);
 
-         CachedPropertyValue cachedPropertyValue;
-         cachedPropertyValue.PropertyName = cGlobalVariableName;
-         cachedPropertyValue.PropertyValue = getScriptProperty(cGlobalVariableName, ePropertyType);
-         vInstancePropertyValues.push_back(cachedPropertyValue);
-      }
-      else
+         if(mNamespace->isFunctionDefined(cOnPropertySetFuncionName))
+         {
+            mNamespace->runFunction<void>(cOnPropertySetFuncionName, cValue);
+         }
+      };
+      PropertyGetter getter = [this, cGlobalVariableName, ePropertyType]() -> Value
       {
-         setter = [this, cGlobalVariableName](const Value& cValue)
-         {
-            setScriptProperty(cGlobalVariableName, cValue);
-
-            char sOnPropertySetFuncionNameStr[64];
-            sprintf(sOnPropertySetFuncionNameStr, "on%sSet", cGlobalVariableName.getString());
-            ObjectName cOnPropertySetFuncionName = ObjectName(sOnPropertySetFuncionNameStr);
-
-            if(cEnv->isFunctionDefined(cOnPropertySetFuncionName))
-            {
-               cEnv->runFunction<void>(cOnPropertySetFuncionName, cValue);
-            }
-         };
-         getter = [this, cGlobalVariableName, ePropertyType]() -> Value
-         {
-            return getScriptProperty(cGlobalVariableName, ePropertyType);
-         };
-      }
+         return getScriptProperty(cGlobalVariableName, ePropertyType);
+      };
 
       Property* cProperty = registerProperty(cGlobalVariableName, ePropertyType, setter, getter);
 
@@ -314,8 +229,6 @@ void ScriptInstance::registerScriptProperties()
 #endif
    }
 
-   vInstancePropertyValues.shrink_to_fit();
-
    EventArgs sArgs;
    sArgs.Data = cOwner;
    EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &sArgs);
@@ -323,7 +236,7 @@ void ScriptInstance::registerScriptProperties()
 
 void ScriptInstance::registerScriptActions()
 {
-   const GESTLVector(ObjectName)& vGlobalFunctionNames = cEnv->getGlobalFunctionNames();
+   const GESTLVector(ObjectName)& vGlobalFunctionNames = mNamespace->getGlobalFunctionNames();
 
    for(uint i = 0; i < vGlobalFunctionNames.size(); i++)
    {
@@ -342,28 +255,14 @@ void ScriptInstance::registerScriptActions()
       if(bInternalFunction)
          continue;
 
-      if(cEnv->getFunctionParametersCount(cGlobalFunctionName) > 0)
+      if(mNamespace->getFunctionParametersCount(cGlobalFunctionName) > 0)
          continue;
 
       const char* sGlobalFunctionName = cGlobalFunctionName.getString();
 
       registerAction(sGlobalFunctionName, [this, cGlobalFunctionName]
       {
-         if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-         {
-            cEnv->lock();
-
-            updateEnvironmentContext();
-         }
-
-         cEnv->runFunction<void>(cGlobalFunctionName);
-
-         if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-         {
-            updateInstancePropertyValues();
-
-            cEnv->unlock();
-         }
+         mNamespace->runFunction<void>(cGlobalFunctionName);
       });
    }
 }
@@ -373,28 +272,28 @@ void ScriptInstance::setScriptProperty(const ObjectName& pName, const Value& pVa
    switch(pValue.getType())
    {
    case ValueType::Bool:
-      cEnv->setVariable<bool>(pName, pValue.getAsBool());
+      mNamespace->setVariable<bool>(pName, pValue.getAsBool());
       break;
    case ValueType::UInt:
-      cEnv->setVariable<uint32_t>(pName, pValue.getAsUInt());
+      mNamespace->setVariable<uint32_t>(pName, pValue.getAsUInt());
       break;
    case ValueType::Int:
-      cEnv->setVariable<int>(pName, pValue.getAsInt());
+      mNamespace->setVariable<int>(pName, pValue.getAsInt());
       break;
    case ValueType::Float:
-      cEnv->setVariable<float>(pName, pValue.getAsFloat());
+      mNamespace->setVariable<float>(pName, pValue.getAsFloat());
       break;
    case ValueType::String:
-      cEnv->setVariable<const char*>(pName, pValue.getAsString());
+      mNamespace->setVariable<const char*>(pName, pValue.getAsString());
       break;
    case ValueType::Vector3:
-      cEnv->setVariable<Vector3>(pName, pValue.getAsVector3());
+      mNamespace->setVariable<Vector3>(pName, pValue.getAsVector3());
       break;
    case ValueType::Vector2:
-      cEnv->setVariable<Vector2>(pName, pValue.getAsVector2());
+      mNamespace->setVariable<Vector2>(pName, pValue.getAsVector2());
       break;
    case ValueType::Color:
-      cEnv->setVariable<Color>(pName, pValue.getAsColor());
+      mNamespace->setVariable<Color>(pName, pValue.getAsColor());
       break;
    }
 }
@@ -404,59 +303,33 @@ Value ScriptInstance::getScriptProperty(const ObjectName& pName, ValueType pType
    switch(pType)
    {
    case ValueType::Bool:
-      return Value(cEnv->getVariable<bool>(pName));
+      return Value(mNamespace->getVariable<bool>(pName));
    case ValueType::Int:
-      return Value(cEnv->getVariable<int>(pName));
+      return Value(mNamespace->getVariable<int>(pName));
    case ValueType::Float:
-      return Value(cEnv->getVariable<float>(pName));
+      return Value(mNamespace->getVariable<float>(pName));
    case ValueType::Vector3:
-      return Value(cEnv->getVariable<Vector3>(pName));
+      return Value(mNamespace->getVariable<Vector3>(pName));
    case ValueType::Vector2:
-      return Value(cEnv->getVariable<Vector2>(pName));
+      return Value(mNamespace->getVariable<Vector2>(pName));
    case ValueType::Color:
-      return Value(cEnv->getVariable<Color>(pName));
+      return Value(mNamespace->getVariable<Color>(pName));
    default:
-      return Value(pType, cEnv->getVariable<const char*>(pName));
-   }
-}
-
-void ScriptInstance::updateEnvironmentContext()
-{
-   cEnv->setVariable<ScriptInstance*>(cThisVariableName, this);
-
-   Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
-   cEnv->setVariable<Entity*>(cEntityVariableName, cEntity);
-
-   if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-   {
-      for(uint i = 0; i < vInstancePropertyValues.size(); i++)
-      {
-         setScriptProperty(vInstancePropertyValues[i].PropertyName, vInstancePropertyValues[i].PropertyValue);
-      }
-   }
-}
-
-void ScriptInstance::updateInstancePropertyValues()
-{
-   for(size_t i = 0; i < vInstancePropertyValues.size(); i++)
-   {
-      const ObjectName& propertyName = vInstancePropertyValues[i].PropertyName;
-      ValueType propertyType = vInstancePropertyValues[i].PropertyValue.getType();
-      vInstancePropertyValues[i].PropertyValue = getScriptProperty(propertyName, propertyType);
+      return Value(pType, mNamespace->getVariable<const char*>(pName));
    }
 }
 
 void ScriptInstance::cachePropertyValues()
 {
 #if defined (GE_EDITOR_SUPPORT)
-   const uint iNumProperties = getPropertiesCount() - iBasePropertiesCount;
-   vCachedPropertyValues.resize(iNumProperties);
+   const uint iNumProperties = getPropertiesCount() - mBasePropertiesCount;
+   mCachedPropertyValues.resize(iNumProperties);
 
    for(uint i = 0; i < iNumProperties; i++)
    {
-      const Property& sProperty = getProperty(i + iBasePropertiesCount);
-      vCachedPropertyValues[i].PropertyName = sProperty.Name;
-      vCachedPropertyValues[i].PropertyValue = sProperty.Getter();
+      const Property& sProperty = getProperty(i + mBasePropertiesCount);
+      mCachedPropertyValues[i].PropertyName = sProperty.Name;
+      mCachedPropertyValues[i].PropertyValue = sProperty.Getter();
    }
 #endif
 }
@@ -466,55 +339,41 @@ void ScriptInstance::update()
    GEProfilerMarker("ScriptInstance::update()");
 
 #if defined (GE_EDITOR_SUPPORT)
-   if(!vCachedPropertyValues.empty())
+   if(!mCachedPropertyValues.empty())
    {
-      for(uint i = 0; i < vCachedPropertyValues.size(); i++)
+      for(uint i = 0; i < mCachedPropertyValues.size(); i++)
       {
-         const Property* cProperty = getProperty(vCachedPropertyValues[i].PropertyName);
+         const Property* cProperty = getProperty(mCachedPropertyValues[i].PropertyName);
 
          if(cProperty)
          {
-            cProperty->Setter(vCachedPropertyValues[i].PropertyValue);
+            cProperty->Setter(mCachedPropertyValues[i].PropertyValue);
          }
       }
 
-      vCachedPropertyValues.clear();
+      mCachedPropertyValues.clear();
    }
 #endif
 
-   if(!getActive() || cScriptName.isEmpty())
+   if(!getActive() || mScriptName.isEmpty())
       return;
 
-   if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-   {
-      cEnv->lock();
-   }
+   Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
 
-   updateEnvironmentContext();
-
-   if(!bInitialized)
+   if(!mInitialized)
    {
-      if(cEnv->isFunctionDefined(cInitFunctionName))
+      if(mNamespace->isFunctionDefined(cInitFunctionName))
       {
-         cEnv->runFunction<void>(cInitFunctionName);
+         mNamespace->runFunction<void>(cInitFunctionName, this, entity);
       }
 
-      bInitialized = true;
+      mInitialized = true;
    }
 
-   if(cEnv->isFunctionDefined(cUpdateFunctionName))
+   if(mNamespace->isFunctionDefined(cUpdateFunctionName))
    {
-      Entity* cEntity = static_cast<ComponentScript*>(cOwner)->getOwner();
-      cEnv->setVariable<float>(cDeltaTimeVariableName, cEntity->getClock()->getDelta());
-      cEnv->runFunction<void>(cUpdateFunctionName);
-      cEnv->collectGarbage();
-   }
-
-   if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-   {
-      updateInstancePropertyValues();
-
-      cEnv->unlock();
+      const float deltaTime = entity->getClock()->getDelta();
+      mNamespace->runFunction<void>(cUpdateFunctionName, this, entity, deltaTime);
    }
 }
 
@@ -523,12 +382,9 @@ bool ScriptInstance::inputMouse(const Vector2& Point)
    if(!getActive())
       return false;
 
-   if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputMouseFunctionName))
+   if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputMouseFunctionName))
    {
-      if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-         updateEnvironmentContext();
-
-      if(cEnv->runFunction<bool>(cInputMouseFunctionName, Point))
+      if(mNamespace->runFunction<bool>(cInputMouseFunctionName, Point))
          return true;
    }
 
@@ -540,12 +396,9 @@ bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
    if(!getActive())
       return false;
 
-   if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputTouchBeginFunctionName))
+   if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputTouchBeginFunctionName))
    {
-      if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-         updateEnvironmentContext();
-
-      if(cEnv->runFunction<bool>(cInputTouchBeginFunctionName, ID, Point))
+      if(mNamespace->runFunction<bool>(cInputTouchBeginFunctionName, ID, Point))
          return true;
    }
 
@@ -557,12 +410,9 @@ bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const 
    if(!getActive())
       return false;
 
-   if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputTouchMoveFunctionName))
+   if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputTouchMoveFunctionName))
    {
-      if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-         updateEnvironmentContext();
-
-      if(cEnv->runFunction<bool>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint))
+      if(mNamespace->runFunction<bool>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint))
          return true;
    }
 
@@ -574,12 +424,9 @@ bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
    if(!getActive())
       return false;
 
-   if(!cScriptName.isEmpty() && cEnv->isFunctionDefined(cInputTouchEndFunctionName))
+   if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputTouchEndFunctionName))
    {
-      if(GEHasFlag(eScriptSettings, ScriptSettingsBitMask::SharedEnvironment))
-         updateEnvironmentContext();
-
-      if(cEnv->runFunction<bool>(cInputTouchEndFunctionName, ID, Point))
+      if(mNamespace->runFunction<bool>(cInputTouchEndFunctionName, ID, Point))
          return true;
    }
 

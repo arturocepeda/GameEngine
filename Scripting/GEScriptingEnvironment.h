@@ -26,124 +26,147 @@
 #include "Externals/sol2/sol.hpp"
 #include "Externals/tlsf/tlsf.h"
 
+
+namespace GE { namespace Content
+{
+   class ContentData;
+}}
+
+
 namespace GE { namespace Scripting
 {
-   class ScriptingEnvironment
-   {
-   public:
-      typedef std::function<void(sol::state&)> registerTypesExtension;
-
-   private:
+   typedef sol::state State;
+   typedef sol::table Table;
 #if defined (GE_EDITOR_SUPPORT)
-      typedef sol::protected_function ScriptFunction;
+   typedef sol::protected_function Function;
 #else
-      typedef sol::function ScriptFunction;
+   typedef sol::function Function;
 #endif
-      sol::state lua;
-      bool bReset;
 
-      GESTLVector(Core::ObjectName) vGlobalVariableNames;
-      GESTLVector(Core::ObjectName) vGlobalFunctionNames;
 
-      GESTLMap(uint32_t, ScriptFunction) mFunctions;
+   class Namespace
+   {
+   private:
+      GESTLString mName;
+      Namespace* mParent;
+      State* mState;
+      Table mTable;
 
-      GEMutex mAccessMutex;
+      GESTLVector(Core::ObjectName) mGlobalVariableNames;
+      GESTLVector(Core::ObjectName) mGlobalFunctionNames;
+      GESTLMap(uint32_t, Function) mFunctions;
+      GESTLMap(uint32_t, Namespace) mNamespaces;
 
-#if defined (GE_EDITOR_SUPPORT)
-      uint iDebugBreakpointLine;
-      bool bDebuggerActive;
-#endif
-      static void* pAllocatorBuffer;
-      static tlsf_t pAllocator;
+      static bool alphabeticalComparison(const Core::ObjectName& pL, const Core::ObjectName& pR);
 
-      static GESTLSet(uint) sPredefinedGlobalSymbols;
-      static GESTLVector(registerTypesExtension) vRegisterTypesExtensions;
-
-      struct SharedEnvironment
-      {
-         ScriptingEnvironment* Env;
-         uint32_t Refs;
-      };
-      static GESTLMap(uint32_t, SharedEnvironment) mSharedEnvironments;
-
-      static void* customAlloc(void*, void* ptr, size_t, size_t nsize);
-      static bool alphabeticalComparison(const Core::ObjectName& l, const Core::ObjectName& r);
-
-      static void collectPredefinedGlobalSymbols();
-      static void addPredefinedGlobalSymbol(const Core::ObjectName& Symbol);
-
-      bool loadModule(const char* sModuleName, sol::table* pOutReturnValue);
-
-      void collectGlobalSymbols();
-      void registerTypes();
+      void collectSymbols();
 
    public:
-      ScriptingEnvironment();
-      ~ScriptingEnvironment();
+      Namespace();
+      Namespace(State* pState, const char* pName);
+      ~Namespace();
 
-      static void initStaticData();
-      static void releaseStaticData();
+      void load(Namespace* pParent);
+      void unload();
 
-      static void addRegisterTypesExtension(registerTypesExtension Extension);
+      Namespace* getParent() { return mParent; }
 
-      static ScriptingEnvironment* requestSharedEnvironment(const Core::ObjectName& Name);
-      static void leaveSharedEnvironment(const Core::ObjectName& Name);
-
-      static void handleScriptError(const char* ScriptName, const char* Msg = 0);
-      static void handleFunctionError(const char* FunctionName, const char* Msg = 0);
-
-      void lock() { GEMutexLock(mAccessMutex); }
-      void unlock() { GEMutexUnlock(mAccessMutex); }
-
-      bool isReset() const { return bReset; }
-
-      void reset();
-      void collectGarbage();
-
-      void loadFromCode(const GESTLString& Code);
-      bool loadFromFile(const char* FileName);
+      Namespace* addNamespace(const Core::ObjectName& pName);
+      Namespace* addNamespaceFromModule(const Core::ObjectName& pName, const char* pModuleName);
+      Namespace* getNamespace(const Core::ObjectName& pName);
+      void removeNamespace(const Core::ObjectName& pName);
 
       template<typename T>
-      void setVariable(const Core::ObjectName& VariableName, T Value)
+      void setVariable(const Core::ObjectName& pVariableName, T pValue)
       {
-         lua[VariableName.getString()] = Value;
+         mTable[pVariableName.getString()] = pValue;
       }
       template<typename T>
-      T getVariable(const Core::ObjectName& VariableName)
+      T getVariable(const Core::ObjectName& pVariableName)
       {
-         return lua.get<T>(VariableName.getString());
+         return mTable.get<T>(pVariableName.getString());
       }
 
-      Core::ValueType getVariableType(const Core::ObjectName& VariableName) const;
+      Core::ValueType getVariableType(const Core::ObjectName& pVariableName) const;
 
-      const GESTLVector(Core::ObjectName)& getGlobalVariableNames() const { return vGlobalVariableNames; }
-      const GESTLVector(Core::ObjectName)& getGlobalFunctionNames() const { return vGlobalFunctionNames; }
+      const GESTLVector(Core::ObjectName)& getGlobalVariableNames() const { return mGlobalVariableNames; }
+      const GESTLVector(Core::ObjectName)& getGlobalFunctionNames() const { return mGlobalFunctionNames; }
 
-      bool isFunctionDefined(const Core::ObjectName& FunctionName) const;
-      uint getFunctionParametersCount(const Core::ObjectName& FunctionName) const;
+      bool isFunctionDefined(const Core::ObjectName& pFunctionName) const;
+      uint32_t getFunctionParametersCount(const Core::ObjectName& pFunctionName) const;
 
       template<typename ReturnType, typename... Parameters>
-      ReturnType runFunction(const Core::ObjectName& FunctionName, Parameters&&... ParameterList)
+      ReturnType runFunction(const Core::ObjectName& pFunctionName, Parameters&&... pParameterList)
       {
-         ScriptFunction& luaFunction = mFunctions.find(FunctionName.getID())->second;
+         Function& luaFunction = mFunctions.find(pFunctionName.getID())->second;
 #if defined (GE_EDITOR_SUPPORT)
-         auto luaFunctionResult = luaFunction(ParameterList...);
+         auto luaFunctionResult = luaFunction(pParameterList...);
 
          if(!luaFunctionResult.valid())
          {
             sol::error luaError = luaFunctionResult;
-            handleFunctionError(FunctionName.getString(), luaError.what());
+            Environment::handleFunctionError(pFunctionName.getString(), luaError.what());
             return (ReturnType)0;
          }
 
          return (ReturnType)luaFunctionResult;
 #else
-         return (ReturnType)luaFunction(ParameterList...);
+         return (ReturnType)luaFunction(pParameterList...);
 #endif
       }
+   };
+
+
+   class Environment
+   {
+   public:
+      typedef std::function<void(State&)> registerTypesExtension;
+
+   private:
+      State mLua;
+      Namespace mGlobalNamespace;
 
 #if defined (GE_EDITOR_SUPPORT)
-      void setDebugBreakpointLine(uint Line);
+      uint mDebugBreakpointLine;
+      bool mDebuggerActive;
+#endif
+      static void* smAllocatorBuffer;
+      static tlsf_t smAllocator;
+
+      static GESTLVector(registerTypesExtension) smRegisterTypesExtensions;
+
+      static void* customAlloc(void*, void* pPtr, size_t pOldSize, size_t pNewSize);
+
+      static void collectPredefinedGlobalSymbols();
+      static void addPredefinedGlobalSymbol(const Core::ObjectName& pSymbol);
+
+      void registerTypes();
+
+   public:
+      Environment();
+      ~Environment();
+
+      static void initStaticData();
+      static void releaseStaticData();
+
+      static void addRegisterTypesExtension(registerTypesExtension pExtension);
+
+      static bool loadModuleContent(Content::ContentData* pContentData, const char* pModuleName);
+      static bool loadModule(State* pState, const char* pModuleName, Table* pOutReturnValue);
+
+      static void handleScriptError(const char* pScriptName, const char* pMsg = 0);
+      static void handleFunctionError(const char* pFunctionName, const char* pMsg = 0);
+
+      void load();
+      void collectGarbage();
+
+      void loadFromCode(const GESTLString& pCode);
+      bool loadFromFile(const char* pFileName);
+
+      Namespace* getGlobalNamespace() { return &mGlobalNamespace; }
+
+#if defined (GE_EDITOR_SUPPORT)
+      void setDebugBreakpointLine(uint32_t pLine);
       void enableDebugger();
       void disableDebugger();
 #endif

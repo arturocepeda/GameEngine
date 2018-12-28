@@ -62,7 +62,9 @@ const ApplicationRenderingAPI Application::RenderingAPI = ApplicationRenderingAP
 
 ApplicationContentType Application::ContentType = ApplicationContentType::Xml;
 
-void Application::startUp()
+Scripting::Environment* Application::smScriptingEnvironments[Application::ScriptingEnvironmentsCount];
+
+void Application::startUp(void (*pInitAppModuleFunction)())
 {
    Allocator::init();
    Device::init();
@@ -80,7 +82,21 @@ void Application::startUp()
    GEInvokeCtor(LocalizedStringsManager, cLocaStringsManager);
 
    Time::init();
-   ScriptingEnvironment::initStaticData();
+
+   if(pInitAppModuleFunction)
+   {
+      pInitAppModuleFunction();
+   }
+
+   Environment::initStaticData();
+
+   for(uint32_t i = 0; i < ScriptingEnvironmentsCount; i++)
+   {
+      smScriptingEnvironments[i] = Allocator::alloc<Environment>();
+      GEInvokeCtor(Environment, smScriptingEnvironments[i]);
+      smScriptingEnvironments[i]->load();
+   }
+
    Scene::initStaticScenes();
 
    registerComponentFactories();
@@ -89,7 +105,16 @@ void Application::startUp()
 void Application::shutDown()
 {
    Scene::releaseStaticScenes();
-   ScriptingEnvironment::releaseStaticData();
+
+   for(uint32_t i = 0; i < ScriptingEnvironmentsCount; i++)
+   {
+      GEInvokeDtor(Environment, smScriptingEnvironments[i]);
+      Allocator::free(smScriptingEnvironments[i]);
+      smScriptingEnvironments[i] = 0;
+   }
+
+   Scripting::Environment::releaseStaticData();
+
    Time::release();
 
    GEInvokeDtor(LocalizedStringsManager, LocalizedStringsManager::getInstance());
@@ -106,6 +131,12 @@ void Application::shutDown()
 
    Device::release();
    Allocator::release();
+}
+
+Scripting::Environment* Application::getScriptingEnvironment(uint32_t pIndex)
+{
+   GEAssert(pIndex < ScriptingEnvironmentsCount);
+   return smScriptingEnvironments[pIndex];
 }
 
 void Application::registerComponentFactories()

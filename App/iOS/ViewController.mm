@@ -98,7 +98,8 @@ using namespace GE::Input;
     Application::ContentType = ApplicationContentType::Bin;
 #endif
 
-   Application::startUp();
+   // initialize the application
+   Application::startUp(initAppModule);
    
    // initialize OpenGL
    self.context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
@@ -175,9 +176,6 @@ using namespace GE::Input;
    
    // create the task manager
    cTaskManager = new TaskManager();
-   
-   // initialize the application module
-   initAppModule();
 }
 
 -(void) viewDidUnload

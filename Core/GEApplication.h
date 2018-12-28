@@ -14,6 +14,13 @@
 
 #include "Types/GESTLTypes.h"
 
+
+namespace GE { namespace Scripting
+{
+   class Environment;
+}}
+
+
 namespace GE { namespace Core
 {
    enum class ApplicationContentType
@@ -32,7 +39,12 @@ namespace GE { namespace Core
 
    class Application
    {
+   public:
+      static const uint32_t ScriptingEnvironmentsCount = 4u;
+
    private:
+      static Scripting::Environment* smScriptingEnvironments[ScriptingEnvironmentsCount];
+
       static void registerComponentFactories();
 
    public:
@@ -49,7 +61,9 @@ namespace GE { namespace Core
 
       static ApplicationContentType ContentType;
 
-      static void startUp();
+      static void startUp(void (*pInitAppModuleFunction)());
       static void shutDown();
+
+      static Scripting::Environment* getScriptingEnvironment(uint32_t pIndex);
    };
 }}
