@@ -12,6 +12,7 @@
 
 #include "GESerializable.h"
 #include "GEEvents.h"
+#include "GELog.h"
 
 using namespace GE;
 using namespace GE::Core;
@@ -269,8 +270,17 @@ void Serializable::loadFromXml(const pugi::xml_node& XmlNode)
          }
       }
 
-      GEAssert(cProperty);
-      GEAssert(cProperty->Setter);
+      if(!cProperty)
+      {
+         Log::log(LogType::Error, "The '%s' property does not exist", cPropertyName.getString());
+         continue;
+      }
+
+      if(!cProperty->Setter)
+      {
+         Log::log(LogType::Error, "The '%s' property is read-only", cPropertyName.getString());
+         continue;
+      }
 
       Value cPropertyValue = Value(cProperty->Type, sValue);
       cProperty->Setter(cPropertyValue);

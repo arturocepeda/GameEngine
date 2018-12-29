@@ -16,6 +16,7 @@
 #include "Core/GEApplication.h"
 #include "Core/GETime.h"
 #include "Core/GEEvents.h"
+#include "Core/GELog.h"
 #include "Core/GEProfiler.h"
 #include "Entities/GEScene.h"
 
