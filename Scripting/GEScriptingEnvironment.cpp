@@ -113,11 +113,13 @@ Namespace* Namespace::addNamespaceFromModule(const ObjectName& pName, const char
       ? contentData.getDataSize() - 1
       : contentData.getDataSize();
 
-   sol::load_result loadFunction = mState->load_buffer(contentData.getData(), codeSize, pModuleName);
-
-   if(loadFunction.valid())
    {
-      mTable[pName.getString()] = loadFunction();
+      sol::load_result loadFunction = mState->load_buffer(contentData.getData(), codeSize, pModuleName);
+
+      if(loadFunction.valid())
+      {
+         mTable[pName.getString()] = loadFunction();
+      }
    }
 
    mNamespaces[pName.getID()] = Namespace(mState, pName.getString());
@@ -195,8 +197,6 @@ uint32_t Namespace::getFunctionParametersCount(const ObjectName& FunctionName) c
 
    lua_getinfo(luaState, ">u", &luaDebug);
 
-   lua_pop(luaState, 1);
-
    return (uint32_t)luaDebug.nparams;
 }
 
@@ -229,7 +229,7 @@ void Namespace::collectSymbols()
          const ObjectName symbolName = ObjectName(symbolString);
 
          if(gPredefinedGlobalSymbols.find(symbolName.getID()) == gPredefinedGlobalSymbols.end())
-         {         
+         {
             const int stackTop = lua_gettop(luaState);
 
             if(lua_istable(luaState, stackTop))
