@@ -118,7 +118,16 @@ Namespace* Namespace::addNamespaceFromModule(const ObjectName& pName, const char
 
       if(loadFunction.valid())
       {
-         mTable[pName.getString()] = loadFunction();
+         sol::object moduleContent = loadFunction();
+
+         if(moduleContent.get_type() == sol::type::table)
+         {
+            mTable[pName.getString()] = moduleContent;
+         }
+         else
+         {
+            return 0;
+         }
       }
    }
 
@@ -383,7 +392,17 @@ bool Environment::loadModule(State* pState, const char* pModuleName, Table* pOut
       return false;
    }
 
-   *pOutReturnValue = loadFunction();
+   sol::object moduleContent = loadFunction();
+
+   if(moduleContent.get_type() == sol::type::table)
+   {
+      *pOutReturnValue = moduleContent;
+   }
+   else
+   {
+      handleScriptError(pModuleName, "does not return any valid module");
+      return false;
+   }
 
    return true;
 }
@@ -592,7 +611,7 @@ void Environment::registerTypes()
    {
       char moduleLoaderName[64];
       sprintf(moduleLoaderName, "%sLoader", sModuleName);
-      mLua[moduleLoaderName] = [this, sModuleName]() -> sol::table
+      mLua[moduleLoaderName] = [this, sModuleName]() -> Table
       {
          Table returnValue;
          loadModule(&mLua, sModuleName, &returnValue);

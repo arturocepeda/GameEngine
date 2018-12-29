@@ -129,8 +129,15 @@ void ScriptInstance::setScriptName(const ObjectName& pName)
    Namespace* globalNS = env->getGlobalNamespace();
    mNamespace = globalNS->addNamespaceFromModule(mNamespaceName, pName.getString());
 
-   registerScriptProperties();
-   registerScriptActions();
+   if(mNamespace)
+   {
+      registerScriptProperties();
+      registerScriptActions();
+   }
+   else
+   {
+      Log::log(LogType::Warning, "The '%s' script does not return any valid module", pName.getString());
+   }
 }
 
 const ObjectName& ScriptInstance::getScriptName() const
