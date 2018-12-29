@@ -362,7 +362,7 @@ void ScriptInstance::update()
    }
 #endif
 
-   if(!getActive() || mScriptName.isEmpty())
+   if(!getActive() || mScriptName.isEmpty() || !mNamespace)
       return;
 
    Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
