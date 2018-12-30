@@ -126,8 +126,15 @@ Namespace* Namespace::addNamespaceFromModule(const ObjectName& pName, const char
          }
          else
          {
+            Environment::handleScriptError(pModuleName, "does not return any valid module");
             return 0;
          }
+      }
+      else
+      {
+         sol::error luaError = loadFunction;
+         Environment::handleScriptError(pModuleName, luaError.what());
+         return 0;
       }
    }
 

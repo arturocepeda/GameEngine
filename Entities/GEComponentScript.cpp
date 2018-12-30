@@ -390,9 +390,11 @@ bool ScriptInstance::inputMouse(const Vector2& Point)
    if(!getActive() || !mNamespace)
       return false;
 
-   if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputMouseFunctionName))
+   if(mNamespace->isFunctionDefined(cInputMouseFunctionName))
    {
-      if(mNamespace->runFunction<bool>(cInputMouseFunctionName, Point))
+      Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
+
+      if(mNamespace->runFunction<bool>(cInputMouseFunctionName, this, entity, Point))
          return true;
    }
 
@@ -404,9 +406,11 @@ bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
    if(!getActive() || !mNamespace)
       return false;
 
-   if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputTouchBeginFunctionName))
+   if(mNamespace->isFunctionDefined(cInputTouchBeginFunctionName))
    {
-      if(mNamespace->runFunction<bool>(cInputTouchBeginFunctionName, ID, Point))
+      Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
+
+      if(mNamespace->runFunction<bool>(cInputTouchBeginFunctionName, this, entity, ID, Point))
          return true;
    }
 
@@ -418,9 +422,11 @@ bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const 
    if(!getActive() || !mNamespace)
       return false;
 
-   if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputTouchMoveFunctionName))
+   if(mNamespace->isFunctionDefined(cInputTouchMoveFunctionName))
    {
-      if(mNamespace->runFunction<bool>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint))
+      Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
+
+      if(mNamespace->runFunction<bool>(cInputTouchMoveFunctionName, this, entity, ID, PreviousPoint, CurrentPoint))
          return true;
    }
 
@@ -432,9 +438,11 @@ bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
    if(!getActive() || !mNamespace)
       return false;
 
-   if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputTouchEndFunctionName))
+   if(mNamespace->isFunctionDefined(cInputTouchEndFunctionName))
    {
-      if(mNamespace->runFunction<bool>(cInputTouchEndFunctionName, ID, Point))
+      Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
+
+      if(mNamespace->runFunction<bool>(cInputTouchEndFunctionName, this, entity, ID, Point))
          return true;
    }
 
