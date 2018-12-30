@@ -387,7 +387,7 @@ void ScriptInstance::update()
 
 bool ScriptInstance::inputMouse(const Vector2& Point)
 {
-   if(!getActive())
+   if(!getActive() || !mNamespace)
       return false;
 
    if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputMouseFunctionName))
@@ -401,7 +401,7 @@ bool ScriptInstance::inputMouse(const Vector2& Point)
 
 bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 {
-   if(!getActive())
+   if(!getActive() || !mNamespace)
       return false;
 
    if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputTouchBeginFunctionName))
@@ -415,7 +415,7 @@ bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 
 bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
 {
-   if(!getActive())
+   if(!getActive() || !mNamespace)
       return false;
 
    if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputTouchMoveFunctionName))
@@ -429,7 +429,7 @@ bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const 
 
 bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 {
-   if(!getActive())
+   if(!getActive() || !mNamespace)
       return false;
 
    if(!mScriptName.isEmpty() && mNamespace->isFunctionDefined(cInputTouchEndFunctionName))
