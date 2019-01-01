@@ -700,32 +700,37 @@ void Scene::queueUpdateJobs()
 #endif
    }
 
+#if defined (GE_SCENE_JOBIFIED_UPDATE) && 0
    // thread-safe script instances
-   GESTLVector(Component*)& vScripts = vComponents[(uint)ComponentType::Script];
-
-   for(uint i = 0; i < vScripts.size(); i++)
+   for(uint32_t jobIndex = 1u; jobIndex < Application::ScriptingEnvironmentsCount; jobIndex++)
    {
-      ComponentScript* cScript = static_cast<ComponentScript*>(vScripts[i]);
-
-      if(cScript->getOwner()->isActiveInHierarchy())
+      JobDesc sJobDesc("UpdateScriptInstance");
+      sJobDesc.Task = [this, jobIndex]
       {
-         for(uint j = 0; j < cScript->getScriptInstanceCount(); j++)
-         {
-            ScriptInstance* cScriptInstance = cScript->getScriptInstance(j);
+         GESTLVector(Component*)& vScripts = vComponents[(uint)ComponentType::Script];
 
-            if(false)
+         for(uint i = 0; i < vScripts.size(); i++)
+         {
+            ComponentScript* cScript = static_cast<ComponentScript*>(vScripts[i]);
+
+            if(cScript->getJobIndex() == jobIndex && cScript->getOwner()->isActiveInHierarchy())
             {
-#if defined (GE_SCENE_JOBIFIED_UPDATE)
-               JobDesc sJobDesc("UpdateScriptInstance");
-               sJobDesc.Task = [cScriptInstance] { cScriptInstance->update(); };
-               TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
-#else
-               cScriptInstance->update();
-#endif
+               for(uint j = 0; j < cScript->getScriptInstanceCount(); j++)
+               {
+                  ScriptInstance* cScriptInstance = cScript->getScriptInstance(j);
+
+                  if(cScriptInstance->getThreadSafe())
+                  {
+                     cScriptInstance->update();
+                  }
+               }
             }
          }
-      }
+      };
+
+      TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
    }
+#endif
 }
 
 void Scene::update()
@@ -761,7 +766,9 @@ void Scene::update()
          {
             ScriptInstance* cScriptInstance = cScript->getScriptInstance(j);
 
-            if(true)
+#if defined (GE_SCENE_JOBIFIED_UPDATE) && 0
+            if(!cScriptInstance->getThreadSafe())
+#endif
             {
                cScriptInstance->update();
             }

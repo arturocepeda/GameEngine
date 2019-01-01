@@ -20,6 +20,8 @@
 #include "Core/GEProfiler.h"
 #include "Entities/GEScene.h"
 
+#include <atomic>
+
 using namespace GE;
 using namespace GE::Core;
 using namespace GE::Entities;
@@ -30,6 +32,9 @@ using namespace GE::Scripting;
 const ObjectName cRestartActionName = ObjectName("Restart");
 const ObjectName cReloadActionName = ObjectName("Reload");
 const ObjectName cDebugActionName = ObjectName("Debug");
+
+const ObjectName cThisVariableName = ObjectName("this");
+const ObjectName cEntityVariableName = ObjectName("entity");
 
 const ObjectName cInitFunctionName = ObjectName("init");
 const ObjectName cUpdateFunctionName = ObjectName("update");
@@ -76,7 +81,6 @@ ScriptInstance::ScriptInstance()
 #if defined (GE_EDITOR_SUPPORT)
    registerAction(cReloadActionName, [this]
    {
-      cachePropertyValues();
       setScriptName(getScriptName());
    });
 
@@ -110,6 +114,7 @@ void ScriptInstance::setScriptName(const ObjectName& pName)
 
    if(mNamespace)
    {
+      cachePropertyValues();
       mNamespace->getParent()->removeNamespace(mNamespaceName);
       mNamespace = 0;
    }
@@ -126,12 +131,18 @@ void ScriptInstance::setScriptName(const ObjectName& pName)
       removeAction(getActionsCount() - 1);
    }
    
-   Environment* env = Application::getScriptingEnvironment(0);
+   ComponentScript* owner = static_cast<ComponentScript*>(cOwner);
+   const uint32_t envIndex = getThreadSafe() ? owner->getJobIndex() : 0u;
+
+   Environment* env = Application::getScriptingEnvironment(envIndex);
    Namespace* globalNS = env->getGlobalNamespace();
    mNamespace = globalNS->addNamespaceFromModule(mNamespaceName, pName.getString());
 
    if(mNamespace)
    {
+      mNamespace->setVariable(cThisVariableName, this);
+      mNamespace->setVariable(cEntityVariableName, owner->getOwner());
+
       registerScriptProperties();
       registerScriptActions();
    }
@@ -151,9 +162,16 @@ void ScriptInstance::setScriptSettings(uint8_t BitMask)
    if(mScriptSettings == BitMask)
       return;
 
+   const bool threadSafeBefore = getThreadSafe();
+
    mScriptSettings = BitMask;
 
-   //TODO: process settings change
+   const bool threadSafeNow = getThreadSafe();
+
+   if(threadSafeNow != threadSafeBefore && mNamespace)
+   {
+      setScriptName(mScriptName);
+   }
 }
 
 uint8_t ScriptInstance::getScriptSettings() const
@@ -366,13 +384,11 @@ void ScriptInstance::update()
    if(!getActive() || mScriptName.isEmpty() || !mNamespace)
       return;
 
-   Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
-
    if(!mInitialized)
    {
       if(mNamespace->isFunctionDefined(cInitFunctionName))
       {
-         mNamespace->runFunction<void>(cInitFunctionName, this, entity);
+         mNamespace->runFunction<void>(cInitFunctionName);
       }
 
       mInitialized = true;
@@ -380,8 +396,9 @@ void ScriptInstance::update()
 
    if(mNamespace->isFunctionDefined(cUpdateFunctionName))
    {
+      Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
       const float deltaTime = entity->getClock()->getDelta();
-      mNamespace->runFunction<void>(cUpdateFunctionName, this, entity, deltaTime);
+      mNamespace->runFunction<void>(cUpdateFunctionName, deltaTime);
    }
 }
 
@@ -392,9 +409,7 @@ bool ScriptInstance::inputMouse(const Vector2& Point)
 
    if(mNamespace->isFunctionDefined(cInputMouseFunctionName))
    {
-      Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
-
-      if(mNamespace->runFunction<bool>(cInputMouseFunctionName, this, entity, Point))
+      if(mNamespace->runFunction<bool>(cInputMouseFunctionName, Point))
          return true;
    }
 
@@ -408,9 +423,7 @@ bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 
    if(mNamespace->isFunctionDefined(cInputTouchBeginFunctionName))
    {
-      Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
-
-      if(mNamespace->runFunction<bool>(cInputTouchBeginFunctionName, this, entity, ID, Point))
+      if(mNamespace->runFunction<bool>(cInputTouchBeginFunctionName, ID, Point))
          return true;
    }
 
@@ -424,9 +437,7 @@ bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const 
 
    if(mNamespace->isFunctionDefined(cInputTouchMoveFunctionName))
    {
-      Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
-
-      if(mNamespace->runFunction<bool>(cInputTouchMoveFunctionName, this, entity, ID, PreviousPoint, CurrentPoint))
+      if(mNamespace->runFunction<bool>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint))
          return true;
    }
 
@@ -440,9 +451,7 @@ bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 
    if(mNamespace->isFunctionDefined(cInputTouchEndFunctionName))
    {
-      Entity* entity = static_cast<ComponentScript*>(cOwner)->getOwner();
-
-      if(mNamespace->runFunction<bool>(cInputTouchEndFunctionName, this, entity, ID, Point))
+      if(mNamespace->runFunction<bool>(cInputTouchEndFunctionName, ID, Point))
          return true;
    }
 
@@ -453,10 +462,19 @@ bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 //
 //  ComponentScript
 //
+std::atomic<uint32_t> gJobIndex = 1u;
+
 ComponentScript::ComponentScript(Entity* Owner)
    : Component(Owner)
 {
    mClassNames.push_back(ObjectName("Script"));
+
+   mJobIndex = gJobIndex++;
+
+   if(gJobIndex >= Application::ScriptingEnvironmentsCount)
+   {
+      gJobIndex = 1u;
+   }
 
    GERegisterPropertyArray(ScriptInstance);
 

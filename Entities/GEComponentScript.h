@@ -98,11 +98,16 @@ namespace GE { namespace Entities
 
    class ComponentScript : public Component, public Input::InputListener
    {
+   private:
+      uint32_t mJobIndex;
+
    public:
       static ComponentType getType() { return ComponentType::Script; }
 
       ComponentScript(Entity* Owner);
       ~ComponentScript();
+
+      uint32_t getJobIndex() const { return mJobIndex; }
 
       void update();
 
