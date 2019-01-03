@@ -14,6 +14,7 @@
 #include "GEState.h"
 #include "GEProfiler.h"
 #include "GEDevice.h"
+#include "GEApplication.h"
 #include "Entities/GEScene.h"
 
 #include <cassert>
@@ -61,6 +62,8 @@ uint TaskManager::getFrameCounter() const
 void TaskManager::update()
 {
    GEProfilerMarker("TaskManager::update()");
+
+   Application::tick();
 
    // handle state changes
    State* cActiveState = cStateManager->getActiveState();

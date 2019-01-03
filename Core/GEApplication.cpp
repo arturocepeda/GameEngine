@@ -102,6 +102,14 @@ void Application::startUp(void (*pInitAppModuleFunction)())
    registerComponentFactories();
 }
 
+void Application::tick()
+{
+   for(uint32_t i = 0; i < ScriptingEnvironmentsCount; i++)
+   {
+      smScriptingEnvironments[i]->collectGarbage();
+   }
+}
+
 void Application::shutDown()
 {
    Scene::releaseStaticScenes();

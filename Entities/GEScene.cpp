@@ -700,7 +700,7 @@ void Scene::queueUpdateJobs()
 #endif
    }
 
-#if defined (GE_SCENE_JOBIFIED_UPDATE) && 0
+#if defined (GE_SCENE_JOBIFIED_UPDATE)
    // thread-safe script instances
    for(uint32_t jobIndex = 1u; jobIndex < Application::ScriptingEnvironmentsCount; jobIndex++)
    {
@@ -766,7 +766,7 @@ void Scene::update()
          {
             ScriptInstance* cScriptInstance = cScript->getScriptInstance(j);
 
-#if defined (GE_SCENE_JOBIFIED_UPDATE) && 0
+#if defined (GE_SCENE_JOBIFIED_UPDATE)
             if(!cScriptInstance->getThreadSafe())
 #endif
             {

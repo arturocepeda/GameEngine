@@ -62,6 +62,7 @@ namespace GE { namespace Core
       static ApplicationContentType ContentType;
 
       static void startUp(void (*pInitAppModuleFunction)());
+      static void tick();
       static void shutDown();
 
       static Scripting::Environment* getScriptingEnvironment(uint32_t pIndex);
