@@ -87,8 +87,12 @@ void AudioSystem::platformUnloadSound(BufferID pBuffer)
 
 void AudioSystem::platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool pLooping)
 {
+   alSourcei(alSources[pChannel], AL_SOURCE_RELATIVE, AL_TRUE);
+   alSource3f(alSources[pChannel], AL_POSITION, 0.0f, 0.0f, 0.0f);
+
    alSourcei(alSources[pChannel], AL_BUFFER, alBuffers[pBuffer]);
    alSourcei(alSources[pChannel], AL_LOOPING, pLooping ? 1 : 0);
+
    alSourcePlay(alSources[pChannel]);
 }
 

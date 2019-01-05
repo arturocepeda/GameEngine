@@ -990,8 +990,11 @@ void Environment::registerTypes()
       "ComponentLabel"
       , "getText", &ComponentLabel::getText
       , "getStringID", &ComponentLabel::getStringID
+      , "getCharacterCountLimit", &ComponentLabel::getCharacterCountLimit
+      , "getTextLength", &ComponentLabel::getTextLength
       , "setText", &ComponentLabel::setText
       , "setStringID", &ComponentLabel::setStringID
+      , "setCharacterCountLimit", &ComponentLabel::setCharacterCountLimit
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
    mLua.new_simple_usertype<ComponentMesh>
