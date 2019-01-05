@@ -128,6 +128,7 @@ namespace GE { namespace Rendering
 
       GESTLPriorityQueue(RenderOperation) v3DUIElementsToRender[Entities::ComponentUI3DElement::CanvasCount];
       _3DUICanvasEntry s3DUICanvasEntries[Entities::ComponentUI3DElement::CanvasCount];
+      bool mAny3DUIElementsToRender;
 
       GESTLVector(Entities::ComponentLight*) vLightsToRender;
 

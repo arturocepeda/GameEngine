@@ -58,6 +58,7 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    , eDepthBufferMode(DepthBufferMode::NoDepth)
    , eCullingMode(CullingMode::Back)
    , cActiveCamera(0)
+   , mAny3DUIElementsToRender(false)
    , fFrameTime(Time::getElapsed())
    , fFramesPerSecond(0.0f)
    , iDrawCalls(0)
@@ -864,6 +865,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
                GEAssert(cUI3DElement->getCanvasIndex() < ComponentUI3DElement::CanvasCount);
 
                v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push(sRenderOperation);
+               mAny3DUIElementsToRender = true;
 
                if(cUIElement->getClassName() == ComponentUI3DCanvas::ClassName)
                {
@@ -922,6 +924,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
                GEAssert(cUI3DElement->getCanvasIndex() < ComponentUI3DElement::CanvasCount);
 
                v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push(sRenderOperation);
+               mAny3DUIElementsToRender = true;
 
                if(cUIElement->getClassName() == ComponentUI3DCanvas::ClassName)
                {
@@ -1060,6 +1063,8 @@ void RenderSystem::clearRenderingQueues()
       s3DUICanvasEntries[i].WorldPosition = Vector3::Zero;
    }
 
+   mAny3DUIElementsToRender = false;
+
    for(GESTLMap(uint, RenderOperation)::iterator it = mBatches.begin(); it != mBatches.end(); it++)
    {
       RenderOperation& sBatch = (*it).second;
@@ -1132,7 +1137,8 @@ void RenderSystem::renderFrame()
 
    if(!vOpaqueMeshesToRender.empty() ||
       !v3DLabelsToRender.empty() ||
-      !vTransparentMeshesToRender.empty())
+      !vTransparentMeshesToRender.empty() ||
+      mAny3DUIElementsToRender)
    {
       if(!vShadowedMeshesToRender.empty() || !vShadowedParticlesToRender.empty())
       {
