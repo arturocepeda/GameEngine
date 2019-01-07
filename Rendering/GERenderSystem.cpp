@@ -957,7 +957,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          }
          else
          {
-            if(cParticleSystem->getDynamicShadows())
+            if(GEHasFlag(cParticleSystem->getSettings(), ParticleSystemSettingsBitMask::DynamicShadows))
             {
                vShadowedParticlesToRender.push_back(sRenderOperation);
             }

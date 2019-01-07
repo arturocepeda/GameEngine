@@ -21,6 +21,15 @@
 
 namespace GE { namespace Entities
 {
+   GESerializableEnum(ParticleSystemSettingsBitMask)
+   {
+      Prewarm         = 1 << 0,
+      DynamicShadows  = 1 << 1,
+
+      Count = 2
+   };
+
+
    GESerializableEnum(ParticleEmitterType)
    {
       Point,
@@ -216,7 +225,7 @@ namespace GE { namespace Entities
       Entity* cEmitterMeshEntity;
 
       bool bEmitterActive;
-      bool bDynamicShadows;
+      uint8_t mSettings;
       float fEmissionRate;
       uint iEmissionBurstCount;
 
@@ -230,6 +239,8 @@ namespace GE { namespace Entities
 
       Vector3 vConstantForce;
       Vector3 vConstantAcceleration;
+
+      void simulate(float pDeltaTime);
 
       void allocateVertexData();
       void composeVertexData();
@@ -270,7 +281,7 @@ namespace GE { namespace Entities
 
       ParticleEmitterType getEmitterType() const { return eEmitterType; }
       bool getEmitterActive() const { return bEmitterActive; }
-      bool getDynamicShadows() const { return bDynamicShadows; }
+      uint8_t getSettings() const { return mSettings; }
       float getEmissionRate() const { return fEmissionRate; }
       uint getEmissionBurstCount() const { return iEmissionBurstCount; }
 
@@ -287,7 +298,7 @@ namespace GE { namespace Entities
 
       void setEmitterType(ParticleEmitterType EmitterType) { eEmitterType = EmitterType; }
       void setEmitterActive(bool Active) { bEmitterActive = Active; }
-      void setDynamicShadows(bool Active) { bDynamicShadows = Active; }
+      void setSettings(uint8_t pValue) { mSettings = pValue; }
       void setEmissionRate(float Rate) { fEmissionRate = Rate; }
       void setEmissionBurstCount(uint Value) { iEmissionBurstCount = Value; }
 

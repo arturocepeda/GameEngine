@@ -62,7 +62,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , cEmitterMesh(0)
    , cEmitterMeshEntity(0)
    , bEmitterActive(false)
-   , bDynamicShadows(false)
+   , mSettings(0u)
    , fEmissionRate(0.0f)
    , iEmissionBurstCount(1)
    , fParticleLifeTimeMin(0.0f)
@@ -76,7 +76,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(UInt, MaxParticles);
    GERegisterPropertyReadonly(UInt, ParticlesCount);
 
-   GERegisterProperty(Bool, DynamicShadows);
+   GERegisterPropertyBitMask(ParticleSystemSettingsBitMask, Settings);
 
    GERegisterProperty(Float, ParticleLifeTimeMin);
    GERegisterProperty(Float, ParticleLifeTimeMax);
@@ -343,15 +343,29 @@ void ComponentParticleSystem::update()
       bVertexDataReallocationPending = false;
    }
 
-   const float fDeltaTime = cOwner->getClock()->getDelta();
-
-   // active particles
-   uint iParticleIndex = 0;
-
-   while(iParticleIndex < (uint)lParticles.size())
+   if(GEHasFlag(mSettings, ParticleSystemSettingsBitMask::Prewarm) && bEmitterActive && lParticles.empty())
    {
-      Particle& sParticle = lParticles[iParticleIndex];
-      sParticle.RemainingLifeTime -= fDeltaTime;
+      for(uint32_t i = 0u; i < iMaxParticles; i++)
+      {
+         simulate(0.1f);
+      }
+   }
+
+   const float deltaTime = cOwner->getClock()->getDelta();
+   simulate(deltaTime);
+
+   composeVertexData();
+}
+
+void ComponentParticleSystem::simulate(float pDeltaTime)
+{
+   // active particles
+   uint32_t particleIndex = 0;
+
+   while(particleIndex < (uint32_t)lParticles.size())
+   {
+      Particle& sParticle = lParticles[particleIndex];
+      sParticle.RemainingLifeTime -= pDeltaTime;
 
       if(sParticle.RemainingLifeTime <= 0.0f)
       {
@@ -360,8 +374,8 @@ void ComponentParticleSystem::update()
          continue;
       }
 
-      sParticle.Position += sParticle.LinearVelocity * fDeltaTime;
-      sParticle.Angle += sParticle.AngularVelocity * GE_DEG2RAD * fDeltaTime;
+      sParticle.Position += sParticle.LinearVelocity * pDeltaTime;
+      sParticle.Angle += sParticle.AngularVelocity * GE_DEG2RAD * pDeltaTime;
 
       if(eParticleSizeType == ValueProviderType::Curve)
       {
@@ -404,31 +418,33 @@ void ComponentParticleSystem::update()
          sParticle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
 
-      sParticle.Position += vConstantForce * fDeltaTime;
-      sParticle.LinearVelocity += vConstantAcceleration * fDeltaTime;
+      sParticle.Position += vConstantForce * pDeltaTime;
+      sParticle.LinearVelocity += vConstantAcceleration * pDeltaTime;
 
-      iParticleIndex++;
+      particleIndex++;
    }
 
    // new particles
    if(bEmitterActive)
    {
-      fElapsedTimeSinceLastEmission += fDeltaTime;
+      fElapsedTimeSinceLastEmission += pDeltaTime;
 
       float fTimeToEmitParticle = 1.0f / fEmissionRate;
 
       while(fElapsedTimeSinceLastEmission > fTimeToEmitParticle)
       {
          if(iEmissionBurstCount == 1)
+         {
             emitParticle();
+         }
          else
+         {
             burst(iEmissionBurstCount);
+         }
 
          fElapsedTimeSinceLastEmission -= fTimeToEmitParticle;
       }
    }
-
-   composeVertexData();
 }
 
 void ComponentParticleSystem::allocateVertexData()
