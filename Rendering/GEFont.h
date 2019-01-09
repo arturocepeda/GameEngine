@@ -35,6 +35,7 @@ namespace GE { namespace Rendering
    class FontCharacterSet : public Core::SerializableArrayElement, public Core::Object
    {
    private:
+      float mLineHeight;
       float mUOffset;
       float mVOffset;
       float mUScale;
@@ -46,11 +47,13 @@ namespace GE { namespace Rendering
 
       void setName(const Core::ObjectName& pName) { cName = pName; }
 
+      GEDefaultGetter(float, LineHeight, m)
       GEDefaultGetter(float, UOffset, m)
       GEDefaultGetter(float, VOffset, m)
       GEDefaultGetter(float, UScale, m)
       GEDefaultGetter(float, VScale, m)
 
+      GEDefaultSetter(float, LineHeight, m)
       GEDefaultSetter(float, UOffset, m)
       GEDefaultSetter(float, VOffset, m)
       GEDefaultSetter(float, UScale, m)
@@ -97,11 +100,9 @@ namespace GE { namespace Rendering
       const Core::ObjectRegistry* getCharacterSetRegistry() const;
       uint32_t getCharacterSetIndex(const Core::ObjectName& pCharacterSetName) const;
 
+      float getLineHeight(uint32_t pCharSetIndex);
       const Glyph& getGlyph(uint32_t pCharSetIndex, byte pCharacter);
       float getKerning(uint32_t pCharSetIndex, byte pChar1, byte pChar2) const;
-
-      float getOffsetYMin() const;
-      float getOffsetYMax() const;
 
       GEPropertyArray(FontCharacterSet, FontCharacterSet)
    };

@@ -135,11 +135,12 @@ void Font::loadFontData(uint32_t pCharSetIndex, const pugi::xml_node& pXmlFontDa
 
    const pugi::xml_node& xmlCommon = pXmlFontData.child("common");
 
-   const float fTextureWidth = Parser::parseFloat(xmlCommon.attribute("scaleW").value());
-   const float fTextureHeight = Parser::parseFloat(xmlCommon.attribute("scaleH").value());
+   const float textureWidth = Parser::parseFloat(xmlCommon.attribute("scaleW").value());
+   const float textureHeight = Parser::parseFloat(xmlCommon.attribute("scaleH").value());
 
-   fOffsetYMin = 0.0f;
-   fOffsetYMax = 0.0f;
+   const float base = Parser::parseFloat(xmlCommon.attribute("base").value());
+   const float lineHeight = Parser::parseFloat(xmlCommon.attribute("lineHeight").value());
+   charSet->setLineHeight(lineHeight);
 
    const pugi::xml_node& xmlChars = pXmlFontData.child("chars");
 
@@ -151,18 +152,13 @@ void Font::loadFontData(uint32_t pCharSetIndex, const pugi::xml_node& pXmlFontDa
       sGlyph.Width = Parser::parseFloat(xmlChar.attribute("width").value());
       sGlyph.Height = Parser::parseFloat(xmlChar.attribute("height").value());
       sGlyph.OffsetX = Parser::parseFloat(xmlChar.attribute("xoffset").value());
-      sGlyph.OffsetY = Parser::parseFloat(xmlChar.attribute("yoffset").value());
+      sGlyph.OffsetY = base - Parser::parseFloat(xmlChar.attribute("yoffset").value());
       sGlyph.AdvanceX = Parser::parseFloat(xmlChar.attribute("xadvance").value());
 
-      if(sGlyph.OffsetY < fOffsetYMin)
-         fOffsetYMin = sGlyph.OffsetY;
-      else if(sGlyph.OffsetY > fOffsetYMax)
-         fOffsetYMax = sGlyph.OffsetY;
-
-      sGlyph.UV.U0 = Parser::parseFloat(xmlChar.attribute("x").value()) / fTextureWidth;
-      sGlyph.UV.U1 = sGlyph.UV.U0 + (Parser::parseFloat(xmlChar.attribute("width").value()) / fTextureWidth);
-      sGlyph.UV.V0 = Parser::parseFloat(xmlChar.attribute("y").value()) / fTextureHeight;
-      sGlyph.UV.V1 = sGlyph.UV.V0 + (Parser::parseFloat(xmlChar.attribute("height").value()) / fTextureHeight);
+      sGlyph.UV.U0 = Parser::parseFloat(xmlChar.attribute("x").value()) / textureWidth;
+      sGlyph.UV.U1 = sGlyph.UV.U0 + (sGlyph.Width / textureWidth);
+      sGlyph.UV.V0 = Parser::parseFloat(xmlChar.attribute("y").value()) / textureHeight;
+      sGlyph.UV.V1 = sGlyph.UV.V0 + (sGlyph.Height / textureHeight);
 
       sGlyph.UV.U0 = charSet->getUOffset() + (sGlyph.UV.U0 * charSet->getUScale());
       sGlyph.UV.U1 = charSet->getUOffset() + (sGlyph.UV.U1 * charSet->getUScale());
@@ -281,6 +277,12 @@ uint32_t Font::getCharacterSetIndex(const ObjectName& pCharacterSetName) const
    return 0;
 }
 
+float Font::getLineHeight(uint32_t pCharSetIndex)
+{
+   GEAssert(pCharSetIndex < (uint32_t)mCharSets.count());
+   return getFontCharacterSet(pCharSetIndex)->getLineHeight();
+}
+
 const Glyph& Font::getGlyph(uint32_t pCharSetIndex, GE::byte pCharacter)
 {
    GEAssert(pCharSetIndex < (uint32_t)mGlyphs.size());
@@ -289,7 +291,7 @@ const Glyph& Font::getGlyph(uint32_t pCharSetIndex, GE::byte pCharacter)
 
 float Font::getKerning(uint32_t pCharSetIndex, GE::byte pChar1, GE::byte pChar2) const
 {
-   GEAssert(pCharSetIndex < (uint32_t)mGlyphs.size());
+   GEAssert(pCharSetIndex < (uint32_t)mCharSets.count());
 
    KerningsMap::const_iterator itChar1Kernings = mKernings[pCharSetIndex].find(pChar1);
 
@@ -305,14 +307,4 @@ float Font::getKerning(uint32_t pCharSetIndex, GE::byte pChar1, GE::byte pChar2)
    }
 
    return 0.0f;
-}
-
-float Font::getOffsetYMin() const
-{
-   return fOffsetYMin;
-}
-
-float Font::getOffsetYMax() const
-{
-   return fOffsetYMax;
 }

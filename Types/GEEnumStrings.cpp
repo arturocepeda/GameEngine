@@ -123,6 +123,12 @@ namespace GE { namespace Entities
       "SkyBox"
    };
 
+   const char* strParticleSystemSettingsBitMask[] =
+   {
+      "Prewarm",
+      "DynamicShadows"
+   };
+
    const char* strParticleEmitterType[] =
    {
       "Point",

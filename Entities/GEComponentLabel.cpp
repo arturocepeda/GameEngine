@@ -411,7 +411,7 @@ void ComponentLabel::generateVertexData()
    }
 
    const float fFontOffsetY =
-      (cFont->getOffsetYMin() + cFont->getOffsetYMax()) * 0.5f * fFontSize * FontSizeScale * mFontResizeFactor;
+      cFont->getLineHeight(mFontCharSetIndex) * fFontSize * FontSizeScale * mFontResizeFactor;
    const float fHalfFontOffsetY = fFontOffsetY * 0.5f;
    const float fLineHeight = fFontOffsetY + fVerticalSpacing;
 
@@ -420,19 +420,19 @@ void ComponentLabel::generateVertexData()
    case Alignment::TopLeft:
    case Alignment::TopRight:
    case Alignment::TopCenter:
-      fPosY = fHalfFontOffsetY - fFontOffsetY;
+      fPosY = -fLineHeight;
       break;
    case Alignment::None:
    case Alignment::MiddleLeft:
    case Alignment::MiddleRight:
    case Alignment::MiddleCenter:
-      fPosY = fHalfFontOffsetY;
+      fPosY = 0.0f;
       fPosY += (vLineFeedIndices.size() - 1) * fLineHeight * 0.5f;
       break;
    case Alignment::BottomLeft:
    case Alignment::BottomRight:
    case Alignment::BottomCenter:
-      fPosY = fHalfFontOffsetY + fFontOffsetY;
+      fPosY = fLineHeight;
       fPosY += (vLineFeedIndices.size() - 1) * fLineHeight;
       break;
    default:
@@ -510,14 +510,14 @@ void ComponentLabel::generateVertexData()
       {
          fPosX += getKerning(sPen);
 
-         const float fHalfGlyphWidth = (sGlyph.Width * fCharacterSize) * 0.5f;
-         const float fHalfGlyphHeight = (sGlyph.Height * fCharacterSize) * 0.5f;
-         const float fHalfGlyphOffsetX = (sGlyph.OffsetX * fCharacterSize) * 0.5f;
-         const float fHalfGlyphOffsetY = (sGlyph.OffsetY * fCharacterSize) * 0.5f;
-         const float fHalfAdvanceX = fAdvanceX * 0.5f;
+         const float glyphWidth = sGlyph.Width * fCharacterSize;
+         const float glyphHeight = sGlyph.Height * fCharacterSize;
 
-         vVertexData.push_back(fPosX - fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
-         vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY + sPen.mYOffset);
+         const float glyphOffsetX = sGlyph.OffsetX * fCharacterSize;
+         const float glyphOffsetY = sGlyph.OffsetY * fCharacterSize;
+
+         vVertexData.push_back(fPosX + glyphOffsetX);
+         vVertexData.push_back(fPosY + glyphOffsetY - glyphHeight);
          vVertexData.push_back(0.0f);
          vVertexData.push_back(sPen.mColor.Red);
          vVertexData.push_back(sPen.mColor.Green);
@@ -525,8 +525,8 @@ void ComponentLabel::generateVertexData()
          vVertexData.push_back(sPen.mColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U0); vVertexData.push_back(sGlyph.UV.V1);
 
-         vVertexData.push_back(fPosX + fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
-         vVertexData.push_back(fPosY - fHalfGlyphHeight - fHalfGlyphOffsetY + sPen.mYOffset);
+         vVertexData.push_back(fPosX + glyphOffsetX + glyphWidth);
+         vVertexData.push_back(fPosY + glyphOffsetY - glyphHeight);
          vVertexData.push_back(0.0f);
          vVertexData.push_back(sPen.mColor.Red);
          vVertexData.push_back(sPen.mColor.Green);
@@ -534,8 +534,8 @@ void ComponentLabel::generateVertexData()
          vVertexData.push_back(sPen.mColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U1); vVertexData.push_back(sGlyph.UV.V1);
 
-         vVertexData.push_back(fPosX - fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
-         vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY + sPen.mYOffset);
+         vVertexData.push_back(fPosX + glyphOffsetX);
+         vVertexData.push_back(fPosY + glyphOffsetY);
          vVertexData.push_back(0.0f);
          vVertexData.push_back(sPen.mColor.Red);
          vVertexData.push_back(sPen.mColor.Green);
@@ -543,8 +543,8 @@ void ComponentLabel::generateVertexData()
          vVertexData.push_back(sPen.mColor.Alpha);
          vVertexData.push_back(sGlyph.UV.U0); vVertexData.push_back(sGlyph.UV.V0);
 
-         vVertexData.push_back(fPosX + fHalfGlyphWidth + fHalfGlyphOffsetX + fHalfAdvanceX);
-         vVertexData.push_back(fPosY + fHalfGlyphHeight - fHalfGlyphOffsetY + sPen.mYOffset);
+         vVertexData.push_back(fPosX + glyphOffsetX + glyphWidth);
+         vVertexData.push_back(fPosY + glyphOffsetY);
          vVertexData.push_back(0.0f);
          vVertexData.push_back(sPen.mColor.Red);
          vVertexData.push_back(sPen.mColor.Green);
