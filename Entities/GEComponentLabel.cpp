@@ -420,20 +420,18 @@ void ComponentLabel::generateVertexData()
    case Alignment::TopLeft:
    case Alignment::TopRight:
    case Alignment::TopCenter:
-      fPosY = -fLineHeight;
+      fPosY = -fLineHeight * 0.5f;
       break;
    case Alignment::None:
    case Alignment::MiddleLeft:
    case Alignment::MiddleRight:
    case Alignment::MiddleCenter:
-      fPosY = 0.0f;
-      fPosY += (vLineFeedIndices.size() - 1) * fLineHeight * 0.5f;
+      fPosY = (vLineFeedIndices.size() - 1) * fLineHeight * 0.5f;
       break;
    case Alignment::BottomLeft:
    case Alignment::BottomRight:
    case Alignment::BottomCenter:
-      fPosY = fLineHeight;
-      fPosY += (vLineFeedIndices.size() - 1) * fLineHeight;
+      fPosY = ((float)vLineFeedIndices.size() - 0.5f) * fLineHeight;
       break;
    default:
       break;
