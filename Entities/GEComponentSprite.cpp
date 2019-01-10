@@ -33,6 +33,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    , mScaledYSize(0.0f)
    , iLayer(SpriteLayer::GUI)
    , eUVMode(UVMode::Normal)
+   , mCenterMode(CenterMode::Absolute)
    , eFullScreenSizeMode(FullScreenSizeMode::None)
    , bVertexDataDirty(true)
 {
@@ -78,6 +79,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    GERegisterProperty(Float, ScaledYSize);
    GERegisterPropertyEnum(SpriteLayer, Layer);
    GERegisterPropertyEnum(UVMode, UVMode);
+   GERegisterPropertyEnum(CenterMode, CenterMode);
    GERegisterPropertyEnum(FullScreenSizeMode, FullScreenSizeMode);
    GERegisterProperty(ObjectName, TextureAtlasName);
 
@@ -142,12 +144,21 @@ void ComponentSprite::updateVertexData()
    float fHalfSizeX = vSize.X * 0.5f;
    float fHalfSizeY = vSize.Y * 0.5f;
 
+   float fCenterX = vCenter.X;
+   float fCenterY = vCenter.Y;
+
+   if(mCenterMode == CenterMode::Relative)
+   {
+      fCenterX *= vSize.X * 0.5f;
+      fCenterY *= vSize.Y * 0.5f;
+   }
+
    float* fVertexData = sGeometryData.VertexData;
 
-   fVertexData[ 0] = -fHalfSizeX - vCenter.X;  fVertexData[ 1] = -fHalfSizeY - vCenter.Y;  fVertexData[ 2] = 0.0f;
-   fVertexData[ 5] =  fHalfSizeX - vCenter.X;  fVertexData[ 6] = -fHalfSizeY - vCenter.Y;  fVertexData[ 7] = 0.0f;
-   fVertexData[10] = -fHalfSizeX - vCenter.X;  fVertexData[11] =  fHalfSizeY - vCenter.Y;  fVertexData[12] = 0.0f;
-   fVertexData[15] =  fHalfSizeX - vCenter.X;  fVertexData[16] =  fHalfSizeY - vCenter.Y;  fVertexData[17] = 0.0f;
+   fVertexData[ 0] = -fHalfSizeX - fCenterX;  fVertexData[ 1] = -fHalfSizeY - fCenterY;  fVertexData[ 2] = 0.0f;
+   fVertexData[ 5] =  fHalfSizeX - fCenterX;  fVertexData[ 6] = -fHalfSizeY - fCenterY;  fVertexData[ 7] = 0.0f;
+   fVertexData[10] = -fHalfSizeX - fCenterX;  fVertexData[11] =  fHalfSizeY - fCenterY;  fVertexData[12] = 0.0f;
+   fVertexData[15] =  fHalfSizeX - fCenterX;  fVertexData[16] =  fHalfSizeY - fCenterY;  fVertexData[17] = 0.0f;
 
    // texture coordinates
    if(vMaterialPassList.empty() || !getMaterialPass(0))
@@ -233,41 +244,6 @@ void ComponentSprite::update()
    }
 }
 
-const Vector2& ComponentSprite::getCenter() const
-{
-   return vCenter;
-}
-
-const Vector2& ComponentSprite::getSize() const
-{
-   return vSize;
-}
-
-float ComponentSprite::getScaledYSize() const
-{
-   return mScaledYSize;
-}
-
-SpriteLayer ComponentSprite::getLayer() const
-{
-   return iLayer;
-}
-
-UVMode ComponentSprite::getUVMode() const
-{
-   return eUVMode;
-}
-
-FullScreenSizeMode ComponentSprite::getFullScreenSizeMode() const
-{
-   return eFullScreenSizeMode;
-}
-
-const Core::ObjectName& ComponentSprite::getTextureAtlasName() const
-{
-   return cTextureAtlasName;
-}
-
 void ComponentSprite::setCenter(const Vector2& Center)
 {
    vCenter = Center;
@@ -302,6 +278,12 @@ void ComponentSprite::setUVMode(UVMode Mode)
       return;
 
    eUVMode = Mode;
+   bVertexDataDirty = true;
+}
+
+void ComponentSprite::setCenterMode(CenterMode pMode)
+{
+   mCenterMode = pMode;
    bVertexDataDirty = true;
 }
 
@@ -376,11 +358,20 @@ bool ComponentSprite::isOver(const Vector2& ScreenPosition) const
       const float fHalfSizeX = vSize.X * vScale.X * 0.5f;
       const float fHalfSizeY = vSize.Y * vScale.Y * 0.5f;
 
+      float fCenterX = vCenter.X;
+      float fCenterY = vCenter.Y;
+
+      if(mCenterMode == CenterMode::Relative)
+      {
+         fCenterX *= vSize.X * 0.5f;
+         fCenterY *= vSize.Y * 0.5f;
+      }
+
       return
-         ScreenPosition.X > (vPosition.X - vCenter.X - fHalfSizeX) &&
-         ScreenPosition.X < (vPosition.X - vCenter.X + fHalfSizeX) &&
-         ScreenPosition.Y > (vPosition.Y - vCenter.Y - fHalfSizeY) &&
-         ScreenPosition.Y < (vPosition.Y - vCenter.Y + fHalfSizeY);
+         ScreenPosition.X > (vPosition.X - fCenterX - fHalfSizeX) &&
+         ScreenPosition.X < (vPosition.X - fCenterX + fHalfSizeX) &&
+         ScreenPosition.Y > (vPosition.Y - fCenterY - fHalfSizeY) &&
+         ScreenPosition.Y < (vPosition.Y - fCenterY + fHalfSizeY);
    }
 
    Vector3 vVertices[4];

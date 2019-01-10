@@ -102,6 +102,12 @@ namespace GE { namespace Entities
       "FlipUV"
    };
 
+   const char* strCenterMode[] =
+   {
+      "Absolute",
+      "Relative"
+   };
+
    const char* strFullScreenSizeMode[] =
    {
       "None",

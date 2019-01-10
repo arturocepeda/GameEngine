@@ -36,6 +36,15 @@ namespace GE { namespace Entities
    };
 
 
+   GESerializableEnum(CenterMode)
+   {
+      Absolute,
+      Relative,
+
+      Count
+   };
+
+
    GESerializableEnum(FullScreenSizeMode)
    {
       None,
@@ -56,6 +65,7 @@ namespace GE { namespace Entities
       Core::ObjectName cTextureAtlasName;
       SpriteLayer iLayer;
       UVMode eUVMode;
+      CenterMode mCenterMode;
       FullScreenSizeMode eFullScreenSizeMode;
       bool bVertexDataDirty;
 
@@ -69,19 +79,21 @@ namespace GE { namespace Entities
 
       void update();
 
-      const Vector2& getCenter() const;
-      const Vector2& getSize() const;
-      float getScaledYSize() const;
-      SpriteLayer getLayer() const;
-      UVMode getUVMode() const;
-      FullScreenSizeMode getFullScreenSizeMode() const;
-      const Core::ObjectName& getTextureAtlasName() const;
+      GEDefaultGetter(const Vector2&, Center, v)
+      GEDefaultGetter(const Vector2&, Size, v)
+      GEDefaultGetter(float, ScaledYSize, m)
+      GEDefaultGetter(SpriteLayer, Layer, i)
+      GEDefaultGetter(UVMode, UVMode, e)
+      GEDefaultGetter(CenterMode, CenterMode, m)
+      GEDefaultGetter(FullScreenSizeMode, FullScreenSizeMode, e)
+      GEDefaultGetter(const Core::ObjectName&, TextureAtlasName, c)
 
       void setCenter(const Vector2& Center);
       void setSize(const Vector2& Size);
       void setScaledYSize(float pSize);
       void setLayer(SpriteLayer Layer);
       void setUVMode(UVMode Mode);
+      void setCenterMode(CenterMode pMode);
       void setFullScreenSizeMode(FullScreenSizeMode Mode);
       void setTextureAtlasName(const Core::ObjectName& AtlasName);
 
