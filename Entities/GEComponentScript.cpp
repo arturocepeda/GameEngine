@@ -462,7 +462,7 @@ bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
 //
 //  ComponentScript
 //
-std::atomic<uint32_t> gJobIndex = 1u;
+std::atomic<uint32_t> gJobIndex(1u);
 
 ComponentScript::ComponentScript(Entity* Owner)
    : Component(Owner)
