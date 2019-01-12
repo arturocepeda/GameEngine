@@ -60,14 +60,9 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    });
    EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
    {
-      if(eFullScreenSizeMode != FullScreenSizeMode::None)
+      if(mScaledYSize > GE_EPSILON || eFullScreenSizeMode != FullScreenSizeMode::None)
       {
-         setFullScreenSizeMode(eFullScreenSizeMode);
-      }
-
-      if(mScaledYSize > GE_EPSILON)
-      {
-         setScaledYSize(mScaledYSize);
+         updateVertexData();
       }
 
       return false;
@@ -140,6 +135,62 @@ ComponentSprite::~ComponentSprite()
 
 void ComponentSprite::updateVertexData()
 {
+   // size
+   switch(eFullScreenSizeMode)
+   {
+      case FullScreenSizeMode::None:
+         {
+            if(mScaledYSize > GE_EPSILON)
+            {
+               vSize.Y = Device::getAspectRatio() * mScaledYSize;
+            }
+         }
+         break;
+
+      case FullScreenSizeMode::Stretch:
+         {
+            vSize = Vector2(2.0f, Device::getAspectRatio() * 2.0f);
+         }
+         break;
+
+      case FullScreenSizeMode::MatchWidth:
+         {
+            if(!vMaterialPassList.empty())
+            {
+               Material* cMaterial = getMaterialPass(0)->getMaterial();
+
+               if(cMaterial && cMaterial->getDiffuseTexture())
+               {
+                  const Texture* cDiffuseTexture = cMaterial->getDiffuseTexture();
+                  const float fWidth = 2.0f;
+                  const float fHeight = fWidth * ((float)cDiffuseTexture->getHeight() / cDiffuseTexture->getWidth());
+                  vSize = Vector2(fWidth, fHeight);
+               }
+            }
+         }
+         break;
+
+      case FullScreenSizeMode::MatchHeight:
+         {
+            if(!vMaterialPassList.empty())
+            {
+               Material* cMaterial = getMaterialPass(0)->getMaterial();
+
+               if(cMaterial && cMaterial->getDiffuseTexture())
+               {
+                  const Texture* cDiffuseTexture = cMaterial->getDiffuseTexture();
+                  const float fHeight = Device::getAspectRatio() * 2.0f;
+                  const float fWidth = fHeight * ((float)cDiffuseTexture->getWidth() / cDiffuseTexture->getHeight());
+                  vSize = Vector2(fWidth, fHeight);
+               }
+            }
+         }
+         break;
+
+      default:
+         break;
+   }
+
    // position
    float fHalfSizeX = vSize.X * 0.5f;
    float fHalfSizeY = vSize.Y * 0.5f;
@@ -259,12 +310,7 @@ void ComponentSprite::setSize(const Vector2& Size)
 void ComponentSprite::setScaledYSize(float pSize)
 {
    mScaledYSize = pSize;
-   
-   if(pSize > GE_EPSILON)
-   {
-      vSize.Y = Device::getAspectRatio() * pSize;
-      bVertexDataDirty = true;
-   }
+   bVertexDataDirty = true;
 }
 
 void ComponentSprite::setLayer(SpriteLayer Layer)
@@ -290,55 +336,7 @@ void ComponentSprite::setCenterMode(CenterMode pMode)
 void ComponentSprite::setFullScreenSizeMode(FullScreenSizeMode Mode)
 {
    eFullScreenSizeMode = Mode;
-
-   switch(Mode)
-   {
-      case FullScreenSizeMode::Stretch:
-         {
-            setSize(Vector2(2.0f, Device::getAspectRatio() * 2.0f));
-            bVertexDataDirty = true;
-         }
-         break;
-
-      case FullScreenSizeMode::MatchWidth:
-         {
-            if(!vMaterialPassList.empty())
-            {
-               Material* cMaterial = getMaterialPass(0)->getMaterial();
-
-               if(cMaterial && cMaterial->getDiffuseTexture())
-               {
-                  const Texture* cDiffuseTexture = cMaterial->getDiffuseTexture();
-                  const float fWidth = 2.0f;
-                  const float fHeight = fWidth * ((float)cDiffuseTexture->getHeight() / cDiffuseTexture->getWidth());
-                  setSize(Vector2(fWidth, fHeight));
-                  bVertexDataDirty = true;
-               }
-            }
-         }
-         break;
-
-      case FullScreenSizeMode::MatchHeight:
-         {
-            if(!vMaterialPassList.empty())
-            {
-               Material* cMaterial = getMaterialPass(0)->getMaterial();
-
-               if(cMaterial && cMaterial->getDiffuseTexture())
-               {
-                  const Texture* cDiffuseTexture = cMaterial->getDiffuseTexture();
-                  const float fHeight = Device::getAspectRatio() * 2.0f;
-                  const float fWidth = fHeight * ((float)cDiffuseTexture->getWidth() / cDiffuseTexture->getHeight());
-                  setSize(Vector2(fWidth, fHeight));
-                  bVertexDataDirty = true;
-               }
-            }
-         }
-         break;
-
-      default:
-         break;
-   }
+   bVertexDataDirty = true;
 }
 
 void ComponentSprite::setTextureAtlasName(const Core::ObjectName& AtlasName)
