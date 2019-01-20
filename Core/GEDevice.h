@@ -78,6 +78,7 @@ namespace GE { namespace Core
 
       static bool contentFileExists(const char* SubDir, const char* Name, const char* Extension);
       static void readContentFile(Content::ContentType Type, const char* SubDir, const char* Name, const char* Extension, Content::ContentData* ContentData);
+      static std::ifstream openContentFile(const char* SubDir, const char* Name, const char* Extension);
 
       static uint getContentFilesCount(const char* SubDir, const char* Extension);
       static bool getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name);

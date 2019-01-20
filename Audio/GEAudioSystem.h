@@ -18,6 +18,8 @@
 #include "Core/GESingleton.h"
 #include "Core/GEObjectManager.h"
 
+#include <fstream>
+
 #define GE_AUDIO_CHANNELS    24
 #define GE_AUDIO_BUFFERS    256
 
@@ -38,8 +40,8 @@ namespace GE { namespace Audio
       bool Free;
 
       AudioChannel()
-         : AssignmentIndex(0)
-         , AssignedBuffer(0)
+         : AssignmentIndex(0u)
+         , AssignedBuffer(0u)
          , Free(true) {}
    };
 
@@ -50,9 +52,9 @@ namespace GE { namespace Audio
       Content::AudioData* Data;
 
       AudioBuffer()
-         : AssignedFileID(0)
-         , References(0)
-         , Data(0) {}
+         : AssignedFileID(0u)
+         , References(0u)
+         , Data(nullptr) {}
    };
 
    enum class AudioEventInstanceState : uint8_t
@@ -72,8 +74,8 @@ namespace GE { namespace Audio
       AudioEventInstanceState State;
 
       AudioEventInstance()
-         : Event(0)
-         , Channel(0)
+         : Event(nullptr)
+         , Channel(0u)
          , VolumeBase(1.0f)
          , VolumeFactorFade(1.0f)
          , State(AudioEventInstanceState::Free)
@@ -82,8 +84,8 @@ namespace GE { namespace Audio
 
       void reset()
       {
-         Event = 0;
-         Channel = 0;
+         Event = nullptr;
+         Channel = 0u;
          VolumeBase = 1.0f;
          VolumeFactorFade = 1.0f;
          State = AudioEventInstanceState::Free;
@@ -95,10 +97,24 @@ namespace GE { namespace Audio
       }
    };
 
+   struct AudioStream : public AudioEventInstance
+   {
+      static const uint32_t BuffersCount = 2u;
+
+      std::ifstream FileStream;
+      uint32_t CurrentBufferIndex;
+
+      AudioStream()
+         : CurrentBufferIndex(0u)
+      {
+      }
+   };
+
    class AudioSystem : public Core::Singleton<AudioSystem>
    {
    protected:
-      static const uint32_t AudioEventInstancesCount = 256;
+      static const uint32_t AudioEventInstancesCount = 256u;
+      static const uint32_t AudioStreamsCount = 2u;
 
       void* mHandler;
 
@@ -116,6 +132,9 @@ namespace GE { namespace Audio
       AudioEventInstance mAudioEventInstances[AudioEventInstancesCount];
       uint32_t mAudioEventInstanceAssignmentIndex;
 
+      AudioStream mAudioStreams[AudioStreamsCount];
+      uint32_t mAudioStreamAssignmentIndex;
+
       GESTLVector(AudioEventInstance*) mActiveAudioEventInstances;
 
       GEMutex mMutex;
@@ -129,6 +148,8 @@ namespace GE { namespace Audio
       void loadAudioBankEntries();
 
       void releaseChannel(ChannelID pChannel);
+
+      void loadAudioBankFiles(AudioBank* pAudioBank);
       void releaseAudioBankFiles(AudioBank* pAudioBank);
 
       // platform specific methods

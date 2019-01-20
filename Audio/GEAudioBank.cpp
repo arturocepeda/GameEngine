@@ -43,8 +43,10 @@ const char* AudioBank::Extension = "banks";
 
 AudioBank::AudioBank(const ObjectName& pName, const ObjectName& pGroupName)
    : Resource(pName, pGroupName, TypeName)
+   , mType(AudioBankType::Buffered)
    , mLoaded(false)
 {
+   GERegisterPropertyEnum(AudioBankType, Type);
    GERegisterPropertyReadonly(Bool, Loaded);
 
    GERegisterPropertyArray(AudioEventEntry);

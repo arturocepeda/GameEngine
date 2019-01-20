@@ -170,6 +170,18 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
    }
 }
 
+std::ifstream Device::openContentFile(const char* SubDir, const char* Name, const char* Extension)
+{
+   char subDir[MaxPath];
+   toWindowsSubDir(SubDir, subDir);
+
+   char fileName[MaxPath];
+   sprintf(fileName, "%s\\%s.%s", subDir, Name, Extension);
+
+   const GESTLString fullPath = getFullPath(fileName);
+   return std::ifstream(fullPath.c_str(), std::ios::in | std::ios::binary);
+}
+
 bool Device::userFileExists(const char* SubDir, const char* Name, const char* Extension)
 {
    char sPath[MaxPath];

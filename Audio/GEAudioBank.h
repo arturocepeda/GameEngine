@@ -19,6 +19,15 @@
 
 namespace GE { namespace Audio
 {
+   GESerializableEnum(AudioBankType)
+   {
+      Buffered,
+      Streamed,
+
+      Count
+   };
+
+
    class AudioEventEntry : public Core::SerializableArrayElement
    {
    private:
@@ -39,6 +48,7 @@ namespace GE { namespace Audio
       GESTLMap(uint32_t, AudioEvent*) mAudioEvents;
       GESTLVector(Core::ObjectName) mAudioFileNames;
 
+      AudioBankType mType;
       bool mLoaded;
 
    public:
@@ -48,6 +58,10 @@ namespace GE { namespace Audio
 
       AudioBank(const Core::ObjectName& pName, const Core::ObjectName& pGroupName);
       ~AudioBank();
+
+      GEDefaultGetter(AudioBankType, Type, m)
+
+      GEDefaultSetter(AudioBankType, Type, m)
 
       GEPropertyArray(AudioEventEntry, AudioEventEntry)
 

@@ -28,13 +28,14 @@ using namespace GE::Content;
 const float UpdatePeriod = 0.5f;
 
 AudioSystem::AudioSystem()
-   : mHandler(0)
-   , mChannelsCount(0)
-   , mBuffersCount(0)
-   , mChannels(0)
-   , mChannelAssignmentIndex(0)
-   , mBuffers(0)
-   , mAudioEventInstanceAssignmentIndex(0)
+   : mHandler(nullptr)
+   , mChannelsCount(0u)
+   , mBuffersCount(0u)
+   , mChannels(nullptr)
+   , mChannelAssignmentIndex(0u)
+   , mBuffers(nullptr)
+   , mAudioEventInstanceAssignmentIndex(0u)
+   , mAudioStreamAssignmentIndex(0u)
    , mTimeSinceLastUpdate(0.0f)
 {
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<AudioBank>(&mAudioBanks);
@@ -52,7 +53,7 @@ void AudioSystem::loadAudioEventEntries()
 
    const uint32_t groupsCount = Device::getContentFilesCount(AudioEvent::SubDir, extension);
 
-   for(uint32_t i = 0; i < groupsCount; i++)
+   for(uint32_t i = 0u; i < groupsCount; i++)
    {
       char fileName[256];
       Device::getContentFileName(AudioEvent::SubDir, extension, i, fileName);
@@ -69,7 +70,7 @@ void AudioSystem::loadAudioBankEntries()
 
    const uint32_t groupsCount = Device::getContentFilesCount(AudioBank::SubDir, extension);
 
-   for(uint32_t i = 0; i < groupsCount; i++)
+   for(uint32_t i = 0u; i < groupsCount; i++)
    {
       char fileName[256];
       Device::getContentFileName(AudioBank::SubDir, extension, i, fileName);
@@ -85,7 +86,7 @@ void AudioSystem::releaseChannel(ChannelID pChannel)
 
    const size_t audioEventInstancesCount = mActiveAudioEventInstances.size();
 
-   for(size_t i = 0; i < audioEventInstancesCount; i++)
+   for(size_t i = 0u; i < audioEventInstancesCount; i++)
    {
       if(mActiveAudioEventInstances[i]->Channel == pChannel)
       {
@@ -97,17 +98,78 @@ void AudioSystem::releaseChannel(ChannelID pChannel)
    }
 }
 
+void AudioSystem::loadAudioBankFiles(AudioBank* pAudioBank)
+{
+   const GESTLVector(ObjectName)& audioFileNames = pAudioBank->getAudioFileNames();
+
+   const char* audioFilesSubdir = "Audio/files";
+#if defined (GE_PLATFORM_WINDOWS)
+   const char* audioFilesExt = "ogg";
+#else
+   const char* audioFilesExt = "wav";
+#endif
+
+   for(size_t i = 0u; i < audioFileNames.size(); i++)
+   {
+      const ObjectName& audioFileName = audioFileNames[i];
+
+      // assign buffer index
+      GEMutexLock(mMutex);
+
+      const uint32_t InvalidBufferIndex = mBuffersCount;
+      uint32_t loadedFileIndex = InvalidBufferIndex;
+      uint32_t firstFreeIndex = InvalidBufferIndex;
+
+      for(BufferID i = 0u; i < mBuffersCount; i++)
+      {
+         if(mBuffers[i].AssignedFileID == audioFileName.getID())
+         {
+            loadedFileIndex = i;
+            break;
+         }
+         else if(mBuffers[i].References == 0u)
+         {
+            if(firstFreeIndex == InvalidBufferIndex)
+            {
+               firstFreeIndex = i;
+            }
+         }
+      }
+
+      const uint32_t bufferIndexToAssign = loadedFileIndex != InvalidBufferIndex
+         ? loadedFileIndex
+         : firstFreeIndex;
+
+      GEAssert(bufferIndexToAssign < mBuffersCount);
+
+      mBuffers[bufferIndexToAssign].AssignedFileID = audioFileName.getID();
+      mBuffers[bufferIndexToAssign].References++;
+
+      GEMutexUnlock(mMutex);
+
+      // load audio file
+      mBuffers[bufferIndexToAssign].Data = Allocator::alloc<AudioData>(1, AllocationCategory::Audio);
+      GEInvokeCtor(AudioData, mBuffers[bufferIndexToAssign].Data)();
+
+      Device::readContentFile(ContentType::Audio, audioFilesSubdir,
+         audioFileNames[i].getString(), audioFilesExt, mBuffers[bufferIndexToAssign].Data);
+
+      // register audio data
+      platformLoadSound(bufferIndexToAssign, mBuffers[bufferIndexToAssign].Data);
+   }
+}
+
 void AudioSystem::releaseAudioBankFiles(AudioBank* pAudioBank)
 {
    GEMutexLock(mMutex);
 
    const GESTLVector(ObjectName)& audioFileNames = pAudioBank->getAudioFileNames();
 
-   for(size_t i = 0; i < audioFileNames.size(); i++)
+   for(size_t i = 0u; i < audioFileNames.size(); i++)
    {
       const ObjectName& audioFileName = audioFileNames[i];
 
-      for(BufferID i = 0; i < mBuffersCount; i++)
+      for(BufferID i = 0u; i < mBuffersCount; i++)
       {
          if(mBuffers[i].AssignedFileID == audioFileName.getID())
          {
@@ -137,20 +199,20 @@ void AudioSystem::init(uint32_t pChannelsCount, uint32_t pBuffersCount)
    mChannelsCount = pChannelsCount;
    mBuffersCount = pBuffersCount;
 
-   GEAssert(mChannelsCount > 0);
+   GEAssert(mChannelsCount > 0u);
 
    mChannels = Allocator::alloc<AudioChannel>(mChannelsCount);
 
-   for(ChannelID i = 0; i < mChannelsCount; i++)
+   for(ChannelID i = 0u; i < mChannelsCount; i++)
    {
       GEInvokeCtor(AudioChannel, &mChannels[i])();
    }
 
-   GEAssert(mBuffersCount > 0);
+   GEAssert(mBuffersCount > 0u);
 
    mBuffers = Allocator::alloc<AudioBuffer>(mBuffersCount);
 
-   for(BufferID i = 0; i < mBuffersCount; i++)
+   for(BufferID i = 0u; i < mBuffersCount; i++)
    {
       GEInvokeCtor(AudioBuffer, &mBuffers[i])();
    }
@@ -178,7 +240,7 @@ void AudioSystem::update()
 
       GEMutexLock(mMutex);
 
-      for(ChannelID i = 0; i < mChannelsCount; i++)
+      for(ChannelID i = 0u; i < mChannelsCount; i++)
       {
          if(!mChannels[i].Free && !platformIsInUse(i))
          {
@@ -194,7 +256,7 @@ void AudioSystem::update()
    // handle fades
    GEMutexLock(mMutex);
 
-   for(size_t i = 0; i < mActiveAudioEventInstances.size(); )
+   for(size_t i = 0u; i < mActiveAudioEventInstances.size(); )
    {
       AudioEventInstance* instance = mActiveAudioEventInstances[i];
       
@@ -251,13 +313,13 @@ void AudioSystem::release()
    if(mBuffers)
    {
       Allocator::free(mBuffers);
-      mBuffers = 0;
+      mBuffers = nullptr;
    }
 
    if(mChannels)
    {
       Allocator::free(mChannels);
-      mChannels = 0;
+      mChannels = nullptr;
    }
 }
 
@@ -265,67 +327,10 @@ void AudioSystem::loadAudioBank(const ObjectName& pAudioBankName)
 {
    AudioBank* audioBank = mAudioBanks.get(pAudioBankName);
 
-   if(audioBank)
+   if(audioBank && !audioBank->getLoaded())
    {
       audioBank->load(mAudioEvents);
-
-      const GESTLVector(ObjectName)& audioFileNames = audioBank->getAudioFileNames();
-
-      const char* audioFilesSubdir = "Audio/files";
-#if defined (GE_PLATFORM_WINDOWS)
-      const char* audioFilesExt = "ogg";
-#else
-      const char* audioFilesExt = "wav";
-#endif
-
-      for(size_t i = 0; i < audioFileNames.size(); i++)
-      {
-         const ObjectName& audioFileName = audioFileNames[i];
-
-         // assign buffer index
-         GEMutexLock(mMutex);
-
-         const uint32_t InvalidBufferIndex = mBuffersCount;
-         uint32_t loadedFileIndex = InvalidBufferIndex;
-         uint32_t firstFreeIndex = InvalidBufferIndex;
-
-         for(BufferID i = 0; i < mBuffersCount; i++)
-         {
-            if(mBuffers[i].AssignedFileID == audioFileName.getID())
-            {
-               loadedFileIndex = i;
-               break;
-            }
-            else if(mBuffers[i].References == 0)
-            {
-               if(firstFreeIndex == InvalidBufferIndex)
-               {
-                  firstFreeIndex = i;
-               }
-            }
-         }
-
-         const uint32_t bufferIndexToAssign = loadedFileIndex != InvalidBufferIndex
-            ? loadedFileIndex
-            : firstFreeIndex;
-
-         GEAssert(bufferIndexToAssign < mBuffersCount);
-
-         mBuffers[bufferIndexToAssign].AssignedFileID = audioFileName.getID();
-         mBuffers[bufferIndexToAssign].References++;
-
-         GEMutexUnlock(mMutex);
-
-         // load audio file
-         mBuffers[bufferIndexToAssign].Data = Allocator::alloc<AudioData>(1, AllocationCategory::Audio);
-         GEInvokeCtor(AudioData, mBuffers[bufferIndexToAssign].Data)();
-
-         Device::readContentFile(ContentType::Audio, audioFilesSubdir,
-            audioFileNames[i].getString(), audioFilesExt, mBuffers[bufferIndexToAssign].Data);
-
-         // register audio data
-         platformLoadSound(bufferIndexToAssign, mBuffers[bufferIndexToAssign].Data);
-      }
+      loadAudioBankFiles(audioBank);
    }
 }
 
@@ -333,7 +338,7 @@ void AudioSystem::unloadAudioBank(const ObjectName& pAudioBankName)
 {
    AudioBank* audioBank = mAudioBanks.get(pAudioBankName);
 
-   if(audioBank)
+   if(audioBank && audioBank->getLoaded())
    {
       releaseAudioBankFiles(audioBank);
       audioBank->unload();
@@ -357,13 +362,13 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
    if(!audioBank)
    {
       Log::log(LogType::Warning, "The '%s' audio bank does not exist", pAudioBankName.getString());
-      return 0;
+      return nullptr;
    }
 
    if(!audioBank->getLoaded())
    {
       Log::log(LogType::Warning, "The '%s' audio bank has not been loaded", pAudioBankName.getString());
-      return 0;
+      return nullptr;
    }
 
    AudioEvent* audioEvent = audioBank->getAudioEvent(pAudioEventName);
@@ -371,20 +376,20 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
    if(!audioEvent)
    {
       Log::log(LogType::Warning, "The '%s' audio bank does not contain the '%s' audio event", pAudioBankName.getString(), pAudioEventName.getString());
-      return 0;
+      return nullptr;
    }
 
    if(audioEvent->getAudioFileCount() == 0)
    {
       Log::log(LogType::Warning, "The '%s' audio event does not contain any audio files", pAudioEventName.getString());
-      return 0;
+      return nullptr;
    }
 
    int audioFileIndex = 0;
 
-   if(audioEvent->getAudioFileCount() > 1)
+   if(audioEvent->getAudioFileCount() > 1u)
    {
-      RandInt rand = RandInt(0, audioEvent->getAudioFileCount() - 1);
+      RandInt rand = RandInt(0, (int)audioEvent->getAudioFileCount() - 1);
       audioFileIndex = rand.generate();
    }
 
@@ -393,7 +398,7 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
    const BufferID InvalidBufferIndex = mBuffersCount;
    BufferID bufferID = InvalidBufferIndex;
 
-   for(BufferID i = 0; i < mBuffersCount; i++)
+   for(BufferID i = 0u; i < mBuffersCount; i++)
    {
       if(mBuffers[i].AssignedFileID == audioFileName.getID())
       {
@@ -403,15 +408,15 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
    }
 
    if(bufferID == InvalidBufferIndex)
-      return 0;
+      return nullptr;
 
    GEMutexLock(mMutex);
 
    // select channel to play the sound
-   ChannelID selectedChannel = 0;
+   ChannelID selectedChannel = 0u;
    uint32_t oldestAssignmentIndex = mChannels[0].AssignmentIndex;
 
-   for(ChannelID currentChannel = 0; currentChannel < mChannelsCount; currentChannel++)
+   for(ChannelID currentChannel = 0u; currentChannel < mChannelsCount; currentChannel++)
    {
       if(mChannels[currentChannel].Free)
       {
@@ -435,7 +440,7 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
 
    if(mAudioEventInstanceAssignmentIndex == AudioEventInstancesCount)
    {
-      mAudioEventInstanceAssignmentIndex = 0;
+      mAudioEventInstanceAssignmentIndex = 0u;
    }
 
    mActiveAudioEventInstances.push_back(audioEventInstance);

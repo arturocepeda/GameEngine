@@ -249,6 +249,12 @@ namespace GE { namespace Rendering
 
 namespace GE { namespace Audio
 {
+   const char* strAudioBankType[] =
+   {
+      "Buffered",
+      "Streamed"
+   };
+
    const char* strAudioEventPlayMode[] =
    {
       "OneShot",
