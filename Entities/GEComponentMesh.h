@@ -35,7 +35,6 @@ namespace GE { namespace Entities
       Content::Mesh* cMesh;
       uint8_t eDynamicShadows;
       uint8_t eSettings;
-      ComponentSkeleton* cSkeleton;
 
    public:
       static const Core::ObjectName ClassName;

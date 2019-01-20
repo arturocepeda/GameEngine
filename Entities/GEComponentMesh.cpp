@@ -35,7 +35,6 @@ ComponentMesh::ComponentMesh(Entity* Owner)
    , cMesh(0)
    , eDynamicShadows(0)
    , eSettings(0)
-   , cSkeleton(0)
 {
    mClassNames.push_back(ClassName);
 
@@ -94,13 +93,6 @@ void ComponentMesh::loadMesh(Mesh* M)
       uint iVertexDataFloats = cMesh->getGeometryData().NumVertices * cMesh->getGeometryData().VertexStride / sizeof(float);
       sGeometryData.VertexData = Allocator::alloc<float>(iVertexDataFloats);
       memcpy(sGeometryData.VertexData, cMesh->getGeometryData().VertexData, iVertexDataFloats * sizeof(float));
-
-      cSkeleton = cOwner->getComponent<ComponentSkeleton>();
-
-      if(!cSkeleton && cOwner->getParent())
-      {
-         cSkeleton = cOwner->getParent()->getComponent<ComponentSkeleton>();
-      }
    }
 }
 
@@ -113,7 +105,6 @@ void ComponentMesh::unload()
    }
 
    cMesh = 0;
-   cSkeleton = 0;
    sGeometryData = GeometryData();
 }
 
@@ -124,6 +115,13 @@ Content::Mesh* ComponentMesh::getMesh() const
 
 void ComponentMesh::updateSkinning()
 {
+   ComponentSkeleton* cSkeleton = cOwner->getComponent<ComponentSkeleton>();
+
+   if(!cSkeleton && cOwner->getParent())
+   {
+      cSkeleton = cOwner->getParent()->getComponent<ComponentSkeleton>();
+   }
+
    if(!cSkeleton)
       return;
 
