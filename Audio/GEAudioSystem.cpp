@@ -287,8 +287,8 @@ void AudioSystem::update()
 
          if(instance->VolumeFactorFade < GE_EPSILON)
          {
-            releaseChannel(instance->Channel);
             platformStop(instance->Channel);
+            releaseChannel(instance->Channel);
             continue;
          }
          else
