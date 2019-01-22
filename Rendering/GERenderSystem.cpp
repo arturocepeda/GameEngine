@@ -1059,7 +1059,7 @@ void RenderSystem::clearRenderingQueues()
    for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
    {
       s3DUICanvasEntries[i].Index = (uint16_t)i;
-      s3DUICanvasEntries[i].Settings = (uint16_t)0;
+      s3DUICanvasEntries[i].Settings = (uint16_t)CanvasSettingsBitMask::RenderAfterTransparentGeometry;
       s3DUICanvasEntries[i].WorldPosition = Vector3::Zero;
    }
 

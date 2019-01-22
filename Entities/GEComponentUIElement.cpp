@@ -241,7 +241,7 @@ const ObjectName ComponentUI3DCanvas::ClassName = ObjectName("UI3DCanvas");
 
 ComponentUI3DCanvas::ComponentUI3DCanvas(Entity* Owner)
    : ComponentUI3DElement(Owner)
-   , eSettings(0)
+   , eSettings((uint8_t)CanvasSettingsBitMask::RenderAfterTransparentGeometry)
 {
    mClassNames.push_back(ClassName);
 
