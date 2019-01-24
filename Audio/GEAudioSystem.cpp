@@ -415,12 +415,14 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
    // select channel to play the sound
    ChannelID selectedChannel = 0u;
    uint32_t oldestAssignmentIndex = mChannels[0].AssignmentIndex;
+   bool channelStolen = true;
 
    for(ChannelID currentChannel = 0u; currentChannel < mChannelsCount; currentChannel++)
    {
       if(mChannels[currentChannel].Free)
       {
          selectedChannel = currentChannel;
+         channelStolen = false;
          break;
       }
 
@@ -429,6 +431,12 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
          oldestAssignmentIndex = mChannels[currentChannel].AssignmentIndex;
          selectedChannel = currentChannel;
       }
+   }
+
+   if(channelStolen)
+   {
+      platformStop(selectedChannel);
+      releaseChannel(selectedChannel);
    }
 
    mChannels[selectedChannel].AssignmentIndex = mChannelAssignmentIndex++;
