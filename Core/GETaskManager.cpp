@@ -37,7 +37,7 @@ TaskManager::TaskManager()
    GEInvokeCtor(ThreadPoolSync, cFrameThreadPool)(Device::getNumberOfCPUCores() - 2);
 
    cGeneralThreadPool = Allocator::alloc<ThreadPoolAsync>();
-   GEInvokeCtor(ThreadPoolAsync, cGeneralThreadPool)(1);
+   GEInvokeCtor(ThreadPoolAsync, cGeneralThreadPool)(Device::getNumberOfCPUCores() - 2);
 }
 
 TaskManager::~TaskManager()
