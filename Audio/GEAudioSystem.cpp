@@ -444,12 +444,18 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
    mChannels[selectedChannel].Free = false;
 
    // assign event instance
-   AudioEventInstance* audioEventInstance = &mAudioEventInstances[mAudioEventInstanceAssignmentIndex++];
+   AudioEventInstance* audioEventInstance = nullptr;
 
-   if(mAudioEventInstanceAssignmentIndex == AudioEventInstancesCount)
+   do
    {
-      mAudioEventInstanceAssignmentIndex = 0u;
+      audioEventInstance = &mAudioEventInstances[mAudioEventInstanceAssignmentIndex++];
+
+      if(mAudioEventInstanceAssignmentIndex == AudioEventInstancesCount)
+      {
+         mAudioEventInstanceAssignmentIndex = 0u;
+      }
    }
+   while(audioEventInstance->State != AudioEventInstanceState::Free);
 
    mActiveAudioEventInstances.push_back(audioEventInstance);
 
