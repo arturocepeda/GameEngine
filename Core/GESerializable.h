@@ -140,6 +140,7 @@ namespace GE { namespace Core
 
       bool is(const ObjectName& ClassName) const;
 
+      bool has(const ObjectName& PropertyName) const;
       Value get(const ObjectName& PropertyName);
       void set(const ObjectName& PropertyName, const Value& PropertyValue);
 

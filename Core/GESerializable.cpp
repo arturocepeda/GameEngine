@@ -165,6 +165,19 @@ bool Serializable::is(const ObjectName& ClassName) const
    return false;
 }
 
+bool Serializable::has(const ObjectName& PropertyName) const
+{
+   for(uint i = 0; i < vProperties.size(); i++)
+   {
+      if(vProperties[i].Name == PropertyName)
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
 Value Serializable::get(const ObjectName& PropertyName)
 {
    Property* cProperty = 0;

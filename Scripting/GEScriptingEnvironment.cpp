@@ -24,6 +24,7 @@
 #include "Core/GEPhysics.h"
 #include "Core/GEProfiler.h"
 #include "Content/GEContentData.h"
+#include "Content/GELocalizedString.h"
 #include "Input/GEInputSystem.h"
 #include "Entities/GEScene.h"
 #include "Entities/GEComponentTransform.h"
@@ -737,6 +738,7 @@ void Environment::registerTypes()
    (
       "Serializable"
       , "is", &Serializable::is
+      , "has", &Serializable::has
       , "get", &Serializable::get
       , "set", &Serializable::set
       , "executeAction", &Serializable::executeAction
@@ -858,6 +860,13 @@ void Environment::registerTypes()
    (
       "Skeleton"
       , "getBonesCount", &Skeleton::getBonesCount
+   );
+   mLua.new_simple_usertype<LocalizedStringsManager>
+   (
+      "LocalizedStringsManager"
+      , "getInstance", &LocalizedStringsManager::getInstance
+      , "setVariable", &LocalizedStringsManager::setVariable
+      , "getVariable", &LocalizedStringsManager::getVariable
    );
 
    //
