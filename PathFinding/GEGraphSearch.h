@@ -20,32 +20,55 @@ namespace GE { namespace Pathfinding
    class GraphSearch
    {
    protected:
+      typedef float (*EstimateDistanceFunction)(const GraphNode& pNodeFrom, const GraphNode& pNodeTo);
+
       Graph* graph;
-      int startNode;
-      int targetNode;
+      GraphNodeIndex startNode;
+      GraphNodeIndex targetNode;
 
-      int* costSoFar;
-      int* previousNode;
-      std::vector<int> nodesToCheck;    
-      std::vector<int> shortestPath;
+      float* costSoFar;
+      GraphNodeIndex* previousNode;
+      std::vector<GraphNodeIndex> nodesToCheck;    
+      std::vector<GraphNodeIndex> shortestPath;
 
-      int Infinity;
-      int InvalidNodeIndex;
+      uint32_t visitedNodes;
 
-      int visitedNodes;
+      EstimateDistanceFunction mEstimateDistance;
+      float mEstimateDistanceWeigth;
+
+      GraphSearch();
 
       void initialize();
       void release();
-      int getNextNode();
-
-      virtual int estimateDistance(int nodeFrom, int nodeTo) = 0;
+      GraphNodeIndex getNextNode();
 
    public:
-      GraphSearch();
-      virtual ~GraphSearch();
+      ~GraphSearch();
 
-      bool search(Graph* graph, int startNode, int targetNode);
-      std::vector<int> getPath();
-      int getNumberOfVisitedNodes();
+      bool search(Graph* graph, GraphNodeIndex startNode, GraphNodeIndex targetNode);
+      void getPath(std::vector<GraphNodeIndex>* pOutPath) const;
+      uint32_t getNumberOfVisitedNodes() const;
+   };
+
+
+   class Dijkstra : public GraphSearch
+   {
+   private:
+      static float estimateDistance(const GraphNode& pNodeFrom, const GraphNode& pNodeTo);
+
+   public:
+      Dijkstra();
+      ~Dijkstra();
+   };
+
+
+   class AStar : public GraphSearch
+   {
+   private:
+      static float estimateDistance(const GraphNode& pNodeFrom, const GraphNode& pNodeTo);
+
+   public:
+      AStar(float pHeuristicWeight);
+      ~AStar();
    };
 }}

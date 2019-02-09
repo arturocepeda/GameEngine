@@ -24,12 +24,12 @@ PathFinder::~PathFinder()
 {
 }
 
-std::vector<int>& PathFinder::getCurrentPath()
+const std::vector<GraphNodeIndex>& PathFinder::getCurrentPath() const
 {
    return currentPath;
 }
 
-bool PathFinder::calculatePath(int nodeStart, int nodeTarget)
+bool PathFinder::calculatePath(GraphNodeIndex nodeStart, GraphNodeIndex nodeTarget)
 {
    currentStartNode = nodeStart;
    currentTargetNode = nodeTarget;
@@ -37,14 +37,18 @@ bool PathFinder::calculatePath(int nodeStart, int nodeTarget)
    bool found = algorithm->search(graph, nodeStart, nodeTarget);
 
    if(found)
-      currentPath = algorithm->getPath();
+   {
+      algorithm->getPath(&currentPath);
+   }
    else
+   {
       currentPath.clear();
+   }
 
    return found;
 }
 
-bool PathFinder::updatePath(int currentNode, int updatedNode)
+bool PathFinder::updatePath(GraphNodeIndex currentNode, GraphNodeIndex updatedNode)
 {
    int updatedNodeIndex = getPositionOfNode(updatedNode);
    int currentIndex = getPositionOfNode(currentNode);
@@ -54,7 +58,7 @@ bool PathFinder::updatePath(int currentNode, int updatedNode)
       return false;
 
    // remove path from our current position
-   int newStartNode;
+   int newStartNode = InvalidNodeIndex;
 
    // we are at the beginning
    if(currentIndex == -1)
@@ -62,35 +66,33 @@ bool PathFinder::updatePath(int currentNode, int updatedNode)
       newStartNode = currentStartNode;
       currentPath.clear();
    }
-
    // we are somewhere in the middle
    else
    {
       newStartNode = currentPath[currentIndex];
 
-      while(currentPath[currentPath.size() - 1] != newStartNode)
+      while(currentPath[currentPath.size() - 1u] != newStartNode)
+      {
          currentPath.pop_back();
+      }
    }
 
    bool found = algorithm->search(graph, newStartNode, currentTargetNode);
 
-   if(!found)
-      return true;
-
-   std::vector<int> newSubPath = algorithm->getPath();
-
-   for(unsigned int i = 0; i < newSubPath.size(); i++)
-      currentPath.push_back(newSubPath[i]);
+   if(found)
+   {
+      algorithm->getPath(&currentPath);
+   }
 
    return true;
 }
 
-int PathFinder::getPositionOfNode(int node)
+int PathFinder::getPositionOfNode(GraphNodeIndex node) const
 {
-   for(unsigned int i = 0; i < currentPath.size(); i++)
+   for(size_t i = 0; i < currentPath.size(); i++)
    {
       if(currentPath[i] == node)
-         return i;
+         return (int)i;
    }
 
    return -1;

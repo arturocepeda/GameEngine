@@ -14,7 +14,8 @@
 
 using namespace GE::Pathfinding;
 
-Graph::Graph(int numberOfNodes)
+Graph::Graph(uint32_t numberOfNodes)
+   : NumberOfNodes(numberOfNodes)
 {
    NumberOfNodes = numberOfNodes;
    Nodes = new GraphNode[numberOfNodes];
@@ -30,22 +31,22 @@ Graph::~Graph()
    delete[] unreachableNodes;
 }
 
-void Graph::setReachableNode(int nodeIndex)
+void Graph::setReachableNode(GraphNodeIndex nodeIndex)
 {
    unreachableNodes[nodeIndex] = false;
 }
 
-void Graph::setUnreachableNode(int nodeIndex)
+void Graph::setUnreachableNode(GraphNodeIndex nodeIndex)
 {
    unreachableNodes[nodeIndex] = true;
 }
 
-bool Graph::isUnreachableNode(int nodeIndex)
+bool Graph::isUnreachableNode(GraphNodeIndex nodeIndex) const
 {
    return unreachableNodes[nodeIndex];
 }
 
-void Graph::connect(int nodeA, int nodeB, int weight, bool bidirectional)
+void Graph::connect(GraphNodeIndex nodeA, GraphNodeIndex nodeB, float weight, bool bidirectional)
 {
    if(unreachableNodes[nodeB])
       return;
@@ -63,9 +64,9 @@ void Graph::connect(int nodeA, int nodeB, int weight, bool bidirectional)
    }
 }
 
-bool Graph::alreadyConnected(int nodeA, int nodeB)
+bool Graph::alreadyConnected(GraphNodeIndex nodeA, GraphNodeIndex nodeB) const
 {
-   for(unsigned int i = 0; i < AdjacencyList[nodeA].size(); i++)
+   for(uint32_t i = 0u; i < AdjacencyList[nodeA].size(); i++)
    {
       if(AdjacencyList[nodeA][i].DestinyNode == nodeB)
          return true;
@@ -74,39 +75,44 @@ bool Graph::alreadyConnected(int nodeA, int nodeB)
    return false;
 }
 
-void Graph::setConnectionActive(int nodeA, int nodeB, bool active)
+void Graph::setConnectionActive(GraphNodeIndex nodeA, GraphNodeIndex nodeB, bool active)
 {
    GraphConnection* connection = getConnection(nodeA, nodeB);
+
    if(connection)
+   {
       connection->Active = active;
+   }
 }
 
-GraphConnection* Graph::getConnection(int nodeA, int nodeB)
+GraphConnection* Graph::getConnection(GraphNodeIndex nodeA, GraphNodeIndex nodeB)
 {
-   for(unsigned int i = 0; i < AdjacencyList[nodeA].size(); i++)
+   for(uint32_t i = 0u; i < AdjacencyList[nodeA].size(); i++)
    {
       if(AdjacencyList[nodeA][i].DestinyNode == nodeB)
          return &AdjacencyList[nodeA][i];
    }
 
-   return 0;
+   return nullptr;
 }
 
-void Graph::setConnectionWeight(int nodeA, int nodeB, int weight)
+void Graph::setConnectionWeight(GraphNodeIndex nodeA, GraphNodeIndex nodeB, float weight)
 {
    GraphConnection* connection = getConnection(nodeA, nodeB);
 
    if(connection)
+   {
       connection->Weight = weight;
+   }
 }
 
-void Graph::activateConnection(int nodeA, int nodeB)
+void Graph::activateConnection(GraphNodeIndex nodeA, GraphNodeIndex nodeB)
 {
    setConnectionActive(nodeA, nodeB, true);
    setConnectionActive(nodeB, nodeA, true);
 }
 
-void Graph::deactivateConnection(int nodeA, int nodeB)
+void Graph::deactivateConnection(GraphNodeIndex nodeA, GraphNodeIndex nodeB)
 {
    setConnectionActive(nodeA, nodeB, false);
    setConnectionActive(nodeB, nodeA, false);

@@ -11,17 +11,21 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "GEGraphSearch.h"
+
 #include <vector>
-#include <climits>
 
 using namespace GE::Pathfinding;
 
+//
+//  GraphSearch
+//
 GraphSearch::GraphSearch()
+   : costSoFar(nullptr)
+   , previousNode(nullptr)
+   , visitedNodes(0u)
+   , mEstimateDistance(nullptr)
+   , mEstimateDistanceWeigth(0.0f)
 {
-    Infinity = std::numeric_limits<int>::max();
-    InvalidNodeIndex = -1;
-    costSoFar = NULL;
-    previousNode = NULL;
 }
 
 GraphSearch::~GraphSearch()
@@ -32,51 +36,51 @@ GraphSearch::~GraphSearch()
 void GraphSearch::initialize()
 {
     release();
-    costSoFar = new int[graph->NumberOfNodes];
-    previousNode = new int[graph->NumberOfNodes];
+
+    costSoFar = new float[graph->NumberOfNodes];
+    previousNode = new GraphNodeIndex[graph->NumberOfNodes];
     nodesToCheck.clear();
-    visitedNodes = 0;
+    visitedNodes = 0u;
 
     if(shortestPath.capacity() < graph->NumberOfNodes)
         shortestPath.reserve(graph->NumberOfNodes);
 
-    for(unsigned int i = 0; i < graph->NumberOfNodes; i++)
+    for(uint32_t i = 0; i < graph->NumberOfNodes; i++)
     {
-        costSoFar[i] = Infinity;
+        costSoFar[i] = FLT_MAX;
         previousNode[i] = InvalidNodeIndex;
         nodesToCheck.push_back(i);
     }
 
-    costSoFar[startNode] = 0;
+    costSoFar[startNode] = 0.0f;
 }
 
 void GraphSearch::release()
 {
-    if(costSoFar != NULL)
+    if(costSoFar)
     {
         delete[] costSoFar;
-        costSoFar = NULL;
+        costSoFar = nullptr;
     }
 
-    if(previousNode != NULL)
+    if(previousNode)
     {
         delete[] previousNode;
-        previousNode = NULL;
+        previousNode = nullptr;
     }
 }
 
-int GraphSearch::getNextNode()
+GraphNodeIndex GraphSearch::getNextNode()
 {
-    int minCost = Infinity;
-    int nextNode = InvalidNodeIndex;
-    int nextNodeIndexInTheList;
-    int currentNode;
-    int cost;
+    GraphNodeIndex nextNode = InvalidNodeIndex;
+    GraphNodeIndex nextNodeIndexInTheList = InvalidNodeIndex;
 
-    for(unsigned int i = 0; i < nodesToCheck.size(); i++)
+    float minCost = FLT_MAX;
+
+    for(uint32_t i = 0; i < nodesToCheck.size(); i++)
     {
-        currentNode = nodesToCheck[i];
-        cost = costSoFar[currentNode];
+        GraphNodeIndex currentNode = nodesToCheck[i];
+        float cost = costSoFar[currentNode];
 
         if(cost < minCost)
         {
@@ -87,24 +91,24 @@ int GraphSearch::getNextNode()
     }
 
     if(nextNode >= 0)
+    {
         nodesToCheck.erase(nodesToCheck.begin() + nextNodeIndexInTheList);
+    }
 
     return nextNode;
 }
 
-bool GraphSearch::search(Graph* graph, int startNode, int targetNode)
+bool GraphSearch::search(Graph* graph, GraphNodeIndex startNode, GraphNodeIndex targetNode)
 {
     this->graph = graph;
     this->startNode = startNode;
     this->targetNode = targetNode;
 
-    int currentNode;
-
     initialize();
 
-    while(nodesToCheck.size() > 0)
+    while(!nodesToCheck.empty())
     {
-        currentNode = getNextNode();
+        GraphNodeIndex currentNode = getNextNode();
         visitedNodes++;
 
         // there's no path
@@ -115,16 +119,19 @@ bool GraphSearch::search(Graph* graph, int startNode, int targetNode)
         if(currentNode == targetNode)
             return true;
 
-        for(unsigned int connection = 0; connection < graph->AdjacencyList[currentNode].size(); connection++)
+        for(uint32_t connection = 0; connection < graph->AdjacencyList[currentNode].size(); connection++)
         {
             GraphConnection& currentNodeConnection = graph->AdjacencyList[currentNode][connection];
 
-            if (!currentNodeConnection.Active || graph->isUnreachableNode(currentNodeConnection.DestinyNode))
+            if(!currentNodeConnection.Active || graph->isUnreachableNode(currentNodeConnection.DestinyNode))
                 continue;
 
-            int connectedNode = currentNodeConnection.DestinyNode;
-            int costToThisNode = costSoFar[currentNode] + currentNodeConnection.Weight +
-                estimateDistance(connectedNode, targetNode);
+            const GraphNodeIndex connectedNode = currentNodeConnection.DestinyNode;
+
+            const float costToThisNode =
+               costSoFar[currentNode] +
+               currentNodeConnection.Weight +
+               (mEstimateDistance(graph->Nodes[connectedNode], graph->Nodes[targetNode]) * mEstimateDistanceWeigth);
 
             if(costSoFar[connectedNode] > costToThisNode)
             {
@@ -137,21 +144,56 @@ bool GraphSearch::search(Graph* graph, int startNode, int targetNode)
     return false;
 }
 
-std::vector<int> GraphSearch::getPath()
+void GraphSearch::getPath(std::vector<GraphNodeIndex>* pOutPath) const
 {
-    int currentNode = targetNode;
-    shortestPath.clear();
+    GraphNodeIndex currentNode = targetNode;
+    pOutPath->clear();
 
     while(currentNode != startNode)
     {
-        shortestPath.insert(shortestPath.begin(), currentNode);
+        pOutPath->insert(pOutPath->begin(), currentNode);
         currentNode = previousNode[currentNode];
     }
-
-    return shortestPath;
 }
 
-int GraphSearch::getNumberOfVisitedNodes()
+uint32_t GraphSearch::getNumberOfVisitedNodes() const
 {
     return visitedNodes;
+}
+
+
+//
+//  Dijkstra
+//
+Dijkstra::Dijkstra()
+{
+   mEstimateDistance = estimateDistance;
+}
+
+Dijkstra::~Dijkstra()
+{
+}
+
+float Dijkstra::estimateDistance(const GraphNode& pNodeFrom, const GraphNode& pNodeTo)
+{
+   return 0.0f;
+}
+
+
+//
+//  AStar
+//
+AStar::AStar(float pHeuristicWeight)
+{
+   mEstimateDistance = estimateDistance;
+   mEstimateDistanceWeigth = pHeuristicWeight;
+}
+
+AStar::~AStar()
+{
+}
+
+float AStar::estimateDistance(const GraphNode& pNodeFrom, const GraphNode& pNodeTo)
+{
+   return fabsf(pNodeTo.PosX - pNodeFrom.PosX) + fabsf(pNodeTo.PosY - pNodeFrom.PosY);
 }

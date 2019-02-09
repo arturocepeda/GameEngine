@@ -17,6 +17,10 @@
 
 namespace GE { namespace Pathfinding
 {
+   typedef int GraphNodeIndex;
+
+   static const GraphNodeIndex InvalidNodeIndex = -1;
+
    struct GraphNode
    {
       float PosX;
@@ -25,14 +29,16 @@ namespace GE { namespace Pathfinding
 
    struct GraphConnection
    {
-      int DestinyNode;
-      int Weight;
+      GraphNodeIndex DestinyNode;
+      float Weight;
       bool Active;
 
-      GraphConnection(int destinyNode, int weight) 
+      GraphConnection(GraphNodeIndex destinyNode, float weight) 
          : DestinyNode(destinyNode)
          , Weight(weight) 
-         , Active(true) {}
+         , Active(true)
+      {
+      }
    };
 
    class Graph
@@ -40,26 +46,26 @@ namespace GE { namespace Pathfinding
    protected:
       bool* unreachableNodes;
 
-      void setConnectionActive(int nodeA, int nodeB, bool active);
-      GraphConnection* getConnection(int nodeA, int nodeB);
+      void setConnectionActive(GraphNodeIndex nodeA, GraphNodeIndex nodeB, bool active);
+      GraphConnection* getConnection(GraphNodeIndex nodeA, GraphNodeIndex nodeB);
 
    public:
       GraphNode* Nodes;
       std::vector<GraphConnection>* AdjacencyList;
-      uint NumberOfNodes;
+      uint32_t NumberOfNodes;
 
-      Graph(int numberOfNodes = 128);
+      Graph(uint32_t numberOfNodes);
       ~Graph();
     
-      void setReachableNode(int nodeIndex);
-      void setUnreachableNode(int nodeIndex);
-      bool isUnreachableNode(int nodeIndex);
+      void setReachableNode(GraphNodeIndex nodeIndex);
+      void setUnreachableNode(GraphNodeIndex nodeIndex);
+      bool isUnreachableNode(GraphNodeIndex nodeIndex) const;
 
-      void connect(int nodeA, int nodeB, int weight, bool bidirectional = true);
-      bool alreadyConnected(int nodeA, int nodeB);
+      void connect(GraphNodeIndex nodeA, GraphNodeIndex nodeB, float weight, bool bidirectional = true);
+      bool alreadyConnected(GraphNodeIndex nodeA, GraphNodeIndex nodeB) const;
 
-      void setConnectionWeight(int nodeA, int nodeB, int weight);
-      void activateConnection(int nodeA, int nodeB);
-      void deactivateConnection(int nodeA, int nodeB);
+      void setConnectionWeight(GraphNodeIndex nodeA, GraphNodeIndex nodeB, float weight);
+      void activateConnection(GraphNodeIndex nodeA, GraphNodeIndex nodeB);
+      void deactivateConnection(GraphNodeIndex nodeA, GraphNodeIndex nodeB);
    };
 }}

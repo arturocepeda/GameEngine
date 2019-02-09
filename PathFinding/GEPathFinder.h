@@ -24,19 +24,19 @@ namespace GE { namespace Pathfinding
       Graph* graph;
       GraphSearch* algorithm;
 
-      int currentStartNode;
-      int currentTargetNode;
-      std::vector<int> currentPath;
+      GraphNodeIndex currentStartNode;
+      GraphNodeIndex currentTargetNode;
+      std::vector<GraphNodeIndex> currentPath;
 
-      int getPositionOfNode(int node);
+      int getPositionOfNode(GraphNodeIndex node) const;
 
    public:
       PathFinder(Graph* graph, GraphSearch* algorithm);
       ~PathFinder();
 
-      std::vector<int>& getCurrentPath();
+      const std::vector<GraphNodeIndex>& getCurrentPath() const;
 
-      bool calculatePath(int nodeStart, int nodeTarget);
-      bool updatePath(int currentNode, int updatedNode);
+      bool calculatePath(GraphNodeIndex nodeStart, GraphNodeIndex nodeTarget);
+      bool updatePath(GraphNodeIndex currentNode, GraphNodeIndex updatedNode);
    };
 }}
