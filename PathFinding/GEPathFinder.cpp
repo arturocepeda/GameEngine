@@ -14,9 +14,11 @@
 
 using namespace GE::Pathfinding;
 
-PathFinder::PathFinder(Graph* graph, GraphSearch* algorithm)
-   : graph(graph)
-   , algorithm(algorithm)
+PathFinder::PathFinder(Graph* pGraph, GraphSearch* pAlgorithm)
+   : mGraph(pGraph)
+   , mAlgorithm(pAlgorithm)
+   , mCurrentStartNode(InvalidNodeIndex)
+   , mCurrentTargetNode(InvalidNodeIndex)
 {
 }
 
@@ -26,62 +28,62 @@ PathFinder::~PathFinder()
 
 const std::vector<GraphNodeIndex>& PathFinder::getCurrentPath() const
 {
-   return currentPath;
+   return mCurrentPath;
 }
 
-bool PathFinder::calculatePath(GraphNodeIndex nodeStart, GraphNodeIndex nodeTarget)
+bool PathFinder::calculatePath(GraphNodeIndex pNodeStart, GraphNodeIndex pNodeTarget)
 {
-   currentStartNode = nodeStart;
-   currentTargetNode = nodeTarget;
+   mCurrentStartNode = pNodeStart;
+   mCurrentTargetNode = pNodeTarget;
 
-   bool found = algorithm->search(graph, nodeStart, nodeTarget);
+   bool found = mAlgorithm->search(mGraph, pNodeStart, pNodeTarget);
 
    if(found)
    {
-      algorithm->getPath(&currentPath);
+      mAlgorithm->getPath(&mCurrentPath);
    }
    else
    {
-      currentPath.clear();
+      mCurrentPath.clear();
    }
 
    return found;
 }
 
-bool PathFinder::updatePath(GraphNodeIndex currentNode, GraphNodeIndex updatedNode)
+bool PathFinder::updatePath(GraphNodeIndex pCurrentNode, GraphNodeIndex pUpdatedNode)
 {
-   int updatedNodeIndex = getPositionOfNode(updatedNode);
-   int currentIndex = getPositionOfNode(currentNode);
+   int updatedNodeIndex = getPositionOfNode(pUpdatedNode);
+   int currentIndex = getPositionOfNode(pCurrentNode);
 
    // the updated node was closed and is already behind us
-   if(updatedNodeIndex < currentIndex && graph->isUnreachableNode(updatedNode))
+   if(updatedNodeIndex < currentIndex && mGraph->isUnreachableNode(pUpdatedNode))
       return false;
 
    // remove path from our current position
-   int newStartNode = InvalidNodeIndex;
+   GraphNodeIndex newStartNode = InvalidNodeIndex;
 
    // we are at the beginning
    if(currentIndex == -1)
    {
-      newStartNode = currentStartNode;
-      currentPath.clear();
+      newStartNode = mCurrentStartNode;
+      mCurrentPath.clear();
    }
    // we are somewhere in the middle
    else
    {
-      newStartNode = currentPath[currentIndex];
+      newStartNode = mCurrentPath[currentIndex];
 
-      while(currentPath[currentPath.size() - 1u] != newStartNode)
+      while(mCurrentPath[mCurrentPath.size() - 1u] != newStartNode)
       {
-         currentPath.pop_back();
+         mCurrentPath.pop_back();
       }
    }
 
-   bool found = algorithm->search(graph, newStartNode, currentTargetNode);
+   const bool found = mAlgorithm->search(mGraph, newStartNode, mCurrentTargetNode);
 
    if(found)
    {
-      algorithm->getPath(&currentPath);
+      mAlgorithm->getPath(&mCurrentPath);
    }
 
    return true;
@@ -89,10 +91,12 @@ bool PathFinder::updatePath(GraphNodeIndex currentNode, GraphNodeIndex updatedNo
 
 int PathFinder::getPositionOfNode(GraphNodeIndex node) const
 {
-   for(size_t i = 0; i < currentPath.size(); i++)
+   for(size_t i = 0u; i < mCurrentPath.size(); i++)
    {
-      if(currentPath[i] == node)
+      if(mCurrentPath[i] == node)
+      {
          return (int)i;
+      }
    }
 
    return -1;

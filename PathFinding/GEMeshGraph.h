@@ -19,13 +19,13 @@ namespace GE { namespace Pathfinding
    class MeshGraph : public Graph
    {
    protected:
-      uint32_t nodesColumns;
-      uint32_t nodesRows;
+      uint32_t mNodesColumns;
+      uint32_t mNodesRows;
     
-      void setConnections(GraphNodeIndex nodeIndex, uint32_t column, uint32_t row);
+      void setConnections(GraphNodeIndex pNodeIndex, uint32_t pColumn, uint32_t pRow);
 
    public:
-      MeshGraph(uint32_t nodesColumns, uint32_t nodesRows);
+      MeshGraph(uint32_t pNodesColumns, uint32_t pNodesRows);
       ~MeshGraph();
 
       uint32_t getNumberOfColumns() const;
@@ -34,6 +34,6 @@ namespace GE { namespace Pathfinding
       void setConnections();
       void resetConnections();
 
-      void setNodePositions(float firstX, float firstY, float incrementX, float incrementY);
+      void setNodePositions(float pFirstX, float pFirstY, float pIncrementX, float pIncrementY);
    };
 }}

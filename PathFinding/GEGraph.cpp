@@ -14,106 +14,110 @@
 
 using namespace GE::Pathfinding;
 
-Graph::Graph(uint32_t numberOfNodes)
-   : NumberOfNodes(numberOfNodes)
+Graph::Graph(uint32_t pNumberOfNodes)
+   : NumberOfNodes(pNumberOfNodes)
 {
-   NumberOfNodes = numberOfNodes;
-   Nodes = new GraphNode[numberOfNodes];
-   AdjacencyList = new std::vector<GraphConnection>[numberOfNodes];
-   unreachableNodes = new bool[numberOfNodes];
-   memset(unreachableNodes, 0, numberOfNodes);
+   NumberOfNodes = pNumberOfNodes;
+   Nodes = new GraphNode[pNumberOfNodes];
+   AdjacencyList = new std::vector<GraphConnection>[pNumberOfNodes];
+   mUnreachableNodes = new bool[pNumberOfNodes];
+   memset(mUnreachableNodes, 0, pNumberOfNodes);
 }
 
 Graph::~Graph()
 {
    delete[] Nodes;
    delete[] AdjacencyList;
-   delete[] unreachableNodes;
+   delete[] mUnreachableNodes;
 }
 
-void Graph::setReachableNode(GraphNodeIndex nodeIndex)
+void Graph::setReachableNode(GraphNodeIndex pNodeIndex)
 {
-   unreachableNodes[nodeIndex] = false;
+   mUnreachableNodes[pNodeIndex] = false;
 }
 
-void Graph::setUnreachableNode(GraphNodeIndex nodeIndex)
+void Graph::setUnreachableNode(GraphNodeIndex pNodeIndex)
 {
-   unreachableNodes[nodeIndex] = true;
+   mUnreachableNodes[pNodeIndex] = true;
 }
 
-bool Graph::isUnreachableNode(GraphNodeIndex nodeIndex) const
+bool Graph::isUnreachableNode(GraphNodeIndex pNodeIndex) const
 {
-   return unreachableNodes[nodeIndex];
+   return mUnreachableNodes[pNodeIndex];
 }
 
-void Graph::connect(GraphNodeIndex nodeA, GraphNodeIndex nodeB, float weight, bool bidirectional)
+void Graph::connect(GraphNodeIndex pNodeA, GraphNodeIndex pNodeB, float pWeight, bool pBidirectional)
 {
-   if(unreachableNodes[nodeB])
+   if(mUnreachableNodes[pNodeB])
       return;
 
-   if(!alreadyConnected(nodeA, nodeB))
+   if(!alreadyConnected(pNodeA, pNodeB))
    {
-      GraphConnection connection(nodeB, weight);
-      AdjacencyList[nodeA].push_back(connection);
+      GraphConnection connection(pNodeB, pWeight);
+      AdjacencyList[pNodeA].push_back(connection);
    }
 
-   if(bidirectional && !alreadyConnected(nodeB, nodeA))
+   if(pBidirectional && !alreadyConnected(pNodeB, pNodeA))
    {
-      GraphConnection connection(nodeA, weight);
-      AdjacencyList[nodeB].push_back(connection);
+      GraphConnection connection(pNodeA, pWeight);
+      AdjacencyList[pNodeB].push_back(connection);
    }
 }
 
-bool Graph::alreadyConnected(GraphNodeIndex nodeA, GraphNodeIndex nodeB) const
+bool Graph::alreadyConnected(GraphNodeIndex pNodeA, GraphNodeIndex pNodeB) const
 {
-   for(uint32_t i = 0u; i < AdjacencyList[nodeA].size(); i++)
+   for(size_t i = 0u; i < AdjacencyList[pNodeA].size(); i++)
    {
-      if(AdjacencyList[nodeA][i].DestinyNode == nodeB)
+      if(AdjacencyList[pNodeA][i].DestinyNode == pNodeB)
+      {
          return true;
+      }
    }
 
    return false;
 }
 
-void Graph::setConnectionActive(GraphNodeIndex nodeA, GraphNodeIndex nodeB, bool active)
+void Graph::setConnectionActive(GraphNodeIndex pNodeA, GraphNodeIndex pNodeB, bool pActive)
 {
-   GraphConnection* connection = getConnection(nodeA, nodeB);
+   GraphConnection* connection = getConnection(pNodeA, pNodeB);
 
    if(connection)
    {
-      connection->Active = active;
+      connection->Active = pActive;
    }
 }
 
-GraphConnection* Graph::getConnection(GraphNodeIndex nodeA, GraphNodeIndex nodeB)
+GraphConnection* Graph::getConnection(GraphNodeIndex pNodeA, GraphNodeIndex pNodeB)
 {
-   for(uint32_t i = 0u; i < AdjacencyList[nodeA].size(); i++)
+   for(size_t i = 0u; i < AdjacencyList[pNodeA].size(); i++)
    {
-      if(AdjacencyList[nodeA][i].DestinyNode == nodeB)
-         return &AdjacencyList[nodeA][i];
+      if(AdjacencyList[pNodeA][i].DestinyNode == pNodeB)
+      {
+         return &AdjacencyList[pNodeA][i];
+      }
    }
 
    return nullptr;
 }
 
-void Graph::setConnectionWeight(GraphNodeIndex nodeA, GraphNodeIndex nodeB, float weight)
+void Graph::setConnectionWeight(GraphNodeIndex pNodeA, GraphNodeIndex pNodeB, float pWeight)
 {
-   GraphConnection* connection = getConnection(nodeA, nodeB);
+   GraphConnection* connection = getConnection(pNodeA, pNodeB);
 
    if(connection)
    {
-      connection->Weight = weight;
+      connection->Weight = pWeight;
    }
 }
 
-void Graph::activateConnection(GraphNodeIndex nodeA, GraphNodeIndex nodeB)
+void Graph::activateConnection(GraphNodeIndex pNodeA, GraphNodeIndex pNodeB)
 {
-   setConnectionActive(nodeA, nodeB, true);
-   setConnectionActive(nodeB, nodeA, true);
+   setConnectionActive(pNodeA, pNodeB, true);
+   setConnectionActive(pNodeB, pNodeA, true);
 }
 
-void Graph::deactivateConnection(GraphNodeIndex nodeA, GraphNodeIndex nodeB)
+void Graph::deactivateConnection(GraphNodeIndex pNodeA, GraphNodeIndex pNodeB)
 {
-   setConnectionActive(nodeA, nodeB, false);
-   setConnectionActive(nodeB, nodeA, false);
+   setConnectionActive(pNodeA, pNodeB, false);
+   setConnectionActive(pNodeB, pNodeA, false);
 }

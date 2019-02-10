@@ -22,16 +22,16 @@ namespace GE { namespace Pathfinding
    protected:
       typedef float (*EstimateDistanceFunction)(const GraphNode& pNodeFrom, const GraphNode& pNodeTo);
 
-      Graph* graph;
-      GraphNodeIndex startNode;
-      GraphNodeIndex targetNode;
+      Graph* mGraph;
+      GraphNodeIndex mStartNode;
+      GraphNodeIndex mTargetNode;
 
-      float* costSoFar;
-      GraphNodeIndex* previousNode;
-      std::vector<GraphNodeIndex> nodesToCheck;    
-      std::vector<GraphNodeIndex> shortestPath;
+      float* mCostSoFar;
+      GraphNodeIndex* mPreviousNode;
+      std::vector<GraphNodeIndex> mNodesToCheck;    
+      std::vector<GraphNodeIndex> mShortestPath;
 
-      uint32_t visitedNodes;
+      uint32_t mVisitedNodes;
 
       EstimateDistanceFunction mEstimateDistance;
       float mEstimateDistanceWeigth;
@@ -45,7 +45,7 @@ namespace GE { namespace Pathfinding
    public:
       ~GraphSearch();
 
-      bool search(Graph* graph, GraphNodeIndex startNode, GraphNodeIndex targetNode);
+      bool search(Graph* pGraph, GraphNodeIndex pStartNode, GraphNodeIndex pTargetNode);
       void getPath(std::vector<GraphNodeIndex>* pOutPath) const;
       uint32_t getNumberOfVisitedNodes() const;
    };
