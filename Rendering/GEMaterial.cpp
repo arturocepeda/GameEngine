@@ -35,7 +35,6 @@ Material::Material(const ObjectName& Name, const ObjectName& GroupName)
    , eBlendingMode(BlendingMode::None)
    , eFlags(0)
 {
-   GERegisterPropertyReadonly(ObjectName, Name);
    GERegisterProperty(ObjectName, ShaderProgram);
    GERegisterProperty(Color, DiffuseColor);
    GERegisterProperty(ObjectName, DiffuseTextureName);

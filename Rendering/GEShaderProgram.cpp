@@ -27,7 +27,6 @@ ShaderProgram::ShaderProgram(const ObjectName& Name, const ObjectName& GroupName
    sVertexSource[0] = '\0';
    sFragmentSource[0] = '\0';
 
-   GERegisterPropertyReadonly(ObjectName, Name);
    GERegisterProperty(String, VertexSource);
    GERegisterProperty(String, FragmentSource);
    GERegisterPropertyBitMask(VertexElementsBitMask, VertexElements);
