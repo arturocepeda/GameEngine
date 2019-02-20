@@ -55,6 +55,8 @@ namespace GE { namespace Entities
 
       GEMutex mSceneMutex;
 
+      static void saveEntityContents(std::ostream& pStream, Entity* pEntity);
+
       void registerEntity(Entity* cEntity);
       void removeEntity(Entity* cEntity);
       void removeEntityRecursively(Entity* cEntity);
@@ -64,7 +66,6 @@ namespace GE { namespace Entities
       void addMesh(const pugi::xml_node& xmlMesh, Entity* cParent);
 
       Entity* addEntity(std::istream& Stream, Entity* cParent);
-      void setupEntity(std::istream& Stream, Entity* cEntity);
 
    public:
       Scene(const Core::ObjectName& Name);
@@ -79,6 +80,8 @@ namespace GE { namespace Entities
       static Scene* getPermanentScene();
       static Scene* getDebuggingScene();
 
+      static void saveEntity(std::ostream& pStream, Entity* pEntity);
+
       Entity* addEntity(const Core::ObjectName& Name, Entity* cParent = 0);
       Entity* getEntity(const Core::ObjectName& FullName);
       bool removeEntity(const Core::ObjectName& FullName);
@@ -86,6 +89,7 @@ namespace GE { namespace Entities
       bool renameEntity(Entity* cEntity, const Core::ObjectName& NewName);
       Entity* cloneEntity(Entity* cEntity, const Core::ObjectName& CloneName, Entity* cCloneParent);
       void setEntityParent(Entity* cEntity, Entity* cNewParent);
+      void setupEntity(std::istream& Stream, Entity* cEntity);
 
       uint getEntitiesCount() const;
       Entity* getEntityByIndex(uint Index) const;

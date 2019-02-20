@@ -100,6 +100,44 @@ void Scene::releaseStaticScenes()
    cPermanentScene = 0;
 }
 
+void Scene::saveEntityContents(std::ostream& pStream, Entity* pEntity)
+{
+   uint8_t componentsCount = 0u;
+
+   for(uint32_t i = 0u; i < (uint32_t)ComponentType::Count; i++)
+   {
+      Component* component = pEntity->getComponent((ComponentType)i);
+
+      if(component)
+      {
+         componentsCount++;
+      }
+   }
+
+   const Value componentsCountValue(componentsCount);
+   componentsCountValue.writeToStream(pStream);
+
+   for(uint32_t i = 0u; i < (uint32_t)ComponentType::Count; i++)
+   {
+      Component* component = pEntity->getComponent((ComponentType)i);
+
+      if(component)
+      {
+         const Value componentClassNameValue(component->getClassName().getID());
+         componentClassNameValue.writeToStream(pStream);
+         component->saveToStream(pStream);
+      }
+   }
+
+   const Value childrenCountValue((uint8_t)pEntity->getChildrenCount());
+   childrenCountValue.writeToStream(pStream);
+
+   for(uint32_t i = 0u; i < pEntity->getChildrenCount(); i++)
+   {
+      saveEntity(pStream, pEntity->getChildByIndex(i));
+   }
+}
+
 void Scene::registerEntity(Entity* cEntity)
 {
    GEMutexLock(mSceneMutex);
@@ -183,6 +221,16 @@ Scene* Scene::getPermanentScene()
 Scene* Scene::getDebuggingScene()
 {
    return cDebuggingScene;
+}
+
+void Scene::saveEntity(std::ostream& pStream, Entity* pEntity)
+{
+   const Value entityNameValue(pEntity->getName());
+   entityNameValue.writeToStream(pStream);
+
+   pEntity->saveToStream(pStream);
+
+   saveEntityContents(pStream, pEntity);
 }
 
 Entity* Scene::addEntity(const ObjectName& Name, Entity* cParent)
@@ -388,6 +436,27 @@ void Scene::setEntityParent(Entity* cEntity, Entity* cNewParent)
    sEventArgs.Sender = this;
    sEventArgs.Data = cEntity;
    triggerEvent(Events::EntityParentChanged, &sEventArgs);
+}
+
+void Scene::setupEntity(std::istream& Stream, Entity* cEntity)
+{
+   cEntity->loadFromStream(Stream);
+
+   uint iComponentsCount = (uint)Value::fromStream(ValueType::Byte, Stream).getAsByte();
+
+   for(uint i = 0; i < iComponentsCount; i++)
+   {
+      ObjectName cComponentTypeName = ObjectName(Value::fromStream(ValueType::UInt, Stream).getAsUInt());
+      Component* cComponent = cEntity->getOrAddComponent(cComponentTypeName);
+      cComponent->loadFromStream(Stream);
+   }
+
+   uint iChildrenCount = (uint)Value::fromStream(ValueType::Byte, Stream).getAsByte();
+
+   for(uint i = 0; i < iChildrenCount; i++)
+   {
+      addEntity(Stream, cEntity);
+   }
 }
 
 uint Scene::getEntitiesCount() const
@@ -932,25 +1001,4 @@ Entity* Scene::addEntity(std::istream& Stream, Entity* cParent)
    cEntity->getComponent<ComponentTransform>()->updateWorldMatrix();
 
    return cEntity;
-}
-
-void Scene::setupEntity(std::istream& Stream, Entity* cEntity)
-{
-   cEntity->loadFromStream(Stream);
-
-   uint iComponentsCount = (uint)Value::fromStream(ValueType::Byte, Stream).getAsByte();
-
-   for(uint i = 0; i < iComponentsCount; i++)
-   {
-      ObjectName cComponentTypeName = ObjectName(Value::fromStream(ValueType::UInt, Stream).getAsUInt());
-      Component* cComponent = cEntity->getOrAddComponent(cComponentTypeName);
-      cComponent->loadFromStream(Stream);
-   }
-
-   uint iChildrenCount = (uint)Value::fromStream(ValueType::Byte, Stream).getAsByte();
-
-   for(uint i = 0; i < iChildrenCount; i++)
-   {
-      addEntity(Stream, cEntity);
-   }
 }
