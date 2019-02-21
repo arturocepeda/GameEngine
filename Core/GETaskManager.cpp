@@ -70,15 +70,23 @@ void TaskManager::update()
 
    if(cCurrentState != cActiveState)
    {
-      if(cCurrentState && (!cActiveState || cActiveState->getStateType() != StateType::Modal))
+      if(cCurrentState)
       {
          InputSystem::getInstance()->removeListener(cCurrentState);
-         cCurrentState->deactivate();
+
+         if(!cActiveState || cActiveState->getStateType() != StateType::Modal)
+         {
+            cCurrentState->deactivate();
+         }
       }
 
-      if(cActiveState && (!cCurrentState || cCurrentState->getStateType() != StateType::Modal))
+      if(cActiveState)
       {
-         cActiveState->activate();
+         if(!cCurrentState || cCurrentState->getStateType() != StateType::Modal)
+         {
+            cActiveState->activate();
+         }
+
          InputSystem::getInstance()->addListener(cActiveState);
       }
 
