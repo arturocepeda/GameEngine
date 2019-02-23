@@ -133,6 +133,7 @@ namespace GE { namespace Core
          , getter(nullptr)
          , setter(nullptr)
          , onFinished(nullptr)
+         , eState(State::Inactive)
          , mClock(0)
       {
          mClock = Time::getDefaultClock();
