@@ -241,6 +241,7 @@ namespace GE { namespace Entities
       Vector3 vConstantAcceleration;
 
       void simulate(float pDeltaTime);
+      void prewarm();
 
       void allocateVertexData();
       void composeVertexData();

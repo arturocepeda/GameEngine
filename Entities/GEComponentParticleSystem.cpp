@@ -112,6 +112,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterValueProvider(ParticleTextureAtlasIndex, ParticleTextureAtlas, 0.0f);
 
    registerAction("Burst", [this] { burst(iEmissionBurstCount); });
+   registerAction("Prewarm", [this] { prewarm(); });
 }
 
 ComponentParticleSystem::~ComponentParticleSystem()
@@ -345,10 +346,7 @@ void ComponentParticleSystem::update()
 
    if(GEHasFlag(mSettings, ParticleSystemSettingsBitMask::Prewarm) && bEmitterActive && lParticles.empty())
    {
-      for(uint32_t i = 0u; i < iMaxParticles; i++)
-      {
-         simulate(0.1f);
-      }
+      prewarm();
    }
 
    const float deltaTime = cOwner->getClock()->getDelta();
@@ -444,6 +442,14 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
 
          fElapsedTimeSinceLastEmission -= fTimeToEmitParticle;
       }
+   }
+}
+
+void ComponentParticleSystem::prewarm()
+{
+   for(uint32_t i = 0u; i < iMaxParticles; i++)
+   {
+      simulate(0.1f);
    }
 }
 
