@@ -104,5 +104,44 @@ SerializableResourceManagerObjects* SerializableResourcesManager::getEntry(const
       }
    }
 
-   return 0;
+   return nullptr;
 }
+
+#if defined (GE_EDITOR_SUPPORT)
+void SerializableResourcesManager::registerSourceFile(const ObjectName& pResourceType, const ObjectName& pGroupName,
+   const char* pSubDir, const char* pExtension)
+{
+   SourceFileRegistry::iterator it = mSourceFileRegistry.find(pResourceType.getID());
+
+   if(it == mSourceFileRegistry.end())
+   {
+      mSourceFileRegistry[pResourceType.getID()] = ResourceGroupSourceFileRegistry();
+      it = mSourceFileRegistry.find(pResourceType.getID());
+   }
+
+   GESTLString sourceFile;
+   sourceFile.append(pSubDir);
+   sourceFile.append("/");
+   sourceFile.append(pGroupName.getString());
+   sourceFile.append(".");
+   sourceFile.append(pExtension);
+   it->second[pGroupName.getID()] = sourceFile;
+}
+
+GESTLString* SerializableResourcesManager::retrieveSourceFile(const ObjectName& pResourceType, const ObjectName& pGroupName)
+{
+   SourceFileRegistry::iterator itResource = mSourceFileRegistry.find(pResourceType.getID());
+
+   if(itResource != mSourceFileRegistry.end())
+   {
+      ResourceGroupSourceFileRegistry::iterator itGroup = itResource->second.find(pGroupName.getID());
+
+      if(itGroup != itResource->second.end())
+      {
+         return &itGroup->second;
+      }
+   }
+
+   return nullptr;
+}
+#endif

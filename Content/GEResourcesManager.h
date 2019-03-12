@@ -169,8 +169,13 @@ namespace GE { namespace Content
    {
    private:
       typedef GESTLVector(SerializableResourceManagerObjects) SerializableResourceManagerObjectsList;
-
       SerializableResourceManagerObjectsList vEntries;
+
+#if defined (GE_EDITOR_SUPPORT)
+      typedef GESTLMap(uint32_t, GESTLString) ResourceGroupSourceFileRegistry;
+      typedef GESTLMap(uint32_t, ResourceGroupSourceFileRegistry) SourceFileRegistry;
+      SourceFileRegistry mSourceFileRegistry;
+#endif
 
    public:
       SerializableResourcesManager();
@@ -225,6 +230,10 @@ namespace GE { namespace Content
          Core::Device::readContentFile(ContentType::GenericTextData,
             T::SubDir, GroupName.getString(), extension, &cContentData);
 
+#if defined (GE_EDITOR_SUPPORT)
+         registerSourceFile(T::TypeName, GroupName, T::SubDir, extension);
+#endif
+
          char sRootNode[32];
          sprintf(sRootNode, "%sList", T::TypeName.getString());
 
@@ -278,5 +287,11 @@ namespace GE { namespace Content
             }
          }
       }
+
+#if defined (GE_EDITOR_SUPPORT)
+      void registerSourceFile(const Core::ObjectName& pResourceType, const Core::ObjectName& pGroupName,
+         const char* pSubDir, const char* pExtension);
+      GESTLString* retrieveSourceFile(const Core::ObjectName& pResourceType, const Core::ObjectName& pGroupName);
+#endif
    };
 }}
