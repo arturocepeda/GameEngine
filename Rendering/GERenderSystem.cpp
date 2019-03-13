@@ -268,6 +268,11 @@ void RenderSystem::preloadTextures(const char* FileName)
       char sSubDir[256];
       sprintf(sSubDir, "Textures/%s", FileName);
 
+#if defined (GE_EDITOR_SUPPORT)
+      SerializableResourcesManager::getInstance()->registerSourceFile(
+         Texture::TypeName, cGroupName, "Textures", "textures.xml");
+#endif
+
       for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
       {
          const char* sTextureName = xmlTexture.attribute("name").value();
@@ -501,6 +506,11 @@ void RenderSystem::loadMaterials(const char* FileName)
    {
       Device::readContentFile(ContentType::GenericTextData, "Materials", sFileName, "xml", &cMaterialsData);
 
+#if defined (GE_EDITOR_SUPPORT)
+      SerializableResourcesManager::getInstance()->registerSourceFile(
+         Material::TypeName, cGroupName, "Materials", "materials.xml");
+#endif
+
       pugi::xml_document xml;
       xml.load_buffer(cMaterialsData.getData(), cMaterialsData.getDataSize());
       const pugi::xml_node& xmlMaterials = xml.child("MaterialList");
@@ -595,6 +605,11 @@ void RenderSystem::loadFonts(const char* FileName)
    if(Application::ContentType == ApplicationContentType::Xml)
    {
       Device::readContentFile(ContentType::GenericTextData, "Fonts", sFileName, "xml", &cFontsData);
+
+#if defined (GE_EDITOR_SUPPORT)
+      SerializableResourcesManager::getInstance()->registerSourceFile(
+         Font::TypeName, cGroupName, "Fonts", "fonts.xml");
+#endif
 
       pugi::xml_document xml;
       xml.load_buffer(cFontsData.getData(), cFontsData.getDataSize());
