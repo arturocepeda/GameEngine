@@ -757,6 +757,7 @@ void Environment::registerTypes()
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &PropertyInterpolator<float>::animate
       , "alternate", &PropertyInterpolator<float>::alternate
+      , "stopOnStartValue", &PropertyInterpolator<float>::stopOnStartValue
       , "update", &PropertyInterpolator<float>::update
       , "getActive", &PropertyInterpolator<float>::getActive
    );
@@ -766,6 +767,7 @@ void Environment::registerTypes()
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &PropertyInterpolator<Vector2>::animate
       , "alternate", &PropertyInterpolator<Vector2>::alternate
+      , "stopOnStartValue", &PropertyInterpolator<Vector2>::stopOnStartValue
       , "update", &PropertyInterpolator<Vector2>::update
       , "getActive", &PropertyInterpolator<Vector2>::getActive
    );
@@ -775,6 +777,7 @@ void Environment::registerTypes()
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &PropertyInterpolator<Vector3>::animate
       , "alternate", &PropertyInterpolator<Vector3>::alternate
+      , "stopOnStartValue", &PropertyInterpolator<Vector3>::stopOnStartValue
       , "update", &PropertyInterpolator<Vector3>::update
       , "getActive", &PropertyInterpolator<Vector3>::getActive
    );
@@ -784,6 +787,7 @@ void Environment::registerTypes()
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
       , "animate", &PropertyInterpolator<Color>::animate
       , "alternate", &PropertyInterpolator<Color>::alternate
+      , "stopOnStartValue", &PropertyInterpolator<Color>::stopOnStartValue
       , "update", &PropertyInterpolator<Color>::update
       , "getActive", &PropertyInterpolator<Color>::getActive
    );
