@@ -1154,12 +1154,18 @@ void Environment::registerTypes()
    //
    //  GE::Audio
    //
+   mLua.new_simple_usertype<AudioEventInstance>
+   (
+      "AudioEventInstance"
+   );
    mLua.new_simple_usertype<AudioSystem>
    (
       "AudioSystem"
       , "getInstance", &AudioSystem::getInstance
       , "loadAudioBank", &AudioSystem::loadAudioBank
       , "unloadAudioBank", &AudioSystem::unloadAudioBank
+      , "playAudioEvent", &AudioSystem::playAudioEvent
+      , "setPosition", &AudioSystem::setPosition
    );
 
    // Extensions
