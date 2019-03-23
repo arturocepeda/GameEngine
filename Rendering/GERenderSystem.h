@@ -184,6 +184,9 @@ namespace GE { namespace Rendering
       RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint ScreenHeight);
       ~RenderSystem();
 
+      // content
+      void registerObjectManagers();
+
       // info
       const void* getWindowHandler() const;
       bool getWindowedMode() const;

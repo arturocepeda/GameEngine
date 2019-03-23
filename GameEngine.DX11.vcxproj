@@ -125,6 +125,7 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="Tools\GEContentCompiler.cpp" />
     <ClCompile Include="Types\GEBezierCurve.cpp" />
     <ClCompile Include="Types\GECurve.cpp" />
     <ClCompile Include="Types\GEEnumStrings.cpp" />
@@ -238,6 +239,7 @@
     <ClInclude Include="Rendering\GEShaderProgram.h" />
     <ClInclude Include="Rendering\GETexture.h" />
     <ClInclude Include="Scripting\GEScriptingEnvironment.h" />
+    <ClInclude Include="Tools\GEContentCompiler.h" />
     <ClInclude Include="Types\GEBezierCurve.h" />
     <ClInclude Include="Types\GEColor.h" />
     <ClInclude Include="Types\GECurve.h" />

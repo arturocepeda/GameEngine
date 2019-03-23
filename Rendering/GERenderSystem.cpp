@@ -101,6 +101,14 @@ RenderSystem::~RenderSystem()
    GEMutexDestroy(mTextureLoadMutex);
 }
 
+void RenderSystem::registerObjectManagers()
+{
+   ResourcesManager::getInstance()->registerObjectManager<ShaderProgram>(ShaderProgram::TypeName, &mShaderPrograms);
+   ResourcesManager::getInstance()->registerObjectManager<Texture>(Texture::TypeName, &mTextures);
+   ResourcesManager::getInstance()->registerObjectManager<Material>(Material::TypeName, &mMaterials);  
+   ResourcesManager::getInstance()->registerObjectManager<Font>(Font::TypeName, &mFonts);
+}
+
 const void* RenderSystem::getWindowHandler() const
 {
    return pWindow;
@@ -341,18 +349,19 @@ void RenderSystem::preloadTextures(const char* FileName)
 
       for(uint i = 0; i < iTexturesCount; i++)
       {
-         ObjectName cTextureName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
-         const char* sTextureFormat = Value::fromStream(ValueType::String, sStream).getAsString();
-         bool bTextureAtlas = Value::fromStream(ValueType::Bool, sStream).getAsBool();
-         uint iTextureDataSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
+         const ObjectName cTextureName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
 
          PreloadedTexture sPreloadedTexture;
+         sPreloadedTexture.Tex = Allocator::alloc<Texture>();
+         GEInvokeCtor(Texture, sPreloadedTexture.Tex)(cTextureName, cGroupName);
+         sPreloadedTexture.Tex->loadFromStream(sStream);
+
+         const uint iTextureDataSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
+
          sPreloadedTexture.Data = Allocator::alloc<ImageData>();
          GEInvokeCtor(ImageData, sPreloadedTexture.Data);
          sPreloadedTexture.Data->load(iTextureDataSize, sStream);
 
-         sPreloadedTexture.Tex = Allocator::alloc<Texture>();
-         GEInvokeCtor(Texture, sPreloadedTexture.Tex)(cTextureName, cGroupName);
          sPreloadedTexture.Tex->setWidth(sPreloadedTexture.Data->getWidth());
          sPreloadedTexture.Tex->setHeight(sPreloadedTexture.Data->getHeight());
 
@@ -360,7 +369,7 @@ void RenderSystem::preloadTextures(const char* FileName)
 
          vPreloadedTextures.push_back(sPreloadedTexture);
 
-         if(bTextureAtlas)
+         if(GEHasFlag(sPreloadedTexture.Tex->getSettings(), TextureSettingsBitMask::AtlasUV))
          {
             float fWidth = (float)sPreloadedTexture.Tex->getWidth();
             float fHeight = (float)sPreloadedTexture.Tex->getHeight();

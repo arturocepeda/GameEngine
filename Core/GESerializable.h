@@ -241,6 +241,7 @@ namespace GE { namespace Core
    void xmlToStream##ClassName(const pugi::xml_node& XmlNode, std::ostream& Stream) \
    { \
       Class cEntry; \
+      cEntry.setOwner(this); \
       cEntry.loadFromXml(XmlNode); \
       cEntry.saveToStream(Stream); \
    }
