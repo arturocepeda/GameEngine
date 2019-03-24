@@ -76,7 +76,7 @@ void Font::load(void* pRenderDevice)
 {
    this->pRenderDevice = pRenderDevice;
 
-   if(getFontCharacterSetCount() == 0)
+   if(getFontCharacterSetCount() == 0u)
    {
       addFontCharacterSet();
    }
@@ -89,7 +89,7 @@ void Font::load(void* pRenderDevice)
    mGlyphs.resize(charSetsCount);
    mKernings.resize(charSetsCount);
 
-   for(uint32_t i = 0; i < charSetsCount; i++)
+   for(uint32_t i = 0u; i < charSetsCount; i++)
    {
       FontCharacterSet* charSet = getFontCharacterSet(i);
       mCharSets.add(charSet);
@@ -120,10 +120,23 @@ void Font::load(std::istream& pStream, void* pRenderDevice)
 {
    this->pRenderDevice = pRenderDevice;
 
-   mGlyphs.resize(1);
-   mKernings.resize(1);
+   if(getFontCharacterSetCount() == 0u)
+   {
+      addFontCharacterSet();
+   }
 
-   loadFontData(0, pStream);
+   const uint32_t charSetsCount = getFontCharacterSetCount();
+
+   mGlyphs.resize(charSetsCount);
+   mKernings.resize(charSetsCount);
+
+   for(uint32_t i = 0u; i < charSetsCount; i++)
+   {
+      FontCharacterSet* charSet = getFontCharacterSet(i);
+      mCharSets.add(charSet);
+
+      loadFontData(i, pStream);
+   }
 
    ImageData cImageData;
    uint iTextureDataSize = Value::fromStream(ValueType::UInt, pStream).getAsUInt();
@@ -194,8 +207,14 @@ void Font::loadFontData(uint32_t pCharSetIndex, const pugi::xml_node& pXmlFontDa
 
 void Font::loadFontData(uint32_t pCharSetIndex, std::istream& pStream)
 {
-   float fTextureWidth = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
-   float fTextureHeight = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+   FontCharacterSet* charSet = getFontCharacterSet(pCharSetIndex);
+
+   const float textureWidth = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+   const float textureHeight = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+
+   const float base = Value::fromStream(ValueType::Float, pStream).getAsFloat();
+   const float lineHeight = Value::fromStream(ValueType::Float, pStream).getAsFloat();
+   charSet->setLineHeight(lineHeight);
 
    fOffsetYMin = 0.0f;
    fOffsetYMax = 0.0f;
@@ -206,25 +225,25 @@ void Font::loadFontData(uint32_t pCharSetIndex, std::istream& pStream)
    {
       byte iCharId = Value::fromStream(ValueType::Byte, pStream).getAsByte();
 
-      float x = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
-      float y = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      const float x = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      const float y = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
 
       Glyph sGlyph;
       sGlyph.Width = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
       sGlyph.Height = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
       sGlyph.OffsetX = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
-      sGlyph.OffsetY = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      sGlyph.OffsetY = base - (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
       sGlyph.AdvanceX = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
 
-      if(sGlyph.OffsetY < fOffsetYMin)
-         fOffsetYMin = sGlyph.OffsetY;
-      else if(sGlyph.OffsetY > fOffsetYMax)
-         fOffsetYMax = sGlyph.OffsetY;
+      sGlyph.UV.U0 = x / textureWidth;
+      sGlyph.UV.U1 = sGlyph.UV.U0 + (sGlyph.Width / textureWidth);
+      sGlyph.UV.V0 = y / textureHeight;
+      sGlyph.UV.V1 = sGlyph.UV.V0 + (sGlyph.Height / textureHeight);
 
-      sGlyph.UV.U0 = x / fTextureWidth;
-      sGlyph.UV.U1 = sGlyph.UV.U0 + (sGlyph.Width / fTextureWidth);
-      sGlyph.UV.V0 = y / fTextureHeight;
-      sGlyph.UV.V1 = sGlyph.UV.V0 + (sGlyph.Height / fTextureHeight);
+      sGlyph.UV.U0 = charSet->getUOffset() + (sGlyph.UV.U0 * charSet->getUScale());
+      sGlyph.UV.U1 = charSet->getUOffset() + (sGlyph.UV.U1 * charSet->getUScale());
+      sGlyph.UV.V0 = charSet->getVOffset() + (sGlyph.UV.V0 * charSet->getVScale());
+      sGlyph.UV.V1 = charSet->getVOffset() + (sGlyph.UV.V1 * charSet->getVScale());
 
       mGlyphs[pCharSetIndex][iCharId] = sGlyph;
    }
