@@ -38,7 +38,7 @@ namespace GE { namespace Content
       GeometryData sGeometryData;
       VertexBoneAttachment* cSkinningData;
 
-      void loadFromFile(const char* GroupName, const char* FileName);
+      void loadFromFile(std::istream& pStream);
       void loadFromArrays(uint NumVertices, float* Vertex, float* Normals, float* TextureCoordinate,
          uint NumIndices, ushort* Indices);
       void loadFromPrimivite(const Rendering::Primitive& P);
@@ -48,7 +48,7 @@ namespace GE { namespace Content
       static const char* SubDir;
       static const char* Extension;
 
-      static const uint BoneAttachmentsPerVertex = 4;
+      static const uint BoneAttachmentsPerVertex = 8;
       static const uint FileFormatHeaderReservedBytes = 36;
 
       Mesh(const Core::ObjectName& Name, const Core::ObjectName& GroupName);
@@ -60,5 +60,9 @@ namespace GE { namespace Content
       VertexBoneAttachment* getVertexBoneAttachment(uint Index);
 
       uint32_t getVertexCount() const;
+      uint32_t getTriangleCount() const;
+
+      virtual void loadFromXml(const pugi::xml_node& pXmlNode) override;
+      virtual void loadFromStream(std::istream& pStream) override;
    };
 }}

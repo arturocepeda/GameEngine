@@ -37,10 +37,9 @@ Mesh::Mesh(const ObjectName& Name, const ObjectName& GroupName)
    : Resource(Name, GroupName, TypeName)
    , cSkinningData(0)
 {
-   loadFromFile(GroupName.getString(), Name.getString());
-
 #if defined (GE_EDITOR_SUPPORT)
    GERegisterPropertyReadonly(UInt, VertexCount);
+   GERegisterPropertyReadonly(UInt, TriangleCount);
 #endif
 }
 
@@ -52,6 +51,7 @@ Mesh::Mesh(const Primitive& P, const ObjectName& Name)
 
 #if defined (GE_EDITOR_SUPPORT)
    GERegisterPropertyReadonly(UInt, VertexCount);
+   GERegisterPropertyReadonly(UInt, TriangleCount);
 #endif
 }
 
@@ -73,40 +73,30 @@ Mesh::~Mesh()
    }
 }
 
-void Mesh::loadFromFile(const char* GroupName, const char* FileName)
+void Mesh::loadFromFile(std::istream& pStream)
 {
-   char subdir[256];
-   sprintf(subdir, "Meshes/%s", GroupName);
-
-   ContentData cContent;
-   Device::readContentFile(Content::ContentType::GenericBinaryData, subdir, FileName, "mesh.ge", &cContent);
-
-   char* pData = cContent.getData();
-
    // "GEMesh  "
-   pData += 8;
+   char buffer[64];
+   pStream.read(buffer, 8);
 
    // number of vertices
-   sGeometryData.NumVertices = *reinterpret_cast<uint*>(pData);
-   pData += sizeof(uint);
+   pStream.read(reinterpret_cast<char*>(&sGeometryData.NumVertices), sizeof(uint32_t));
 
    // number of indices
-   sGeometryData.NumIndices = *reinterpret_cast<uint*>(pData);
-   pData += sizeof(uint);
+   pStream.read(reinterpret_cast<char*>(&sGeometryData.NumIndices), sizeof(uint32_t));
 
    // vertex stride
-   sGeometryData.VertexStride = *reinterpret_cast<uint*>(pData);
-   pData += sizeof(uint);
+   pStream.read(reinterpret_cast<char*>(&sGeometryData.VertexStride), sizeof(uint32_t));
 
    // use diffuse texture?
-   pData += sizeof(uint);
+   pStream.read(buffer, sizeof(uint32_t));
 
    // is skinned?
-   bool bSkinned = *reinterpret_cast<uint*>(pData) ? true : false;
-   pData += sizeof(uint);
+   uint32_t bSkinned;
+   pStream.read(reinterpret_cast<char*>(&bSkinned), sizeof(uint32_t));
 
    // reserved
-   pData += FileFormatHeaderReservedBytes;
+   pStream.read(buffer, FileFormatHeaderReservedBytes);
 
    // vertex data
    uint iNumValues = sGeometryData.NumVertices * sGeometryData.VertexStride / sizeof(float);
@@ -115,9 +105,8 @@ void Mesh::loadFromFile(const char* GroupName, const char* FileName)
 
    for(uint i = 0; i < iNumValues; i++)
    {
-      *pCurrentValue = *reinterpret_cast<float*>(pData);
+      pStream.read(reinterpret_cast<char*>(pCurrentValue), sizeof(float));
       pCurrentValue++;
-      pData += sizeof(float);
    }
 
    // indices
@@ -128,9 +117,8 @@ void Mesh::loadFromFile(const char* GroupName, const char* FileName)
 
       for(uint i = 0; i < sGeometryData.NumIndices; i++)
       {
-         *pCurrentIndex = *reinterpret_cast<ushort*>(pData);
+         pStream.read(reinterpret_cast<char*>(pCurrentIndex), sizeof(uint16_t));
          pCurrentIndex++;
-         pData += sizeof(ushort);
       }
    }
 
@@ -145,10 +133,8 @@ void Mesh::loadFromFile(const char* GroupName, const char* FileName)
          for(uint iAttachmentIndex = 0; iAttachmentIndex < BoneAttachmentsPerVertex; iAttachmentIndex++)
          {
             VertexBoneAttachment& cAttachment = cSkinningData[(iVertexIndex * BoneAttachmentsPerVertex) + iAttachmentIndex];
-            cAttachment.BoneIndex = *reinterpret_cast<uint*>(pData);
-            pData += sizeof(uint);
-            cAttachment.Weight = *reinterpret_cast<float*>(pData);
-            pData += sizeof(float);
+            pStream.read(reinterpret_cast<char*>(&cAttachment.BoneIndex), sizeof(uint32_t));
+            pStream.read(reinterpret_cast<char*>(&cAttachment.Weight), sizeof(float));
          }
       }
    }
@@ -211,4 +197,34 @@ VertexBoneAttachment* Mesh::getVertexBoneAttachment(uint Index)
 uint32_t Mesh::getVertexCount() const
 {
    return sGeometryData.NumVertices;
+}
+
+uint32_t Mesh::getTriangleCount() const
+{
+   return sGeometryData.NumIndices / 3u;
+}
+
+void Mesh::loadFromXml(const pugi::xml_node& pXmlNode)
+{
+   Serializable::loadFromXml(pXmlNode);
+
+   char subdir[256];
+   sprintf(subdir, "Meshes/%s", cGroupName.getString());
+
+   ContentData content;
+   Device::readContentFile(Content::ContentType::GenericBinaryData, subdir, cName.getString(), "mesh.ge", &content);
+
+   ContentDataMemoryBuffer memoryBuffer(content);
+   std::istream stream(&memoryBuffer);
+   loadFromFile(stream);
+}
+
+void Mesh::loadFromStream(std::istream& pStream)
+{
+   Serializable::loadFromStream(pStream);
+
+   char buffer[64];
+   pStream.read(buffer, sizeof(uint32_t));
+
+   loadFromFile(pStream);
 }

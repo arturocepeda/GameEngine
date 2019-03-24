@@ -15,6 +15,7 @@
 #include "Core/GEObjectManager.h"
 #include "Core/GESingleton.h"
 #include "Core/GEDevice.h"
+#include "Core/GEApplication.h"
 #include "Types/GECurve.h"
 #include "Types/GEBezierCurve.h"
 
@@ -223,67 +224,139 @@ namespace GE { namespace Content
       template<typename T>
       void load(const Core::ObjectName& GroupName)
       {
-         char extension[32];
-         sprintf(extension, "%s.xml", T::Extension);
+         if(Core::Application::ContentType == Core::ApplicationContentType::Xml)
+         {
+            char extension[32];
+            sprintf(extension, "%s.xml", T::Extension);
 
-         ContentData cContentData;
-         Core::Device::readContentFile(ContentType::GenericTextData,
-            T::SubDir, GroupName.getString(), extension, &cContentData);
+            ContentData cContentData;
+            Core::Device::readContentFile(ContentType::GenericTextData,
+               T::SubDir, GroupName.getString(), extension, &cContentData);
+
+   #if defined (GE_EDITOR_SUPPORT)
+            registerSourceFile(T::TypeName, GroupName, T::SubDir, extension);
+   #endif
+
+            char sRootNode[32];
+            sprintf(sRootNode, "%sList", T::TypeName.getString());
+
+            pugi::xml_document xml;
+            xml.load_buffer(cContentData.getData(), cContentData.getDataSize());
+            pugi::xml_node xmlEntries = xml.child(sRootNode);
+
+            SerializableResourceManagerObjects* cObjects =
+               SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
+
+            for(const pugi::xml_node& xmlEntry : xmlEntries.children(T::TypeName.getString()))
+            {
+               T* cInstance = Core::Allocator::alloc<T>();
+               GEInvokeCtor(T, cInstance)(xmlEntry.attribute("name").value(), GroupName);
+               cInstance->loadFromXml(xmlEntry);
+               (*cObjects->Registry)[cInstance->getName().getID()] = cInstance;
+            }
+         }
+         else
+         {
+            char extension[32];
+            sprintf(extension, "%s.ge", T::Extension);
 
 #if defined (GE_EDITOR_SUPPORT)
-         registerSourceFile(T::TypeName, GroupName, T::SubDir, extension);
+            //TODO: remove this when the data packaging for builds is fully finished
+            if(!Core::Device::contentFileExists(T::SubDir, GroupName.getString(), extension))
+            {
+               Core::Application::ContentType = Core::ApplicationContentType::Xml;
+               load<T>(GroupName);
+               Core::Application::ContentType = Core::ApplicationContentType::Bin;
+               return;
+            }
 #endif
 
-         char sRootNode[32];
-         sprintf(sRootNode, "%sList", T::TypeName.getString());
+            ContentData contentData;
+            Core::Device::readContentFile(ContentType::GenericBinaryData,
+               T::SubDir, GroupName.getString(), extension, &contentData);
+            ContentDataMemoryBuffer memoryBuffer(contentData);
+            std::istream stream(&memoryBuffer);
 
-         pugi::xml_document xml;
-         xml.load_buffer(cContentData.getData(), cContentData.getDataSize());
-         pugi::xml_node xmlEntries = xml.child(sRootNode);
+            SerializableResourceManagerObjects* objects =
+               SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
 
-         SerializableResourceManagerObjects* cObjects =
-            SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
+            const uint32_t entriesCount = (uint32_t)Value::fromStream(ValueType::Byte, stream).getAsByte();
 
-         for(const pugi::xml_node& xmlEntry : xmlEntries.children(T::TypeName.getString()))
-         {
-            T* cInstance = Core::Allocator::alloc<T>();
-            GEInvokeCtor(T, cInstance)(xmlEntry.attribute("name").value(), GroupName);
-            cInstance->loadFromXml(xmlEntry);
-            (*cObjects->Registry)[cInstance->getName().getID()] = cInstance;
+            for(uint32_t i = 0u; i < entriesCount; i++)
+            {
+               const Core::ObjectName entryName = Value::fromStream(ValueType::ObjectName, stream).getAsObjectName();
+
+               T* entry = Core::Allocator::alloc<T>();
+               GEInvokeCtor(T, entry)(entryName, GroupName);
+               entry->loadFromStream(stream);
+               (*objects->Registry)[entry->getName().getID()] = entry;
+            }
          }
       }
 
       template<typename T>
       void unload(const Core::ObjectName& GroupName)
       {
-         char extension[32];
-         sprintf(extension, "%s.xml", T::Extension);
-
-         ContentData cContentData;
-         Core::Device::readContentFile(ContentType::GenericTextData,
-            T::SubDir, GroupName.getString(), extension, &cContentData);
-
-         char sRootNode[32];
-         sprintf(sRootNode, "%sList", T::TypeName.getString());
-
-         pugi::xml_document xml;
-         xml.load_buffer(cContentData.getData(), cContentData.getDataSize());
-         pugi::xml_node xmlEntries = xml.child(sRootNode);
-
-         SerializableResourceManagerObjects* cObjects =
-            SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
-
-         for(const pugi::xml_node& xmlEntry : xmlEntries.children(T::TypeName.getString()))
+         if(Core::Application::ContentType == Core::ApplicationContentType::Xml)
          {
-            const Core::ObjectName entryName = Core::ObjectName(xmlEntry.attribute("name").value());
-            Core::ObjectRegistry::const_iterator it = cObjects->Registry->find(entryName.getID());
+            char extension[32];
+            sprintf(extension, "%s.xml", T::Extension);
 
-            if(it != cObjects->Registry->end())
+            ContentData cContentData;
+            Core::Device::readContentFile(ContentType::GenericTextData,
+               T::SubDir, GroupName.getString(), extension, &cContentData);
+
+            char sRootNode[32];
+            sprintf(sRootNode, "%sList", T::TypeName.getString());
+
+            pugi::xml_document xml;
+            xml.load_buffer(cContentData.getData(), cContentData.getDataSize());
+            pugi::xml_node xmlEntries = xml.child(sRootNode);
+
+            SerializableResourceManagerObjects* cObjects =
+               SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
+
+            for(const pugi::xml_node& xmlEntry : xmlEntries.children(T::TypeName.getString()))
             {
+               const Core::ObjectName entryName = Core::ObjectName(xmlEntry.attribute("name").value());
+               Core::ObjectRegistry::const_iterator it = cObjects->Registry->find(entryName.getID());
+
+               if(it != cObjects->Registry->end())
+               {
+                  T* entry = static_cast<T*>(it->second);
+                  GEInvokeDtor(T, entry);
+                  Core::Allocator::free(entry);
+                  cObjects->Registry->erase(entryName.getID());
+               }
+            }
+         }
+         else
+         {
+            char extension[32];
+            sprintf(extension, "%s.ge", T::Extension);
+
+            ContentData contentData;
+            Core::Device::readContentFile(ContentType::GenericBinaryData,
+               T::SubDir, GroupName.getString(), extension, &contentData);
+            ContentDataMemoryBuffer memoryBuffer(contentData);
+            std::istream stream(&memoryBuffer);
+
+            SerializableResourceManagerObjects* objects =
+               SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
+
+            const uint32_t entriesCount = (uint32_t)Value::fromStream(ValueType::Byte, stream).getAsByte();
+
+            for(uint32_t i = 0u; i < entriesCount; i++)
+            {
+               const Core::ObjectName entryName = Value::fromStream(ValueType::ObjectName, stream).getAsObjectName();
+               Core::ObjectRegistry::const_iterator it = objects->Registry->find(entryName.getID());
+               GEAssert(it != objects->Registry->end());
+
                T* entry = static_cast<T*>(it->second);
+               entry->loadFromStream(stream);
                GEInvokeDtor(T, entry);
                Core::Allocator::free(entry);
-               cObjects->Registry->erase(entryName.getID());
+               objects->Registry->erase(entryName.getID());
             }
          }
       }
