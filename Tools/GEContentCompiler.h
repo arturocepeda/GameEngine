@@ -27,11 +27,13 @@ namespace GE { namespace Tools
       static void packFontFile(const char* pXmlFileName);
       static void packStrings();
       static void packMeshes();
+      static void packMeshFile(const char* pXmlFileName);
       static void packSkeletons();
       static void packAnimations();
       static void packSounds();
       static void packPrefabs();
       static void packScenes();
+      static void packData();
 
       static void compileScripts();
 

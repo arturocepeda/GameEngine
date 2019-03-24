@@ -10,6 +10,10 @@
 //
 //////////////////////////////////////////////////////////////////
 
+#include "Core/GEPlatform.h"
+
+#if defined (GE_PLATFORM_WINDOWS)
+
 #undef UNICODE
 
 #include <windows.h>
@@ -17,7 +21,6 @@
 
 #include "GEContentCompiler.h"
 
-#include "Core/GEPlatform.h"
 #include "Core/GEApplication.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEValue.h"
@@ -749,34 +752,84 @@ void ContentCompiler::packMeshes()
    Log::log(LogType::Info, "Packing meshes...");
 
    char sFindString[MAX_PATH];
-   sprintf(sFindString, "%s\\Models\\*.mesh.ge", ContentXmlDirName);
+   sprintf(sFindString, "%s\\Meshes\\*.meshes.xml", ContentXmlDirName);
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
-
+   
    if(hFile == INVALID_HANDLE_VALUE)
       return;
 
    do 
    {
-      const char* sFileName = sFileData.cFileName;
-
-      char sInputPath[MAX_PATH];
-      sprintf(sInputPath, "%s\\Models\\%s", ContentXmlDirName, sFileName);
-
-      char sOutputPath[MAX_PATH];
-      GetCurrentDirectory(MAX_PATH, sOutputPath);
-      sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
-      CreateDirectory(sOutputPath, NULL);
-      sprintf(sOutputPath, "%s\\Models", sOutputPath);
-      CreateDirectory(sOutputPath, NULL);
-      sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
-
-      CopyFile(sInputPath, sOutputPath, false);
+      packMeshFile(sFileData.cFileName);
    }
    while(FindNextFile(hFile, &sFileData));
 
    FindClose(hFile);
+}
+
+void ContentCompiler::packMeshFile(const char* XmlFileName)
+{
+   char sBinFileName[MAX_PATH];
+   getBinFileName(XmlFileName, sBinFileName);
+
+   char sOutputPath[MAX_PATH];
+   GetCurrentDirectory(MAX_PATH, sOutputPath);
+   sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+   CreateDirectory(sOutputPath, NULL);
+   sprintf(sOutputPath, "%s\\Meshes", sOutputPath);
+   CreateDirectory(sOutputPath, NULL);
+   sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+
+   std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
+   GEAssert(sOutputFile.is_open());
+
+   char sInputPath[MAX_PATH];
+   sprintf(sInputPath, "%s\\Meshes\\%s", ContentXmlDirName, XmlFileName);
+
+   pugi::xml_document xml;
+   xml.load_file(sInputPath);
+   const pugi::xml_node& xmlMeshes = xml.child("MeshList");
+   GE::byte iMeshesCount = 0;
+
+   for(const pugi::xml_node& xmlMesh : xmlMeshes.children("Mesh"))
+   {
+      iMeshesCount++;
+   }
+
+   Value(iMeshesCount).writeToStream(sOutputFile);
+
+   std::string sSetName = std::string(XmlFileName);
+   size_t iExtPos = sSetName.find(".meshes.xml");
+   sSetName.replace(iExtPos, sSetName.length(), "");
+
+   for(const pugi::xml_node& xmlMesh : xmlMeshes.children("Mesh"))
+   {
+      const char* sMeshName = xmlMesh.attribute("name").value();
+      Value(sMeshName).writeToStream(sOutputFile);
+
+      std::string sMeshFilePath;
+      sMeshFilePath.append(ContentXmlDirName);
+      sMeshFilePath.append("\\Meshes\\");
+      sMeshFilePath.append(sSetName);
+      sMeshFilePath.append("\\");
+      sMeshFilePath.append(sMeshName);
+      sMeshFilePath.append(".mesh.ge");
+      
+      std::ifstream sMeshFile(sMeshFilePath, std::ios::in | std::ios::binary);
+      GEAssert(sMeshFile.is_open());
+      sMeshFile.seekg(0, std::ios::end);
+      const uint32_t iMeshFileSize = (uint32_t)sMeshFile.tellg();
+      sMeshFile.seekg(0, std::ios::beg);
+
+      Value(iMeshFileSize).writeToStream(sOutputFile);
+      std::copy_n(std::istreambuf_iterator<char>(sMeshFile), iMeshFileSize, std::ostreambuf_iterator<char>(sOutputFile));
+
+      sMeshFile.close();
+   }
+
+   sOutputFile.close();
 }
 
 void ContentCompiler::packSkeletons()
@@ -784,7 +837,7 @@ void ContentCompiler::packSkeletons()
    Log::log(LogType::Info, "Packing skeletons...");
 
    char sFindString[MAX_PATH];
-   sprintf(sFindString, "%s\\Models\\*.skeleton.xml", ContentXmlDirName);
+   sprintf(sFindString, "%s\\Meshes\\*.skeleton.xml", ContentXmlDirName);
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
@@ -803,7 +856,7 @@ void ContentCompiler::packSkeletons()
       GetCurrentDirectory(MAX_PATH, sOutputPath);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
       CreateDirectory(sOutputPath, NULL);
-      sprintf(sOutputPath, "%s\\Models", sOutputPath);
+      sprintf(sOutputPath, "%s\\Meshes", sOutputPath);
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
 
@@ -811,7 +864,7 @@ void ContentCompiler::packSkeletons()
       GEAssert(sOutputFile.is_open());
 
       char sInputPath[MAX_PATH];
-      sprintf(sInputPath, "%s\\Models\\%s", ContentXmlDirName, sXmlFileName);
+      sprintf(sInputPath, "%s\\Meshes\\%s", ContentXmlDirName, sXmlFileName);
 
       pugi::xml_document xml;
       xml.load_file(sInputPath);
@@ -908,10 +961,16 @@ void ContentCompiler::packAnimations()
 
       Value(iAnimationsCount).writeToStream(sOutputFile);
 
+      std::string sSetName = std::string(sXmlFileName);
+      size_t iExtPos = sSetName.find(".animationset.xml");
+      sSetName.replace(iExtPos, sSetName.length(), "");
+
       for(const pugi::xml_node& xmlAnimation : xmlAnimationSet.children("Animation"))
       {
-         Value(xmlAnimation.attribute("name").value()).writeToStream(sOutputFile);
-         Value(xmlAnimation.attribute("fileName").value()).writeToStream(sOutputFile);
+         const char* sAnimationName = xmlAnimation.attribute("name").value();
+         Value(sAnimationName).writeToStream(sOutputFile);
+         const char* sAnimationFileName = xmlAnimation.attribute("fileName").value();
+         Value(sAnimationFileName).writeToStream(sOutputFile);
 
          pugi::xml_attribute xmlApplyRootMotion = xmlAnimation.attribute("applyRootMotionX");
          bool bApplyRootMotion = xmlApplyRootMotion.empty() || Parser::parseBool(xmlApplyRootMotion.value());
@@ -924,36 +983,28 @@ void ContentCompiler::packAnimations()
          xmlApplyRootMotion = xmlAnimation.attribute("applyRootMotionZ");
          bApplyRootMotion = xmlApplyRootMotion.empty() || Parser::parseBool(xmlApplyRootMotion.value());
          Value(bApplyRootMotion).writeToStream(sOutputFile);
+
+         std::string sAnimationFilePath;
+         sAnimationFilePath.append(ContentXmlDirName);
+         sAnimationFilePath.append("\\Animations\\");
+         sAnimationFilePath.append(sSetName);
+         sAnimationFilePath.append("\\");
+         sAnimationFilePath.append(sAnimationFileName);
+         sAnimationFilePath.append(".animation.ge");
+      
+         std::ifstream sAnimationFile(sAnimationFilePath, std::ios::in | std::ios::binary);
+         GEAssert(sAnimationFile.is_open());
+         sAnimationFile.seekg(0, std::ios::end);
+         const uint32_t iAnimationFileSize = (uint32_t)sAnimationFile.tellg();
+         sAnimationFile.seekg(0, std::ios::beg);
+
+         Value(iAnimationFileSize).writeToStream(sOutputFile);
+         std::copy_n(std::istreambuf_iterator<char>(sAnimationFile), iAnimationFileSize, std::ostreambuf_iterator<char>(sOutputFile));
+
+         sAnimationFile.close();
       }
 
       sOutputFile.close();
-   }
-   while(FindNextFile(hFile, &sFileData));
-
-   FindClose(hFile);
-
-   sprintf(sFindString, "%s\\Animations\\*.animation.ge", ContentXmlDirName);
-   hFile = FindFirstFile(sFindString, &sFileData);
-
-   if(hFile == INVALID_HANDLE_VALUE)
-      return;
-
-   do 
-   {
-      const char* sFileName = sFileData.cFileName;
-
-      char sInputPath[MAX_PATH];
-      sprintf(sInputPath, "%s\\Animations\\%s", ContentXmlDirName, sFileName);
-
-      char sOutputPath[MAX_PATH];
-      GetCurrentDirectory(MAX_PATH, sOutputPath);
-      sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
-      CreateDirectory(sOutputPath, NULL);
-      sprintf(sOutputPath, "%s\\Animations", sOutputPath);
-      CreateDirectory(sOutputPath, NULL);
-      sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
-
-      CopyFile(sInputPath, sOutputPath, false);
    }
    while(FindNextFile(hFile, &sFileData));
 
@@ -965,7 +1016,7 @@ void ContentCompiler::packSounds()
    Log::log(LogType::Info, "Packing sounds...");
 
    char sFindString[MAX_PATH];
-   sprintf(sFindString, "%s\\Sounds\\*.*", ContentXmlDirName);
+   sprintf(sFindString, "%s\\Audio\\*.*", ContentXmlDirName);
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
@@ -978,13 +1029,41 @@ void ContentCompiler::packSounds()
       const char* sFileName = sFileData.cFileName;
 
       char sInputPath[MAX_PATH];
-      sprintf(sInputPath, "%s\\Sounds\\%s", ContentXmlDirName, sFileName);
+      sprintf(sInputPath, "%s\\Audio\\%s", ContentXmlDirName, sFileName);
 
       char sOutputPath[MAX_PATH];
       GetCurrentDirectory(MAX_PATH, sOutputPath);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
       CreateDirectory(sOutputPath, NULL);
-      sprintf(sOutputPath, "%s\\Sounds", sOutputPath);
+      sprintf(sOutputPath, "%s\\Audio", sOutputPath);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
+
+      CopyFile(sInputPath, sOutputPath, false);
+   }
+   while(FindNextFile(hFile, &sFileData));
+
+   FindClose(hFile);
+
+   sprintf(sFindString, "%s\\Audio\\files\\*.*", ContentXmlDirName);
+
+   hFile = FindFirstFile(sFindString, &sFileData);
+
+   if(hFile == INVALID_HANDLE_VALUE)
+      return;
+
+   do
+   {
+      const char* sFileName = sFileData.cFileName;
+
+      char sInputPath[MAX_PATH];
+      sprintf(sInputPath, "%s\\Audio\\files\\%s", ContentXmlDirName, sFileName);
+
+      char sOutputPath[MAX_PATH];
+      GetCurrentDirectory(MAX_PATH, sOutputPath);
+      sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\Audio\\files", sOutputPath);
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
 
@@ -1103,6 +1182,41 @@ void ContentCompiler::packScenes()
    FindClose(hFile);
 }
 
+void ContentCompiler::packData()
+{
+   Log::log(LogType::Info, "Packing data...");
+
+   char sFindString[MAX_PATH];
+   sprintf(sFindString, "%s\\Data\\*.*", ContentXmlDirName);
+
+   WIN32_FIND_DATA sFileData;
+   HANDLE hFile = FindFirstFile(sFindString, &sFileData);
+
+   if(hFile == INVALID_HANDLE_VALUE)
+      return;
+
+   do
+   {
+      const char* sFileName = sFileData.cFileName;
+
+      char sInputPath[MAX_PATH];
+      sprintf(sInputPath, "%s\\Data\\%s", ContentXmlDirName, sFileName);
+
+      char sOutputPath[MAX_PATH];
+      GetCurrentDirectory(MAX_PATH, sOutputPath);
+      sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\Data", sOutputPath);
+      CreateDirectory(sOutputPath, NULL);
+      sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
+
+      CopyFile(sInputPath, sOutputPath, false);
+   }
+   while(FindNextFile(hFile, &sFileData));
+
+   FindClose(hFile);
+}
+
 void ContentCompiler::compileScripts()
 {
    Log::log(LogType::Info, "Compiling scripts...");
@@ -1166,10 +1280,10 @@ void ContentCompiler::compileContent()
 {
    registerCompilerObjectManagers();
 
-   //packShaders(ApplicationRenderingAPI::DirectX);
-   //packShaders(ApplicationRenderingAPI::OpenGL);
-   //packTextures();
-   //packMaterials();
+   packShaders(ApplicationRenderingAPI::DirectX);
+   packShaders(ApplicationRenderingAPI::OpenGL);
+   packTextures();
+   packMaterials();
    packFonts();
    packStrings();
    packMeshes();
@@ -1178,6 +1292,7 @@ void ContentCompiler::compileContent()
    packSounds();
    packPrefabs();
    packScenes();
+   packData();
    compileScripts();
 
    mManagerShaderPrograms.clear();
@@ -1187,3 +1302,5 @@ void ContentCompiler::compileContent()
 
    RenderSystem::getInstance()->registerObjectManagers();
 }
+
+#endif

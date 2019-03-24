@@ -64,7 +64,10 @@ Font::Font(const ObjectName& Name, const ObjectName& GroupName)
 
 Font::~Font()
 {
-   releaseFontTexture();
+   if(cTexture)
+   {
+      releaseFontTexture();
+   }
 
    GEReleasePropertyArray(FontCharacterSet);
 }
