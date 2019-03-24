@@ -67,7 +67,7 @@ void registerCompilerObjectManagers()
 
 void getBinFileName(const char* XmlFileName, char* BinFileName)
 {
-   uint32_t iXmlFileNameLength = (uint)strlen(XmlFileName);
+   uint32_t iXmlFileNameLength = (uint32_t)strlen(XmlFileName);
    strcpy(BinFileName, XmlFileName);
    BinFileName[iXmlFileNameLength - 3] = 'g';
    BinFileName[iXmlFileNameLength - 2] = 'e';
@@ -228,7 +228,7 @@ void ContentCompiler::packShaders(ApplicationRenderingAPI pRenderingAPI)
             }
 
             pShaderByteCodeData = (char*)dxCodeBlob->GetBufferPointer();
-            iShaderByteCodeSize = (uint)dxCodeBlob->GetBufferSize();
+            iShaderByteCodeSize = (uint32_t)dxCodeBlob->GetBufferSize();
          }
          else
          {
@@ -304,7 +304,7 @@ void ContentCompiler::packShaders(ApplicationRenderingAPI pRenderingAPI)
                }
             }
 
-            iShaderByteCodeSize = (uint)sShaderSource.size();
+            iShaderByteCodeSize = (uint32_t)sShaderSource.size();
             pShaderByteCodeData = &sShaderSource[0];
          }
 
@@ -402,7 +402,7 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
       std::ifstream sTextureFile(sTextureFilePath, std::ios::in | std::ios::binary);
       GEAssert(sTextureFile.is_open());
       sTextureFile.seekg(0, std::ios::end);
-      uint32_t iTextureFileSize = (uint)sTextureFile.tellg();
+      uint32_t iTextureFileSize = (uint32_t)sTextureFile.tellg();
       sTextureFile.seekg(0, std::ios::beg);
 
       Value(iTextureFileSize).writeToStream(sOutputFile);
@@ -559,7 +559,7 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
 
    pugi::xml_document xml;
    xml.load_file(sInputPath);
-   const pugi::xml_node& xmlFonts = xml.child("Fonts");
+   const pugi::xml_node& xmlFonts = xml.child("FontList");
    GE::byte iFontsCount = 0;
 
    for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
@@ -582,71 +582,96 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
    for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
    {
       const char* sFontName = xmlFont.attribute("name").value();
-      const char* sFontFileName = xmlFont.attribute("fileName").value();
-
       Value(sFontName).writeToStream(sOutputFile);
+
+      Font cFont(sFontName, sSetName.c_str());
+      cFont.loadFromXml(xmlFont);
+      cFont.saveToStream(sOutputFile);
+
+      if(cFont.getFontCharacterSetCount() == 0u)      
+      {
+         cFont.addFontCharacterSet();
+      }
+
+      for(uint32_t i = 0u; i < cFont.getFontCharacterSetCount(); i++)
+      {
+         FontCharacterSet* charSet = cFont.getFontCharacterSet(i);
+
+         std::string sFontCharSetFilePath;
+         sFontCharSetFilePath.append(ContentXmlDirName);
+         sFontCharSetFilePath.append("\\Fonts\\");
+         sFontCharSetFilePath.append(sSetName);
+         sFontCharSetFilePath.append("\\");
+         sFontCharSetFilePath.append(sFontName);
+
+         if(!charSet->getName().isEmpty())
+         {
+            sFontCharSetFilePath.append("_");
+            sFontCharSetFilePath.append(charSet->getName().getString());
+         }
+
+         sFontCharSetFilePath.append(".fnt");
+
+         pugi::xml_document xmlFontDesc;
+         xmlFontDesc.load_file(sFontCharSetFilePath.c_str());
+         const pugi::xml_node& xmlFontDescRoot = xmlFontDesc.child("font");
+
+         const pugi::xml_node& xmlCommon = xmlFontDescRoot.child("common");
+         Value((short)Parser::parseInt(xmlCommon.attribute("scaleW").value())).writeToStream(sOutputFile);
+         Value((short)Parser::parseInt(xmlCommon.attribute("scaleH").value())).writeToStream(sOutputFile);
+         Value(Parser::parseFloat(xmlCommon.attribute("base").value())).writeToStream(sOutputFile);
+         Value(Parser::parseFloat(xmlCommon.attribute("lineHeight").value())).writeToStream(sOutputFile);
+
+         const pugi::xml_node& xmlChars = xmlFontDescRoot.child("chars");
+         short iFontCharsCount = 0;
+
+         for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
+         {
+            iFontCharsCount++;
+         }
+
+         Value(iFontCharsCount).writeToStream(sOutputFile);
+
+         for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
+         {
+            Value((GE::byte)Parser::parseInt(xmlChar.attribute("id").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("x").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("y").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("width").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("height").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("xoffset").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("yoffset").value())).writeToStream(sOutputFile);
+            Value((short)Parser::parseInt(xmlChar.attribute("xadvance").value())).writeToStream(sOutputFile);
+         }
+
+         const pugi::xml_node& xmlKernings = xmlFontDescRoot.child("kernings");
+         short iFontKerningsCount = (short)Parser::parseUInt(xmlKernings.attribute("count").value());
+         Value(iFontKerningsCount).writeToStream(sOutputFile);
+
+         for(const pugi::xml_node& xmlKerning : xmlKernings.children("kerning"))
+         {
+            GE::byte iKerningFirstCharId = (GE::byte)Parser::parseUInt(xmlKerning.attribute("first").value());
+            GE::byte iKerningSecondCharId = (GE::byte)Parser::parseUInt(xmlKerning.attribute("second").value());
+            int iKerningAmount = Parser::parseInt(xmlKerning.attribute("amount").value());
+
+            Value(iKerningFirstCharId).writeToStream(sOutputFile);
+            Value(iKerningSecondCharId).writeToStream(sOutputFile);
+            Value((short)iKerningAmount).writeToStream(sOutputFile);
+         }
+      }
 
       std::string sFontFilePath;
       sFontFilePath.append(ContentXmlDirName);
       sFontFilePath.append("\\Fonts\\");
       sFontFilePath.append(sSetName);
       sFontFilePath.append("\\");
-      sFontFilePath.append(sFontFileName);
-      sFontFilePath.append(".fnt");
-
-      pugi::xml_document xmlFontDesc;
-      xmlFontDesc.load_file(sFontFilePath.c_str());
-      const pugi::xml_node& xmlFontDescRoot = xmlFontDesc.child("font");
-
-      const pugi::xml_node& xmlCommon = xmlFontDescRoot.child("common");
-      Value((short)Parser::parseInt(xmlCommon.attribute("scaleW").value())).writeToStream(sOutputFile);
-      Value((short)Parser::parseInt(xmlCommon.attribute("scaleH").value())).writeToStream(sOutputFile);
-
-      const pugi::xml_node& xmlChars = xmlFontDescRoot.child("chars");
-      short iFontCharsCount = 0;
-
-      for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
-      {
-         iFontCharsCount++;
-      }
-
-      Value(iFontCharsCount).writeToStream(sOutputFile);
-
-      for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
-      {
-         Value((GE::byte)Parser::parseInt(xmlChar.attribute("id").value())).writeToStream(sOutputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("x").value())).writeToStream(sOutputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("y").value())).writeToStream(sOutputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("width").value())).writeToStream(sOutputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("height").value())).writeToStream(sOutputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("xoffset").value())).writeToStream(sOutputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("yoffset").value())).writeToStream(sOutputFile);
-         Value((short)Parser::parseInt(xmlChar.attribute("xadvance").value())).writeToStream(sOutputFile);
-      }
-
-      const pugi::xml_node& xmlKernings = xmlFontDescRoot.child("kernings");
-      short iFontKerningsCount = (short)Parser::parseUInt(xmlKernings.attribute("count").value());
-      Value(iFontKerningsCount).writeToStream(sOutputFile);
-
-      for(const pugi::xml_node& xmlKerning : xmlKernings.children("kerning"))
-      {
-         GE::byte iKerningFirstCharId = (GE::byte)Parser::parseUInt(xmlKerning.attribute("first").value());
-         GE::byte iKerningSecondCharId = (GE::byte)Parser::parseUInt(xmlKerning.attribute("second").value());
-         int iKerningAmount = Parser::parseInt(xmlKerning.attribute("amount").value());
-
-         Value(iKerningFirstCharId).writeToStream(sOutputFile);
-         Value(iKerningSecondCharId).writeToStream(sOutputFile);
-         Value((short)iKerningAmount).writeToStream(sOutputFile);
-      }
-
-      sFontFilePath[sFontFilePath.length() - 3] = 'p';
-      sFontFilePath[sFontFilePath.length() - 2] = 'n';
-      sFontFilePath[sFontFilePath.length() - 1] = 'g';
+      sFontFilePath.append(sFontName);
+      sFontFilePath.append(".png");
 
       std::ifstream sFontTextureFile(sFontFilePath, std::ios::in | std::ios::binary);
       GEAssert(sFontTextureFile.is_open());
       sFontTextureFile.seekg(0, std::ios::end);
-      uint32_t iFontFileSize = (uint)sFontTextureFile.tellg();
+      uint32_t iFontFileSize = (uint32_t)sFontTextureFile.tellg();
       sFontTextureFile.seekg(0, std::ios::beg);
 
       Value(iFontFileSize).writeToStream(sOutputFile);
@@ -1141,10 +1166,10 @@ void ContentCompiler::compileContent()
 {
    registerCompilerObjectManagers();
 
-   packShaders(ApplicationRenderingAPI::DirectX);
-   packShaders(ApplicationRenderingAPI::OpenGL);
-   packTextures();
-   packMaterials();
+   //packShaders(ApplicationRenderingAPI::DirectX);
+   //packShaders(ApplicationRenderingAPI::OpenGL);
+   //packTextures();
+   //packMaterials();
    packFonts();
    packStrings();
    packMeshes();
