@@ -145,7 +145,9 @@ void Scene::registerEntity(Entity* cEntity)
    Entity* cParent = cEntity->getParent();
 
    if(cParent)
+   {
       cParent->addChild(cEntity);
+   }
 
    vEntities.push_back(cEntity);
    mRegistry[cEntity->getFullName().getID()] = cEntity;
@@ -159,7 +161,9 @@ void Scene::removeEntity(Entity* cEntity)
    Entity* cParent = cEntity->getParent();
 
    if(cParent)
+   {
       cParent->vChildren.erase(std::find(cParent->vChildren.begin(), cParent->vChildren.end(), cEntity));
+   }
 
    // remove the entity and all its children
    removeEntityRecursively(cEntity);
@@ -188,13 +192,17 @@ void Scene::removeEntityRecursively(Entity* cEntity)
          Component* cComponent = cEntity->getComponent((ComponentType)i);
 
          if(cComponent)
+         {
             vComponents[i].erase(std::find(vComponents[i].begin(), vComponents[i].end(), cComponent));
+         }
       }
    }
 
    // remove the children
    for(uint i = 0; i < cEntity->getChildrenCount(); i++)
+   {
       removeEntityRecursively(cEntity->getChildByIndex(i));
+   }
 
    // delete the entity
    GEInvokeDtor(Entity, cEntity);
@@ -277,6 +285,25 @@ bool Scene::removeEntity(const ObjectName& FullName)
    }
 
    vEntitiesToRemove.push_back(it->second);
+
+   GEMutexUnlock(mSceneMutex);
+
+   return true;
+}
+
+bool Scene::removeEntityImmediately(const Core::ObjectName& FullName)
+{
+   GEMutexLock(mSceneMutex);
+
+   GESTLMap(uint, Entity*)::iterator it = mRegistry.find(FullName.getID());
+
+   if(it == mRegistry.end())
+   {
+      GEMutexUnlock(mSceneMutex);
+      return false;
+   }
+
+   removeEntity(it->second);
 
    GEMutexUnlock(mSceneMutex);
 

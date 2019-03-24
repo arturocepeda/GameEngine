@@ -88,7 +88,9 @@ void packEntity(const ObjectName& cName, const pugi::xml_node& xmlNode, std::ofs
    GE::byte iComponentsCount = 0;
 
    for(const pugi::xml_node& xmlComponent : xmlComponents)
+   {
       iComponentsCount++;
+   }
 
    Value(iComponentsCount).writeToStream(sOutputFile);
 
@@ -107,7 +109,9 @@ void packEntity(const ObjectName& cName, const pugi::xml_node& xmlNode, std::ofs
    GE::byte iChildrenCount = 0;
 
    for(const pugi::xml_node& xmlChild : xmlChildren)
+   {
       iChildrenCount++;
+   }
 
    Value(iChildrenCount).writeToStream(sOutputFile);
 
@@ -117,8 +121,7 @@ void packEntity(const ObjectName& cName, const pugi::xml_node& xmlNode, std::ofs
       packEntity(cChildName, xmlChild, sOutputFile, cEntity);
    }
 
-   cDummyScene.removeEntity(cName);
-   cDummyScene.queueUpdateJobs();
+   cDummyScene.removeEntityImmediately(cName);
 }
 
 void ContentCompiler::packShaders(ApplicationRenderingAPI pRenderingAPI)

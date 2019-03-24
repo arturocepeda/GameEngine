@@ -85,6 +85,7 @@ namespace GE { namespace Entities
       Entity* addEntity(const Core::ObjectName& Name, Entity* cParent = 0);
       Entity* getEntity(const Core::ObjectName& FullName);
       bool removeEntity(const Core::ObjectName& FullName);
+      bool removeEntityImmediately(const Core::ObjectName& FullName);
 
       bool renameEntity(Entity* cEntity, const Core::ObjectName& NewName);
       Entity* cloneEntity(Entity* cEntity, const Core::ObjectName& CloneName, Entity* cCloneParent);
