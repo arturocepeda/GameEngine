@@ -737,10 +737,15 @@ void ContentCompiler::packStrings()
 
       for(const pugi::xml_node& xmlString : xmlStrings.children("String"))
       {
-         const char* sStringID = xmlString.attribute("id").value();
-         Value(sStringID).writeToStream(sOutputFile);
-         const char* sStringText = xmlString.attribute("text").value();
-         Value(sStringText).writeToStream(sOutputFile);
+         const char* stringID = xmlString.attribute("id").value();
+         Value(stringID).writeToStream(sOutputFile);
+
+         const char* stringText = xmlString.attribute("text").value();
+
+         const short stringLength = (short)strlen(stringText);
+         Value(stringLength).writeToStream(sOutputFile);
+
+         sOutputFile.write(stringText, stringLength);
       }
 
       sOutputFile.close();

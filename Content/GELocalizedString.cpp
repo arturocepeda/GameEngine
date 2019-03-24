@@ -89,21 +89,28 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
    else
    {
       if(!Device::contentFileExists("Strings", sFileName, "ge"))
+      {
          sprintf(sFileName, "%s.en", Name);
+      }
 
       Device::readContentFile(ContentType::GenericBinaryData, "Strings", sFileName, "ge", &cStringsSetData);
       ContentDataMemoryBuffer sMemoryBuffer(cStringsSetData);
       std::istream sStream(&sMemoryBuffer);
 
-      uint iStringsCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      const uint32_t stringsCount = (uint32_t)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      GESTLString stringBuffer;
 
-      for(uint i = 0; i < iStringsCount; i++)
+      for(uint32_t i = 0u; i < stringsCount; i++)
       {
-         ObjectName cStringID = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
-         GEAssert(!get(cStringID));
+         const ObjectName stringID = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+         GEAssert(!get(stringID));
+
+         const size_t stringLength = (size_t)Value::fromStream(ValueType::Short, sStream).getAsShort();
+         stringBuffer.resize(stringLength);
+         sStream.read(const_cast<char*>(stringBuffer.c_str()), stringLength); 
 
          LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
-         GEInvokeCtor(LocalizedString, cLocaString)(cStringID, Value::fromStream(ValueType::String, sStream).getAsString());
+         GEInvokeCtor(LocalizedString, cLocaString)(stringID, stringBuffer.c_str());
 
          add(cLocaString);
       }
