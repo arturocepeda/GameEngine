@@ -456,12 +456,16 @@ void Serializable::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stre
       GE::byte iPropertyArrayElementsCount = 0;
 
       for(const pugi::xml_node& xmlPropertyArrayElement : xmlPropertyArrayElement)
+      {
          iPropertyArrayElementsCount++;
+      }
 
       Value(iPropertyArrayElementsCount).writeToStream(Stream);
 
       for(const pugi::xml_node& xmlPropertyArrayElement : xmlPropertyArrayElement)
+      {
          sPropertyArray.XmlToStream(xmlPropertyArrayElement, Stream);
+      }
    }
 #endif
 }

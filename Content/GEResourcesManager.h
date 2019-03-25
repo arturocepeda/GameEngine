@@ -260,17 +260,6 @@ namespace GE { namespace Content
             char extension[32];
             sprintf(extension, "%s.ge", T::Extension);
 
-#if defined (GE_EDITOR_SUPPORT)
-            //TODO: remove this when the data packaging for builds is fully finished
-            if(!Core::Device::contentFileExists(T::SubDir, GroupName.getString(), extension))
-            {
-               Core::Application::ContentType = Core::ApplicationContentType::Xml;
-               load<T>(GroupName);
-               Core::Application::ContentType = Core::ApplicationContentType::Bin;
-               return;
-            }
-#endif
-
             ContentData contentData;
             Core::Device::readContentFile(ContentType::GenericBinaryData,
                T::SubDir, GroupName.getString(), extension, &contentData);
@@ -280,7 +269,7 @@ namespace GE { namespace Content
             SerializableResourceManagerObjects* objects =
                SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
 
-            const uint32_t entriesCount = (uint32_t)Value::fromStream(ValueType::Byte, stream).getAsByte();
+            const uint32_t entriesCount = (uint32_t)Value::fromStream(ValueType::Short, stream).getAsShort();
 
             for(uint32_t i = 0u; i < entriesCount; i++)
             {
@@ -291,6 +280,25 @@ namespace GE { namespace Content
                entry->loadFromStream(stream);
                (*objects->Registry)[entry->getName().getID()] = entry;
             }
+         }
+      }
+
+      template<typename T>
+      void loadAll()
+      {
+         char extension[32];
+         sprintf(extension, "%s.%s", T::Extension,
+            Core::Application::ContentType == Core::ApplicationContentType::Xml ? "xml" : "ge");
+
+         const uint32_t groupsCount = Core::Device::getContentFilesCount(T::SubDir, extension);
+
+         for(uint32_t i = 0u; i < groupsCount; i++)
+         {
+            char fileName[256];
+            Core::Device::getContentFileName(T::SubDir, extension, i, fileName);
+
+            const Core::ObjectName groupName = Core::ObjectName(fileName);
+            load<T>(groupName);
          }
       }
 

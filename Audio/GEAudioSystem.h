@@ -144,9 +144,6 @@ namespace GE { namespace Audio
       Vector3 mListenerPosition;
       Rotation mListenerOrientation;
 
-      void loadAudioEventEntries();
-      void loadAudioBankEntries();
-
       void releaseChannel(ChannelID pChannel);
 
       void loadAudioBankFiles(AudioBank* pAudioBank);

@@ -10,33 +10,25 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#include "Core/GEPlatform.h"
-
-#if defined (GE_PLATFORM_WINDOWS)
-
-#undef UNICODE
-
-#include <windows.h>
-#include <Shlobj.h>
-
 #include "GEContentCompiler.h"
 
-#include "Core/GEApplication.h"
+#if defined (GE_EDITOR_SUPPORT)
+
 #include "Core/GEAllocator.h"
 #include "Core/GEValue.h"
 #include "Core/GEParser.h"
 #include "Core/GEObject.h"
 #include "Core/GELog.h"
+#include "Core/GETime.h"
 #include "Rendering/GERenderSystem.h"
 #include "Entities/GEEntity.h"
 #include "Entities/GEComponent.h"
 #include "Content/GEResourcesManager.h"
+#include "Audio/GEAudioBank.h"
+#include "Types/GECurve.h"
 
 #include "Externals/pugixml/pugixml.hpp"
 #include <D3DCompiler.h>
-
-#include <iostream>
-#include <fstream>
 
 #pragma comment(lib, "D3DCompiler.lib")
 
@@ -46,12 +38,15 @@ using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Entities;
 using namespace GE::Content;
+using namespace GE::Audio;
 using namespace pugi;
 
-const char ContentXmlDirName[] = ".";
-const char ContentBinDirName[] = "..\\contentBin";
+const char* ContentCompiler::ContentXmlDirName = ".";
+const char* ContentCompiler::ContentBinDirName = "..\\contentBin";
 
 const bool StripLuaSymbols = true;
+
+std::function<void()> ContentCompiler::packAppResources = nullptr;
 
 ObjectManager<ShaderProgram> mManagerShaderPrograms;
 ObjectManager<Texture> mManagerTextures;
@@ -66,15 +61,6 @@ void registerCompilerObjectManagers()
    ResourcesManager::getInstance()->registerObjectManager<Texture>(Texture::TypeName, &mManagerTextures);
    ResourcesManager::getInstance()->registerObjectManager<Material>(Material::TypeName, &mManagerMaterials);  
    ResourcesManager::getInstance()->registerObjectManager<Font>(Font::TypeName, &mManagerFonts);
-}
-
-void getBinFileName(const char* XmlFileName, char* BinFileName)
-{
-   uint32_t iXmlFileNameLength = (uint32_t)strlen(XmlFileName);
-   strcpy(BinFileName, XmlFileName);
-   BinFileName[iXmlFileNameLength - 3] = 'g';
-   BinFileName[iXmlFileNameLength - 2] = 'e';
-   BinFileName[iXmlFileNameLength - 1] = '\0';
 }
 
 void packEntity(const ObjectName& cName, const pugi::xml_node& xmlNode, std::ofstream& sOutputFile, Entity* cParent)
@@ -122,6 +108,15 @@ void packEntity(const ObjectName& cName, const pugi::xml_node& xmlNode, std::ofs
    }
 
    cDummyScene.removeEntityImmediately(cName);
+}
+
+void ContentCompiler::getBinFileName(const char* pXmlFileName, char* pBinFileName)
+{
+   const size_t xmlFileNameLength = strlen(pXmlFileName);
+   strcpy(pBinFileName, pXmlFileName);
+   pBinFileName[xmlFileNameLength - 3u] = 'g';
+   pBinFileName[xmlFileNameLength - 2u] = 'e';
+   pBinFileName[xmlFileNameLength - 1u] = '\0';
 }
 
 void ContentCompiler::packShaders(ApplicationRenderingAPI pRenderingAPI)
@@ -373,7 +368,7 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
    pugi::xml_document xml;
    xml.load_file(sInputPath);
    const pugi::xml_node& xmlTextures = xml.child("TextureList");
-   GE::byte iTexturesCount = 0;
+   short iTexturesCount = 0;
 
    for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
    {
@@ -799,7 +794,7 @@ void ContentCompiler::packMeshFile(const char* XmlFileName)
    pugi::xml_document xml;
    xml.load_file(sInputPath);
    const pugi::xml_node& xmlMeshes = xml.child("MeshList");
-   GE::byte iMeshesCount = 0;
+   short iMeshesCount = 0;
 
    for(const pugi::xml_node& xmlMesh : xmlMeshes.children("Mesh"))
    {
@@ -1023,39 +1018,14 @@ void ContentCompiler::packSounds()
 {
    Log::log(LogType::Info, "Packing sounds...");
 
+   packSerializableResources<AudioBank>();
+   packSerializableResources<AudioEvent>();
+
    char sFindString[MAX_PATH];
-   sprintf(sFindString, "%s\\Audio\\*.*", ContentXmlDirName);
+   sprintf(sFindString, "%s\\Audio\\files\\*.*", ContentXmlDirName);
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
-
-   if(hFile == INVALID_HANDLE_VALUE)
-      return;
-
-   do
-   {
-      const char* sFileName = sFileData.cFileName;
-
-      char sInputPath[MAX_PATH];
-      sprintf(sInputPath, "%s\\Audio\\%s", ContentXmlDirName, sFileName);
-
-      char sOutputPath[MAX_PATH];
-      GetCurrentDirectory(MAX_PATH, sOutputPath);
-      sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
-      CreateDirectory(sOutputPath, NULL);
-      sprintf(sOutputPath, "%s\\Audio", sOutputPath);
-      CreateDirectory(sOutputPath, NULL);
-      sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
-
-      CopyFile(sInputPath, sOutputPath, false);
-   }
-   while(FindNextFile(hFile, &sFileData));
-
-   FindClose(hFile);
-
-   sprintf(sFindString, "%s\\Audio\\files\\*.*", ContentXmlDirName);
-
-   hFile = FindFirstFile(sFindString, &sFileData);
 
    if(hFile == INVALID_HANDLE_VALUE)
       return;
@@ -1194,35 +1164,13 @@ void ContentCompiler::packData()
 {
    Log::log(LogType::Info, "Packing data...");
 
-   char sFindString[MAX_PATH];
-   sprintf(sFindString, "%s\\Data\\*.*", ContentXmlDirName);
+   packSerializableResources<Clock>();
+   packSerializableResources<Curve>();
 
-   WIN32_FIND_DATA sFileData;
-   HANDLE hFile = FindFirstFile(sFindString, &sFileData);
-
-   if(hFile == INVALID_HANDLE_VALUE)
-      return;
-
-   do
+   if(packAppResources)
    {
-      const char* sFileName = sFileData.cFileName;
-
-      char sInputPath[MAX_PATH];
-      sprintf(sInputPath, "%s\\Data\\%s", ContentXmlDirName, sFileName);
-
-      char sOutputPath[MAX_PATH];
-      GetCurrentDirectory(MAX_PATH, sOutputPath);
-      sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
-      CreateDirectory(sOutputPath, NULL);
-      sprintf(sOutputPath, "%s\\Data", sOutputPath);
-      CreateDirectory(sOutputPath, NULL);
-      sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
-
-      CopyFile(sInputPath, sOutputPath, false);
+      packAppResources();
    }
-   while(FindNextFile(hFile, &sFileData));
-
-   FindClose(hFile);
 }
 
 void ContentCompiler::compileScripts()
@@ -1289,7 +1237,9 @@ void ContentCompiler::compileContent()
    registerCompilerObjectManagers();
 
    packShaders(ApplicationRenderingAPI::DirectX);
+   mManagerShaderPrograms.clear();
    packShaders(ApplicationRenderingAPI::OpenGL);
+
    packTextures();
    packMaterials();
    packFonts();

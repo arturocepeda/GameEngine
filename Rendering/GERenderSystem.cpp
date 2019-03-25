@@ -345,7 +345,7 @@ void RenderSystem::preloadTextures(const char* FileName)
       ContentDataMemoryBuffer sMemoryBuffer(cTexturesData);
       std::istream sStream(&sMemoryBuffer);
       
-      uint iTexturesCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      uint iTexturesCount = (uint)Value::fromStream(ValueType::Short, sStream).getAsShort();
 
       for(uint i = 0; i < iTexturesCount; i++)
       {

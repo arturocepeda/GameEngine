@@ -46,40 +46,6 @@ AudioSystem::~AudioSystem()
 {
 }
 
-void AudioSystem::loadAudioEventEntries()
-{
-   char extension[32];
-   sprintf(extension, "%s.xml", AudioEvent::Extension);
-
-   const uint32_t groupsCount = Device::getContentFilesCount(AudioEvent::SubDir, extension);
-
-   for(uint32_t i = 0u; i < groupsCount; i++)
-   {
-      char fileName[256];
-      Device::getContentFileName(AudioEvent::SubDir, extension, i, fileName);
-
-      const ObjectName groupName = ObjectName(fileName);
-      SerializableResourcesManager::getInstance()->load<AudioEvent>(groupName);
-   }
-}
-
-void AudioSystem::loadAudioBankEntries()
-{
-   char extension[32];
-   sprintf(extension, "%s.xml", AudioBank::Extension);
-
-   const uint32_t groupsCount = Device::getContentFilesCount(AudioBank::SubDir, extension);
-
-   for(uint32_t i = 0u; i < groupsCount; i++)
-   {
-      char fileName[256];
-      Device::getContentFileName(AudioBank::SubDir, extension, i, fileName);
-
-      const ObjectName groupName = ObjectName(fileName);
-      SerializableResourcesManager::getInstance()->load<AudioBank>(groupName);
-   }
-}
-
 void AudioSystem::releaseChannel(ChannelID pChannel)
 {
    mChannels[pChannel].Free = true;
@@ -221,8 +187,8 @@ void AudioSystem::init(uint32_t pChannelsCount, uint32_t pBuffersCount)
 
    setListenerPosition(Vector3::Zero);
 
-   loadAudioEventEntries();
-   loadAudioBankEntries();
+   SerializableResourcesManager::getInstance()->loadAll<AudioEvent>();
+   SerializableResourcesManager::getInstance()->loadAll<AudioBank>();
 
    GEMutexInit(mMutex);
 }
