@@ -148,23 +148,37 @@ AnimationSet::AnimationSet(const char* FileName)
          ObjectName cAnimationName = xmlAnimation.attribute("name").value();
          const char* sAnimationFileName = xmlAnimation.attribute("fileName").value();
 
-         Animation* cAnimation = loadAnimation(sAnimationFileName, FileName, cAnimationName);
+         char sSubDir[256];
+         sprintf(sSubDir, "Animations/%s", FileName);
+
+         ContentData animationData;
+         Device::readContentFile(Content::ContentType::GenericBinaryData, sSubDir, sAnimationFileName, "animation.ge", &animationData);
+         ContentDataMemoryBuffer memoryBuffer(animationData);
+         std::istream stream(&memoryBuffer);
+
+         Animation* cAnimation = loadAnimation(cAnimationName, stream);
          mAnimations.add(cAnimation);
 
          pugi::xml_attribute xmlAnimationApplyRootMotionX = xmlAnimation.attribute("applyRootMotionX");
 
          if(!xmlAnimationApplyRootMotionX.empty())
+         {
             cAnimation->setApplyRootMotionX(Parser::parseBool(xmlAnimationApplyRootMotionX.value()));
+         }
 
          pugi::xml_attribute xmlAnimationApplyRootMotionY = xmlAnimation.attribute("applyRootMotionY");
 
          if(!xmlAnimationApplyRootMotionY.empty())
+         {
             cAnimation->setApplyRootMotionY(Parser::parseBool(xmlAnimationApplyRootMotionY.value()));
+         }
 
          pugi::xml_attribute xmlAnimationApplyRootMotionZ = xmlAnimation.attribute("applyRootMotionZ");
 
          if(!xmlAnimationApplyRootMotionZ.empty())
+         {
             cAnimation->setApplyRootMotionZ(Parser::parseBool(xmlAnimationApplyRootMotionZ.value()));
+         }
       }
    }
    else
@@ -177,15 +191,21 @@ AnimationSet::AnimationSet(const char* FileName)
 
       for(uint i = 0; i < iAnimationsCount; i++)
       {
-         ObjectName cAnimationName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
-         Value cAnimationFileName = Value::fromStream(ValueType::String, sStream);
+         const ObjectName cAnimationName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+         Value::fromStream(ValueType::String, sStream);
 
-         Animation* cAnimation = loadAnimation(cAnimationFileName.getAsString(), FileName, cAnimationName);
+         const bool applyRootMotionX = Value::fromStream(ValueType::Bool, sStream).getAsBool();
+         const bool applyRootMotionY = Value::fromStream(ValueType::Bool, sStream).getAsBool();
+         const bool applyRootMotionZ = Value::fromStream(ValueType::Bool, sStream).getAsBool();
+
+         Value::fromStream(ValueType::UInt, sStream);
+
+         Animation* cAnimation = loadAnimation(cAnimationName, sStream);
          mAnimations.add(cAnimation);
 
-         cAnimation->setApplyRootMotionX(Value::fromStream(ValueType::Bool, sStream).getAsBool());
-         cAnimation->setApplyRootMotionY(Value::fromStream(ValueType::Bool, sStream).getAsBool());
-         cAnimation->setApplyRootMotionZ(Value::fromStream(ValueType::Bool, sStream).getAsBool());
+         cAnimation->setApplyRootMotionX(applyRootMotionX);
+         cAnimation->setApplyRootMotionY(applyRootMotionY);
+         cAnimation->setApplyRootMotionZ(applyRootMotionZ);
       }
    }
 }
@@ -194,71 +214,53 @@ AnimationSet::~AnimationSet()
 {
 }
 
-Animation* AnimationSet::loadAnimation(const char* FileName, const char* AnimationSetName, const ObjectName& AnimationName)
+Animation* AnimationSet::loadAnimation(const Core::ObjectName& pAnimationName, std::istream& pStream)
 {
-   char sSubDir[256];
-   sprintf(sSubDir, "Animations/%s", AnimationSetName);
-
-   ContentData cContent;
-   Device::readContentFile(Content::ContentType::GenericBinaryData, sSubDir, FileName, "animation.ge", &cContent);
-
-   char* pData = cContent.getData();
-
    // "GEMeshAnimation "
-   pData += 16;
+   char buffer[64];
+   pStream.read(buffer, 16);
 
    //TODO: remove the name from the animation files
-   pData += 32;
+   pStream.read(buffer, 32);
 
    // animation info
-   uint iKeyFramesCount = *reinterpret_cast<uint*>(pData);
-   pData += sizeof(uint);
-   uint iSkeletonBonesCount = *reinterpret_cast<uint*>(pData);
-   pData += sizeof(uint);
+   uint32_t keyFramesCount;
+   pStream.read(reinterpret_cast<char*>(&keyFramesCount), sizeof(uint32_t));
+   uint32_t skeletonBonesCount;
+   pStream.read(reinterpret_cast<char*>(&skeletonBonesCount), sizeof(uint32_t));
 
-   Animation* cAnimation = Allocator::alloc<Animation>();
-   GEInvokeCtor(Animation, cAnimation)(AnimationName, iKeyFramesCount, iSkeletonBonesCount);
+   Animation* animation = Allocator::alloc<Animation>();
+   GEInvokeCtor(Animation, animation)(pAnimationName, keyFramesCount, skeletonBonesCount);
 
    // reserved
-   pData += Animation::FileFormatHeaderReservedBytes;
+   pStream.read(buffer, Animation::FileFormatHeaderReservedBytes);
 
    // fill key frames data
-   for(uint iKeyFrameIndex = 0; iKeyFrameIndex < iKeyFramesCount; iKeyFrameIndex++)
+   for(uint32_t keyFrameIndex = 0; keyFrameIndex < keyFramesCount; keyFrameIndex++)
    {
-      for(uint iBoneIndex = 0; iBoneIndex < iSkeletonBonesCount; iBoneIndex++)
+      for(uint32_t boneIndex = 0; boneIndex < skeletonBonesCount; boneIndex++)
       {
-         AnimationKeyFrame& cKeyFrame = cAnimation->getKeyFrame(iKeyFrameIndex, iBoneIndex);
+         AnimationKeyFrame& keyFrame = animation->getKeyFrame(keyFrameIndex, boneIndex);
 
-         cKeyFrame.TimeInSeconds = *reinterpret_cast<float*>(pData);
-         pData += sizeof(float);
+         pStream.read(reinterpret_cast<char*>(&keyFrame.TimeInSeconds), sizeof(float));
 
-         cKeyFrame.FramePosition.X = *reinterpret_cast<float*>(pData);
-         pData += sizeof(float);
-         cKeyFrame.FramePosition.Y = *reinterpret_cast<float*>(pData);
-         pData += sizeof(float);
-         cKeyFrame.FramePosition.Z = *reinterpret_cast<float*>(pData);
-         pData += sizeof(float);
+         pStream.read(reinterpret_cast<char*>(&keyFrame.FramePosition.X), sizeof(float));
+         pStream.read(reinterpret_cast<char*>(&keyFrame.FramePosition.Y), sizeof(float));
+         pStream.read(reinterpret_cast<char*>(&keyFrame.FramePosition.Z), sizeof(float));
 
-         Vector3 vEulerRotation;
-         vEulerRotation.X = *reinterpret_cast<float*>(pData);
-         pData += sizeof(float);
-         vEulerRotation.Y = *reinterpret_cast<float*>(pData);
-         pData += sizeof(float);
-         vEulerRotation.Z = *reinterpret_cast<float*>(pData);
-         pData += sizeof(float);
+         Vector3 eulerRotation;
+         pStream.read(reinterpret_cast<char*>(&eulerRotation.X), sizeof(float));
+         pStream.read(reinterpret_cast<char*>(&eulerRotation.Y), sizeof(float));
+         pStream.read(reinterpret_cast<char*>(&eulerRotation.Z), sizeof(float));
+         keyFrame.FrameRotation = Rotation(eulerRotation * GE_DEG2RAD);
 
-         cKeyFrame.FrameRotation = Rotation(vEulerRotation * GE_DEG2RAD);
-
-         cKeyFrame.FrameScale.X = *reinterpret_cast<float*>(pData);
-         pData += sizeof(float);
-         cKeyFrame.FrameScale.Y = *reinterpret_cast<float*>(pData);
-         pData += sizeof(float);
-         cKeyFrame.FrameScale.Z = *reinterpret_cast<float*>(pData);
-         pData += sizeof(float);
+         pStream.read(reinterpret_cast<char*>(&keyFrame.FrameScale.X), sizeof(float));
+         pStream.read(reinterpret_cast<char*>(&keyFrame.FrameScale.Y), sizeof(float));
+         pStream.read(reinterpret_cast<char*>(&keyFrame.FrameScale.Z), sizeof(float));
       }
    }
 
-   return cAnimation;
+   return animation;
 }
 
 Animation* AnimationSet::getAnimation(const ObjectName& Name)
