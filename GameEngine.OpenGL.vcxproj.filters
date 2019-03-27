@@ -46,6 +46,9 @@
     <Filter Include="Audio.OpenAL">
       <UniqueIdentifier>{afded896-737a-4322-b52b-3d2fb591a2fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{7f0c6614-2414-499a-81bd-47bdb826e223}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
@@ -365,6 +368,9 @@
     </ClCompile>
     <ClCompile Include="Entities\GEComponentAudio.cpp">
       <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\GEContentCompiler.cpp">
+      <Filter>Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -712,6 +718,9 @@
     </ClInclude>
     <ClInclude Include="Entities\GEComponentAudio.h">
       <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\GEContentCompiler.h">
+      <Filter>Tools</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

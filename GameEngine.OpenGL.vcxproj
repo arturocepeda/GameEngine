@@ -125,6 +125,7 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="Tools\GEContentCompiler.cpp" />
     <ClCompile Include="Types\GEBezierCurve.cpp" />
     <ClCompile Include="Types\GECurve.cpp" />
     <ClCompile Include="Types\GEEnumStrings.cpp" />
@@ -237,6 +238,7 @@
     <ClInclude Include="Rendering\OpenGL\GERenderingShadersES20.h" />
     <ClInclude Include="Rendering\OpenGL\GERenderSystemES20.h" />
     <ClInclude Include="Scripting\GEScriptingEnvironment.h" />
+    <ClInclude Include="Tools\GEContentCompiler.h" />
     <ClInclude Include="Types\GEBezierCurve.h" />
     <ClInclude Include="Types\GEColor.h" />
     <ClInclude Include="Types\GECurve.h" />
