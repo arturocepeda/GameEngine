@@ -198,11 +198,12 @@ void ComponentSkeleton::updateSkinnedMeshes()
 
    if(cRenderable && cRenderable->getClassName() == ComponentMesh::ClassName)
    {
-      ComponentMesh* cMesh = static_cast<ComponentMesh*>(cRenderable);
+      ComponentMesh* cComponentMesh = static_cast<ComponentMesh*>(cRenderable);
+      Mesh* cMesh = cComponentMesh->getMesh();
 
-      if(cMesh->getMesh()->isSkinned())
+      if(cMesh && cMesh->isSkinned())
       {
-         cMesh->updateSkinning();
+         cComponentMesh->updateSkinning();
       }
    }
 
@@ -212,11 +213,12 @@ void ComponentSkeleton::updateSkinnedMeshes()
 
       if(cRenderable && cRenderable->getClassName() == ComponentMesh::ClassName)
       {
-         ComponentMesh* cMesh = static_cast<ComponentMesh*>(cRenderable);
+         ComponentMesh* cComponentMesh = static_cast<ComponentMesh*>(cRenderable);
+         Mesh* cMesh = cComponentMesh->getMesh();
 
-         if(cMesh->getMesh()->isSkinned())
+         if(cMesh && cMesh->isSkinned())
          {
-            cMesh->updateSkinning();
+            cComponentMesh->updateSkinning();
          }
       }
    }
