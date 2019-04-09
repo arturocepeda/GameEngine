@@ -19,7 +19,14 @@ namespace GE { namespace Input
 {
    class InputListener
    {
+   protected:
+      uint8_t mInputPriority;
+
+      InputListener();
+
    public:
+      uint8_t getInputPriority() const { return mInputPriority; }
+
       virtual bool inputKeyPress(char pKey);
       virtual bool inputKeyRelease(char pKey);
 

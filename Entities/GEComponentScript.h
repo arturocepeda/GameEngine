@@ -107,7 +107,10 @@ namespace GE { namespace Entities
       ComponentScript(Entity* Owner);
       ~ComponentScript();
 
+      uint8_t getInputPriority() const { return mInputPriority; }
       uint32_t getJobIndex() const { return mJobIndex; }
+
+      void setInputPriority(uint8_t pValue);
 
       void update();
 

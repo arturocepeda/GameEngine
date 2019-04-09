@@ -20,6 +20,11 @@ using namespace GE::Core;
 //
 //  InputListener
 //
+InputListener::InputListener()
+   : mInputPriority(128u)
+{
+}
+
 bool InputListener::inputKeyPress(char)
 {
    return false;
@@ -74,9 +79,15 @@ InputSystem::~InputSystem()
    GEMutexDestroy(mEventsMutex);
 }
 
+bool inputListenerComparer(InputListener* pListenerA, InputListener* pListenerB)
+{
+   return (pListenerA->getInputPriority() < pListenerB->getInputPriority());
+}
+
 void InputSystem::addListener(InputListener* pListener)
 {
    mListeners.push_back(pListener);
+   std::sort(mListeners.begin(), mListeners.end(), inputListenerComparer);
 }
 
 void InputSystem::removeListener(InputListener* pListener)

@@ -476,6 +476,8 @@ ComponentScript::ComponentScript(Entity* Owner)
       gJobIndex = 1u;
    }
 
+   GERegisterProperty(Byte, InputPriority);
+
    GERegisterPropertyArray(ScriptInstance);
 
    InputSystem::getInstance()->addListener(this);
@@ -486,6 +488,16 @@ ComponentScript::~ComponentScript()
    InputSystem::getInstance()->removeListener(this);
 
    GEReleasePropertyArray(ScriptInstance);
+}
+
+void ComponentScript::setInputPriority(uint8_t pValue)
+{
+   if(pValue != mInputPriority)
+   {
+      mInputPriority = pValue;
+      InputSystem::getInstance()->removeListener(this);
+      InputSystem::getInstance()->addListener(this);
+   }
 }
 
 void ComponentScript::update()
