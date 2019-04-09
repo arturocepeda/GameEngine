@@ -755,6 +755,7 @@ void Environment::registerTypes()
    (
       "PropertyInterpolatorFloat"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "setClockName", &PropertyInterpolator<float>::setClockName
       , "animate", &PropertyInterpolator<float>::animate
       , "alternate", &PropertyInterpolator<float>::alternate
       , "stopOnStartValue", &PropertyInterpolator<float>::stopOnStartValue
@@ -765,6 +766,7 @@ void Environment::registerTypes()
    (
       "PropertyInterpolatorVector2"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "setClockName", &PropertyInterpolator<Vector2>::setClockName
       , "animate", &PropertyInterpolator<Vector2>::animate
       , "alternate", &PropertyInterpolator<Vector2>::alternate
       , "stopOnStartValue", &PropertyInterpolator<Vector2>::stopOnStartValue
@@ -775,6 +777,7 @@ void Environment::registerTypes()
    (
       "PropertyInterpolatorVector3"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "setClockName", &PropertyInterpolator<Vector3>::setClockName
       , "animate", &PropertyInterpolator<Vector3>::animate
       , "alternate", &PropertyInterpolator<Vector3>::alternate
       , "stopOnStartValue", &PropertyInterpolator<Vector3>::stopOnStartValue
@@ -785,6 +788,7 @@ void Environment::registerTypes()
    (
       "PropertyInterpolatorColor"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "setClockName", &PropertyInterpolator<Color>::setClockName
       , "animate", &PropertyInterpolator<Color>::animate
       , "alternate", &PropertyInterpolator<Color>::alternate
       , "stopOnStartValue", &PropertyInterpolator<Color>::stopOnStartValue

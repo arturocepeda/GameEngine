@@ -251,7 +251,12 @@ const ObjectName& ComponentSkeleton::getAnimationSetName() const
 
 void ComponentSkeleton::setAnimationSetName(const ObjectName& Name)
 {
-   setAnimationSet(ResourcesManager::getInstance()->get<AnimationSet>(Name));
+   AnimationSet* animationSet = ResourcesManager::getInstance()->get<AnimationSet>(Name);
+
+   if(!animationSet)
+      animationSet = ResourcesManager::getInstance()->load<AnimationSet>(Name.getString());
+
+   setAnimationSet(animationSet);
 }
 
 const ObjectName& ComponentSkeleton::getDefaultAnimationName() const
