@@ -16,6 +16,7 @@ using namespace GE;
 using namespace GE::Core;
 
 StateManager::StateManager()
+   : mStatePopRequests(0u)
 {
 }
 
@@ -23,29 +24,43 @@ StateManager::~StateManager()
 {
 }
 
-void StateManager::setActiveState(const ObjectName& StateName)
+void StateManager::setActiveState(const ObjectName& pStateName)
 {
-   State* cState = mStatesRegistry.get(StateName);
-   GEAssert(cState);
-   vActiveStates.clear();
-   vActiveStates.push_back(cState);
+   State* state = mStatesRegistry.get(pStateName);
+   GEAssert(state);
+   mActiveStates.clear();
+   mActiveStates.push_back(state);
 }
 
 State* StateManager::getActiveState()
 {
-   return vActiveStates.empty() ? 0 : vActiveStates.back();
+   return mActiveStates.empty() ? 0 : mActiveStates.back();
 }
 
-void StateManager::pushState(const ObjectName& StateName)
+void StateManager::pushState(const ObjectName& pStateName)
 {
-   State* cState = mStatesRegistry.get(StateName);
-   GEAssert(cState);
-   vActiveStates.push_back(cState);   
+   State* state = mStatesRegistry.get(pStateName);
+   GEAssert(state);
+   mActiveStates.push_back(state);   
 }
 
 void StateManager::popState()
 {
-   vActiveStates.pop_back();
+   mActiveStates.pop_back();
+}
+
+void StateManager::popStates(uint32_t pStatesCount)
+{
+   mStatePopRequests += pStatesCount;
+}
+
+void StateManager::update()
+{
+   if(mStatePopRequests > 0u)
+   {
+      popState();
+      mStatePopRequests--;
+   }
 }
 
 void StateManager::releaseStates()

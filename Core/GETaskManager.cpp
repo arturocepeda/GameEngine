@@ -66,6 +66,7 @@ void TaskManager::update()
    Application::tick();
 
    // handle state changes
+   cStateManager->update();
    State* cActiveState = cStateManager->getActiveState();
 
    if(cCurrentState != cActiveState)

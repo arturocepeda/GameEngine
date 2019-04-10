@@ -25,7 +25,8 @@ namespace GE { namespace Core
    {
    private:
       ObjectManager<State> mStatesRegistry;
-      GESTLVector(State*) vActiveStates;
+      GESTLVector(State*) mActiveStates;
+      uint32_t mStatePopRequests;
 
    public:
       StateManager();
@@ -34,20 +35,24 @@ namespace GE { namespace Core
       template<typename T>
       void registerState()
       {
-         State* cState = Allocator::alloc<T>();
-         GEInvokeCtor(T, cState);
-         mStatesRegistry.add(cState);
+         State* state = Allocator::alloc<T>();
+         GEInvokeCtor(T, state);
+         mStatesRegistry.add(state);
    
-         if(vActiveStates.empty())
-            vActiveStates.push_back(cState);
+         if(mActiveStates.empty())
+         {
+            mActiveStates.push_back(state);
+         }
       }
 
-      void setActiveState(const ObjectName& StateName);
+      void setActiveState(const ObjectName& pStateName);
       State* getActiveState();
 
-      void pushState(const ObjectName& StateName);
+      void pushState(const ObjectName& pStateName);
       void popState();
+      void popStates(uint32_t pStatesCount);
 
+      void update();
       void releaseStates();
    };
 }}
