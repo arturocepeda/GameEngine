@@ -242,14 +242,7 @@ void AudioSystem::update()
       else if(instance->State == AudioEventInstanceState::FadingOut &&
          !platformIsPaused(instance->Channel))
       {
-         if(instance->Event->getFadeOutTime() > GE_EPSILON)
-         {
-            instance->VolumeFactorFade -= (1.0f / instance->Event->getFadeOutTime()) * deltaTime;
-         }
-         else
-         {
-            instance->VolumeFactorFade = 0.0f;
-         }
+         instance->VolumeFactorFade -= (1.0f / instance->Event->getFadeOutTime()) * deltaTime;
 
          if(instance->VolumeFactorFade < GE_EPSILON)
          {
@@ -454,7 +447,20 @@ void AudioSystem::stop(AudioEventInstance* pAudioEventInstance)
    if(pAudioEventInstance->State == AudioEventInstanceState::Free)
       return;
 
-   pAudioEventInstance->State = AudioEventInstanceState::FadingOut;
+   if(pAudioEventInstance->Event->getFadeOutTime() < GE_EPSILON ||
+      platformIsPaused(pAudioEventInstance->Channel))
+   {
+      GEMutexLock(mMutex);
+
+      platformStop(pAudioEventInstance->Channel);
+      releaseChannel(pAudioEventInstance->Channel);
+
+      GEMutexUnlock(mMutex);
+   }
+   else
+   {
+      pAudioEventInstance->State = AudioEventInstanceState::FadingOut;
+   }
 }
 
 void AudioSystem::pause(AudioEventInstance* pAudioEventInstance)
