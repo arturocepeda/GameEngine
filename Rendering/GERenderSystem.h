@@ -172,6 +172,7 @@ namespace GE { namespace Rendering
       void loadRenderingData(const Content::GeometryData& sData, GPUBufferPair& sBuffers, uint iIndexSize = 2);
 
       void queueForRenderingSingle(RenderOperation& sRenderOperation);
+      void queueForRendering3DUI(RenderOperation& pRenderOperation);
       void queueForRenderingBatch(RenderOperation& sBatch);
       void prepareBatchForRendering(const RenderOperation& sBatch);
 

@@ -800,6 +800,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
    GEProfilerMarker("RenderSystem::queueForRenderingSingle()");
 
    ComponentRenderable* cRenderable = sRenderOperation.Renderable;
+   ComponentUIElement* cUIElement = cRenderable->getOwner()->getComponent<ComponentUIElement>();
 
    memcpy(&sRenderOperation.Data, &cRenderable->getGeometryData(), sizeof(GeometryData));
    uint iRenderableID = cRenderable->getOwner()->getFullName().getID();
@@ -836,7 +837,11 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       else
 #endif
       {
-         if(GEHasFlag(cMesh->getSettings(), MeshSettingsBitMask::Transparency))
+         if(cUIElement)
+         {
+            queueForRendering3DUI(sRenderOperation);
+         }
+         else if(GEHasFlag(cMesh->getSettings(), MeshSettingsBitMask::Transparency))
          {
             vTransparentMeshesToRender.push_back(sRenderOperation);
          }
@@ -878,27 +883,13 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       {
          if(cSprite->getLayer() == SpriteLayer::GUI)
          {
-            ComponentUIElement* cUIElement = cRenderable->getOwner()->getComponent<ComponentUIElement>();
-
             if(!cUIElement || cUIElement->getClassName() == ComponentUI2DElement::ClassName)
             {
                vUIElementsToRender.push(sRenderOperation);
             }
             else
             {
-               ComponentUI3DElement* cUI3DElement = static_cast<ComponentUI3DElement*>(cUIElement);
-               GEAssert(cUI3DElement->getCanvasIndex() < ComponentUI3DElement::CanvasCount);
-
-               v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push(sRenderOperation);
-               mAny3DUIElementsToRender = true;
-
-               if(cUIElement->getClassName() == ComponentUI3DCanvas::ClassName)
-               {
-                  ComponentUI3DCanvas* cUI3DCanvas = static_cast<ComponentUI3DCanvas*>(cUIElement);
-                  const Vector3& vWorldPosition = cUI3DCanvas->getOwner()->getComponent<ComponentTransform>()->getWorldPosition();
-                  s3DUICanvasEntries[cUI3DCanvas->getCanvasIndex()].Settings = (uint16_t)cUI3DCanvas->getSettings();
-                  s3DUICanvasEntries[cUI3DCanvas->getCanvasIndex()].WorldPosition = vWorldPosition;
-               }
+               queueForRendering3DUI(sRenderOperation);
             }
          }
          else
@@ -935,8 +926,6 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       else
 #endif
       {
-         ComponentUIElement* cUIElement = cRenderable->getOwner()->getComponent<ComponentUIElement>();
-
          if(cUIElement)
          {
             if(cUIElement->getClassName() == ComponentUI2DElement::ClassName)
@@ -945,19 +934,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
             }
             else
             {
-               ComponentUI3DElement* cUI3DElement = static_cast<ComponentUI3DElement*>(cUIElement);
-               GEAssert(cUI3DElement->getCanvasIndex() < ComponentUI3DElement::CanvasCount);
-
-               v3DUIElementsToRender[cUI3DElement->getCanvasIndex()].push(sRenderOperation);
-               mAny3DUIElementsToRender = true;
-
-               if(cUIElement->getClassName() == ComponentUI3DCanvas::ClassName)
-               {
-                  ComponentUI3DCanvas* cUI3DCanvas = static_cast<ComponentUI3DCanvas*>(cUIElement);
-                  const Vector3& vWorldPosition = cUI3DCanvas->getOwner()->getComponent<ComponentTransform>()->getWorldPosition();
-                  s3DUICanvasEntries[cUI3DCanvas->getCanvasIndex()].Settings = (uint16_t)cUI3DCanvas->getSettings();
-                  s3DUICanvasEntries[cUI3DCanvas->getCanvasIndex()].WorldPosition = vWorldPosition;
-               }
+               queueForRendering3DUI(sRenderOperation);
             }
          }
          else
@@ -994,6 +971,26 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
          loadRenderingData(cRenderable->getGeometryData(), sBuffers, 4);
       }
+   }
+}
+
+void RenderSystem::queueForRendering3DUI(RenderOperation& pRenderOperation)
+{
+   ComponentRenderable* renderable = pRenderOperation.Renderable;
+   ComponentUI3DElement* uiElement = renderable->getOwner()->getComponent<ComponentUI3DElement>();
+
+   GEAssert(uiElement);
+   GEAssert(uiElement->getCanvasIndex() < ComponentUI3DElement::CanvasCount);
+
+   v3DUIElementsToRender[uiElement->getCanvasIndex()].push(pRenderOperation);
+   mAny3DUIElementsToRender = true;
+
+   if(uiElement->getClassName() == ComponentUI3DCanvas::ClassName)
+   {
+      ComponentUI3DCanvas* uiCanvas = static_cast<ComponentUI3DCanvas*>(uiElement);
+      const Vector3& worldPosition = uiCanvas->getOwner()->getComponent<ComponentTransform>()->getWorldPosition();
+      s3DUICanvasEntries[uiCanvas->getCanvasIndex()].Settings = (uint16_t)uiCanvas->getSettings();
+      s3DUICanvasEntries[uiCanvas->getCanvasIndex()].WorldPosition = worldPosition;
    }
 }
 
