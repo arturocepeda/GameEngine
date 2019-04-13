@@ -174,7 +174,7 @@ namespace GE { namespace Entities
 
    const char* strCanvasSettingsBitMask[] =
    {
-      "RenderAfterTransparentGeometry"
+      "RenderAfter2DElements"
    };
 }}
 

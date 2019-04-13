@@ -1092,7 +1092,7 @@ void RenderSystem::clearRenderingQueues()
    for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
    {
       s3DUICanvasEntries[i].Index = (uint16_t)i;
-      s3DUICanvasEntries[i].Settings = (uint16_t)CanvasSettingsBitMask::RenderAfterTransparentGeometry;
+      s3DUICanvasEntries[i].Settings = 0u;
       s3DUICanvasEntries[i].WorldPosition = Vector3::Zero;
    }
 
@@ -1196,24 +1196,6 @@ void RenderSystem::renderFrame()
 
       if(cActiveCamera)
       {
-         qsort(s3DUICanvasEntries, ComponentUI3DElement::CanvasCount, sizeof(_3DUICanvasEntry), canvasSortComparer);
-
-         for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
-         {
-            if(!GEHasFlag(s3DUICanvasEntries[i].Settings, CanvasSettingsBitMask::RenderAfterTransparentGeometry))
-            {
-               uint iIndex = s3DUICanvasEntries[i].Index;
-
-               while(!v3DUIElementsToRender[iIndex].empty())
-               {
-                  const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
-                  useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-                  render(sRenderOperation);
-                  v3DUIElementsToRender[iIndex].pop();
-               }
-            }
-         }
-
          if(!vTransparentMeshesToRender.empty())
          {
             std::sort(vTransparentMeshesToRender.begin(), vTransparentMeshesToRender.end(),
@@ -1237,16 +1219,21 @@ void RenderSystem::renderFrame()
             }
          }
 
+         qsort(s3DUICanvasEntries, ComponentUI3DElement::CanvasCount, sizeof(_3DUICanvasEntry), canvasSortComparer);
+
          for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
          {
-            uint iIndex = s3DUICanvasEntries[i].Index;
-
-            while(!v3DUIElementsToRender[iIndex].empty())
+            if(!GEHasFlag(s3DUICanvasEntries[i].Settings, CanvasSettingsBitMask::RenderAfter2DElements))
             {
-               const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
-               useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
-               render(sRenderOperation);
-               v3DUIElementsToRender[iIndex].pop();
+               uint iIndex = s3DUICanvasEntries[i].Index;
+
+               while(!v3DUIElementsToRender[iIndex].empty())
+               {
+                  const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
+                  useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+                  render(sRenderOperation);
+                  v3DUIElementsToRender[iIndex].pop();
+               }
             }
          }
       }
@@ -1258,6 +1245,19 @@ void RenderSystem::renderFrame()
       useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
       render(sRenderOperation);
       vUIElementsToRender.pop();
+   }
+
+   for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
+   {
+      uint iIndex = s3DUICanvasEntries[i].Index;
+
+      while(!v3DUIElementsToRender[iIndex].empty())
+      {
+         const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
+         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+         render(sRenderOperation);
+         v3DUIElementsToRender[iIndex].pop();
+      }
    }
 
 #if defined (GE_EDITOR_SUPPORT)

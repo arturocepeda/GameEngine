@@ -81,7 +81,7 @@ namespace GE { namespace Entities
 
    GESerializableEnum(CanvasSettingsBitMask)
    {
-      RenderAfterTransparentGeometry  = 1 << 0,
+      RenderAfter2DElements  = 1 << 0,
 
       Count = 1
    };
