@@ -16,6 +16,7 @@
 #include "Core/GEParser.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEApplication.h"
+#include "Core/GELog.h"
 #include "Core/GEProfiler.h"
 #include "Content/GEResourcesManager.h"
 #include "Entities/GEEntity.h"
@@ -801,6 +802,16 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 
    ComponentRenderable* cRenderable = sRenderOperation.Renderable;
    ComponentUIElement* cUIElement = cRenderable->getOwner()->getComponent<ComponentUIElement>();
+
+#if defined (GE_EDITOR_SUPPORT)
+   if(cRenderable->getRenderingMode() == RenderingMode::_3D && !cActiveCamera)
+   {
+      Entity* cOwner = cRenderable->getOwner();
+      Log::log(LogType::Warning, "There is no active camera. The entity '%s' will be deactivated.", cOwner->getFullName().getString());
+      cOwner->setActive(false);
+      return;
+   }
+#endif
 
    memcpy(&sRenderOperation.Data, &cRenderable->getGeometryData(), sizeof(GeometryData));
    uint iRenderableID = cRenderable->getOwner()->getFullName().getID();
