@@ -953,7 +953,18 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       {
          ComponentParticleSystem* cParticleSystem = static_cast<ComponentParticleSystem*>(cRenderable);
 
-         if(cRenderable->getRenderingMode() == RenderingMode::_2D)
+         if(cUIElement)
+         {
+            if(cUIElement->getClassName() == ComponentUI2DElement::ClassName)
+            {
+               vUIElementsToRender.push(sRenderOperation);
+            }
+            else
+            {
+               queueForRendering3DUI(sRenderOperation);
+            }
+         }
+         else if(cRenderable->getRenderingMode() == RenderingMode::_2D)
          {
             vUIElementsToRender.push(sRenderOperation);
          }
