@@ -160,18 +160,26 @@ void ComponentParticleSystem::setEmitterRadius(float Radius)
 void ComponentParticleSystem::setEmitterMesh(const Core::ObjectName& MeshName)
 {
    if(MeshName.isEmpty())
-      return;
-
-   cEmitterMesh = SerializableResourcesManager::getInstance()->get<Mesh>(MeshName);
+   {
+      cEmitterMesh = nullptr;
+   }
+   else
+   {
+      cEmitterMesh = SerializableResourcesManager::getInstance()->get<Mesh>(MeshName);
+   }
 }
 
 void ComponentParticleSystem::setEmitterMeshEntity(const Core::ObjectName& EntityName)
 {
    if(EntityName.isEmpty())
-      return;
-
-   Scene* cScene = cOwner->getOwner();
-   cEmitterMeshEntity = cScene->getEntity(EntityName);
+   {
+      cEmitterMeshEntity = nullptr;
+   }
+   else
+   {
+      Scene* cScene = cOwner->getOwner();
+      cEmitterMeshEntity = cScene->getEntity(EntityName);
+   }
 }
 
 const Vector3& ComponentParticleSystem::getEmitterPointA() const
