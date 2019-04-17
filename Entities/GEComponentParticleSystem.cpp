@@ -162,8 +162,7 @@ void ComponentParticleSystem::setEmitterMesh(const Core::ObjectName& MeshName)
    if(MeshName.isEmpty())
       return;
 
-   cEmitterMesh = ResourcesManager::getInstance()->get<Mesh>(MeshName);
-   GEAssert(cEmitterMesh);
+   cEmitterMesh = SerializableResourcesManager::getInstance()->get<Mesh>(MeshName);
 }
 
 void ComponentParticleSystem::setEmitterMeshEntity(const Core::ObjectName& EntityName)
@@ -173,7 +172,6 @@ void ComponentParticleSystem::setEmitterMeshEntity(const Core::ObjectName& Entit
 
    Scene* cScene = cOwner->getOwner();
    cEmitterMeshEntity = cScene->getEntity(EntityName);
-   GEAssert(cEmitterMeshEntity);
 }
 
 const Vector3& ComponentParticleSystem::getEmitterPointA() const
@@ -261,13 +259,16 @@ void ComponentParticleSystem::emitParticle()
             cEmitterMeshGeometryData = &cEmitterMesh->getGeometryData();
             cEmitterMeshTransform = cTransform;
          }
-         else
+         else if(cEmitterMeshEntity)
          {
             cEmitterMeshGeometryData = &cEmitterMeshEntity->getComponent<ComponentMesh>()->getGeometryData();
             cEmitterMeshTransform = cEmitterMeshEntity->getComponent<ComponentTransform>();
          }
+         else
+         {
+            return;
+         }
 
-         GEAssert(cEmitterMeshGeometryData);
          const uint iTrianglesCount = cEmitterMeshGeometryData->NumIndices / 3;
 
          RandInt cRandInt(0, iTrianglesCount - 1);
