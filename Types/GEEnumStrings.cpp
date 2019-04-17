@@ -91,7 +91,8 @@ namespace GE { namespace Entities
    const char* strSpriteLayer[] =
    {
       "GUI",
-      "Pre3D"
+      "Pre3D",
+      "PostGUI"
    };
 
    const char* strUVMode[] =

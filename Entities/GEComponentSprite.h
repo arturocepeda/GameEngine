@@ -20,6 +20,7 @@ namespace GE { namespace Entities
    {
       GUI,
       Pre3D,
+      PostGUI,
 
       Count
    };

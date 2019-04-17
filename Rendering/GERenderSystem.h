@@ -121,6 +121,7 @@ namespace GE { namespace Rendering
 
       GESTLPriorityQueue(RenderOperation) vUIElementsToRender;
       GESTLPriorityQueue(RenderOperation) vPre3DSpritesToRender;
+      GESTLPriorityQueue(RenderOperation) vPostUISpritesToRender;
       GESTLPriorityQueue(RenderOperation) v3DLabelsToRender;
       GESTLVector(RenderOperation) vShadowedMeshesToRender;
       GESTLVector(RenderOperation) vShadowedParticlesToRender;

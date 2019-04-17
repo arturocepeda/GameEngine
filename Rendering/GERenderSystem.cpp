@@ -903,9 +903,13 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
                queueForRendering3DUI(sRenderOperation);
             }
          }
-         else
+         else if(cSprite->getLayer() == SpriteLayer::Pre3D)
          {
             vPre3DSpritesToRender.push(sRenderOperation);
+         }
+         else
+         {
+            vPostUISpritesToRender.push(sRenderOperation);
          }
       }
 
@@ -1269,6 +1273,14 @@ void RenderSystem::renderFrame()
          render(sRenderOperation);
          v3DUIElementsToRender[iIndex].pop();
       }
+   }
+
+   while(!vPostUISpritesToRender.empty())
+   {
+      const RenderOperation& sRenderOperation = vPostUISpritesToRender.top();
+      useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+      render(sRenderOperation);
+      vPostUISpritesToRender.pop();
    }
 
 #if defined (GE_EDITOR_SUPPORT)
