@@ -146,19 +146,19 @@ CurvePropertyInterpolator::CurvePropertyInterpolator(Curve* cCurve, Serializable
          else if(eValueComponent == PropertyValueComponent::Green)
          {
             Color c = cPropertyValue.getAsColor();
-            c.Red = fCurveValue;
+            c.Green = fCurveValue;
             cPropertyValue = Value(c);
          }
          else if(eValueComponent == PropertyValueComponent::Blue)
          {
             Color c = cPropertyValue.getAsColor();
-            c.Red = fCurveValue;
+            c.Blue = fCurveValue;
             cPropertyValue = Value(c);
          }
          else if(eValueComponent == PropertyValueComponent::Alpha)
          {
             Color c = cPropertyValue.getAsColor();
-            c.Red = fCurveValue;
+            c.Alpha = fCurveValue;
             cPropertyValue = Value(c);
          }
 
