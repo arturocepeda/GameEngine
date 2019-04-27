@@ -87,6 +87,7 @@ namespace GE { namespace Core
       static bool userFileExists(const char* SubDir, const char* Name, const char* Extension);
       static void readUserFile(const char* SubDir, const char* Name, const char* Extension, Content::ContentData* ContentData);
       static void writeUserFile(const char* SubDir, const char* Name, const char* Extension, const Content::ContentData* ContentData);
+      static void deleteUserFile(const char* SubDir, const char* Name, const char* Extension);
 
       static uint getUserFilesCount(const char* SubDir, const char* Extension);
       static bool getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name);

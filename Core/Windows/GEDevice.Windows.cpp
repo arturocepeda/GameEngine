@@ -269,6 +269,29 @@ void Device::writeUserFile(const char* SubDir, const char* Name, const char* Ext
    file.close();
 }
 
+void Device::deleteUserFile(const char* SubDir, const char* Name, const char* Extension)
+{
+   char sPath[MaxPath];
+   HRESULT hr = SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, sPath);
+   GEAssert(hr >= 0);
+
+   char sDirectory[MaxPath];
+   sprintf(sDirectory, "%s\\%s", sPath, Application::Name);
+
+   char sSubDir[MaxPath];
+   toWindowsSubDir(SubDir, sSubDir);
+
+   if(strlen(sSubDir) > 0)
+   {
+      sprintf(sDirectory, "%s\\%s\\%s", sPath, Application::Name, sSubDir);
+   }
+
+   char sFullPath[MaxPath];
+   sprintf(sFullPath, "%s\\%s.%s", sDirectory, Name, Extension);
+
+   DeleteFile(sFullPath);
+}
+
 uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
 {
    char sPath[MaxPath];
