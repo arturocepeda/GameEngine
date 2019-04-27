@@ -1129,6 +1129,7 @@ void Environment::registerTypes()
       "RenderSystem"
       , "getInstance", &RenderSystem::getInstance
       , "getActiveCamera", &RenderSystem::getActiveCamera
+      , "getFPS", &RenderSystem::getFPS
    );
    mLua.new_simple_usertype<Texture>
    (
