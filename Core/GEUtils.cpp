@@ -163,21 +163,66 @@ bool SerializableIO::loadFromBinaryFile(Serializable* Obj, const char* Directory
 //
 //  FNV-1a Hash
 //
-unsigned int GE::Core::hash(const GESTLString& Str)
+uint32_t GE::Core::hash(const char* pString)
 {
-   if(Str.empty())
-      return 0;
+   if(!pString || pString[0] == '\0')
+      return 0u;
 
-   const uint OffsetBasis = 2166136261;
-   const uint FNVPrime = 16777619;
+   const uint32_t kOffsetBasis = 2166136261u;
+   const uint32_t kFNVPrime = 16777619u;
 
-   uint iHash = OffsetBasis;
+   uint32_t hash = kOffsetBasis;
+   uint32_t i = 0u;
 
-   for(uint i = 0; i < Str.size(); i++)
+   while(pString[i] != '\0')
    {
-      iHash ^= Str[i];
-      iHash *= FNVPrime;
+      hash ^= pString[i];
+      hash *= kFNVPrime;
+      i++;
    }
 
-   return iHash;
+   return hash;
+}
+
+void GE::Core::toHashPath(char* pPath)
+{
+   if(!pPath || pPath[0] == '\0')
+      return;
+
+   char sourcePath[256];
+   const size_t pathLength = strlen(pPath);
+   memcpy(sourcePath, pPath, pathLength + 1u);
+   size_t cursorPath = 0u;
+
+   pPath[0] = '\0';
+   size_t cursorHashPath = 0u;
+
+   const size_t kBufferSize = 64u;
+   char buffer[kBufferSize];
+   memset(buffer, 0, kBufferSize);
+   size_t cursorBuffer = 0u;
+
+   while(true)
+   {
+      if(sourcePath[cursorPath] != '/' &&
+         sourcePath[cursorPath] != '\\' &&
+         sourcePath[cursorPath] != '.' &&
+         sourcePath[cursorPath] != '\0')
+      {
+         buffer[cursorBuffer++] = sourcePath[cursorPath++];
+      }
+      else
+      {
+         sprintf(pPath, "%s%x", pPath, hash(buffer));
+         while(pPath[++cursorHashPath] != '\0');
+         pPath[cursorHashPath++] = sourcePath[cursorPath++];
+         pPath[cursorHashPath++] = '\0';
+
+         if(sourcePath[cursorPath - 1u] == '\0')
+            break;
+
+         memset(buffer, 0, cursorBuffer);
+         cursorBuffer = 0u;
+      }
+   }
 }

@@ -136,10 +136,20 @@ void ContentCompiler::packShaders(ApplicationRenderingAPI pRenderingAPI)
    char sOutputPath[MAX_PATH];
    GetCurrentDirectory(MAX_PATH, sOutputPath);
    sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+   size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
    CreateDirectory(sOutputPath, NULL);
    sprintf(sOutputPath, "%s\\Shaders", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+   toHashPath(sOutputPath + outputPathOffset);
+   outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
    CreateDirectory(sOutputPath, NULL);
    sprintf(sOutputPath, "%s\\Shaders.%s.ge", sOutputPath, (pRenderingAPI == ApplicationRenderingAPI::DirectX ? "hlsl" : "glsl"));
+#if GE_HASH_OUTPUT_PATHS
+   toHashPath(sOutputPath + outputPathOffset);
+#endif
 
    std::string sShaderSource;
    std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
@@ -354,10 +364,20 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
    char sOutputPath[MAX_PATH];
    GetCurrentDirectory(MAX_PATH, sOutputPath);
    sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+   size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
    CreateDirectory(sOutputPath, NULL);
    sprintf(sOutputPath, "%s\\Textures", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+   toHashPath(sOutputPath + outputPathOffset);
+   outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
    CreateDirectory(sOutputPath, NULL);
    sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+#if GE_HASH_OUTPUT_PATHS
+   toHashPath(sOutputPath + outputPathOffset);
+#endif
 
    std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
    GEAssert(sOutputFile.is_open());
@@ -476,10 +496,20 @@ void ContentCompiler::packMaterials()
       char sOutputPath[MAX_PATH];
       GetCurrentDirectory(MAX_PATH, sOutputPath);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+      size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\Materials", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+      outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+#endif
 
       std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
       GEAssert(sOutputFile.is_open());
@@ -547,10 +577,21 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
    char sOutputPath[MAX_PATH];
    GetCurrentDirectory(MAX_PATH, sOutputPath);
    sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+   size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
    CreateDirectory(sOutputPath, NULL);
    sprintf(sOutputPath, "%s\\Fonts", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+   toHashPath(sOutputPath + outputPathOffset);
+   outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
    CreateDirectory(sOutputPath, NULL);
    sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+
+#if GE_HASH_OUTPUT_PATHS
+   toHashPath(sOutputPath + outputPathOffset);
+#endif
 
    std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
    GEAssert(sOutputFile.is_open());
@@ -707,10 +748,20 @@ void ContentCompiler::packStrings()
       char sOutputPath[MAX_PATH];
       GetCurrentDirectory(MAX_PATH, sOutputPath);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+      size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\Strings", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+      outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+#endif
 
       std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
       GEAssert(sOutputFile.is_open());
@@ -780,10 +831,20 @@ void ContentCompiler::packMeshFile(const char* XmlFileName)
    char sOutputPath[MAX_PATH];
    GetCurrentDirectory(MAX_PATH, sOutputPath);
    sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+   size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
    CreateDirectory(sOutputPath, NULL);
    sprintf(sOutputPath, "%s\\Meshes", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+   toHashPath(sOutputPath + outputPathOffset);
+   outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
    CreateDirectory(sOutputPath, NULL);
    sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+#if GE_HASH_OUTPUT_PATHS
+   toHashPath(sOutputPath + outputPathOffset);
+#endif
 
    std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
    GEAssert(sOutputFile.is_open());
@@ -858,10 +919,20 @@ void ContentCompiler::packSkeletons()
       char sOutputPath[MAX_PATH];
       GetCurrentDirectory(MAX_PATH, sOutputPath);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+      size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\Meshes", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+      outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+#endif
 
       std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
       GEAssert(sOutputFile.is_open());
@@ -941,10 +1012,20 @@ void ContentCompiler::packAnimations()
       char sOutputPath[MAX_PATH];
       GetCurrentDirectory(MAX_PATH, sOutputPath);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+      size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\Animations", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+      outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+#endif
 
       std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
       GEAssert(sOutputFile.is_open());
@@ -1040,10 +1121,20 @@ void ContentCompiler::packSounds()
       char sOutputPath[MAX_PATH];
       GetCurrentDirectory(MAX_PATH, sOutputPath);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+      size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\Audio\\files", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+      outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sFileName);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+#endif
 
       CopyFile(sInputPath, sOutputPath, false);
    }
@@ -1075,10 +1166,20 @@ void ContentCompiler::packPrefabs()
       char sOutputPath[MAX_PATH];
       GetCurrentDirectory(MAX_PATH, sOutputPath);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+      size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\Prefabs", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+      outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+#endif
 
       std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
       GEAssert(sOutputFile.is_open());
@@ -1121,10 +1222,20 @@ void ContentCompiler::packScenes()
       char sOutputPath[MAX_PATH];
       GetCurrentDirectory(MAX_PATH, sOutputPath);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+      size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\Scenes", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+      outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+#endif
 
       std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
       GEAssert(sOutputFile.is_open());
@@ -1198,10 +1309,20 @@ void ContentCompiler::compileScripts()
 
       char sOutputPath[MAX_PATH];
       sprintf(sOutputPath, "%s\\%s", sCurrentDirectory, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+      size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\Scripts", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+      outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       CreateDirectory(sOutputPath, NULL);
       sprintf(sOutputPath, "%s\\%sbc", sOutputPath, sScriptFileName);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+#endif
 
       char sParameters[1024];
       sprintf(sParameters, "-o %s %s%s", sOutputPath, (StripLuaSymbols ? "-s " : ""), sInputPath);

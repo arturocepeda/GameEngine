@@ -16,6 +16,8 @@
 
 #if defined (GE_EDITOR_SUPPORT)
 
+#define GE_HASH_OUTPUT_PATHS 1
+
 #undef UNICODE
 
 #include <windows.h>
@@ -109,10 +111,20 @@ namespace GE { namespace Tools
             char sOutputPath[MAX_PATH];
             GetCurrentDirectory(MAX_PATH, sOutputPath);
             sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+            size_t outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
             CreateDirectory(sOutputPath, NULL);
             sprintf(sOutputPath, "%s\\%s", sOutputPath, T::SubDir);
+#if GE_HASH_OUTPUT_PATHS
+            toHashPath(sOutputPath + outputPathOffset);
+            outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
             CreateDirectory(sOutputPath, NULL);
             sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
+#if GE_HASH_OUTPUT_PATHS
+            toHashPath(sOutputPath + outputPathOffset);
+#endif
 
             std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
             GEAssert(sOutputFile.is_open());

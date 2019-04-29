@@ -93,5 +93,6 @@ namespace GE { namespace Core
    //
    //  FNV-1a Hash
    //
-   uint hash(const GESTLString& Str);
+   uint32_t hash(const char* pString);
+   void toHashPath(char* pPath);
 }}
