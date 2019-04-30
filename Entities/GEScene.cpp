@@ -906,13 +906,11 @@ void Scene::queueForRendering()
 
 void Scene::load(const char* Name)
 {
-   char sFilename[64];
-   sprintf(sFilename, "%s.scene", Name);
    ContentData cContent;
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      Device::readContentFile(ContentType::GenericTextData, "Scenes", sFilename, "xml", &cContent);
+      Device::readContentFile(ContentType::GenericTextData, "Scenes", Name, "scene.xml", &cContent);
       pugi::xml_document xml;
       xml.load_buffer(cContent.getData(), cContent.getDataSize());
 
@@ -927,7 +925,7 @@ void Scene::load(const char* Name)
    }
    else
    {
-      Device::readContentFile(ContentType::GenericBinaryData, "Scenes", sFilename, "ge", &cContent);
+      Device::readContentFile(ContentType::GenericBinaryData, "Scenes", Name, "scene.ge", &cContent);
       ContentDataMemoryBuffer sMemoryBuffer(cContent);
       std::istream sStream(&sMemoryBuffer);
 

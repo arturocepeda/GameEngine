@@ -207,22 +207,27 @@ void GE::Core::toHashPath(char* pPath)
       if(sourcePath[cursorPath] != '/' &&
          sourcePath[cursorPath] != '\\' &&
          sourcePath[cursorPath] != '.' &&
+         sourcePath[cursorPath] != '*' &&
          sourcePath[cursorPath] != '\0')
       {
          buffer[cursorBuffer++] = sourcePath[cursorPath++];
       }
       else
       {
-         sprintf(pPath, "%s%x", pPath, hash(buffer));
-         while(pPath[++cursorHashPath] != '\0');
+         if(buffer[0] != '\0')
+         {
+            sprintf(pPath, "%s%x", pPath, hash(buffer));
+            while(pPath[++cursorHashPath] != '\0');
+
+            memset(buffer, 0, cursorBuffer);
+            cursorBuffer = 0u;
+         }
+
          pPath[cursorHashPath++] = sourcePath[cursorPath++];
-         pPath[cursorHashPath++] = '\0';
+         pPath[cursorHashPath] = '\0';
 
          if(sourcePath[cursorPath - 1u] == '\0')
             break;
-
-         memset(buffer, 0, cursorBuffer);
-         cursorBuffer = 0u;
       }
    }
 }

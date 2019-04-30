@@ -15,6 +15,7 @@
 
 #include "Core/GEDevice.h"
 #include "Core/GEApplication.h"
+#include "Core/GEUtils.h"
 #include "Content/GEImageData.h"
 #include "Content/GEAudioData.h"
 
@@ -68,11 +69,18 @@ uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
    DWORD dw = GetCurrentDirectory(MaxPath, sPath);
    GEAssert(dw >= 0);
 
+   const size_t contentPathOffset = ContentHashPath ? strlen(sPath) + 1u : 0u;
+
    char sSubDir[MaxPath];
    toWindowsSubDir(SubDir, sSubDir);
 
    char sFindString[MaxPath];
    sprintf(sFindString, "%s\\%s\\*.%s", sPath, sSubDir, Extension);
+
+   if(ContentHashPath)
+   {
+      toHashPath(sFindString + contentPathOffset);
+   }
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
@@ -83,7 +91,9 @@ uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
    uint iFilesCount = 1;
 
    while(FindNextFile(hFile, &sFileData))
+   {
       iFilesCount++;
+   }
 
    FindClose(hFile);
 
@@ -96,11 +106,18 @@ bool Device::getContentFileName(const char* SubDir, const char* Extension, uint 
    DWORD dw = GetCurrentDirectory(MaxPath, sPath);
    GEAssert(dw >= 0);
 
+   const size_t contentPathOffset = ContentHashPath ? strlen(sPath) + 1u : 0u;
+
    char sSubDir[MaxPath];
    toWindowsSubDir(SubDir, sSubDir);
 
    char sFindString[MaxPath];
    sprintf(sFindString, "%s\\%s\\*.%s", sPath, sSubDir, Extension);
+
+   if(ContentHashPath)
+   {
+      toHashPath(sFindString + contentPathOffset);
+   }
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
@@ -111,13 +128,25 @@ bool Device::getContentFileName(const char* SubDir, const char* Extension, uint 
    uint iCurrentFileIndex = 0;
 
    while(iCurrentFileIndex < Index && FindNextFile(hFile, &sFileData))
+   {
       iCurrentFileIndex++;
+   }
 
    FindClose(hFile);
 
    if(iCurrentFileIndex == Index)
    {
-      size_t iLength = strlen(sFileData.cFileName) - (strlen(Extension) + 1);
+      char buffer[64];
+      const char* extension = Extension;
+
+      if(ContentHashPath)
+      {
+         strcpy(buffer, Extension);
+         toHashPath(buffer);
+         extension = buffer;
+      }
+
+      size_t iLength = strlen(sFileData.cFileName) - (strlen(extension) + 1u);
       memcpy(Name, sFileData.cFileName, iLength);
       Name[iLength] = '\0';
    }
@@ -133,16 +162,59 @@ bool Device::contentFileExists(const char* SubDir, const char* Name, const char*
    char sFileName[MaxPath];
    sprintf(sFileName, "%s\\%s.%s", sSubDir, Name, Extension);
 
+   if(ContentHashPath)
+   {
+      toHashPath(sFileName);
+   }
+
    return getFileLength(sFileName) > 0;
 }
 
-void Device::readContentFile(ContentType Type, const char* SubDir, const char* Name, const char* Extension, ContentData* ContentData)
+void Device::readContentFile(ContentType Type, const char* SubDir, const char* Name, const char* Extension,
+   ContentData* ContentData)
 {
    char sSubDir[MaxPath];
    toWindowsSubDir(SubDir, sSubDir);
 
    char sFileName[MaxPath];
-   sprintf(sFileName, "%s\\%s.%s", sSubDir, Name, Extension);
+
+   if(ContentHashPath)
+   {
+      const size_t nameLength = strlen(Name);
+      bool nameIsHash = nameLength == 8u;
+
+      if(nameIsHash)
+      {
+         for(size_t i = 0u; i < 8u; i++)
+         {
+            if(!isxdigit(Name[i]))
+            {
+               nameIsHash = false;
+               break;
+            }
+         }
+      }
+
+      if(nameIsHash)
+      {
+         toHashPath(sSubDir);
+         
+         char extension[32];
+         strcpy(extension, Extension);
+         toHashPath(extension);
+
+         sprintf(sFileName, "%s\\%s.%s", sSubDir, Name, extension);
+      }
+      else
+      {
+         sprintf(sFileName, "%s\\%s.%s", sSubDir, Name, Extension);
+         toHashPath(sFileName);
+      }
+   }
+   else
+   {
+      sprintf(sFileName, "%s\\%s.%s", sSubDir, Name, Extension);
+   }
 
    uint iFileLength = getFileLength(sFileName);
 
@@ -154,7 +226,9 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
    readFile(sFileName, pFileData, iFileLength);
 
    if(Type == ContentType::GenericTextData)
+   {
       pFileData[iFileLength] = '\0';
+   }
 
    switch(Type)
    {
@@ -178,6 +252,11 @@ std::ifstream Device::openContentFile(const char* SubDir, const char* Name, cons
    char fileName[MaxPath];
    sprintf(fileName, "%s\\%s.%s", subDir, Name, Extension);
 
+   if(ContentHashPath)
+   {
+      toHashPath(fileName);
+   }
+
    const GESTLString fullPath = getFullPath(fileName);
    return std::ifstream(fullPath.c_str(), std::ios::in | std::ios::binary);
 }
@@ -194,9 +273,13 @@ bool Device::userFileExists(const char* SubDir, const char* Name, const char* Ex
    char sFullPath[MaxPath];
 
    if(strlen(sSubDir) == 0)
+   {
       sprintf(sFullPath, "%s\\%s\\%s.%s", sPath, Application::Name, Name, Extension);
+   }
    else
+   {
       sprintf(sFullPath, "%s\\%s\\%s\\%s.%s", sPath, Application::Name, sSubDir, Name, Extension);
+   }
 
    std::ifstream file(sFullPath, std::ios::in | std::ios::binary);
 
@@ -221,9 +304,13 @@ void Device::readUserFile(const char* SubDir, const char* Name, const char* Exte
    char sFullPath[MaxPath];
 
    if(strlen(sSubDir) == 0)
+   {
       sprintf(sFullPath, "%s\\%s\\%s.%s", sPath, Application::Name, Name, Extension);
+   }
    else
+   {
       sprintf(sFullPath, "%s\\%s\\%s\\%s.%s", sPath, Application::Name, sSubDir, Name, Extension);
+   }
 
    std::ifstream file(sFullPath, std::ios::in | std::ios::binary);
    GEAssert(file.is_open());

@@ -61,6 +61,8 @@ namespace GE { namespace Core
       static DeviceOrientation Orientation;
       static Quaternion Rotation;
 
+      static bool ContentHashPath;
+
       static int AudioSystemSampleRate;
       static int AudioSystemFramesPerBuffer;
 

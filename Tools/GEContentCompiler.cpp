@@ -1340,8 +1340,18 @@ void ContentCompiler::compileScripts()
       ShellExecuteEx(&sShellExecuteInfo);
 
       sprintf(sOutputPath, "%s\\%s", sCurrentDirectory, ContentBinDirName);
+#if GE_HASH_OUTPUT_PATHS
+      outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       sprintf(sOutputPath, "%s\\Scripts", sOutputPath);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+      outputPathOffset = strlen(sOutputPath) + 1u;
+#endif
       sprintf(sOutputPath, "%s\\x64_%sbc", sOutputPath, sScriptFileName);
+#if GE_HASH_OUTPUT_PATHS
+      toHashPath(sOutputPath + outputPathOffset);
+#endif
 
       sprintf(sParameters, "-o %s %s%s", sOutputPath, (StripLuaSymbols ? "-s " : ""), sInputPath);
 

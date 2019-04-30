@@ -26,6 +26,8 @@ SystemLanguage Device::Language = SystemLanguage::English;
 DeviceOrientation Device::Orientation = DeviceOrientation::Portrait;
 Quaternion Device::Rotation;
 
+bool Device::ContentHashPath = false;
+
 int Device::AudioSystemSampleRate = 0;
 int Device::AudioSystemFramesPerBuffer = 0;
 

@@ -69,6 +69,8 @@ void Application::startUp(void (*pInitAppModuleFunction)())
    Allocator::init();
    Device::init();
 
+   Device::ContentHashPath = ContentType == ApplicationContentType::Bin;
+
    InputSystem* cInputSystem = Allocator::alloc<InputSystem>();
    GEInvokeCtor(InputSystem, cInputSystem);
 

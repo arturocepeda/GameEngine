@@ -606,15 +606,12 @@ void RenderSystem::requestShadersReload()
 
 void RenderSystem::loadFonts(const char* FileName)
 {
-   char sFileName[64];
-   sprintf(sFileName, "%s.fonts", FileName);
-
    ObjectName cGroupName = ObjectName(FileName);
    ContentData cFontsData;
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      Device::readContentFile(ContentType::GenericTextData, "Fonts", sFileName, "xml", &cFontsData);
+      Device::readContentFile(ContentType::GenericTextData, "Fonts", FileName, "fonts.xml", &cFontsData);
 
 #if defined (GE_EDITOR_SUPPORT)
       SerializableResourcesManager::getInstance()->registerSourceFile(
@@ -639,7 +636,7 @@ void RenderSystem::loadFonts(const char* FileName)
    }
    else
    {
-      Device::readContentFile(ContentType::GenericBinaryData, "Fonts", sFileName, "ge", &cFontsData);
+      Device::readContentFile(ContentType::GenericBinaryData, "Fonts", FileName, "fonts.ge", &cFontsData);
       ContentDataMemoryBuffer sMemoryBuffer(cFontsData);
       std::istream sStream(&sMemoryBuffer);
 
@@ -663,14 +660,11 @@ void RenderSystem::loadFonts(const char* FileName)
 
 void RenderSystem::unloadFonts(const char* FileName)
 {
-   char sFileName[64];
-   sprintf(sFileName, "%s.fonts", FileName);
-
    ContentData cFontsData;
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      Device::readContentFile(ContentType::GenericTextData, "Fonts", sFileName, "xml", &cFontsData);
+      Device::readContentFile(ContentType::GenericTextData, "Fonts", FileName, "fonts.xml", &cFontsData);
 
       pugi::xml_document xml;
       xml.load_buffer(cFontsData.getData(), cFontsData.getDataSize());
@@ -685,7 +679,7 @@ void RenderSystem::unloadFonts(const char* FileName)
    }
    else
    {
-      Device::readContentFile(ContentType::GenericBinaryData, "Fonts", sFileName, "ge", &cFontsData);
+      Device::readContentFile(ContentType::GenericBinaryData, "Fonts", FileName, "fonts.ge", &cFontsData);
       ContentDataMemoryBuffer sMemoryBuffer(cFontsData);
       std::istream sStream(&sMemoryBuffer);
 
