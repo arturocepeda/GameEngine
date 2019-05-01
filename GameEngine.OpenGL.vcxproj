@@ -100,7 +100,6 @@
     <ClCompile Include="Externals\lua\src\ltable.c" />
     <ClCompile Include="Externals\lua\src\ltablib.c" />
     <ClCompile Include="Externals\lua\src\ltm.c" />
-    <ClCompile Include="Externals\lua\src\lua.c" />
     <ClCompile Include="Externals\lua\src\lundump.c" />
     <ClCompile Include="Externals\lua\src\lutf8lib.c" />
     <ClCompile Include="Externals\lua\src\lvm.c" />

@@ -77,129 +77,137 @@ Scaler* cPixelToScreenY;
 bool bMouseLeftButton = false;
 GE::Vector2 vMouseLastPosition(0.0f, 0.0f);
 
-int main(int argc, char* argv[])
+int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 {
-    Application::Name = GE_APP_NAME;
-    Application::ID = GE_APP_ID;
-    Application::VersionString = GE_VERSION_STRING;
-    Application::VersionNumber = GE_VERSION_NUMBER;
-    Application::ExecutablePath = (const char*)argv[0];
+   Application::Name = GE_APP_NAME;
+   Application::ID = GE_APP_ID;
+   Application::VersionString = GE_VERSION_STRING;
+   Application::VersionNumber = GE_VERSION_NUMBER;
+   Application::ExecutablePath = (const char*)__argv[0];
 
-    for(int i = 1; i < argc; i++)
-       Application::Arguments.push_back(argv[i]);
+   for(int i = 1; i < __argc; i++)
+   {
+      Application::Arguments.push_back(__argv[i]);
+   }
 
 #if defined (GE_BINARY_CONTENT)
-    Application::ContentType = ApplicationContentType::Bin;
+   Application::ContentType = ApplicationContentType::Bin;
 #endif
 
-    // initialize the application
-    StateManager cStateManager;
-    Application::startUp(initAppModule);
+   // initialize the application
+   StateManager cStateManager;
+   Application::startUp(initAppModule);
 
-    // screen size
-    iFullscreenWidth = GetSystemMetrics(SM_CXSCREEN);
-    iFullscreenHeight = GetSystemMetrics(SM_CYSCREEN);
+   // screen size
+   iFullscreenWidth = GetSystemMetrics(SM_CXSCREEN);
+   iFullscreenHeight = GetSystemMetrics(SM_CYSCREEN);
 
 #if defined (GE_FULLSCREEN_MODE)
-    Device::ScreenWidth = iFullscreenWidth;
-    Device::ScreenHeight = iFullscreenHeight;
+   Device::ScreenWidth = iFullscreenWidth;
+   Device::ScreenHeight = iFullscreenHeight;
 #else
-    Device::ScreenWidth = 1024;
-    Device::ScreenHeight = 600;
+   Device::ScreenWidth = 1024;
+   Device::ScreenHeight = 600;
 #endif
 
-    cPixelToScreenX = Allocator::alloc<Scaler>();
-    GEInvokeCtor(Scaler, cPixelToScreenX)(0.0f, (float)Device::ScreenWidth, -1.0f, 1.0f);
-    cPixelToScreenY = Allocator::alloc<Scaler>();
-    GEInvokeCtor(Scaler, cPixelToScreenY)(0.0f, (float)Device::ScreenHeight, (float)Device::getAspectRatio(), (float)-Device::getAspectRatio());
+   cPixelToScreenX = Allocator::alloc<Scaler>();
+   GEInvokeCtor(Scaler, cPixelToScreenX)(0.0f, (float)Device::ScreenWidth, -1.0f, 1.0f);
+   cPixelToScreenY = Allocator::alloc<Scaler>();
+   GEInvokeCtor(Scaler, cPixelToScreenY)(0.0f, (float)Device::ScreenHeight, (float)Device::getAspectRatio(), (float)-Device::getAspectRatio());
 
-    int iWindowWidth = Device::ScreenWidth;
-    int iWindowHeight = Device::ScreenHeight;
+   int iWindowWidth = Device::ScreenWidth;
+   int iWindowHeight = Device::ScreenHeight;
 
-    // system language
-    char sLanguageName[32];
-    LCID lcidUserDefault = GetUserDefaultLCID();
-    GetLocaleInfoA(lcidUserDefault, LOCALE_SENGLISHLANGUAGENAME, sLanguageName, sizeof(sLanguageName) / sizeof(TCHAR));
+   // system language
+   char sLanguageName[32];
+   LCID lcidUserDefault = GetUserDefaultLCID();
+   GetLocaleInfoA(lcidUserDefault, LOCALE_SENGLISHLANGUAGENAME, sLanguageName, sizeof(sLanguageName) / sizeof(TCHAR));
 
-    if(strcmp(sLanguageName, "English") == 0)
-       Device::Language = SystemLanguage::English;
-    else if(strcmp(sLanguageName, "Spanish") == 0)
-       Device::Language = SystemLanguage::Spanish;
-    else if(strcmp(sLanguageName, "German") == 0)
-       Device::Language = SystemLanguage::German;
+   if(strcmp(sLanguageName, "English") == 0)
+   {
+      Device::Language = SystemLanguage::English;
+   }
+   else if(strcmp(sLanguageName, "Spanish") == 0)
+   {
+      Device::Language = SystemLanguage::Spanish;
+   }
+   else if(strcmp(sLanguageName, "German") == 0)
+   {
+      Device::Language = SystemLanguage::German;
+   }
 
-    // create the main window
-    GE::uint iWindowPositionX = (iFullscreenWidth / 2) - (iWindowWidth / 2);
-    GE::uint iWindowPositionY = (iFullscreenHeight / 2) - (iWindowHeight / 2);
+   // create the main window
+   GE::uint iWindowPositionX = (iFullscreenWidth / 2) - (iWindowWidth / 2);
+   GE::uint iWindowPositionY = (iFullscreenHeight / 2) - (iWindowHeight / 2);
 
-    // initialize rendering and sound systems
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-    glutInitWindowPosition(iWindowPositionX, iWindowPositionY);
-    glutInitWindowSize(Device::ScreenWidth, Device::ScreenHeight);
-    glutCreateWindow(GE_APP_NAME);
-    glewInit();
+   // initialize rendering and sound systems
+   glutInit(&__argc, __argv);
+   glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+   glutInitWindowPosition(iWindowPositionX, iWindowPositionY);
+   glutInitWindowSize(Device::ScreenWidth, Device::ScreenHeight);
+   glutCreateWindow(GE_APP_NAME);
+   glewInit();
 
 #if defined (GE_FULLSCREEN_MODE)
-    glutFullScreen();
+   glutFullScreen();
 #endif
 
-    cRender = Allocator::alloc<RenderSystemES20>();
-    GEInvokeCtor(RenderSystemES20, cRender)();
-    cAudio = Allocator::alloc<AudioSystem>();
-    GEInvokeCtor(AudioSystem, cAudio)();
-    cAudio->init();
-    cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
+   cRender = Allocator::alloc<RenderSystemES20>();
+   GEInvokeCtor(RenderSystemES20, cRender)();
+   cAudio = Allocator::alloc<AudioSystem>();
+   GEInvokeCtor(AudioSystem, cAudio)();
+   cAudio->init();
+   cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
 
 #if !defined (_DEBUG)
-    // hide the mouse pointer
-    glutSetCursor(GLUT_CURSOR_NONE);
+   // hide the mouse pointer
+   glutSetCursor(GLUT_CURSOR_NONE);
 #endif
 
-    // timer
-    cTimer.start();
-    Time::reset();
+   // timer
+   cTimer.start();
+   Time::reset();
 
-    dTimeInterval = 1000000.0 / GE_FPS;
-    dTimeDelta = 0.0;
-    dTimeBefore = 0.0;
-    dTimeNow;
+   dTimeInterval = 1000000.0 / GE_FPS;
+   dTimeDelta = 0.0;
+   dTimeBefore = 0.0;
+   dTimeNow;
 
-    // create the task manager
-    TaskManager* cTaskManager = Allocator::alloc<TaskManager>();
-    GEInvokeCtor(TaskManager, cTaskManager);
+   // create the task manager
+   TaskManager* cTaskManager = Allocator::alloc<TaskManager>();
+   GEInvokeCtor(TaskManager, cTaskManager);
 
-    // game loop
-    glutDisplayFunc(render);
-    glutIdleFunc(render);
+   // game loop
+   glutDisplayFunc(render);
+   glutIdleFunc(render);
 
-    glutKeyboardFunc(keyboardDown);
-    glutKeyboardUpFunc(keyboardUp);
-    glutMouseFunc(mouseButton);
-    glutMotionFunc(mouseMove);
-    glutPassiveMotionFunc(mouseMove);
+   glutKeyboardFunc(keyboardDown);
+   glutKeyboardUpFunc(keyboardUp);
+   glutMouseFunc(mouseButton);
+   glutMotionFunc(mouseMove);
+   glutPassiveMotionFunc(mouseMove);
 
-    glutMainLoop();
+   glutMainLoop();
 
-    // end of the loop
-    cStateManager.getActiveState()->deactivate();
-    cStateManager.releaseStates();
+   // end of the loop
+   cStateManager.getActiveState()->deactivate();
+   cStateManager.releaseStates();
 
-    cAudio->release();
+   cAudio->release();
     
-    GEInvokeDtor(AudioSystem, cAudio);
-    Allocator::free(cAudio);
-    GEInvokeDtor(RenderSystem, cRender);
-    Allocator::free(cRender);
-    GEInvokeDtor(TaskManager, cTaskManager);
-    Allocator::free(cTaskManager);
+   GEInvokeDtor(AudioSystem, cAudio);
+   Allocator::free(cAudio);
+   GEInvokeDtor(RenderSystem, cRender);
+   Allocator::free(cRender);
+   GEInvokeDtor(TaskManager, cTaskManager);
+   Allocator::free(cTaskManager);
 
-    Allocator::free(cPixelToScreenX);
-    Allocator::free(cPixelToScreenY);
+   Allocator::free(cPixelToScreenX);
+   Allocator::free(cPixelToScreenY);
 
-    Application::shutDown();
+   Application::shutDown();
 
-    return 0;
+   return 0;
 }
 
 void render()
