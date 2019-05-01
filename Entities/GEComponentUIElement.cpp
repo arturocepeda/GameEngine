@@ -33,6 +33,7 @@ ComponentUIElement::ComponentUIElement(Entity* Owner)
    GEAssert(cOwner->getComponent<ComponentTransform>());
 
    GERegisterProperty(Float, Alpha);
+   GERegisterPropertyReadonly(Float, AlphaInHierarchy);
 }
 
 ComponentUIElement::~ComponentUIElement()
