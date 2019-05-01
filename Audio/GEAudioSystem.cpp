@@ -44,6 +44,7 @@ AudioSystem::AudioSystem()
 
 AudioSystem::~AudioSystem()
 {
+   release();
 }
 
 void AudioSystem::releaseChannel(ChannelID pChannel)

@@ -191,11 +191,6 @@ using namespace GE::Input;
    
    delete cPixelToScreenX;
    delete cPixelToScreenY;
-   
-   delete cRender;
-   
-   cAudio->release();
-   delete cAudio;
 
    Application::shutDown();
 }

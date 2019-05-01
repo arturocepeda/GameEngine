@@ -283,15 +283,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
     cStateManager.getActiveState()->deactivate();
     cStateManager.releaseStates();
 
-    cAudio->release();
-    
-    GEInvokeDtor(AudioSystem, cAudio);
-    Allocator::free(cAudio);
-    GEInvokeDtor(RenderSystem, cRender);
-    Allocator::free(cRender);
-    GEInvokeDtor(TaskManager, cTaskManager);
-    Allocator::free(cTaskManager);
-
     GEInvokeDtor(Scaler, cPixelToScreenX);
     Allocator::free(cPixelToScreenX);
     GEInvokeDtor(Scaler, cPixelToScreenY);

@@ -43,6 +43,7 @@ using namespace GE::Core;
 using namespace GE::Input;
 using namespace GE::Content;
 using namespace GE::Entities;
+using namespace GE::Audio;
 using namespace GE::Scripting;
 
 const char* Application::Name = 0;
@@ -138,6 +139,15 @@ void Application::shutDown()
 
    GEInvokeDtor(InputSystem, InputSystem::getInstance());
    Allocator::free(InputSystem::getInstance());
+
+   GEInvokeDtor(AudioSystem, AudioSystem::getInstance());
+   Allocator::free(AudioSystem::getInstance());
+
+   GEInvokeDtor(RenderSystem, RenderSystem::getInstance());
+   Allocator::free(RenderSystem::getInstance());
+
+   GEInvokeDtor(TaskManager, TaskManager::getInstance());
+   Allocator::free(TaskManager::getInstance());
 
    Device::release();
    Allocator::release();

@@ -158,15 +158,6 @@ int main(int argc, char* argv[])
     cStateManager.getActiveState()->deactivate();
     cStateManager.releaseStates();
 
-    cAudio->release();
-    
-    GEInvokeDtor(AudioSystem, cAudio);
-    Allocator::free(cAudio);
-    GEInvokeDtor(RenderSystem, cRender);
-    Allocator::free(cRender);
-    GEInvokeDtor(TaskManager, cTaskManager);
-    Allocator::free(cTaskManager);
-
     Allocator::free(cPixelToScreenX);
     Allocator::free(cPixelToScreenY);
 
