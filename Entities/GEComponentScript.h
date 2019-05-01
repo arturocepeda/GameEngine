@@ -89,6 +89,7 @@ namespace GE { namespace Entities
       void update();
 
       bool inputMouse(const Vector2& pPoint);
+      bool inputMouseWheel(int pDelta);
 
       bool inputTouchBegin(int pID, const Vector2& pPoint);
       bool inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint);
@@ -115,6 +116,7 @@ namespace GE { namespace Entities
       void update();
 
       virtual bool inputMouse(const Vector2& Point) override;
+      virtual bool inputMouseWheel(int pDelta) override;
 
       virtual bool inputTouchBegin(int ID, const Vector2& Point) override;
       virtual bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint) override;

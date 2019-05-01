@@ -39,6 +39,7 @@ const ObjectName cEntityVariableName = ObjectName("entity");
 const ObjectName cInitFunctionName = ObjectName("init");
 const ObjectName cUpdateFunctionName = ObjectName("update");
 const ObjectName cInputMouseFunctionName = ObjectName("inputMouse");
+const ObjectName cInputMouseWheelFunctionName = ObjectName("inputMouseWheel");
 const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
 const ObjectName cInputTouchMoveFunctionName = ObjectName("inputTouchMove");
 const ObjectName cInputTouchEndFunctionName = ObjectName("inputTouchEnd");
@@ -416,6 +417,20 @@ bool ScriptInstance::inputMouse(const Vector2& Point)
    return false;
 }
 
+bool ScriptInstance::inputMouseWheel(int pDelta)
+{
+   if(!getActive() || !mNamespace)
+      return false;
+
+   if(mNamespace->isFunctionDefined(cInputMouseWheelFunctionName))
+   {
+      if(mNamespace->runFunction<bool>(cInputMouseWheelFunctionName, pDelta))
+         return true;
+   }
+
+   return false;
+}
+
 bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
 {
    if(!getActive() || !mNamespace)
@@ -519,6 +534,20 @@ bool ComponentScript::inputMouse(const Vector2& Point)
    for(uint i = 0; i < vScriptInstanceList.size(); i++)
    {
       if(getScriptInstance(i)->inputMouse(Point))
+         return true;
+   }
+
+   return false;
+}
+
+bool ComponentScript::inputMouseWheel(int pDelta)
+{
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
+   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   {
+      if(getScriptInstance(i)->inputMouseWheel(pDelta))
          return true;
    }
 
