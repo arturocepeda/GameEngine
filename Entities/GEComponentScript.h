@@ -28,9 +28,8 @@ namespace GE { namespace Entities
    {
       Active             = 1 << 0,
       ThreadSafe         = 1 << 1,
-      SharedEnvironment  = 1 << 2,
 
-      Count = 3
+      Count = 2
    };
 
 

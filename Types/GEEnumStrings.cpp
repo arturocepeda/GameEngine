@@ -169,8 +169,7 @@ namespace GE { namespace Entities
    const char* strScriptSettingsBitMask[] =
    {
       "Active",
-      "ThreadSafe",
-      "SharedEnvironment"
+      "ThreadSafe"
    };
 
    const char* strCanvasSettingsBitMask[] =
