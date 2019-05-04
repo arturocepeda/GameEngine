@@ -743,6 +743,11 @@ void Environment::registerTypes()
       , "set", &Serializable::set
       , "executeAction", &Serializable::executeAction
    );
+   mLua.new_simple_usertype<Clock>
+   (
+      "Clock"
+      , "getDelta", &Clock::getDelta
+   );
    mLua.new_enum
    (
       "InterpolationMode"
@@ -911,6 +916,7 @@ void Environment::registerTypes()
       , "getFullName", &Entity::getFullName
       , "getActive", &Entity::getActive
       , "setActive", &Entity::setActive
+      , "getClock", &Entity::getClock
       , "addComponent", (Component* (Entity::*)(const Core::ObjectName&))&Entity::addComponent
       , "addComponentTransform", &Entity::addComponent<ComponentTransform>
       , "addComponentSprite", &Entity::addComponent<ComponentSprite>
