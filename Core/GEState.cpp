@@ -20,6 +20,7 @@ State::State(const ObjectName& Name, void* GlobalData)
    , pGlobalData(GlobalData)
    , eStateType(StateType::Exclusive)
 {
+   mInputPriority = 64u;
 }
 
 State::~State()
