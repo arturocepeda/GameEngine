@@ -65,21 +65,38 @@ namespace GE { namespace Rendering
    class ShaderProgramParameter : public Core::GenericVariable
    {
    protected:
-      ShaderProgramParameter(const Core::ObjectName& ClassName) : Core::GenericVariable(ClassName) {}
+      bool mExposed;
+
+      ShaderProgramParameter(const Core::ObjectName& ClassName)
+         : Core::GenericVariable(ClassName)
+         , mExposed(true)
+      {
+         GERegisterProperty(Bool, Exposed);
+      }
+
+   public:
+      GEDefaultGetter(bool, Exposed, m)
+      GEDefaultSetter(bool, Exposed, m)
    };
 
 
    class ShaderProgramVertexParameter : public ShaderProgramParameter
    {
    public:
-      ShaderProgramVertexParameter() : ShaderProgramParameter("ShaderProgramVertexParameter") {}
+      ShaderProgramVertexParameter()
+         : ShaderProgramParameter("ShaderProgramVertexParameter")
+      {
+      }
    };
 
 
    class ShaderProgramFragmentParameter : public ShaderProgramParameter
    {
    public:
-      ShaderProgramFragmentParameter() : ShaderProgramParameter("ShaderProgramFragmentParameter") {}
+      ShaderProgramFragmentParameter()
+         : ShaderProgramParameter("ShaderProgramFragmentParameter")
+      {
+      }
    };
 
 

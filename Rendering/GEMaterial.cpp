@@ -218,18 +218,21 @@ void MaterialPass::registerShaderProperties(char* sBuffer, const PropertyArrayEn
       const ShaderProgramParameter* cParameter = static_cast<const ShaderProgramParameter*>(vParameterList[i]);
       const ValueType eParameterType = cParameter->getType();
 
-      PropertySetter setter = [sBuffer, iParameterOffset](const Value& cValue)
+      if(cParameter->getExposed())
       {
-         memcpy(sBuffer + iParameterOffset, cValue.getRawData(), cValue.getSize());
-      };
-      PropertyGetter getter = [sBuffer, eParameterType, iParameterOffset]() -> Value
-      {
-         const uint iValueSize = Value::getDefaultValue(eParameterType).getSize();
-         return Value::fromRawData(eParameterType, sBuffer + iParameterOffset, iValueSize);
-      };
+         PropertySetter setter = [sBuffer, iParameterOffset](const Value& cValue)
+         {
+            memcpy(sBuffer + iParameterOffset, cValue.getRawData(), cValue.getSize());
+         };
+         PropertyGetter getter = [sBuffer, eParameterType, iParameterOffset]() -> Value
+         {
+            const uint iValueSize = Value::getDefaultValue(eParameterType).getSize();
+            return Value::fromRawData(eParameterType, sBuffer + iParameterOffset, iValueSize);
+         };
 
-      setter(cParameter->getValue());
-      registerProperty(cParameter->getName(), cParameter->getType(), setter, getter);
+         setter(cParameter->getValue());
+         registerProperty(cParameter->getName(), cParameter->getType(), setter, getter);
+      }
 
       iParameterOffset += Value::getDefaultValue(eParameterType).getSize();
    }
