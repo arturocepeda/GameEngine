@@ -303,14 +303,27 @@ void Serializable::loadFromXml(const pugi::xml_node& XmlNode)
    {
       const PropertyArray& sPropertyArray = vPropertyArrays[i];
       const char* sPropertyArrayElementName = sPropertyArray.Name.getString();
+
+      sPropertyArray.Entries->clear();
+      sPropertyArray.Entries->shrink_to_fit();
+
       uint iPropertyArrayElementsCount = 0;
 
       for(const pugi::xml_node& xmlPropertyArrayElement : XmlNode.children(sPropertyArrayElementName))
       {
-         sPropertyArray.Add();
-         SerializableArrayElement* cPropertyArrayElement = sPropertyArray.Entries->at(iPropertyArrayElementsCount);
-         cPropertyArrayElement->loadFromXml(xmlPropertyArrayElement);
          iPropertyArrayElementsCount++;
+      }
+
+      sPropertyArray.Entries->reserve(iPropertyArrayElementsCount);
+
+      uint iPropertyArrayElementIndex = 0;
+
+      for(const pugi::xml_node& xmlPropertyArrayElement : XmlNode.children(sPropertyArrayElementName))
+      {
+         sPropertyArray.Add();
+         SerializableArrayElement* cPropertyArrayElement =
+            sPropertyArray.Entries->at(iPropertyArrayElementIndex++);
+         cPropertyArrayElement->loadFromXml(xmlPropertyArrayElement);
       }
    }
 }
@@ -375,7 +388,12 @@ void Serializable::loadFromStream(std::istream& Stream)
    for(uint i = 0; i < vPropertyArrays.size(); i++)
    {
       const PropertyArray& sPropertyArray = vPropertyArrays[i];
-      uint iPropertyArrayElementsCount = (uint)Value::fromStream(ValueType::Byte, Stream).getAsByte();
+      const uint iPropertyArrayElementsCount =
+         (uint)Value::fromStream(ValueType::Byte, Stream).getAsByte();
+
+      sPropertyArray.Entries->clear();
+      sPropertyArray.Entries->shrink_to_fit();
+      sPropertyArray.Entries->reserve(iPropertyArrayElementsCount);
 
       for(uint j = 0; j < iPropertyArrayElementsCount; j++)
       {
