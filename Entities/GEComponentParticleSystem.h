@@ -298,7 +298,7 @@ namespace GE { namespace Entities
       const Vector3& getConstantAcceleration() const { return vConstantAcceleration; }
 
       void setEmitterType(ParticleEmitterType EmitterType) { eEmitterType = EmitterType; }
-      void setEmitterActive(bool Active) { bEmitterActive = Active; }
+      void setEmitterActive(bool Active) { bEmitterActive = Active; fElapsedTimeSinceLastEmission = fEmissionRate; }
       void setSettings(uint8_t pValue) { mSettings = pValue; }
       void setEmissionRate(float Rate) { fEmissionRate = Rate; }
       void setEmissionBurstCount(uint Value) { iEmissionBurstCount = Value; }
