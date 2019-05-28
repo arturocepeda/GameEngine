@@ -70,6 +70,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , fParticleInitialAngleMin(0.0f)
    , fParticleInitialAngleMax(0.0f)
    , fParticleSizeMultiplier(1.0f)
+   , mFrictionFactor(0.0f)
 {
    mClassNames.push_back(ClassName);
 
@@ -108,6 +109,8 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterValueProvider(ParticleAngularVelocity, ParticleVelocity, 0.0f);
    GERegisterProperty(Vector3, ConstantForce)->setClass(ParticleVelocityName);
    GERegisterProperty(Vector3, ConstantAcceleration)->setClass(ParticleVelocityName);
+   GERegisterProperty(Vector3, TurbulenceFactor)->setClass(ParticleVelocityName);
+   GERegisterProperty(Float, FrictionFactor)->setClass(ParticleVelocityName);
 
    GERegisterValueProvider(ParticleTextureAtlasIndex, ParticleTextureAtlas, 0.0f);
 
@@ -427,6 +430,28 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
 
       sParticle.Position += vConstantForce * pDeltaTime;
       sParticle.LinearVelocity += vConstantAcceleration * pDeltaTime;
+
+      if(mTurbulenceFactor.X > GE_EPSILON)
+      {
+         sParticle.LinearVelocity.X +=
+            getRandomFloat(-mTurbulenceFactor.X, mTurbulenceFactor.X) * pDeltaTime;
+      }
+      if(mTurbulenceFactor.Y > GE_EPSILON)
+      {
+         sParticle.LinearVelocity.Y +=
+            getRandomFloat(-mTurbulenceFactor.Y, mTurbulenceFactor.Y) * pDeltaTime;
+      }
+      if(mTurbulenceFactor.Z > GE_EPSILON)
+      {
+         sParticle.LinearVelocity.Z +=
+            getRandomFloat(-mTurbulenceFactor.Z, mTurbulenceFactor.Z) * pDeltaTime;
+      }
+
+      if(mFrictionFactor > GE_EPSILON)
+      {
+         sParticle.LinearVelocity =
+            sParticle.LinearVelocity * (1.0f - (mFrictionFactor * pDeltaTime));
+      }
 
       particleIndex++;
    }

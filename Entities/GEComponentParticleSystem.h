@@ -239,6 +239,8 @@ namespace GE { namespace Entities
 
       Vector3 vConstantForce;
       Vector3 vConstantAcceleration;
+      Vector3 mTurbulenceFactor;
+      float mFrictionFactor;
 
       void simulate(float pDeltaTime);
       void prewarm();
@@ -296,6 +298,8 @@ namespace GE { namespace Entities
 
       const Vector3& getConstantForce() const { return vConstantForce; }
       const Vector3& getConstantAcceleration() const { return vConstantAcceleration; }
+      GEDefaultGetter(const Vector3&, TurbulenceFactor, m);
+      GEDefaultGetter(float, FrictionFactor, m);
 
       void setEmitterType(ParticleEmitterType EmitterType) { eEmitterType = EmitterType; }
       void setEmitterActive(bool Active) { bEmitterActive = Active; fElapsedTimeSinceLastEmission = fEmissionRate; }
@@ -313,6 +317,8 @@ namespace GE { namespace Entities
 
       void setConstantForce(const Vector3& Value) { vConstantForce = Value; }
       void setConstantAcceleration(const Vector3& Value) { vConstantAcceleration = Value; }
+      GEDefaultSetter(const Vector3&, TurbulenceFactor, m);
+      GEDefaultSetter(float, FrictionFactor, m);
 
       GEValueProvider(ParticleColorR)
       GEValueProvider(ParticleColorG)
