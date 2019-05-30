@@ -230,6 +230,34 @@ namespace GE { namespace Entities
          updateWorldMatrix();
       }
 
+      inline void setWorldPosition(const Vector3& pWorldPosition)
+      {
+         Entity* parent = cOwner->getParent();
+
+         if(parent)
+         {
+            mGlobalWorldMatrix.m[GE_M4_1_4] = pWorldPosition.X;
+            mGlobalWorldMatrix.m[GE_M4_2_4] = pWorldPosition.Y;
+            mGlobalWorldMatrix.m[GE_M4_3_4] = pWorldPosition.Z;
+
+            Matrix4 parentInverseWorldMatrix = parent->getComponent<ComponentTransform>()->mGlobalWorldMatrix;
+            Matrix4Invert(&parentInverseWorldMatrix);
+            Matrix4Multiply(parentInverseWorldMatrix, mGlobalWorldMatrix, &mLocalWorldMatrix);
+
+            Core::Geometry::extractTRSFromMatrix(mLocalWorldMatrix, &vPosition, &cRotation, &vScale);
+
+            for(uint32_t i = 0u; i < cOwner->getChildrenCount(); i++)
+            {
+               Entity* child = cOwner->getChildByIndex(i);
+               ComponentTransform* childTransform = child->getComponent<ComponentTransform>();
+               childTransform->updateWorldMatrix();
+            }
+         }
+         else
+         {
+            setPosition(pWorldPosition);
+         }
+      }
       inline void setForwardVector(const Vector3& Forward)
       {
          vRight = Vector3CrossProduct(Forward, Vector3::UnitY);

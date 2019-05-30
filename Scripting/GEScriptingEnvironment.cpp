@@ -978,6 +978,7 @@ void Environment::registerTypes()
       , "setRotation", &ComponentTransform::setRotation
       , "setOrientation", &ComponentTransform::setOrientation
       , "setScale", (void (ComponentTransform::*)(const Vector3&))&ComponentTransform::setScale
+      , "setWorldPosition", &ComponentTransform::setWorldPosition
       , "setForwardVector", &ComponentTransform::setForwardVector
       , sol::base_classes, sol::bases<Component, Serializable>()
    );

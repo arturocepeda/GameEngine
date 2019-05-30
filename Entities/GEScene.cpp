@@ -404,14 +404,6 @@ void Scene::setEntityParent(Entity* cEntity, Entity* cNewParent)
    GEAssert(it != mRegistry.end());
    mRegistry.erase(it);
 
-   // cache the current global transform matrix
-   ComponentTransform* cTransform = cEntity->getComponent<ComponentTransform>();
-
-   Vector3 vWorldPosition;
-   Rotation cWorldRotation;
-   Vector3 vWorldScale;
-   Geometry::extractTRSFromMatrix(cTransform->mGlobalWorldMatrix, &vWorldPosition, &cWorldRotation, &vWorldScale);
-
    // remove this entity from the parent's children list
    if(cEntity->cParent)
    {
@@ -432,11 +424,15 @@ void Scene::setEntityParent(Entity* cEntity, Entity* cNewParent)
    cEntity->updateFullName();
 
    if(cNewParent)
+   {
       cNewParent->vChildren.push_back(cEntity);
+   }
 
    mRegistry[cEntity->getFullName().getID()] = cEntity;
 
    // update the local transform matrix
+   ComponentTransform* cTransform = cEntity->getComponent<ComponentTransform>();
+
    if(cNewParent)
    {
       Matrix4 mNewParentInverseWorldMatrix = cNewParent->getComponent<ComponentTransform>()->mGlobalWorldMatrix;
