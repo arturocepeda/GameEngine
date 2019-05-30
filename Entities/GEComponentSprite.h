@@ -16,16 +16,6 @@
 
 namespace GE { namespace Entities
 {
-   GESerializableEnum(SpriteLayer)
-   {
-      GUI,
-      Pre3D,
-      PostGUI,
-
-      Count
-   };
-
-
    GESerializableEnum(UVMode)
    {
       Normal,

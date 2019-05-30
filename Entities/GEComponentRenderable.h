@@ -20,6 +20,17 @@
 namespace GE { namespace Entities
 {
    using namespace Rendering;
+   
+
+   GESerializableEnum(SpriteLayer)
+   {
+      GUI,
+      Pre3D,
+      PostGUI,
+
+      Count
+   };
+
 
    class ComponentRenderable : public Component
    {

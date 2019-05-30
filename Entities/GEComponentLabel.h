@@ -46,6 +46,7 @@ namespace GE { namespace Entities
       uint32_t mFontCharSetIndex;
       float fFontSize;
       Alignment iAlignment;
+      SpriteLayer mLayer;
       uint8_t eSettings;
       Core::ObjectName cStringID;
       GESTLString sText;
@@ -90,6 +91,7 @@ namespace GE { namespace Entities
       float getLineWidth() const;
       uint32_t getTextLength() const;
       uint32_t getCharacterCountLimit() const;
+      SpriteLayer getLayer() const;
       uint8_t getSettings() const;
 
       void setFont(Rendering::Font* TextFont);
@@ -103,6 +105,7 @@ namespace GE { namespace Entities
       void setVerticalSpacing(float VerticalSpacing);
       void setLineWidth(float LineWidth);
       void setCharacterCountLimit(uint32_t Limit);
+      void setLayer(SpriteLayer pLayer);
       void setSettings(uint8_t Settings);
    };
 }}

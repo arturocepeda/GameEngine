@@ -38,6 +38,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    , mFontCharSetIndex(0)
    , fFontSize(12.0f)
    , iAlignment(Alignment::MiddleCenter)
+   , mLayer(SpriteLayer::GUI)
    , eSettings(0)
    , fHorizontalSpacing(0.0f)
    , fVerticalSpacing(0.0f)
@@ -78,6 +79,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    GERegisterProperty(Float, VerticalSpacing);
    GERegisterProperty(Float, LineWidth);
    GERegisterProperty(UInt, CharacterCountLimit);
+   GERegisterPropertyEnum(SpriteLayer, Layer);
    GERegisterPropertyBitMask(LabelSettingsBitMask, Settings);
    GERegisterProperty(String, Text);
    GERegisterProperty(ObjectName, StringID);
@@ -677,6 +679,11 @@ uint32_t ComponentLabel::getCharacterCountLimit() const
    return mCharacterCountLimit;
 }
 
+SpriteLayer ComponentLabel::getLayer() const
+{
+   return mLayer;
+}
+
 uint8_t ComponentLabel::getSettings() const
 {
    return eSettings;
@@ -835,6 +842,11 @@ void ComponentLabel::setCharacterCountLimit(uint32_t Limit)
    {
       generateVertexData();
    }
+}
+
+void ComponentLabel::setLayer(SpriteLayer pLayer)
+{
+   mLayer = pLayer;
 }
 
 void ComponentLabel::setSettings(uint8_t Settings)

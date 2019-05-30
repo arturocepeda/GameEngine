@@ -943,20 +943,33 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       else
 #endif
       {
-         if(cUIElement)
+         ComponentLabel* cLabel = static_cast<ComponentLabel*>(cRenderable);
+
+         if(cLabel->getLayer() == SpriteLayer::GUI)
          {
-            if(cUIElement->getClassName() == ComponentUI2DElement::ClassName)
+            if(cUIElement)
             {
-               vUIElementsToRender.push(sRenderOperation);
+               if(cUIElement->getClassName() == ComponentUI2DElement::ClassName)
+               {
+                  vUIElementsToRender.push(sRenderOperation);
+               }
+               else
+               {
+                  queueForRendering3DUI(sRenderOperation);
+               }
             }
             else
             {
-               queueForRendering3DUI(sRenderOperation);
+               v3DLabelsToRender.push(sRenderOperation);
             }
+         }
+         else if(cLabel->getLayer() == SpriteLayer::Pre3D)
+         {
+            vPre3DSpritesToRender.push(sRenderOperation);
          }
          else
          {
-            v3DLabelsToRender.push(sRenderOperation);
+            vPostUISpritesToRender.push(sRenderOperation);
          }
       }
 
