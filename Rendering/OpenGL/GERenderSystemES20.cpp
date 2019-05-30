@@ -186,9 +186,42 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
    }
 
-   GLenum glFormat = cPreloadedTexture->Data->getBytesPerPixel() == 4 ? GL_RGBA : GL_RGB;
-   glTexImage2D(GL_TEXTURE_2D, 0, glFormat, cPreloadedTexture->Data->getWidth(), cPreloadedTexture->Data->getHeight(),
-      0, glFormat, GL_UNSIGNED_BYTE, cPreloadedTexture->Data->getData());
+   if(cPreloadedTexture->Data->getFormat() == ImageData::Format::Raw)
+   {
+      const GLenum glFormat = cPreloadedTexture->Data->getBytesPerPixel() == 4
+         ? GL_RGBA
+         : GL_RGB;
+      glTexImage2D(GL_TEXTURE_2D, 0, glFormat,
+         cPreloadedTexture->Data->getWidth(), cPreloadedTexture->Data->getHeight(),
+         0, glFormat, GL_UNSIGNED_BYTE, cPreloadedTexture->Data->getData());
+   }
+   else
+   {
+      GLenum glFormat = GL_COMPRESSED_RGBA;
+      GLsizei glImageSize = 0;
+
+      const GLsizei glWidth = (GLsizei)cPreloadedTexture->Data->getWidth();
+      const GLsizei glHeight = (GLsizei)cPreloadedTexture->Data->getHeight();
+
+      if(cPreloadedTexture->Data->getFormat() == ImageData::Format::DDS_DXT1)
+      {
+         glFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+         glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 8;
+      }
+      else if(cPreloadedTexture->Data->getFormat() == ImageData::Format::DDS_DXT3)
+      {
+         glFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+         glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 16;
+      }
+      else if(cPreloadedTexture->Data->getFormat() == ImageData::Format::DDS_DXT5)
+      {
+         glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+         glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 16;
+      }
+
+      glCompressedTexImage2D(GL_TEXTURE_2D, 0, glFormat, glWidth, glHeight,
+         0, glImageSize, cPreloadedTexture->Data->getData());
+   }
 
    cPreloadedTexture->Data->unload();
 
@@ -197,6 +230,14 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
 
    cPreloadedTexture->Data = 0;
    cPreloadedTexture->Tex->setHandler((void*)((uintPtrSize)iTexture));
+}
+
+void RenderSystem::unloadTexture(Texture* pTexture)
+{
+   GLuint iTexture = (GLuint)((GLuintPtrSize)pTexture->getHandler());
+   glBindTexture(GL_TEXTURE_2D, 0);
+   glDeleteTextures(1, &iTexture);
+   pTexture->setHandler(nullptr);
 }
 
 void RenderSystem::loadRenderingData(const GeometryData& sData, GPUBufferPair& sBuffers, uint iIndexSize)

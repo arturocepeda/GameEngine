@@ -82,7 +82,7 @@ namespace GE { namespace Rendering
       void loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData);
       void loadFontData(uint32_t pCharSet, std::istream& pStream);
 
-      void createFontTexture(Content::ImageData& cImageData);
+      void createFontTexture(Content::ImageData* cImageData);
       void releaseFontTexture();
 
    public:

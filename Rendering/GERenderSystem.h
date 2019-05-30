@@ -166,7 +166,6 @@ namespace GE { namespace Rendering
 
       void calculateLightViewProjectionMatrix(Entities::ComponentLight* Light);
 
-      void loadTexture(PreloadedTexture* cPreloadedTexture);
       void loadMaterial(Material* cMaterial);
       void unloadMaterial(const Core::ObjectName& cMaterialName);
 
@@ -205,6 +204,9 @@ namespace GE { namespace Rendering
       bool loadNextPreloadedTexture();
       void loadAllPreloadedTextures();
       bool preloadedTexturesPending();
+
+      void loadTexture(PreloadedTexture* pPreloadedTexture);
+      void unloadTexture(Texture* pTexture);
 
       Texture* getTexture(const Core::ObjectName& Name);
 

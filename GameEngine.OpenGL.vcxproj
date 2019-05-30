@@ -115,7 +115,6 @@
     <ClCompile Include="Rendering\GERenderSystem.cpp" />
     <ClCompile Include="Rendering\GEShaderProgram.cpp" />
     <ClCompile Include="Rendering\GETexture.cpp" />
-    <ClCompile Include="Rendering\OpenGL\GEFontES20.cpp" />
     <ClCompile Include="Rendering\OpenGL\GERenderingShadersES20.cpp" />
     <ClCompile Include="Rendering\OpenGL\GERenderSystemES20.cpp" />
     <ClCompile Include="Scripting\GEScriptingEnvironment.cpp">

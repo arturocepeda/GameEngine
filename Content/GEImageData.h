@@ -18,10 +18,25 @@ namespace GE { namespace Content
 {
    class ImageData : public ContentData
    {
+   public:
+      enum class Format : int
+      {
+         None,
+         Raw,
+         DDS_Uncompressed,
+         DDS_DXT1,
+         DDS_DXT3,
+         DDS_DXT5
+      };
+
    private:
-      int iWidth;
-      int iHeight;
-      int iBytesPerPixel;
+      int mWidth;
+      int mHeight;
+      int mBytesPerPixel;
+      Format mFormat;
+
+      void loadDDS(uint Size, const char* Data);
+      void loadRaw(uint Size, const char* Data);
     
    public:
       ImageData();
@@ -30,8 +45,9 @@ namespace GE { namespace Content
       virtual void load(uint Size, std::istream& Stream) override;
       virtual void unload() override;
     
-      int getWidth();
-      int getHeight();
-      int getBytesPerPixel();
+      int getWidth() const { return mWidth; }
+      int getHeight() const { return mHeight; }
+      int getBytesPerPixel() const { return mBytesPerPixel; }
+      Format getFormat() const { return mFormat; }
    };
 }}

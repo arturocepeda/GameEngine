@@ -111,9 +111,6 @@
     <ClCompile Include="Rendering\GEFont.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Rendering\DX11\GEFontDX11.cpp">
-      <Filter>Rendering.DX11</Filter>
-    </ClCompile>
     <ClCompile Include="Entities\GEComponent.cpp">
       <Filter>Entities</Filter>
     </ClCompile>

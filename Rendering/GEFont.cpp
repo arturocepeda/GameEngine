@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////
 
 #include "GEFont.h"
+#include "GERenderSystem.h"
 #include "Core/GEDevice.h"
 #include "Core/GEParser.h"
 #include "Core/GEValue.h"
@@ -110,10 +111,16 @@ void Font::load(void* pRenderDevice)
       loadFontData(i, xml.child("font"));
    }
 
-   ImageData cImageData;
-   Device::readContentFile(ContentType::FontTexture, sSubDir, cName.getString(), "png", &cImageData);
+#if defined (GE_PLATFORM_DESKTOP)
+   const char* textureFormat = "dds";
+#else
+   const char* textureFormat = "png";
+#endif
+
+   ImageData* cImageData = Allocator::alloc<ImageData>();
+   GEInvokeCtor(ImageData, cImageData)();
+   Device::readContentFile(ContentType::FontTexture, sSubDir, cName.getString(), textureFormat, cImageData);
    createFontTexture(cImageData);
-   cImageData.unload();
 }
 
 void Font::load(std::istream& pStream, void* pRenderDevice)
@@ -138,11 +145,33 @@ void Font::load(std::istream& pStream, void* pRenderDevice)
       loadFontData(i, pStream);
    }
 
-   ImageData cImageData;
+   ImageData* cImageData = Allocator::alloc<ImageData>();
+   GEInvokeCtor(ImageData, cImageData)();
    uint iTextureDataSize = Value::fromStream(ValueType::UInt, pStream).getAsUInt();
-   cImageData.load(iTextureDataSize, pStream);
+   cImageData->load(iTextureDataSize, pStream);
    createFontTexture(cImageData);
-   cImageData.unload();
+}
+
+void Font::createFontTexture(ImageData* cImageData)
+{
+   cTexture = Allocator::alloc<Texture>();
+   GEInvokeCtor(Texture, cTexture)(cName, "FontTextures");
+   cTexture->setWidth(cImageData->getWidth());
+   cTexture->setHeight(cImageData->getHeight());
+
+   PreloadedTexture preloadedTexture;
+   preloadedTexture.Data = cImageData;
+   preloadedTexture.Tex = cTexture;
+
+   RenderSystem::getInstance()->loadTexture(&preloadedTexture);
+}
+
+void Font::releaseFontTexture()
+{
+   RenderSystem::getInstance()->unloadTexture(cTexture);
+
+   GEInvokeDtor(Texture, cTexture);
+   cTexture = nullptr;
 }
 
 void Font::loadFontData(uint32_t pCharSetIndex, const pugi::xml_node& pXmlFontData)

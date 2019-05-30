@@ -145,12 +145,32 @@ RenderSystemDX11::~RenderSystemDX11()
 void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
 {
    // create DX texture
+   DXGI_FORMAT dxFormat;
+
+   switch(cPreloadedTexture->Data->getFormat())
+   {
+   case ImageData::Format::DDS_Uncompressed:
+      dxFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
+      break;
+   case ImageData::Format::DDS_DXT1:
+      dxFormat = DXGI_FORMAT_BC1_UNORM;
+      break;
+   case ImageData::Format::DDS_DXT3:
+      dxFormat = DXGI_FORMAT_BC2_UNORM;
+      break;
+   case ImageData::Format::DDS_DXT5:
+      dxFormat = DXGI_FORMAT_BC3_UNORM;
+      break;
+   default:
+      dxFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+   }
+
    D3D11_TEXTURE2D_DESC desc;
    desc.Width = cPreloadedTexture->Data->getWidth();
    desc.Height = cPreloadedTexture->Data->getHeight();
    desc.MipLevels = 1;
    desc.ArraySize = 1;
-   desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+   desc.Format = dxFormat;
    desc.SampleDesc.Count = 1;
    desc.SampleDesc.Quality = 0;
    desc.Usage = D3D11_USAGE_DEFAULT;
@@ -159,7 +179,7 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
    desc.MiscFlags = 0;
 
    D3D11_SUBRESOURCE_DATA initData;
-   char* sBuffer = 0;
+   char* sBuffer = nullptr;
 
    // the image uses alpha channel
    if(cPreloadedTexture->Data->getBytesPerPixel() == 4)
@@ -201,15 +221,23 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
    dxDevice->CreateShaderResourceView(dxTexture, NULL, &dxTextureResourceView);
 
    if(sBuffer)
+   {
       Allocator::free(sBuffer);
+   }
 
    cPreloadedTexture->Data->unload();
 
    GEInvokeDtor(ImageData, cPreloadedTexture->Data);
    Allocator::free(cPreloadedTexture->Data);
 
-   cPreloadedTexture->Data = 0;
+   cPreloadedTexture->Data = nullptr;
    cPreloadedTexture->Tex->setHandler(dxTextureResourceView);
+}
+
+void RenderSystem::unloadTexture(Texture* pTexture)
+{
+   static_cast<ID3D11ShaderResourceView*>(const_cast<void*>(pTexture->getHandler()))->Release();
+   pTexture->setHandler(nullptr);
 }
 
 void RenderSystem::loadRenderingData(const GeometryData& sData, GPUBufferPair& sBuffers, GE::uint)

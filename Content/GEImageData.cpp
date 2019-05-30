@@ -20,16 +20,89 @@ using namespace GE::Content;
 using namespace GE::Core;
 
 ImageData::ImageData()
-   : iWidth(0)
-   , iHeight(0)
-   , iBytesPerPixel(0)
+   : mWidth(0)
+   , mHeight(0)
+   , mBytesPerPixel(0)
+   , mFormat(Format::None)
 {
+}
+
+void ImageData::loadDDS(uint Size, const char* Data)
+{
+   const uint32_t kFourCC_DXT1 = 0x31545844;
+   const uint32_t kFourCC_DXT3 = 0x33545844;
+   const uint32_t kFourCC_DXT5 = 0x35545844;
+
+   const uint32_t kMagicSize = 4u;
+
+   struct DDSHeader
+   {
+      uint32_t mSize;
+      uint32_t mFlags;
+      uint32_t mHeight;
+      uint32_t mWidth;
+      uint32_t mPitchOrLinearSize;
+      uint32_t mDepth;
+      uint32_t mMipMapCount;
+      uint32_t mReserved1[11];
+      uint32_t mPixelFormatSize;
+      uint32_t mPixelFormatFlags;
+      uint32_t mPixelFormatFourCC;
+      uint32_t mPixelFormatRGBBitCount;
+      uint32_t mPixelFormatRBitMask;
+      uint32_t mPixelFormatGBitMask;
+      uint32_t mPixelFormatBBitMask;
+      uint32_t mPixelFormatABitMask;
+      uint32_t mCaps[4];
+      uint32_t mReserved2;
+   };
+
+   const DDSHeader* ddsHeader = reinterpret_cast<const DDSHeader*>(Data + kMagicSize);
+
+   mWidth = (int)ddsHeader->mWidth;
+   mHeight = (int)ddsHeader->mHeight;
+   mBytesPerPixel = (int)ddsHeader->mPixelFormatSize / 8;
+
+   if(ddsHeader->mPixelFormatFourCC == kFourCC_DXT1)
+   {
+      mFormat = Format::DDS_DXT1;
+   }
+   else if(ddsHeader->mPixelFormatFourCC == kFourCC_DXT3)
+   {
+      mFormat = Format::DDS_DXT3;
+   }
+   else if(ddsHeader->mPixelFormatFourCC == kFourCC_DXT5)
+   {
+      mFormat = Format::DDS_DXT5;
+   }
+   else
+   {
+      mFormat = Format::DDS_Uncompressed;
+   }
+
+   iDataSize = Size - kMagicSize - ddsHeader->mSize;
+   pData = Allocator::alloc<char>(iDataSize);
+   memcpy(pData, Data + kMagicSize + ddsHeader->mSize, iDataSize);
+}
+
+void ImageData::loadRaw(uint Size, const char* Data)
+{
+   mFormat = Format::Raw;
+   pData = (char*)stbi_load_from_memory((const stbi_uc*)Data, Size, &mWidth, &mHeight, &mBytesPerPixel, 0);
 }
 
 void ImageData::load(unsigned int Size, const char* Data)
 {
    unload();
-   pData = (char*)stbi_load_from_memory((const stbi_uc*)Data, Size, &iWidth, &iHeight, &iBytesPerPixel, 0);
+   
+   if(strncmp(Data, "DDS ", 4u) == 0)
+   {
+      loadDDS(Size, Data);
+   }
+   else
+   {
+      loadRaw(Size, Data);
+   }
 }
 
 void ImageData::load(uint Size, std::istream& Stream)
@@ -39,7 +112,7 @@ void ImageData::load(uint Size, std::istream& Stream)
    char* sTempBuffer = Allocator::alloc<char>(Size);
    Stream.read(sTempBuffer, Size);
 
-   pData = (char*)stbi_load_from_memory((const stbi_uc*)sTempBuffer, Size, &iWidth, &iHeight, &iBytesPerPixel, 0);
+   load(Size, sTempBuffer);
 
    Allocator::free(sTempBuffer);
 }
@@ -48,22 +121,15 @@ void ImageData::unload()
 {
    if(pData)
    {
-      stbi_image_free(pData);
+      if(mFormat != Format::Raw)
+      {
+         Allocator::free(pData);
+      }
+      else
+      {
+         stbi_image_free(pData);
+      }
+
       pData = nullptr;
    }
-}
-
-int ImageData::getWidth()
-{
-   return iWidth;
-}
-
-int ImageData::getHeight()
-{
-   return iHeight;
-}
-
-int ImageData::getBytesPerPixel()
-{
-   return iBytesPerPixel;
 }

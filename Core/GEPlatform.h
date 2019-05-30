@@ -32,6 +32,10 @@
 # endif
 #endif
 
+#if defined (GE_PLATFORM_WINDOWS) || defined (GE_PLATFORM_MACOS)
+# define GE_PLATFORM_DESKTOP
+#endif
+
 
 //
 //  32 bit / 64 bit

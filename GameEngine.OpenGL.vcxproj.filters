@@ -135,9 +135,6 @@
     <ClCompile Include="Core\GEParser.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Rendering\OpenGL\GEFontES20.cpp">
-      <Filter>Rendering.OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="Rendering\OpenGL\GERenderingShadersES20.cpp">
       <Filter>Rendering.OpenGL</Filter>
     </ClCompile>

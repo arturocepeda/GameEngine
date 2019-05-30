@@ -294,7 +294,11 @@ void RenderSystem::preloadTextures(const char* FileName)
          GEInvokeCtor(Texture, sPreloadedTexture.Tex)(sTextureName, cGroupName);
          sPreloadedTexture.Tex->loadFromXml(xmlTexture);
 
+#if defined (GE_PLATFORM_DESKTOP)
+         const char* sTextureFormat = "dds";
+#else
          const char* sTextureFormat = sPreloadedTexture.Tex->getFormat();
+#endif
 
          Device::readContentFile(ContentType::Texture, sSubDir, sTextureName, sTextureFormat, sPreloadedTexture.Data);
 
@@ -424,7 +428,9 @@ void RenderSystem::unloadTextures(const char* FileName)
       for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
       {
          ObjectName cTextureName = ObjectName(xmlTexture.attribute("name").value());
-         GEAssert(mTextures.get(cTextureName));
+         Texture* cTexture = mTextures.get(cTextureName);
+         GEAssert(cTexture);
+         unloadTexture(cTexture);
          mTextures.remove(cTextureName);
       }
    }
@@ -439,7 +445,9 @@ void RenderSystem::unloadTextures(const char* FileName)
       for(uint i = 0; i < iTexturesCount; i++)
       {
          ObjectName cTextureName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
-         GEAssert(mTextures.get(cTextureName));
+         Texture* cTexture = mTextures.get(cTextureName);
+         GEAssert(cTexture);
+         unloadTexture(cTexture);
          mTextures.remove(cTextureName);
       }
    }
