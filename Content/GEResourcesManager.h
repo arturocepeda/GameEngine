@@ -269,11 +269,11 @@ namespace GE { namespace Content
             SerializableResourceManagerObjects* objects =
                SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
 
-            const uint32_t entriesCount = (uint32_t)Value::fromStream(ValueType::Short, stream).getAsShort();
+            const uint32_t entriesCount = (uint32_t)Core::Value::fromStream(Core::ValueType::Short, stream).getAsShort();
 
             for(uint32_t i = 0u; i < entriesCount; i++)
             {
-               const Core::ObjectName entryName = Value::fromStream(ValueType::ObjectName, stream).getAsObjectName();
+               const Core::ObjectName entryName = Core::Value::fromStream(Core::ValueType::ObjectName, stream).getAsObjectName();
 
                T* entry = Core::Allocator::alloc<T>();
                GEInvokeCtor(T, entry)(entryName, GroupName);
@@ -352,11 +352,11 @@ namespace GE { namespace Content
             SerializableResourceManagerObjects* objects =
                SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
 
-            const uint32_t entriesCount = (uint32_t)Value::fromStream(ValueType::Byte, stream).getAsByte();
+            const uint32_t entriesCount = (uint32_t)Core::Value::fromStream(Core::ValueType::Byte, stream).getAsByte();
 
             for(uint32_t i = 0u; i < entriesCount; i++)
             {
-               const Core::ObjectName entryName = Value::fromStream(ValueType::ObjectName, stream).getAsObjectName();
+               const Core::ObjectName entryName = Core::Value::fromStream(Core::ValueType::ObjectName, stream).getAsObjectName();
                Core::ObjectRegistry::const_iterator it = objects->Registry->find(entryName.getID());
                GEAssert(it != objects->Registry->end());
 

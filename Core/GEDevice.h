@@ -42,7 +42,7 @@ namespace GE { namespace Core
    {
    private:
       typedef GESTLVector(GE::byte) IOBuffer;
-      typedef GESTLMap(GE::uint, IOBuffer) IOBuffersMap;
+      typedef GESTLMap(uint64_t, IOBuffer) IOBuffersMap;
 
       static GEMutex mIOMutex;
       static IOBuffersMap* mIOBuffers;

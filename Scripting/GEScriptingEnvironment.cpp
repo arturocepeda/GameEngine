@@ -88,7 +88,7 @@ void Namespace::load(Namespace* pParent)
 
 void Namespace::unload()
 {
-   mTable = sol::nil;
+   mTable = sol::lua_nil;
    mParent = 0;
 }
 
@@ -158,7 +158,7 @@ void Namespace::removeNamespace(const ObjectName& pName)
 
    if(it != mNamespaces.end())
    {
-      mTable[pName.getString()] = sol::nil;
+      mTable[pName.getString()] = sol::lua_nil;
       mNamespaces.erase(it);
    }
 }

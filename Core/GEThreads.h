@@ -31,7 +31,7 @@
 # define GEThreadWait(Thread)  WaitForSingleObject(Thread, INFINITE)
 # define GEThreadClose(Thread)  CloseHandle(Thread)
 
-# define GEThreadID  (GE::uint)GetCurrentThreadId()
+# define GEThreadID  (uint64_t)GetCurrentThreadId()
 # define GEThreadAffinity(Thread, CoreIndex)  SetThreadAffinityMask(Thread, 1 << CoreIndex)
 
 
@@ -103,7 +103,7 @@
 # define GEThreadWait(Thread)  pthread_join(Thread, NULL)
 # define GEThreadClose(Thread)
 
-# define GEThreadID  (GE::uint)pthread_self()
+# define GEThreadID  (uint64_t)pthread_self()
 # define GEThreadAffinity(Thread, CoreIndex) \
    cpu_set_t cpuset; \
    CPU_ZERO(&cpuset); \

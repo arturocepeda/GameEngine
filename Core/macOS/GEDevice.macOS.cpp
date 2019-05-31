@@ -25,32 +25,6 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Content;
 
-int Device::ScreenWidth = 0;
-int Device::ScreenHeight = 0;
-
-SystemLanguage Device::Language = SystemLanguage::English;
-DeviceOrientation Device::Orientation = DeviceOrientation::Portrait;
-
-LogListener* Device::CurrentLogListener = 0;
-
-int Device::AudioSystemSampleRate = 0;
-int Device::AudioSystemFramesPerBuffer = 0;
-
-int Device::getScreenWidth()
-{
-   return ScreenWidth;
-}
-
-int Device::getScreenHeight()
-{
-   return ScreenHeight;
-}
-
-float Device::getAspectRatio()
-{
-   return (float)ScreenHeight / ScreenWidth;
-}
-
 int Device::getTouchPadWidth()
 {
    return ScreenWidth;
@@ -105,13 +79,13 @@ uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
    return iFilesCount;
 }
 
-void Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
+bool Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
    DIR* dp = opendir(SubDir);
    
    if(!dp)
    {
-      return;
+      return false;
    }
    
    dirent* dirp = 0;
@@ -134,6 +108,8 @@ void Device::getContentFileName(const char* SubDir, const char* Extension, uint 
    }
    
    closedir(dp);
+   
+   return true;
 }
 
 bool Device::contentFileExists(const char* SubDir, const char* Name, const char* Extension)
@@ -194,25 +170,14 @@ uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
    return 0;
 }
 
-void Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
+bool Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
+   return false;
 }
 
-void Device::log(const char* Message, ...)
+void Device::deleteUserFile(const char* SubDir, const char* Name, const char* Extension)
 {
-  char sBuffer[1024];
-
-  va_list vArguments;
-  va_start(vArguments, Message);
-  vsprintf(sBuffer, Message, vArguments);
-  va_end(vArguments);
-
-  printf("%s\n", sBuffer);
-
-  if(CurrentLogListener)
-  {
-     CurrentLogListener->onLog(sBuffer);
-  }
+   
 }
 
 uint Device::getFileLength(const char* Filename)

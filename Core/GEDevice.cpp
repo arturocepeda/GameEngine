@@ -51,7 +51,7 @@ Device::IOBuffer* Device::requestIOBuffer(uint iSize)
    GEMutexLock(mIOMutex);
 
    IOBuffer* pBuffer = 0;
-   uint iThreadID = GEThreadID;
+   const uint64_t iThreadID = GEThreadID;
    IOBuffersMap::iterator it = mIOBuffers->find(iThreadID);
 
    if(it != mIOBuffers->end())
