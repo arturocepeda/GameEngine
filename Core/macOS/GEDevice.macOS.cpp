@@ -90,7 +90,7 @@ bool Device::getContentFileName(const char* SubDir, const char* Extension, uint 
    
    dirent* dirp = 0;
    uint iFileIndex = 0;
-   size_t iExtensionLength = strlen(Extension);
+   const size_t iExtensionLength = strlen(Extension);
    
    while((dirp = readdir(dp)))
    {
@@ -99,7 +99,8 @@ bool Device::getContentFileName(const char* SubDir, const char* Extension, uint 
          if(iFileIndex == Index)
          {
             strcpy(Name, dirp->d_name);
-            Name[iExtensionLength + 1] = '\0';
+            const size_t iFullNameLength = strlen(Name);
+            Name[iFullNameLength - iExtensionLength - 1u] = '\0';
             break;
          }
          

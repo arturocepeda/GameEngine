@@ -126,9 +126,11 @@ int main(int argc, char* argv[])
 
     cRender = Allocator::alloc<RenderSystemES20>();
     GEInvokeCtor(RenderSystemES20, cRender)();
-    //cAudio = Allocator::alloc<AudioSystemOpenAL>();
-    //GEInvokeCtor(AudioSystemOpenAL, cAudio)();
-    //cAudio->init();
+   
+    cAudio = Allocator::alloc<AudioSystem>();
+    GEInvokeCtor(AudioSystem, cAudio);
+    cAudio->init();
+    cAudio->setListenerPosition(GE::Vector3::Zero);
 
     // timer
     cTimer.start();
