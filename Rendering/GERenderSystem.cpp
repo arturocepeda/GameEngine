@@ -983,6 +983,12 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       {
          ComponentParticleSystem* cParticleSystem = static_cast<ComponentParticleSystem*>(cRenderable);
 
+         if(GEHasFlag(cParticleSystem->getSettings(), ParticleSystemSettingsBitMask::DynamicShadows) &&
+            cRenderable->getRenderingMode() == RenderingMode::_3D)
+         {
+            vShadowedParticlesToRender.push_back(sRenderOperation);
+         }
+
          if(cUIElement)
          {
             if(cUIElement->getClassName() == ComponentUI2DElement::ClassName)
@@ -1000,11 +1006,6 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          }
          else
          {
-            if(GEHasFlag(cParticleSystem->getSettings(), ParticleSystemSettingsBitMask::DynamicShadows))
-            {
-               vShadowedParticlesToRender.push_back(sRenderOperation);
-            }
-
             vTransparentMeshesToRender.push_back(sRenderOperation);
          }
 
