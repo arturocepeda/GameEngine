@@ -411,6 +411,12 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
       cTexture->loadFromXml(xmlTexture);
       cTexture->saveToStream(sOutputFile);
 
+#if defined (GE_PLATFORM_DESKTOP)
+      const char* sTextureExtension = "dds";
+#else
+      const char* sTextureExtension = cTexture->getFormat();
+#endif
+
       std::string sTextureFilePath;
       sTextureFilePath.append(ContentXmlDirName);
       sTextureFilePath.append("\\Textures\\");
@@ -418,7 +424,7 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
       sTextureFilePath.append("\\");
       sTextureFilePath.append(sTextureName);
       sTextureFilePath.append(".");
-      sTextureFilePath.append(cTexture->getFormat());
+      sTextureFilePath.append(sTextureExtension);
       
       std::ifstream sTextureFile(sTextureFilePath, std::ios::in | std::ios::binary);
       GEAssert(sTextureFile.is_open());
