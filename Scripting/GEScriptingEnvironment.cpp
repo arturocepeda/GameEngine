@@ -292,7 +292,7 @@ void Namespace::collectSymbols()
 //
 //  Environment
 //
-const size_t MemoryPoolSize = 16 * 1024 * 1024;
+const size_t MemoryPoolSize = 32u * 1024u * 1024u;
 
 void* Environment::smAllocatorBuffer = 0;
 tlsf_t Environment::smAllocator = 0;
