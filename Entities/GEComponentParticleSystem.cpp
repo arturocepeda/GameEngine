@@ -479,6 +479,21 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
    }
 }
 
+void ComponentParticleSystem::setEmitterActive(bool Active)
+{
+   if(bEmitterActive != Active)
+   {
+      bEmitterActive = Active;
+
+      if(bEmitterActive)
+      {
+         fElapsedTimeSinceLastEmission = fEmissionRate > GE_EPSILON
+            ? 1.0f / fEmissionRate
+            : 0.0f;
+      }
+   }
+}
+
 void ComponentParticleSystem::prewarm()
 {
    for(uint32_t i = 0u; i < iMaxParticles; i++)
