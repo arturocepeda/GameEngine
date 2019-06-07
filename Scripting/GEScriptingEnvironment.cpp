@@ -310,6 +310,10 @@ Environment::Environment()
 {
    mLua.open_libraries();
    registerTypes();
+
+   lua_gc(mLua.lua_state(), LUA_GCSETPAUSE, 200);
+   lua_gc(mLua.lua_state(), LUA_GCSETSTEPMUL, 200);
+   lua_gc(mLua.lua_state(), LUA_GCRESTART, 0);
 }
 
 Environment::~Environment()
@@ -446,7 +450,12 @@ void Environment::load()
 
 void Environment::collectGarbage()
 {
-   mLua.collect_garbage();
+   lua_gc(mLua.lua_state(), LUA_GCCOLLECT, 0);
+}
+
+void Environment::collectGarbageStep()
+{
+   lua_gc(mLua.lua_state(), LUA_GCSTEP, 0);
 }
 
 void Environment::loadFromCode(const GESTLString& pCode)
@@ -967,8 +976,9 @@ void Environment::registerTypes()
       , "getPosition", &ComponentTransform::getPosition
       , "getWorldPosition", &ComponentTransform::getWorldPosition
       , "getRotation", &ComponentTransform::getRotation
-      , "getOrientation", &ComponentTransform::getOrientation
       , "getWorldRotation", &ComponentTransform::getWorldRotation
+      , "getOrientation", &ComponentTransform::getOrientation
+      , "getWorldOrientation", &ComponentTransform::getWorldOrientation
       , "getScale", &ComponentTransform::getScale
       , "getWorldScale", &ComponentTransform::getWorldScale
       , "getForwardVector", &ComponentTransform::getForwardVector

@@ -109,7 +109,7 @@ void Application::tick()
 {
    for(uint32_t i = 0; i < ScriptingEnvironmentsCount; i++)
    {
-      smScriptingEnvironments[i]->collectGarbage();
+      smScriptingEnvironments[i]->collectGarbageStep();
    }
 }
 

@@ -161,6 +161,7 @@ namespace GE { namespace Scripting
 
       void load();
       void collectGarbage();
+      void collectGarbageStep();
 
       void loadFromCode(const GESTLString& pCode);
       bool loadFromFile(const char* pFileName);
