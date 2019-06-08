@@ -18,12 +18,14 @@
 //
 //  Containers
 //
+#include <array>
 #include <vector>
 #include <list>
 #include <queue>
 #include <set>
 #include <map>
 
+#define GESTLArray(T, Size) std::array<T, Size>
 #define GESTLVector(T) std::vector<T, GE::Core::STLAllocator<T>>
 #define GESTLList(T) std::list<T, GE::Core::STLAllocator<T>>
 #define GESTLDeque(T) std::deque<T, GE::Core::STLAllocator<T>>

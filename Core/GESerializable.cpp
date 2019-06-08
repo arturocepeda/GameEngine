@@ -512,8 +512,8 @@ void SerializableArrayElement::setOwner(Serializable* Owner)
 //
 //  GenericVariable
 //
-const ObjectName ValuePropertyName = ObjectName("Value");
-const uint ValuePropertyIndex = 2;
+const ObjectName kValuePropertyName("Value");
+const uint32_t kValuePropertyIndex = 2u;
 
 GenericVariable::GenericVariable(const ObjectName& ClassName)
    : SerializableArrayElement(ClassName)
@@ -551,16 +551,22 @@ void GenericVariable::setName(const Core::ObjectName& Name)
 
 void GenericVariable::setType(Core::ValueType Type)
 {
-   if(getPropertiesCount() > ValuePropertyIndex)
-   {
-      removeProperty(ValuePropertyIndex);
-   }
-
    cValue = Value::getDefaultValue(Type);
 
-   registerProperty(ValuePropertyName, Type,
-      [this](const GE::Core::Value& v) { cValue = v; },
-      [this]()->GE::Core::Value { return cValue; });
+   if(getPropertiesCount() == kValuePropertyIndex)
+   {
+      registerProperty(kValuePropertyName, Type,
+         [this](const GE::Core::Value& v) { cValue = v; },
+         [this]()->GE::Core::Value { return cValue; });
+   }
+   else
+   {
+      Property& valueProperty = const_cast<Property&>(getProperty(kValuePropertyIndex));
+      valueProperty.Type = Type;
+#if defined (GE_EDITOR_SUPPORT)
+      valueProperty.DefaultValue = cValue;
+#endif
+   }
 
 #if defined (GE_EDITOR_SUPPORT)
    if(cOwner)
