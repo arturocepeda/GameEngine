@@ -189,6 +189,12 @@ void render()
 
       glutSwapBuffers();
    }
+   
+   if(TaskManager::getInstance()->getExitPending())
+   {
+      glutDestroyWindow(glutGetWindow());
+      exit(0);
+   }
 }
 
 GE::Vector2 getMouseScreenPosition()
