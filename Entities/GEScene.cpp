@@ -875,7 +875,7 @@ void Scene::update()
    {
       ComponentRenderable* cRenderable = static_cast<ComponentRenderable*>(vRenderables[i]);
 
-      if(cRenderable->getVisible() && cRenderable->getClassName() == ComponentSprite::ClassName)
+      if(cRenderable->getClassName() == ComponentSprite::ClassName)
       {
          ComponentSprite* cSprite = static_cast<ComponentSprite*>(cRenderable);
          cSprite->update();
