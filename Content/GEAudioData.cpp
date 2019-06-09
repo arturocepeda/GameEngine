@@ -34,7 +34,7 @@ struct AudioDataStream
 };
 
 
-#if defined (GE_PLATFORM_WINDOWS)
+#if defined (GE_PLATFORM_DESKTOP)
 # include "Externals/libogg/include/os_types.h"
 # include "Externals/libvorbis/include/vorbisfile.h"
 
@@ -180,7 +180,7 @@ void AudioData::loadWAVData(uint32_t Size, const char* Data)
 
 void AudioData::loadOggData(uint32_t Size, const char* Data)
 {
-#if defined (GE_PLATFORM_WINDOWS)
+#if defined (GE_PLATFORM_DESKTOP)
    AudioDataStream stream = AudioDataStream(Data, Size);
    OggVorbis_File ovFile;
    ov_callbacks ovCallbacks;

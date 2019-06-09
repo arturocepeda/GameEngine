@@ -70,7 +70,7 @@ void AudioSystem::loadAudioBankFiles(AudioBank* pAudioBank)
    const GESTLVector(ObjectName)& audioFileNames = pAudioBank->getAudioFileNames();
 
    const char* audioFilesSubdir = "Audio/files";
-#if defined (GE_PLATFORM_WINDOWS)
+#if defined (GE_PLATFORM_DESKTOP)
    const char* audioFilesExt = "ogg";
 #else
    const char* audioFilesExt = "wav";
