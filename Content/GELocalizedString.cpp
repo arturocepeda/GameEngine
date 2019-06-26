@@ -97,7 +97,7 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
       ContentDataMemoryBuffer sMemoryBuffer(cStringsSetData);
       std::istream sStream(&sMemoryBuffer);
 
-      const uint32_t stringsCount = (uint32_t)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      const uint32_t stringsCount = (uint32_t)Value::fromStream(ValueType::Short, sStream).getAsShort();
       GESTLString stringBuffer;
 
       for(uint32_t i = 0u; i < stringsCount; i++)

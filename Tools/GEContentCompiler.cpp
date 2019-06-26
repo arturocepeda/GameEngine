@@ -778,7 +778,7 @@ void ContentCompiler::packStrings()
       pugi::xml_document xml;
       xml.load_file(sInputPath);
       const pugi::xml_node& xmlStrings = xml.child("Strings");
-      GE::byte iStringsCount = 0;
+      short iStringsCount = 0;
 
       for(const pugi::xml_node& xmlString : xmlStrings.children("String"))
       {
