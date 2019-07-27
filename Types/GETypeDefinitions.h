@@ -33,6 +33,12 @@ namespace GE
       Linear,
       Quadratic,
       QuadraticInverse,
+      Cubic,
+      CubicInverse,
+      Quartic,
+      QuarticInverse,
+      Quintic,
+      QuinticInverse,
       Logarithmic,
 
       Count

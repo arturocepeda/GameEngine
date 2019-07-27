@@ -85,7 +85,35 @@ float Math::getInterpolationFactor(float T, InterpolationMode Mode)
       }
       case InterpolationMode::QuadraticInverse:
       {
-         return -T * (T - 2.0f);
+         const float tMinus1 = T - 1.0f;
+         return 1.0f - (tMinus1 * tMinus1);
+      }
+      case InterpolationMode::Cubic:
+      {
+         return T * T * T;
+      }
+      case InterpolationMode::CubicInverse:
+      {
+         const float tMinus1 = T - 1.0f;
+         return 1.0f - fabsf(tMinus1 * tMinus1 * tMinus1);
+      }
+      case InterpolationMode::Quartic:
+      {
+         return T * T * T * T;
+      }
+      case InterpolationMode::QuarticInverse:
+      {
+         const float tMinus1 = T - 1.0f;
+         return 1.0f - (tMinus1 * tMinus1 * tMinus1 * tMinus1);
+      }
+      case InterpolationMode::Quintic:
+      {
+         return T * T * T * T * T;
+      }
+      case InterpolationMode::QuinticInverse:
+      {
+         const float tMinus1 = T - 1.0f;
+         return 1.0f - fabsf(tMinus1 * tMinus1 * tMinus1 * tMinus1 * tMinus1);
       }
       case InterpolationMode::Logarithmic:
       {

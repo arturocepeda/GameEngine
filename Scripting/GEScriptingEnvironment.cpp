@@ -763,6 +763,12 @@ void Environment::registerTypes()
       , "Linear", InterpolationMode::Linear
       , "Quadratic", InterpolationMode::Quadratic
       , "QuadraticInverse", InterpolationMode::QuadraticInverse
+      , "Cubic", InterpolationMode::Cubic
+      , "CubicInverse", InterpolationMode::CubicInverse
+      , "Quartic", InterpolationMode::Quartic
+      , "QuarticInverse", InterpolationMode::QuarticInverse
+      , "Quintic", InterpolationMode::Quintic
+      , "QuinticInverse", InterpolationMode::QuinticInverse
       , "Logarithmic", InterpolationMode::Logarithmic
    );
    mLua.new_simple_usertype<PropertyInterpolator<float>>
