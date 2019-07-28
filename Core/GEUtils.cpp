@@ -184,6 +184,26 @@ uint32_t GE::Core::hash(const char* pString)
    return hash;
 }
 
+bool GE::Core::isHash(const char* pString)
+{
+   const size_t strLength = strlen(pString);
+   bool strIsHash = strLength == 8u;
+
+   if(strIsHash)
+   {
+      for(size_t i = 0u; i < 8u; i++)
+      {
+         if(!isxdigit(pString[i]))
+         {
+            strIsHash = false;
+            break;
+         }
+      }
+   }
+
+   return strIsHash;
+}
+
 void GE::Core::toHashPath(char* pPath)
 {
    if(!pPath || pPath[0] == '\0')

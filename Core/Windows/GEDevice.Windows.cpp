@@ -180,22 +180,7 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
 
    if(ContentHashPath)
    {
-      const size_t nameLength = strlen(Name);
-      bool nameIsHash = nameLength == 8u;
-
-      if(nameIsHash)
-      {
-         for(size_t i = 0u; i < 8u; i++)
-         {
-            if(!isxdigit(Name[i]))
-            {
-               nameIsHash = false;
-               break;
-            }
-         }
-      }
-
-      if(nameIsHash)
+      if(isHash(Name))
       {
          toHashPath(sSubDir);
          
