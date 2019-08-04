@@ -443,6 +443,41 @@ void Environment::handleFunctionError(const char* pFunctionName, const char* pMs
    }
 }
 
+struct LuaDump
+{
+   char* mPtr;
+   size_t mSize;
+   size_t mMaxSize;
+};
+
+int luaDumpWriter(lua_State* pLua, const void* pPtr, size_t pSize, void* pUserData)
+{
+   LuaDump* dump = static_cast<LuaDump*>(pUserData);
+   size_t nextBytecodeLength = dump->mSize + pSize;
+
+   if(nextBytecodeLength > dump->mMaxSize)
+      return -1;
+
+   memcpy(dump->mPtr + dump->mSize, pPtr, pSize);
+   dump->mSize = nextBytecodeLength;
+   return 0;
+}
+
+size_t Environment::compileScript(const char* pCode, size_t pBytecodeMaxSize, char* pOutBytecode)
+{
+   LuaDump dump;
+   dump.mPtr = pOutBytecode;
+   dump.mSize = 0u;
+   dump.mMaxSize = pBytecodeMaxSize;
+
+   lua_State* lua = luaL_newstate();
+   luaL_loadstring(lua, pCode);
+   int result = lua_dump(lua, luaDumpWriter, &dump, 1);
+   lua_close(lua);
+
+   return result == 0 ? dump.mSize : 0u;
+}
+
 void Environment::load()
 {
    mGlobalNamespace.load(0);

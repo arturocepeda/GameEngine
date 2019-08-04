@@ -26,6 +26,7 @@
 #include "Content/GEResourcesManager.h"
 #include "Audio/GEAudioBank.h"
 #include "Types/GECurve.h"
+#include "Scripting/GEScriptingEnvironment.h"
 
 #include "Externals/pugixml/pugixml.hpp"
 #include <D3DCompiler.h>
@@ -1303,6 +1304,11 @@ void ContentCompiler::compileScripts()
    if(hFile == INVALID_HANDLE_VALUE)
       return;
 
+   const size_t bufferSize = 65536u;
+
+   char codeBuffer[bufferSize];
+   char byteCodeBuffer[bufferSize];
+
    do
    {
       const char* sScriptFileName = sFileData.cFileName;
@@ -1325,44 +1331,28 @@ void ContentCompiler::compileScripts()
       outputPathOffset = strlen(sOutputPath) + 1u;
 #endif
       CreateDirectory(sOutputPath, NULL);
+#if defined GE_64_BIT
+      sprintf(sOutputPath, "%s\\x64_%sbc", sOutputPath, sScriptFileName);      
+#else
       sprintf(sOutputPath, "%s\\%sbc", sOutputPath, sScriptFileName);
+#endif
 #if GE_HASH_OUTPUT_PATHS
       toHashPath(sOutputPath + outputPathOffset);
 #endif
 
-      char sParameters[1024];
-      sprintf(sParameters, "-o %s %s%s", sOutputPath, (StripLuaSymbols ? "-s " : ""), sInputPath);
+      FILE* inputFile = fopen(sInputPath, "rb");
+      fseek(inputFile, 0, SEEK_END);
+      const size_t inputFileSize = (size_t)ftell(inputFile);
+      rewind(inputFile);
+      fread(codeBuffer, 1u, inputFileSize, inputFile);
+      codeBuffer[inputFileSize] = '\0';
+      fclose(inputFile);
 
-      SHELLEXECUTEINFO sShellExecuteInfo;
-      sShellExecuteInfo.cbSize = sizeof(SHELLEXECUTEINFO);
-      sShellExecuteInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-      sShellExecuteInfo.hwnd = GetActiveWindow();
-      sShellExecuteInfo.lpVerb = "open";
-      sShellExecuteInfo.lpFile = "..\\..\\..\\GameEngine\\Tools\\Externals\\lua53\\luac53.exe";
-      sShellExecuteInfo.lpParameters = sParameters;
-      sShellExecuteInfo.lpDirectory = sCurrentDirectory;
-      sShellExecuteInfo.nShow = SW_HIDE;
-      sShellExecuteInfo.hInstApp = NULL;
-      ShellExecuteEx(&sShellExecuteInfo);
-
-      sprintf(sOutputPath, "%s\\%s", sCurrentDirectory, ContentBinDirName);
-#if GE_HASH_OUTPUT_PATHS
-      outputPathOffset = strlen(sOutputPath) + 1u;
-#endif
-      sprintf(sOutputPath, "%s\\Scripts", sOutputPath);
-#if GE_HASH_OUTPUT_PATHS
-      toHashPath(sOutputPath + outputPathOffset);
-      outputPathOffset = strlen(sOutputPath) + 1u;
-#endif
-      sprintf(sOutputPath, "%s\\x64_%sbc", sOutputPath, sScriptFileName);
-#if GE_HASH_OUTPUT_PATHS
-      toHashPath(sOutputPath + outputPathOffset);
-#endif
-
-      sprintf(sParameters, "-o %s %s%s", sOutputPath, (StripLuaSymbols ? "-s " : ""), sInputPath);
-
-      sShellExecuteInfo.lpFile = "..\\..\\..\\GameEngine\\Tools\\Externals\\lua53\\luac53_x64.exe";
-      ShellExecuteEx(&sShellExecuteInfo);
+      FILE* outputFile = fopen(sOutputPath, "wb");
+      const size_t outputFileSize =
+         Scripting::Environment::compileScript(codeBuffer, bufferSize, byteCodeBuffer);
+      fwrite(byteCodeBuffer, 1u, outputFileSize, outputFile);
+      fclose(outputFile);
    }
    while(FindNextFile(hFile, &sFileData));
 

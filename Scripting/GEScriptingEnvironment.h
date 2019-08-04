@@ -159,6 +159,8 @@ namespace GE { namespace Scripting
       static void handleScriptError(const char* pScriptName, const char* pMsg = 0);
       static void handleFunctionError(const char* pFunctionName, const char* pMsg = 0);
 
+      static size_t compileScript(const char* pCode, size_t pBytecodeMaxSize, char* pOutBytecode);
+
       void load();
       void collectGarbage();
       void collectGarbageStep();
