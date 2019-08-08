@@ -924,10 +924,16 @@ void Environment::registerTypes()
       "Skeleton"
       , "getBonesCount", &Skeleton::getBonesCount
    );
+   mLua.new_simple_usertype<LocalizedString>
+   (
+      "LocalizedString"
+      , "getString", &LocalizedString::getString
+   );
    mLua.new_simple_usertype<LocalizedStringsManager>
    (
       "LocalizedStringsManager"
       , "getInstance", &LocalizedStringsManager::getInstance
+      , "get", &LocalizedStringsManager::get
       , "setVariable", &LocalizedStringsManager::setVariable
       , "getVariable", &LocalizedStringsManager::getVariable
    );
