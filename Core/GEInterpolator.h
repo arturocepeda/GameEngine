@@ -143,6 +143,11 @@ namespace GE { namespace Core
       {
       }
 
+      void setInterpolationMode(InterpolationMode pMode)
+      {
+         eInterpolationMode = pMode;
+      }
+
       bool getGetter() const
       {
          return getter;

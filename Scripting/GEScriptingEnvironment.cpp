@@ -810,6 +810,7 @@ void Environment::registerTypes()
    (
       "PropertyInterpolatorFloat"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "setInterpolationMode", &PropertyInterpolator<float>::setInterpolationMode
       , "setClockName", &PropertyInterpolator<float>::setClockName
       , "animate", &PropertyInterpolator<float>::animate
       , "alternate", &PropertyInterpolator<float>::alternate
@@ -821,6 +822,7 @@ void Environment::registerTypes()
    (
       "PropertyInterpolatorVector2"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "setInterpolationMode", &PropertyInterpolator<Vector2>::setInterpolationMode
       , "setClockName", &PropertyInterpolator<Vector2>::setClockName
       , "animate", &PropertyInterpolator<Vector2>::animate
       , "alternate", &PropertyInterpolator<Vector2>::alternate
@@ -832,6 +834,7 @@ void Environment::registerTypes()
    (
       "PropertyInterpolatorVector3"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "setInterpolationMode", &PropertyInterpolator<Vector3>::setInterpolationMode
       , "setClockName", &PropertyInterpolator<Vector3>::setClockName
       , "animate", &PropertyInterpolator<Vector3>::animate
       , "alternate", &PropertyInterpolator<Vector3>::alternate
@@ -843,6 +846,7 @@ void Environment::registerTypes()
    (
       "PropertyInterpolatorColor"
       , sol::constructors<sol::types<Serializable*, const ObjectName&, InterpolationMode>>()
+      , "setInterpolationMode", &PropertyInterpolator<Color>::setInterpolationMode
       , "setClockName", &PropertyInterpolator<Color>::setClockName
       , "animate", &PropertyInterpolator<Color>::animate
       , "alternate", &PropertyInterpolator<Color>::alternate
@@ -881,6 +885,7 @@ void Environment::registerTypes()
    (
       "CurvePropertyInterpolator"
       , sol::constructors<sol::types<Curve*, Serializable*, const ObjectName&, PropertyValueComponent>>()
+      , "setInterpolationMode", &CurvePropertyInterpolator::setInterpolationMode
       , "setClockName", &CurvePropertyInterpolator::setClockName
       , "animate", &CurvePropertyInterpolator::animate
       , "animateInverse", &CurvePropertyInterpolator::animateInverse
@@ -896,6 +901,8 @@ void Environment::registerTypes()
    (
       "BezierPropertyInterpolator"
       , sol::constructors<sol::types<BezierCurve*, Serializable*, const ObjectName&, InterpolationMode>>()
+      , "setInterpolationMode", &BezierPropertyInterpolator::setInterpolationMode
+      , "setClockName", &BezierPropertyInterpolator::setClockName
       , "animate", &BezierPropertyInterpolator::animate
       , "animateInverse", &BezierPropertyInterpolator::animateInverse
       , "update", &BezierPropertyInterpolator::update
