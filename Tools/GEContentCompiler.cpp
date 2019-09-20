@@ -25,6 +25,7 @@
 #include "Entities/GEComponent.h"
 #include "Content/GEResourcesManager.h"
 #include "Audio/GEAudioBank.h"
+#include "Audio/GEAudioSystem.h"
 #include "Types/GECurve.h"
 #include "Scripting/GEScriptingEnvironment.h"
 
@@ -1108,6 +1109,7 @@ void ContentCompiler::packSounds()
 
    packSerializableResources<AudioBank>();
    packSerializableResources<AudioEvent>();
+   packSerializableResources<AudioBus>();
 
    char sFindString[MAX_PATH];
    sprintf(sFindString, "%s\\Audio\\files\\*.*", ContentXmlDirName);
