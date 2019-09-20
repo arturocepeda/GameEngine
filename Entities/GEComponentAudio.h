@@ -18,6 +18,7 @@
 
 namespace GE { namespace Audio
 {
+   class AudioBus;
    struct AudioEventInstance;
 }}
 
@@ -58,6 +59,9 @@ namespace GE { namespace Entities
       Core::ObjectName mAudioBankName;
       Core::ObjectName mAudioEventName;
 
+      Audio::AudioBus* mAudioBus;
+      float mCachedAudioBusDerivedVolume;
+
       GESTLVector(Audio::AudioEventInstance*) mAudioEventInstances;
 
       ComponentAudioSource(Entity* Owner);
@@ -68,11 +72,13 @@ namespace GE { namespace Entities
    public:
       GEDefaultGetter(const Core::ObjectName&, AudioBankName, m)
       GEDefaultGetter(const Core::ObjectName&, AudioEventName, m)
+      const Core::ObjectName& getAudioBusName() const;
 
       uint32_t getActiveAudioEventsCount() const { return (uint32_t)mAudioEventInstances.size(); }
 
       GEDefaultSetter(const Core::ObjectName&, AudioBankName, m)
       GEDefaultSetter(const Core::ObjectName&, AudioEventName, m)
+      void setAudioBusName(const Core::ObjectName& pName);
 
       Audio::AudioEventInstance* playAudioEvent(const Core::ObjectName& pAudioEventName);
       void pauseAllAudioEvents();

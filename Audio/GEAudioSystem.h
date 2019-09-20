@@ -57,6 +57,29 @@ namespace GE { namespace Audio
          , Data(nullptr) {}
    };
 
+   class AudioBus : public Content::Resource
+   {
+   private:
+      AudioBus* mParent;
+      float mVolume;
+
+   public:
+      static const Core::ObjectName TypeName;
+      static const char* SubDir;
+      static const char* Extension;
+
+      AudioBus(const Core::ObjectName& pName, const Core::ObjectName& pGroupName);
+      ~AudioBus();
+
+      const Core::ObjectName& getParent() const;
+      GEDefaultGetter(float, Volume, m)
+
+      void setParent(const Core::ObjectName& pName);
+      GEDefaultSetter(float, Volume, m)
+
+      float getDerivedVolume() const;
+   };
+
    enum class AudioEventInstanceState : uint8_t
    {
       Free,
@@ -68,6 +91,7 @@ namespace GE { namespace Audio
    struct AudioEventInstance
    {
       AudioEvent* Event;
+      AudioBus* Bus;
       ChannelID Channel;
       float VolumeBase;
       float VolumeFactorFade;
@@ -75,6 +99,7 @@ namespace GE { namespace Audio
 
       AudioEventInstance()
          : Event(nullptr)
+         , Bus(nullptr)
          , Channel(0u)
          , VolumeBase(1.0f)
          , VolumeFactorFade(1.0f)
@@ -85,6 +110,7 @@ namespace GE { namespace Audio
       void reset()
       {
          Event = nullptr;
+         Bus = nullptr;
          Channel = 0u;
          VolumeBase = 1.0f;
          VolumeFactorFade = 1.0f;
@@ -93,7 +119,7 @@ namespace GE { namespace Audio
 
       float getVolume() const
       {
-         return VolumeBase * VolumeFactorFade;
+         return VolumeBase * VolumeFactorFade * (Bus ? Bus->getDerivedVolume() : 1.0f);
       }
    };
 
@@ -123,6 +149,7 @@ namespace GE { namespace Audio
 
       Core::ObjectManager<AudioBank> mAudioBanks;
       Core::ObjectManager<AudioEvent> mAudioEvents;
+      Core::ObjectManager<AudioBus> mAudioBuses;
       
       AudioChannel* mChannels;
       uint32_t mChannelAssignmentIndex;
@@ -176,6 +203,8 @@ namespace GE { namespace Audio
       void platformSetListenerOrientation(const Rotation& pOrientation);
 
    public:
+      static const Core::ObjectName MasterBusName;
+
       AudioSystem();
       ~AudioSystem();
 
@@ -188,6 +217,8 @@ namespace GE { namespace Audio
       void loadAudioBank(const Core::ObjectName& pAudioBankName);
       void unloadAudioBank(const Core::ObjectName& pAudioBankName);
       void unloadAllAudioBanks();
+
+      AudioBus* getAudioBus(const Core::ObjectName& pAudioBusName) const;
 
       AudioEventInstance* playAudioEvent(const Core::ObjectName& pAudioBankName, const Core::ObjectName& pAudioEventName);
       void stop(AudioEventInstance* pAudioEventInstance);

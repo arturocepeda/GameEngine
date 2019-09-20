@@ -27,6 +27,51 @@ using namespace GE::Content;
 
 const float UpdatePeriod = 0.5f;
 
+//
+//  AudioBus
+//
+const ObjectName AudioBus::TypeName = ObjectName("AudioBus");
+const char* AudioBus::SubDir = "Audio";
+const char* AudioBus::Extension = "buses";
+
+AudioBus::AudioBus(const ObjectName& pName, const ObjectName& pGroupName)
+   : Resource(pName, pGroupName, TypeName)
+   , mParent(nullptr)
+   , mVolume(1.0f)
+{
+   GERegisterProperty(ObjectName, Parent);
+   GERegisterProperty(Float, Volume);
+   GERegisterPropertyReadonly(Float, DerivedVolume);
+}
+
+AudioBus::~AudioBus()
+{
+}
+
+const ObjectName& AudioBus::getParent() const
+{
+   return mParent ? mParent->getName() : ObjectName::Empty;
+}
+
+void AudioBus::setParent(const ObjectName& pName)
+{
+   if(pName != cName)
+   {
+      mParent = AudioSystem::getInstance()->getAudioBus(pName);
+   }
+}
+
+float AudioBus::getDerivedVolume() const
+{
+   return mVolume * (mParent ? mParent->getDerivedVolume() : 1.0f);
+}
+
+
+//
+//  AudioSystem
+//
+const ObjectName AudioSystem::MasterBusName = ObjectName("Master");
+
 AudioSystem::AudioSystem()
    : mHandler(nullptr)
    , mChannelsCount(0u)
@@ -38,8 +83,13 @@ AudioSystem::AudioSystem()
    , mAudioStreamAssignmentIndex(0u)
    , mTimeSinceLastUpdate(0.0f)
 {
+   AudioBus* masterBus = Allocator::alloc<AudioBus>();
+   GEInvokeCtor(AudioBus, masterBus)(MasterBusName, ObjectName::Empty);
+   mAudioBuses.add(masterBus);
+
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<AudioBank>(&mAudioBanks);
    SerializableResourcesManager::getInstance()->registerSerializableResourceType<AudioEvent>(&mAudioEvents);
+   SerializableResourcesManager::getInstance()->registerSerializableResourceType<AudioBus>(&mAudioBuses);
 }
 
 AudioSystem::~AudioSystem()
@@ -190,6 +240,7 @@ void AudioSystem::init(uint32_t pChannelsCount, uint32_t pBuffersCount)
 
    SerializableResourcesManager::getInstance()->loadAll<AudioEvent>();
    SerializableResourcesManager::getInstance()->loadAll<AudioBank>();
+   SerializableResourcesManager::getInstance()->loadAll<AudioBus>();
 
    GEMutexInit(mMutex);
 }
@@ -313,6 +364,11 @@ void AudioSystem::unloadAllAudioBanks()
       pAudioBank->unload();
       return true;
    });
+}
+
+AudioBus* AudioSystem::getAudioBus(const ObjectName& pAudioBusName) const
+{
+   return mAudioBuses.get(pAudioBusName);
 }
 
 AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName, const ObjectName& pAudioEventName)

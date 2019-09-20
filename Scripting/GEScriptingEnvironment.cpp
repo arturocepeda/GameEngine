@@ -1230,6 +1230,12 @@ void Environment::registerTypes()
    //
    //  GE::Audio
    //
+   mLua.new_simple_usertype<AudioBus>
+   (
+      "AudioBus"
+      , "getVolume", &AudioBus::getVolume
+      , "setVolume", &AudioBus::setVolume
+   );
    mLua.new_simple_usertype<AudioEventInstance>
    (
       "AudioEventInstance"
@@ -1238,6 +1244,7 @@ void Environment::registerTypes()
    (
       "AudioSystem"
       , "getInstance", &AudioSystem::getInstance
+      , "getAudioBus", &AudioSystem::getAudioBus
       , "loadAudioBank", &AudioSystem::loadAudioBank
       , "unloadAudioBank", &AudioSystem::unloadAudioBank
       , "playAudioEvent", &AudioSystem::playAudioEvent
