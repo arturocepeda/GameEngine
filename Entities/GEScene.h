@@ -18,6 +18,8 @@
 #include "GEComponentType.h"
 #include "Externals/pugixml/pugixml.hpp"
 
+#include <atomic>
+
 namespace GE { namespace Entities
 {
    class Entity;
@@ -45,7 +47,8 @@ namespace GE { namespace Entities
       GESTLMap(uint, Entity*) mRegistry;
       GESTLVector(Component*) vComponents[(uint)ComponentType::Count];
 
-      GESTLVector(Entity*) vEntitiesToRemove;
+      GESTLVector(Entity*) mEntitiesToRemove;
+      std::atomic<bool> mRemovingEntities;
 
       SceneBackgroundMode eBackgroundMode;
       Core::ObjectName cBackgroundMaterialName;
@@ -128,6 +131,8 @@ namespace GE { namespace Entities
 
       void setupBackground();
       void setupSkyBox(const char* MaterialName);
+
+      bool isRemovingEntities() const { return mRemovingEntities; }
 
       void queueUpdateJobs();
       void update();

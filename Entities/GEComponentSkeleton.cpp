@@ -571,9 +571,11 @@ void ComponentSkeleton::releaseSkeletonData()
 
    if(cSkeleton)
    {
-      if(vBoneEntities.size() > 1)
+      Scene* scene = cOwner->getOwner();
+
+      if(vBoneEntities.size() > 1 && !scene->isRemovingEntities())
       {
-         cOwner->getOwner()->removeEntity(vBoneEntities[0]->getFullName());
+         scene->removeEntity(vBoneEntities[0]->getFullName());
       }
 
       vBoneEntities.clear();

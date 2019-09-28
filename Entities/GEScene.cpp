@@ -54,6 +54,7 @@ Scene* Scene::cDebuggingScene = 0;
 Scene::Scene(const ObjectName& Name)
    : EventHandlingObject(Name)
    , Serializable("Scene")
+   , mRemovingEntities(false)
    , eBackgroundMode(SceneBackgroundMode::SolidColor)
    , cBackgroundEntity(0)
    , fShadowsMaxDistance(20.0f)
@@ -284,7 +285,7 @@ bool Scene::removeEntity(const ObjectName& FullName)
       return false;
    }
 
-   vEntitiesToRemove.push_back(it->second);
+   mEntitiesToRemove.push_back(it->second);
 
    GEMutexUnlock(mSceneMutex);
 
@@ -717,12 +718,16 @@ void Scene::queueUpdateJobs()
 
    GEMutexLock(mSceneMutex);
 
-   if(!vEntitiesToRemove.empty())
+   if(!mEntitiesToRemove.empty())
    {
-      for(uint i = 0; i < vEntitiesToRemove.size(); i++)
-         removeEntity(vEntitiesToRemove[i]);
+      mRemovingEntities = true;
 
-      vEntitiesToRemove.clear();
+      for(uint i = 0; i < mEntitiesToRemove.size(); i++)
+         removeEntity(mEntitiesToRemove[i]);
+
+      mEntitiesToRemove.clear();
+
+      mRemovingEntities = false;
    }
 
    GEMutexUnlock(mSceneMutex);
