@@ -55,7 +55,7 @@ ObjectManager<Texture> mManagerTextures;
 ObjectManager<Material> mManagerMaterials;
 ObjectManager<Font> mManagerFonts;
 
-Scene cDummyScene = Scene(ObjectName("Dummy"));
+Scene cDummyScene(ObjectName("Dummy"));
 
 void registerCompilerObjectManagers()
 {
