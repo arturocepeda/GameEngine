@@ -1068,9 +1068,24 @@ void RenderSystem::renderEnd()
    dxContext->DiscardView(dxRenderTargetView.Get());
    dxContext->DiscardView(dxDepthStencilView.Get());
 
+   CD3D11_VIEWPORT dxViewport(0.0f, 0.0f, (float)Device::ScreenWidth, (float)Device::ScreenHeight);
+   dxContext->RSSetViewports(1, &dxViewport);
+
+   for(int i = 0; i < GeometryGroup::Count; i++)
    {
-      CD3D11_VIEWPORT dxViewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)Device::ScreenWidth, (float)Device::ScreenHeight);
-      dxContext->RSSetViewports(1, &dxViewport);
+      GPUBufferPair& bufferPair = sGPUBufferPairs[i];
+
+      if(bufferPair.IsDynamic && bufferPair.CurrentVertexBufferOffset > 0u)
+      {
+         D3D11_MAPPED_SUBRESOURCE dxResource;
+         ID3D11Buffer* dxVertexBuffer = static_cast<ID3D11Buffer*>(bufferPair.VertexBuffer);
+         dxContext->Map(dxVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &dxResource);
+         dxContext->Unmap(dxVertexBuffer, 0);
+
+         ID3D11Buffer* dxIndexBuffer = static_cast<ID3D11Buffer*>(bufferPair.IndexBuffer);
+         dxContext->Map(dxIndexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &dxResource);
+         dxContext->Unmap(dxIndexBuffer, 0);
+      }
    }
 
    if(hr == DXGI_ERROR_DEVICE_REMOVED)

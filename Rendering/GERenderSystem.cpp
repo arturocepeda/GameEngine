@@ -88,6 +88,10 @@ RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint S
    sGPUBufferPairs[GeometryGroup::LabelBatch].VertexStride = sGPUBufferPairs[GeometryGroup::Label].VertexStride;
    sGPUBufferPairs[GeometryGroup::MeshBatch].VertexStride = sGPUBufferPairs[GeometryGroup::MeshStatic].VertexStride;
 
+   // Static buffers
+   sGPUBufferPairs[GeometryGroup::SpriteStatic].IsDynamic = 0u;
+   sGPUBufferPairs[GeometryGroup::MeshStatic].IsDynamic = 0u;
+
    GEMutexInit(mTextureLoadMutex);
    calculate2DViewProjectionMatrix();
 
@@ -1136,13 +1140,15 @@ void RenderSystem::clearRenderingQueues()
       sBatch.Data.NumIndices = 0;
    }
 
-   sGPUBufferPairs[GeometryGroup::SpriteDynamic].clear();
-   sGPUBufferPairs[GeometryGroup::SpriteBatch].clear();
-   sGPUBufferPairs[GeometryGroup::Label].clear();
-   sGPUBufferPairs[GeometryGroup::LabelBatch].clear();
-   sGPUBufferPairs[GeometryGroup::MeshDynamic].clear();
-   sGPUBufferPairs[GeometryGroup::MeshBatch].clear();
-   sGPUBufferPairs[GeometryGroup::Particles].clear();
+   for(int i = 0; i < GeometryGroup::Count; i++)
+   {
+      GPUBufferPair& bufferPair = sGPUBufferPairs[i];
+
+      if(bufferPair.IsDynamic)
+      {
+         bufferPair.clear();
+      }
+   }
 }
 
 void RenderSystem::clearGeometryRenderInfoEntries()

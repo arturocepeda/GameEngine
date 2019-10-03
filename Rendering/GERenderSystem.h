@@ -42,20 +42,22 @@ namespace GE { namespace Rendering
       uint VertexStride;
       uint CurrentVertexBufferOffset;
       uint CurrentIndexBufferOffset;
+      uint IsDynamic;
 
       GPUBufferPair()
-         : VertexBuffer(0)
-         , IndexBuffer(0)
-         , VertexStride(0)
-         , CurrentVertexBufferOffset(0)
-         , CurrentIndexBufferOffset(0)
+         : VertexBuffer(nullptr)
+         , IndexBuffer(nullptr)
+         , VertexStride(0u)
+         , CurrentVertexBufferOffset(0u)
+         , CurrentIndexBufferOffset(0u)
+         , IsDynamic(1u)
       {
       }
 
       void clear()
       {
-         CurrentVertexBufferOffset = 0;
-         CurrentIndexBufferOffset = 0;
+         CurrentVertexBufferOffset = 0u;
+         CurrentIndexBufferOffset = 0u;
       }
    };
 
