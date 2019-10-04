@@ -247,14 +247,18 @@ void RenderSystem::loadRenderingData(const GeometryData& sData, GPUBufferPair& s
    uint iVertexDataSize = sData.NumVertices * sData.VertexStride;
    uint iIndicesSize = sData.NumIndices * sizeof(ushort);
 
+   const D3D11_MAP dxMapType = sBuffers.CurrentVertexBufferOffset == 0u
+      ? D3D11_MAP_WRITE_DISCARD
+      : D3D11_MAP_WRITE_NO_OVERWRITE;
+
    D3D11_MAPPED_SUBRESOURCE dxResource;
    ID3D11Buffer* dxVertexBuffer = static_cast<ID3D11Buffer*>(sBuffers.VertexBuffer);
-   dxContext->Map(dxVertexBuffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &dxResource);
+   dxContext->Map(dxVertexBuffer, 0, dxMapType, 0, &dxResource);
    memcpy((char*)dxResource.pData + sBuffers.CurrentVertexBufferOffset, sData.VertexData, iVertexDataSize);
    dxContext->Unmap(dxVertexBuffer, 0);
 
    ID3D11Buffer* dxIndexBuffer = static_cast<ID3D11Buffer*>(sBuffers.IndexBuffer);
-   dxContext->Map(dxIndexBuffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &dxResource);
+   dxContext->Map(dxIndexBuffer, 0, dxMapType, 0, &dxResource);
    memcpy((char*)dxResource.pData + sBuffers.CurrentIndexBufferOffset, sData.Indices, iIndicesSize);
    dxContext->Unmap(dxIndexBuffer, 0);
 
@@ -1070,23 +1074,6 @@ void RenderSystem::renderEnd()
 
    CD3D11_VIEWPORT dxViewport(0.0f, 0.0f, (float)Device::ScreenWidth, (float)Device::ScreenHeight);
    dxContext->RSSetViewports(1, &dxViewport);
-
-   for(int i = 0; i < GeometryGroup::Count; i++)
-   {
-      GPUBufferPair& bufferPair = sGPUBufferPairs[i];
-
-      if(bufferPair.IsDynamic && bufferPair.CurrentVertexBufferOffset > 0u)
-      {
-         D3D11_MAPPED_SUBRESOURCE dxResource;
-         ID3D11Buffer* dxVertexBuffer = static_cast<ID3D11Buffer*>(bufferPair.VertexBuffer);
-         dxContext->Map(dxVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &dxResource);
-         dxContext->Unmap(dxVertexBuffer, 0);
-
-         ID3D11Buffer* dxIndexBuffer = static_cast<ID3D11Buffer*>(bufferPair.IndexBuffer);
-         dxContext->Map(dxIndexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &dxResource);
-         dxContext->Unmap(dxIndexBuffer, 0);
-      }
-   }
 
    if(hr == DXGI_ERROR_DEVICE_REMOVED)
    {
