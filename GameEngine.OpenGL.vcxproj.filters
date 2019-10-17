@@ -716,5 +716,8 @@
     <ClInclude Include="Tools\GEContentCompiler.h">
       <Filter>Tools</Filter>
     </ClInclude>
+    <ClInclude Include="Core\GEDistributionPlatform.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

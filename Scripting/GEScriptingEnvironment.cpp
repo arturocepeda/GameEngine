@@ -23,6 +23,7 @@
 #include "Core/GEInterpolator.h"
 #include "Core/GEPhysics.h"
 #include "Core/GEProfiler.h"
+#include "Core/GEDistributionPlatform.h"
 #include "Content/GEContentData.h"
 #include "Content/GELocalizedString.h"
 #include "Input/GEInputSystem.h"
@@ -921,6 +922,12 @@ void Environment::registerTypes()
       , "Position", &Physics::HitInfo::Position
       , "Normal", &Physics::HitInfo::Normal
       , "Distance", &Physics::HitInfo::Distance
+   );
+   mLua.new_simple_usertype<DistributionPlatform>
+   (
+      "DistributionPlatform"
+      , "getInstance", &DistributionPlatform::getInstance
+      , "getUserName", &DistributionPlatform::getUserName
    );
 
    //

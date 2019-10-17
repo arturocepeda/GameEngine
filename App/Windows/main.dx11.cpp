@@ -24,6 +24,7 @@
 #include "Core/GEAllocator.h"
 #include "Core/GEApplication.h"
 #include "Core/GEProfiler.h"
+#include "Core/GEDistributionPlatform.h"
 
 #include "Rendering/DX11/GERenderSystemDX11.h"
 #include "Audio/GEAudioSystem.h"
@@ -79,6 +80,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
 #if defined (GE_BINARY_CONTENT)
     Application::ContentType = ApplicationContentType::Bin;
 #endif
+
+    // initialize the distribution platform
+    DistributionPlatform distributionPlatform;
+
+    if(!distributionPlatform.init())
+       return 1;
 
     // initialize the application
     StateManager cStateManager;
@@ -289,6 +296,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
     Allocator::free(cPixelToScreenY);
 
     Application::shutDown();
+
+    distributionPlatform.shutdown();
 
     return (int)iMsg.wParam;
 }
