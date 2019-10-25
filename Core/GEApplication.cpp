@@ -16,6 +16,7 @@
 #include "GEDevice.h"
 #include "GEPlatform.h"
 #include "GETime.h"
+#include "GEDistributionPlatform.h"
 
 #include "Input/GEInputSystem.h"
 
@@ -111,6 +112,8 @@ void Application::tick()
    {
       smScriptingEnvironments[i]->collectGarbageStep();
    }
+
+   DistributionPlatform::getInstance()->update();
 }
 
 void Application::shutDown()

@@ -928,6 +928,7 @@ void Environment::registerTypes()
       "DistributionPlatform"
       , "getInstance", &DistributionPlatform::getInstance
       , "getUserName", &DistributionPlatform::getUserName
+      , "updateLeaderboardScore", &DistributionPlatform::updateLeaderboardScore
    );
 
    //

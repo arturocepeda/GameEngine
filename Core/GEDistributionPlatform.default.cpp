@@ -20,6 +20,10 @@ bool DistributionPlatform::init() const
    return true;
 }
 
+void DistributionPlatform::update() const
+{
+}
+
 void DistributionPlatform::shutdown() const
 {
 }
@@ -28,4 +32,8 @@ const char* DistributionPlatform::getUserName() const
 {
    static const char* defaultUserName = "Player";
    return defaultUserName;
+}
+
+void DistributionPlatform::updateLeaderboardScore(const char* pLeaderboardName, uint32_t pScore)
+{
 }

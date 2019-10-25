@@ -20,8 +20,12 @@ namespace GE { namespace Core
    {
    public:
       bool init() const;
+      void update() const;
       void shutdown() const;
 
       const char* getUserName() const;
+
+      // Leaderboards
+      void updateLeaderboardScore(const char* pLeaderboardName, uint32_t pScore);
    };
 }}
