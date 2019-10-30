@@ -369,6 +369,9 @@
     <ClCompile Include="Tools\GEContentCompiler.cpp">
       <Filter>Tools</Filter>
     </ClCompile>
+    <ClCompile Include="Core\GEDistributionPlatform.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\GEAudioSystem.h">

@@ -923,12 +923,24 @@ void Environment::registerTypes()
       , "Normal", &Physics::HitInfo::Normal
       , "Distance", &Physics::HitInfo::Distance
    );
+   mLua.new_simple_usertype<DistributionPlatform::LeaderboardEntry>
+   (
+      "LeaderboardEntry"
+      , "mPosition", &DistributionPlatform::LeaderboardEntry::mPosition
+      , "mScore", &DistributionPlatform::LeaderboardEntry::mScore
+      , "getUserName", &DistributionPlatform::LeaderboardEntry::getUserName
+   );
    mLua.new_simple_usertype<DistributionPlatform>
    (
       "DistributionPlatform"
       , "getInstance", &DistributionPlatform::getInstance
       , "getUserName", &DistributionPlatform::getUserName
       , "updateLeaderboardScore", &DistributionPlatform::updateLeaderboardScore
+      , "resetLeaderboard", &DistributionPlatform::resetLeaderboard
+      , "requestLeaderboardScores", &DistributionPlatform::requestLeaderboardScores
+      , "requestLeaderboardScoresAroundUser", &DistributionPlatform::requestLeaderboardScoresAroundUser
+      , "getLeaderboardEntriesCount", &DistributionPlatform::getLeaderboardEntriesCount
+      , "getLeaderboardEntry", &DistributionPlatform::getLeaderboardEntry
    );
 
    //

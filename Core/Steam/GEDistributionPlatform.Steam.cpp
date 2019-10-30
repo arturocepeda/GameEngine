@@ -100,8 +100,12 @@ public:
 };
 
 SteamCallResult<LeaderboardFindResult_t> gCallResultFindLeaderboard;
+SteamCallResult<LeaderboardScoresDownloaded_t> gCallResultDownloadLeaderboardEntries;
 
 
+//
+//  DistributionPlatform
+//
 bool DistributionPlatform::init() const
 {
    const bool success = SteamAPI_Init();
@@ -129,9 +133,9 @@ const char* DistributionPlatform::getUserName() const
    return SteamFriends()->GetPersonaName();
 }
 
-void DistributionPlatform::updateLeaderboardScore(const char* pLeaderboardName, uint32_t pScore)
+void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore)
 {
-   SteamAPICall_t apiCall = SteamUserStats()->FindLeaderboard(pLeaderboardName);
+   SteamAPICall_t apiCall = SteamUserStats()->FindLeaderboard(pLeaderboardName.getString());
 
    gCallResultFindLeaderboard.Set(apiCall, [pScore](LeaderboardFindResult_t* pResult, bool pIOFailure)
    {
@@ -143,6 +147,127 @@ void DistributionPlatform::updateLeaderboardScore(const char* pLeaderboardName, 
             k_ELeaderboardUploadScoreMethodKeepBest,
             (int32_t)pScore, nullptr, 0
          );
+      }
+   });
+}
+
+void DistributionPlatform::requestLeaderboardScores(const ObjectName& pLeaderboardName, uint16_t pFirstPosition, uint16_t pLastPosition)
+{
+   size_t leaderboardIndex = 0u;
+   bool leaderboardFound = false;
+
+   for(size_t i = 0u; i < mLeaderboards.size(); i++)
+   {
+      if(mLeaderboards[i].mLeaderboardName == pLeaderboardName)
+      {
+         leaderboardIndex = i;
+         leaderboardFound = true;
+         break;
+      }
+   }
+
+   if(!leaderboardFound)
+   {
+      mLeaderboards.emplace_back();
+      leaderboardIndex = mLeaderboards.size() - 1u;
+      mLeaderboards[leaderboardIndex].mLeaderboardName = pLeaderboardName;
+   }
+
+   SteamAPICall_t apiCall = SteamUserStats()->FindLeaderboard(pLeaderboardName.getString());
+
+   gCallResultFindLeaderboard.Set(apiCall, [this, leaderboardIndex, pFirstPosition, pLastPosition](LeaderboardFindResult_t* pResult, bool pIOFailure)
+   {
+      if(!pIOFailure && pResult->m_bLeaderboardFound)
+      {
+         SteamAPICall_t apiCall =
+            SteamUserStats()->DownloadLeaderboardEntries(pResult->m_hSteamLeaderboard, k_ELeaderboardDataRequestGlobal, (int)pFirstPosition, (int)pLastPosition);
+
+         gCallResultDownloadLeaderboardEntries.Set(apiCall, [this, leaderboardIndex](LeaderboardScoresDownloaded_t* pResult, bool pIOFailure)
+         {
+            if(!pIOFailure && pResult->m_cEntryCount > 0)
+            {
+               for(int i = 0; i < pResult->m_cEntryCount; i++)
+               {
+                  LeaderboardEntry_t steamLeaderboardEntry;
+                  SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, i, &steamLeaderboardEntry, nullptr, 0);                  
+                  const char* userName = SteamFriends()->GetFriendPersonaName(steamLeaderboardEntry.m_steamIDUser);
+
+                  LeaderboardEntry leaderboardEntry;
+                  leaderboardEntry.mUserName.assign(userName);
+                  leaderboardEntry.mPosition = (uint16_t)steamLeaderboardEntry.m_nGlobalRank;
+                  leaderboardEntry.mScore = (uint32_t)steamLeaderboardEntry.m_nScore;
+                  mLeaderboards[leaderboardIndex].mLeaderboardEntries.push_back(leaderboardEntry);
+               }
+
+               std::sort(mLeaderboards[leaderboardIndex].mLeaderboardEntries.begin(), mLeaderboards[leaderboardIndex].mLeaderboardEntries.end(),
+               [](const LeaderboardEntry& pEntry1, const LeaderboardEntry& pEntry2) -> bool
+               {
+                  return pEntry1.mPosition < pEntry2.mPosition;
+               });
+            }
+         });
+      }
+   });
+}
+
+void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName& pLeaderboardName, uint16_t pPositionsCount)
+{
+   size_t leaderboardIndex = 0u;
+   bool leaderboardFound = false;
+
+   for(size_t i = 0u; i < mLeaderboards.size(); i++)
+   {
+      if(mLeaderboards[i].mLeaderboardName == pLeaderboardName)
+      {
+         leaderboardIndex = i;
+         leaderboardFound = true;
+         break;
+      }
+   }
+
+   if(!leaderboardFound)
+   {
+      mLeaderboards.emplace_back();
+      leaderboardIndex = mLeaderboards.size() - 1u;
+      mLeaderboards[leaderboardIndex].mLeaderboardName = pLeaderboardName;
+   }
+
+   SteamAPICall_t apiCall = SteamUserStats()->FindLeaderboard(pLeaderboardName.getString());
+
+   gCallResultFindLeaderboard.Set(apiCall, [this, leaderboardIndex, pPositionsCount](LeaderboardFindResult_t* pResult, bool pIOFailure)
+   {
+      if(!pIOFailure && pResult->m_bLeaderboardFound)
+      {
+         const int first = -((int)pPositionsCount);
+         const int last = (int)pPositionsCount;
+
+         SteamAPICall_t apiCall =
+            SteamUserStats()->DownloadLeaderboardEntries(pResult->m_hSteamLeaderboard, k_ELeaderboardDataRequestGlobalAroundUser, first, last);
+
+         gCallResultDownloadLeaderboardEntries.Set(apiCall, [this, leaderboardIndex](LeaderboardScoresDownloaded_t* pResult, bool pIOFailure)
+         {
+            if(!pIOFailure && pResult->m_cEntryCount > 0)
+            {
+               for(int i = 0; i < pResult->m_cEntryCount; i++)
+               {
+                  LeaderboardEntry_t steamLeaderboardEntry;
+                  SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, i, &steamLeaderboardEntry, nullptr, 0);                  
+                  const char* userName = SteamFriends()->GetFriendPersonaName(steamLeaderboardEntry.m_steamIDUser);
+
+                  LeaderboardEntry leaderboardEntry;
+                  leaderboardEntry.mUserName.assign(userName);
+                  leaderboardEntry.mPosition = (uint16_t)steamLeaderboardEntry.m_nGlobalRank;
+                  leaderboardEntry.mScore = (uint32_t)steamLeaderboardEntry.m_nScore;
+                  mLeaderboards[leaderboardIndex].mLeaderboardEntries.push_back(leaderboardEntry);
+               }
+
+               std::sort(mLeaderboards[leaderboardIndex].mLeaderboardEntries.begin(), mLeaderboards[leaderboardIndex].mLeaderboardEntries.end(),
+               [](const LeaderboardEntry& pEntry1, const LeaderboardEntry& pEntry2) -> bool
+               {
+                  return pEntry1.mPosition < pEntry2.mPosition;
+               });
+            }
+         });
       }
    });
 }

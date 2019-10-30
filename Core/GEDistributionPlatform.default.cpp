@@ -34,6 +34,14 @@ const char* DistributionPlatform::getUserName() const
    return defaultUserName;
 }
 
-void DistributionPlatform::updateLeaderboardScore(const char* pLeaderboardName, uint32_t pScore)
+void DistributionPlatform::updateLeaderboardScore(const ObjectName&, uint32_t)
+{
+}
+
+void DistributionPlatform::requestLeaderboardScores(const ObjectName&, uint16_t, uint16_t)
+{
+}
+
+void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName&, uint16_t)
 {
 }
