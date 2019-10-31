@@ -196,7 +196,7 @@ void DistributionPlatform::requestLeaderboardScores(const ObjectName& pLeaderboa
                   leaderboardEntry.mUserName.assign(userName);
                   leaderboardEntry.mPosition = (uint16_t)steamLeaderboardEntry.m_nGlobalRank;
                   leaderboardEntry.mScore = (uint32_t)steamLeaderboardEntry.m_nScore;
-                  mLeaderboards[leaderboardIndex].mLeaderboardEntries.push_back(leaderboardEntry);
+                  addLeaderboardEntry(leaderboardIndex, leaderboardEntry);
                }
 
                std::sort(mLeaderboards[leaderboardIndex].mLeaderboardEntries.begin(), mLeaderboards[leaderboardIndex].mLeaderboardEntries.end(),
@@ -258,7 +258,7 @@ void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName& 
                   leaderboardEntry.mUserName.assign(userName);
                   leaderboardEntry.mPosition = (uint16_t)steamLeaderboardEntry.m_nGlobalRank;
                   leaderboardEntry.mScore = (uint32_t)steamLeaderboardEntry.m_nScore;
-                  mLeaderboards[leaderboardIndex].mLeaderboardEntries.push_back(leaderboardEntry);
+                  addLeaderboardEntry(leaderboardIndex, leaderboardEntry);
                }
 
                std::sort(mLeaderboards[leaderboardIndex].mLeaderboardEntries.begin(), mLeaderboards[leaderboardIndex].mLeaderboardEntries.end(),

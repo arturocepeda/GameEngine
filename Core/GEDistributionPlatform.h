@@ -36,6 +36,8 @@ namespace GE { namespace Core
    private:
       GESTLVector(Leaderboard) mLeaderboards;
 
+      void addLeaderboardEntry(size_t pLeaderboardIndex, const LeaderboardEntry& pEntry);
+
    public:
       bool init() const;
       void update() const;
