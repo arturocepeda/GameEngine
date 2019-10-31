@@ -530,10 +530,21 @@ Entity* Scene::addPrefab(const char* PrefabName, const ObjectName& EntityName, E
    return cEntity;
 }
 
-void Scene::setupEntityFromPrefab(Entity* cEntity, const char* PrefabName)
+void Scene::setupEntityFromPrefab(Entity* pEntity, const char* pPrefabName, bool pIncludeRootTransform)
 {
+   Vector3 cachedPosition;
+   Rotation cachedRotation;
+   Vector3 cachedScale;
+
+   if(!pIncludeRootTransform)
+   {
+      cachedPosition = pEntity->getComponent<ComponentTransform>()->getPosition();
+      cachedRotation = pEntity->getComponent<ComponentTransform>()->getRotation();
+      cachedScale = pEntity->getComponent<ComponentTransform>()->getScale();
+   }
+
    char sFilename[64];
-   sprintf(sFilename, "%s.prefab", PrefabName);
+   sprintf(sFilename, "%s.prefab", pPrefabName);
    ContentData cContent;
 
    if(Application::ContentType == ApplicationContentType::Xml)
@@ -542,7 +553,7 @@ void Scene::setupEntityFromPrefab(Entity* cEntity, const char* PrefabName)
       pugi::xml_document xml;
       xml.load_buffer(cContent.getData(), cContent.getDataSize());
       pugi::xml_node xmlRoot = xml.child("Prefab");
-      setupEntity(xmlRoot, cEntity);
+      setupEntity(xmlRoot, pEntity);
    }
    else
    {
@@ -550,10 +561,17 @@ void Scene::setupEntityFromPrefab(Entity* cEntity, const char* PrefabName)
       ContentDataMemoryBuffer sMemoryBuffer(cContent);
       std::istream sStream(&sMemoryBuffer);
       Value::fromStream(ValueType::ObjectName, sStream);
-      setupEntity(sStream, cEntity);
+      setupEntity(sStream, pEntity);
    }
 
-   cEntity->setPrefabName(ObjectName(PrefabName));
+   if(!pIncludeRootTransform)
+   {
+      pEntity->getComponent<ComponentTransform>()->setPosition(cachedPosition);
+      pEntity->getComponent<ComponentTransform>()->setRotation(cachedRotation);
+      pEntity->getComponent<ComponentTransform>()->setScale(cachedScale);
+   }
+
+   pEntity->setPrefabName(ObjectName(pPrefabName));
 }
 
 SceneBackgroundMode Scene::getBackgroundMode() const

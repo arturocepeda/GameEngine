@@ -990,6 +990,7 @@ void Environment::registerTypes()
       , "cloneEntity", &Scene::cloneEntity
       , "removeEntity", (bool (Scene::*)(const ObjectName&))&Scene::removeEntity
       , "renameEntity", &Scene::renameEntity
+      , "setupEntityFromPrefab", &Scene::setupEntityFromPrefab
       , sol::base_classes, sol::bases<Serializable>()
    );
    mLua.new_simple_usertype<Entity>
