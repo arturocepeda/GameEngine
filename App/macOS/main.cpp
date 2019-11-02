@@ -23,6 +23,7 @@
 #include "Core/GEStateManager.h"
 #include "Core/GETaskManager.h"
 #include "Core/GEAllocator.h"
+#include "Core/GEDistributionPlatform.h"
 
 #include "Rendering/OpenGL/GEOpenGLES20.h"
 #include "Rendering/OpenGL/GERenderSystemES20.h"
@@ -73,6 +74,12 @@ int main(int argc, char* argv[])
     Application::ContentType = ApplicationContentType::Bin;
 #endif
 
+    // initialize the distribution platform
+    DistributionPlatform distributionPlatform;
+   
+    if(!distributionPlatform.init())
+       return 1;
+   
     // initialize the application
     StateManager cStateManager;
     Application::startUp(initAppModule);
