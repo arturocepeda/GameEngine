@@ -16,6 +16,7 @@
 #include "GEDevice.h"
 #include "GEPlatform.h"
 #include "GETime.h"
+#include "GESettings.h"
 #include "GEDistributionPlatform.h"
 
 #include "Input/GEInputSystem.h"
@@ -70,6 +71,8 @@ void Application::startUp(void (*pInitAppModuleFunction)())
 {
    Allocator::init();
    Device::init();
+
+   Settings::getInstance()->load();
 
    Device::ContentHashPath = ContentType == ApplicationContentType::Bin;
 

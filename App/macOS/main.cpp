@@ -48,6 +48,7 @@ double dTimeNow = 0.0;
 // engine objects
 RenderSystem* cRender = 0;          // rendering system
 AudioSystem* cAudio = 0;            // audio system
+AppSettings gSettings;              // settings
 
 // mouse
 int iMouseX = 0;
@@ -81,13 +82,16 @@ int main(int argc, char* argv[])
     iFullscreenWidth = (int)cgBounds.size.width;
     iFullscreenHeight = (int)cgBounds.size.height;
 
-#if defined (GE_FULLSCREEN_MODE)
-    Device::ScreenWidth = iFullscreenWidth;
-    Device::ScreenHeight = iFullscreenHeight;
-#else
-    Device::ScreenWidth = 1024;
-    Device::ScreenHeight = 600;
-#endif
+    if(gSettings.getFullscreen())
+    {
+       Device::ScreenWidth = iFullscreenWidth;
+       Device::ScreenHeight = iFullscreenHeight;
+    }
+    else
+    {
+       Device::ScreenWidth = (int)gSettings.getWindowSizeX();
+       Device::ScreenHeight = (int)gSettings.getWindowSizeY();
+    }
 
     cPixelToScreenX = Allocator::alloc<Scaler>();
     GEInvokeCtor(Scaler, cPixelToScreenX)(0.0f, (float)Device::ScreenWidth, -1.0f, 1.0f);
@@ -119,10 +123,11 @@ int main(int argc, char* argv[])
     glutInitWindowSize(Device::ScreenWidth, Device::ScreenHeight);
     glutCreateWindow(GE_APP_NAME);
 
-#if defined (GE_FULLSCREEN_MODE)
-    glutFullScreen();
-    CGDisplayHideCursor(kCGDirectMainDisplay);
-#endif
+    if(gSettings.getFullscreen())
+    {
+       glutFullScreen();
+       CGDisplayHideCursor(kCGDirectMainDisplay);
+    }
 
     cRender = Allocator::alloc<RenderSystemES20>();
     GEInvokeCtor(RenderSystemES20, cRender)();
@@ -136,7 +141,7 @@ int main(int argc, char* argv[])
     cTimer.start();
     Time::reset();
 
-    dTimeInterval = 1000000.0 / GE_FPS;
+    dTimeInterval = 1000000.0 / gSettings.getTargetFPS();
     dTimeDelta = 0.0;
     dTimeBefore = 0.0;
     
@@ -180,7 +185,7 @@ void render()
       float fTimeDelta = (float)dTimeDelta * 0.000001f;
 
       if(fTimeDelta > 1.0f)
-         fTimeDelta = 1.0f / GE_FPS;
+         fTimeDelta = 1.0f / gSettings.getTargetFPS();
 
       Time::setDelta(fTimeDelta);
 
@@ -261,15 +266,13 @@ void mouseMove(int x, int y)
 
    if(bMouseLeftButton)
    {
-#if !defined (GE_FULLSCREEN_MODE)
-      if(x < 0 || y < 0 || x >= Device::ScreenWidth || y >= Device::ScreenHeight)
-      {
-         mouseButton(GLUT_LEFT_BUTTON, GLUT_UP, x, y);
-      }
-      else
-#endif
+      if(gSettings.getFullscreen())
       {
          InputSystem::getInstance()->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
+      }
+      else if(x < 0 || y < 0 || x >= Device::ScreenWidth || y >= Device::ScreenHeight)
+      {
+         mouseButton(GLUT_LEFT_BUTTON, GLUT_UP, x, y);
       }
    }
 

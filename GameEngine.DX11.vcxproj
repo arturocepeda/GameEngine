@@ -45,6 +45,7 @@
     <ClCompile Include="Core\GEPhysics.cpp" />
     <ClCompile Include="Core\GERand.cpp" />
     <ClCompile Include="Core\GESerializable.cpp" />
+    <ClCompile Include="Core\GESettings.cpp" />
     <ClCompile Include="Core\GEState.cpp" />
     <ClCompile Include="Core\GEStateManager.cpp" />
     <ClCompile Include="Core\GETaskManager.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Core\GEProfiler.h" />
     <ClInclude Include="Core\GERand.h" />
     <ClInclude Include="Core\GESerializable.h" />
+    <ClInclude Include="Core\GESettings.h" />
     <ClInclude Include="Core\GESingleton.h" />
     <ClInclude Include="Core\GEState.h" />
     <ClInclude Include="Core\GEStateManager.h" />

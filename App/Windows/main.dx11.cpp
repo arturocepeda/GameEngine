@@ -61,6 +61,7 @@ HWND hWnd;
 // engine objects
 RenderSystem* cRender;              // rendering system
 AudioSystem* cAudio;                // audio system
+AppSettings gSettings;              // settings
 bool bEnd;                          // loop ending flag
 
 // mouse
@@ -72,234 +73,234 @@ GE::Vector2 vMouseLastPosition(0.0f, 0.0f);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, int iCmdShow)
 {
-    Application::Name = GE_APP_NAME;
-    Application::ID = GE_APP_ID;
-    Application::VersionString = GE_VERSION_STRING;
-    Application::VersionNumber = GE_VERSION_NUMBER;
+   Application::Name = GE_APP_NAME;
+   Application::ID = GE_APP_ID;
+   Application::VersionString = GE_VERSION_STRING;
+   Application::VersionNumber = GE_VERSION_NUMBER;
     
 #if defined (GE_BINARY_CONTENT)
-    Application::ContentType = ApplicationContentType::Bin;
+   Application::ContentType = ApplicationContentType::Bin;
 #endif
 
-    // initialize the distribution platform
-    DistributionPlatform distributionPlatform;
+   // initialize the distribution platform
+   DistributionPlatform distributionPlatform;
 
-    if(!distributionPlatform.init())
-       return 1;
+   if(!distributionPlatform.init())
+      return 1;
 
-    // initialize the application
-    StateManager cStateManager;
-    Application::startUp(initAppModule);
+   // initialize the application
+   StateManager cStateManager;
+   Application::startUp(initAppModule);
 
-    // screen size
-    int iFullscreenWidth = GetSystemMetrics(SM_CXSCREEN);
-    int iFullscreenHeight = GetSystemMetrics(SM_CYSCREEN);
+   // screen size
+   const int fullscreenWidth = GetSystemMetrics(SM_CXSCREEN);
+   const int fullscreenHeight = GetSystemMetrics(SM_CYSCREEN);
+    
+   if(gSettings.getFullscreen())
+   {
+      Device::ScreenWidth = fullscreenWidth;
+      Device::ScreenHeight = fullscreenHeight;
+   }
+   else
+   {
+      Device::ScreenWidth = (int)gSettings.getWindowSizeX();
+      Device::ScreenHeight = (int)gSettings.getWindowSizeY();
+   }
 
-#if defined (GE_FULLSCREEN_MODE)
-    Device::ScreenWidth = iFullscreenWidth;
-    Device::ScreenHeight = iFullscreenHeight;
-#else
-    Device::ScreenWidth = 1024;
-    Device::ScreenHeight = 600;
-#endif
+   cPixelToScreenX = Allocator::alloc<Scaler>();
+   GEInvokeCtor(Scaler, cPixelToScreenX)(0.0f, (float)Device::ScreenWidth, -1.0f, 1.0f);
+   cPixelToScreenY = Allocator::alloc<Scaler>();
+   GEInvokeCtor(Scaler, cPixelToScreenY)
+      (0.0f, (float)Device::ScreenHeight, (float)Device::getAspectRatio(), (float)-Device::getAspectRatio());
 
-    cPixelToScreenX = Allocator::alloc<Scaler>();
-    GEInvokeCtor(Scaler, cPixelToScreenX)(0.0f, (float)Device::ScreenWidth, -1.0f, 1.0f);
-    cPixelToScreenY = Allocator::alloc<Scaler>();
-    GEInvokeCtor(Scaler, cPixelToScreenY)
-       (0.0f, (float)Device::ScreenHeight, (float)Device::getAspectRatio(), (float)-Device::getAspectRatio());
+   int iWindowWidth = Device::ScreenWidth;
+   int iWindowHeight = Device::ScreenHeight;
 
-    int iWindowWidth = Device::ScreenWidth;
-    int iWindowHeight = Device::ScreenHeight;
+   if(!gSettings.getFullscreen())
+   {
+      int iWindowBorderSize = 8;
+      int iWindowCaptionSize = GetSystemMetrics(SM_CYSMCAPTION);
 
-#if !defined (GE_FULLSCREEN_MODE)
-    int iWindowBorderSize = 8;
-    int iWindowCaptionSize = GetSystemMetrics(SM_CYSMCAPTION);
+      iWindowWidth += (iWindowBorderSize * 2);
+      iWindowHeight += iWindowCaptionSize + (iWindowBorderSize * 2);
+   }
 
-    iWindowWidth += (iWindowBorderSize * 2);
-    iWindowHeight += iWindowCaptionSize + (iWindowBorderSize * 2);
-#endif
+   // system language
+   char sLanguageName[32];
+   LCID lcidUserDefault = GetUserDefaultLCID();
+   GetLocaleInfo(lcidUserDefault, LOCALE_SENGLISHLANGUAGENAME, sLanguageName, sizeof(sLanguageName) / sizeof(TCHAR));
 
-    // system language
-    char sLanguageName[32];
-    LCID lcidUserDefault = GetUserDefaultLCID();
-    GetLocaleInfo(lcidUserDefault, LOCALE_SENGLISHLANGUAGENAME, sLanguageName, sizeof(sLanguageName) / sizeof(TCHAR));
+   if(strcmp(sLanguageName, "English") == 0)
+      Device::Language = SystemLanguage::English;
+   else if(strcmp(sLanguageName, "Spanish") == 0)
+      Device::Language = SystemLanguage::Spanish;
+   else if(strcmp(sLanguageName, "German") == 0)
+      Device::Language = SystemLanguage::German;
 
-    if(strcmp(sLanguageName, "English") == 0)
-       Device::Language = SystemLanguage::English;
-    else if(strcmp(sLanguageName, "Spanish") == 0)
-       Device::Language = SystemLanguage::Spanish;
-    else if(strcmp(sLanguageName, "German") == 0)
-       Device::Language = SystemLanguage::German;
+   // class properties
+   WNDCLASSEX wndClass;
+   wndClass.cbSize = sizeof(wndClass);
+   wndClass.style = CS_HREDRAW | CS_VREDRAW;
+   wndClass.lpfnWndProc = WndProc;
+   wndClass.cbClsExtra = 0;
+   wndClass.cbWndExtra = 0;
+   wndClass.hInstance = hInstance;
+   wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+   wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+   wndClass.hbrBackground = (HBRUSH)COLOR_WINDOW;
+   wndClass.lpszMenuName = NULL;
+   wndClass.lpszClassName = GE_APP_NAME;
+   wndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
-    // class properties
-    WNDCLASSEX wndClass;
-    wndClass.cbSize = sizeof(wndClass);
-    wndClass.style = CS_HREDRAW | CS_VREDRAW;
-    wndClass.lpfnWndProc = WndProc;
-    wndClass.cbClsExtra = 0;
-    wndClass.cbWndExtra = 0;
-    wndClass.hInstance = hInstance;
-    wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wndClass.hbrBackground = (HBRUSH)COLOR_WINDOW;
-    wndClass.lpszMenuName = NULL;
-    wndClass.lpszClassName = GE_APP_NAME;
-    wndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+   // register the class
+   RegisterClassExA(&wndClass);
 
-    // register the class
-    RegisterClassExA(&wndClass);
+   // create the main window
+   GE::uint iWindowPositionX = (fullscreenWidth / 2) - (iWindowWidth / 2);
+   GE::uint iWindowPositionY = (fullscreenHeight / 2) - (iWindowHeight / 2);
 
-    // create the main window
-    GE::uint iWindowPositionX = (iFullscreenWidth / 2) - (iWindowWidth / 2);
-    GE::uint iWindowPositionY = (iFullscreenHeight / 2) - (iWindowHeight / 2);
+   hWnd = CreateWindowExA(NULL, GE_APP_NAME, GE_APP_NAME, WS_CAPTION | WS_SYSMENU, iWindowPositionX, iWindowPositionY, 
+                        iWindowWidth, iWindowHeight, NULL, NULL, hInstance, NULL);
+   ShowWindow(hWnd, iCmdShow);
+   UpdateWindow(hWnd);
 
-    hWnd = CreateWindowExA(NULL, GE_APP_NAME, GE_APP_NAME, WS_CAPTION | WS_SYSMENU, iWindowPositionX, iWindowPositionY, 
-                           iWindowWidth, iWindowHeight, NULL, NULL, hInstance, NULL);
-    ShowWindow(hWnd, iCmdShow);
-    UpdateWindow(hWnd);
-
-    // initialize rendering and sound systems
-    cRender = Allocator::alloc<RenderSystemDX11>();
-#if defined (GE_FULLSCREEN_MODE)
-    GEInvokeCtor(RenderSystemDX11, cRender)(hWnd, false);
-#else
-    GEInvokeCtor(RenderSystemDX11, cRender)(hWnd, true);
-#endif
-    cAudio = Allocator::alloc<AudioSystem>();
-    GEInvokeCtor(AudioSystem, cAudio);
-    cAudio->init();
-    cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
+   // initialize rendering and sound systems
+   cRender = Allocator::alloc<RenderSystemDX11>();
+   GEInvokeCtor(RenderSystemDX11, cRender)(hWnd, !gSettings.getFullscreen());
+   cAudio = Allocator::alloc<AudioSystem>();
+   GEInvokeCtor(AudioSystem, cAudio);
+   cAudio->init();
+   cAudio->setListenerPosition(GE::Vector3(0.0f, 0.0f, 0.0f));
 
 #ifndef _DEBUG
-    // hide the mouse pointer
-    ShowCursor(false);
+   // hide the mouse pointer
+   ShowCursor(false);
 #endif
 
-    // timer
-    Timer cTimer;
-    cTimer.start();
-    Time::reset();
+   // timer
+   Timer cTimer;
+   cTimer.start();
+   Time::reset();
 
-    bEnd = false;
+   bEnd = false;
 
-    double dTimeInterval = 1000000.0 / GE_FPS;
-    double dTimeDelta = 0.0;
-    double dTimeBefore = 0.0;
-    double dTimeNow;
+   double dTimeInterval = 1000000.0 / gSettings.getTargetFPS();
+   double dTimeDelta = 0.0;
+   double dTimeBefore = 0.0;
+   double dTimeNow;
 
-    MSG iMsg;
+   MSG iMsg;
 
 #if defined (GE_MOUSE_INFINITY)
-    bool bMousePositionSet;
+   bool bMousePositionSet;
 #endif
 
-    // create task manager
-    TaskManager* cTaskManager = Allocator::alloc<TaskManager>();
-    GEInvokeCtor(TaskManager, cTaskManager);
+   // create task manager
+   TaskManager* cTaskManager = Allocator::alloc<TaskManager>();
+   GEInvokeCtor(TaskManager, cTaskManager);
 
-    // game loop
-    while(!bEnd)
-    {
-        // input
-        while(PeekMessage(&iMsg, NULL, 0, 0, PM_REMOVE)) 
-        {
-            if(iMsg.message == WM_CLOSE || iMsg.message == WM_QUIT) 
-            {
-                bEnd = true;
-            }
-            else 
-            {
-                TranslateMessage(&iMsg);
-                DispatchMessage(&iMsg);
-            }
-        }
+   // game loop
+   while(!bEnd)
+   {
+      // input
+      while(PeekMessage(&iMsg, NULL, 0, 0, PM_REMOVE)) 
+      {
+         if(iMsg.message == WM_CLOSE || iMsg.message == WM_QUIT) 
+         {
+               bEnd = true;
+         }
+         else 
+         {
+               TranslateMessage(&iMsg);
+               DispatchMessage(&iMsg);
+         }
+      }
 
-        GetCursorPos(&pMouse);
+      GetCursorPos(&pMouse);
 
 #if defined (GE_MOUSE_INFINITY)
-        bMousePositionSet = false;
+      bMousePositionSet = false;
 
-        if(pMouse.x < GE_MOUSE_CHECK_MARGIN)
-        {
-            pMouse.x = iFullscreenWidth - GE_MOUSE_SET_MARGIN;
-            bMousePositionSet = true;
-        }
-        else if(pMouse.x >= (iFullscreenWidth - GE_MOUSE_CHECK_MARGIN))
-        {
-            pMouse.x = GE_MOUSE_SET_MARGIN;
-            bMousePositionSet = true;
-        }
-        if(pMouse.y < GE_MOUSE_CHECK_MARGIN)
-        {
-            pMouse.y = iFullscreenHeight - GE_MOUSE_SET_MARGIN;
-            bMousePositionSet = true;
-        }
-        else if(pMouse.y >= (iFullscreenHeight - GE_MOUSE_CHECK_MARGIN))
-        {
-            pMouse.y = GE_MOUSE_SET_MARGIN;
-            bMousePositionSet = true;
-        }          
+      if(pMouse.x < GE_MOUSE_CHECK_MARGIN)
+      {
+         pMouse.x = iFullscreenWidth - GE_MOUSE_SET_MARGIN;
+         bMousePositionSet = true;
+      }
+      else if(pMouse.x >= (iFullscreenWidth - GE_MOUSE_CHECK_MARGIN))
+      {
+         pMouse.x = GE_MOUSE_SET_MARGIN;
+         bMousePositionSet = true;
+      }
+      if(pMouse.y < GE_MOUSE_CHECK_MARGIN)
+      {
+         pMouse.y = iFullscreenHeight - GE_MOUSE_SET_MARGIN;
+         bMousePositionSet = true;
+      }
+      else if(pMouse.y >= (iFullscreenHeight - GE_MOUSE_CHECK_MARGIN))
+      {
+         pMouse.y = GE_MOUSE_SET_MARGIN;
+         bMousePositionSet = true;
+      }          
 
-        if(bMousePositionSet)
-        {
-            SetCursorPos(pMouse.x, pMouse.y);
-            InputSystem::getInstance()->inputMouse(pMouse.x, pMouse.y);
-        }
+      if(bMousePositionSet)
+      {
+         SetCursorPos(pMouse.x, pMouse.y);
+         InputSystem::getInstance()->inputMouse(pMouse.x, pMouse.y);
+      }
 #endif
 
-        GE::Vector2 vMouseCurrentPosition = GetMouseScreenPosition();
+      GE::Vector2 vMouseCurrentPosition = GetMouseScreenPosition();
 
-        if(fabs(vMouseCurrentPosition.X - vMouseLastPosition.X) > GE_EPSILON ||
-           fabs(vMouseCurrentPosition.Y - vMouseLastPosition.Y) > GE_EPSILON)
-        {
-           InputSystem::getInstance()->inputMouse(vMouseCurrentPosition);
+      if(fabs(vMouseCurrentPosition.X - vMouseLastPosition.X) > GE_EPSILON ||
+         fabs(vMouseCurrentPosition.Y - vMouseLastPosition.Y) > GE_EPSILON)
+      {
+         InputSystem::getInstance()->inputMouse(vMouseCurrentPosition);
 
-           if(bMouseLeftButton)
-           {
-              InputSystem::getInstance()->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
-           }
+         if(bMouseLeftButton)
+         {
+            InputSystem::getInstance()->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
+         }
 
-           vMouseLastPosition = vMouseCurrentPosition;
-        }
+         vMouseLastPosition = vMouseCurrentPosition;
+      }
 
-        // update and render
-        dTimeNow = cTimer.getTime();
-        dTimeDelta = dTimeNow - dTimeBefore;
+      // update and render
+      dTimeNow = cTimer.getTime();
+      dTimeDelta = dTimeNow - dTimeBefore;
 
-        if(dTimeDelta >= dTimeInterval)
-        {
-            GEProfilerFrame("MainThread");
+      if(dTimeDelta >= dTimeInterval)
+      {
+         GEProfilerFrame("MainThread");
 
-            dTimeBefore = dTimeNow;
+         dTimeBefore = dTimeNow;
 
-            float fTimeDelta = (float)dTimeDelta * 0.000001f;
+         float fTimeDelta = (float)dTimeDelta * 0.000001f;
 
-            if(fTimeDelta > 1.0f)
-               fTimeDelta = 1.0f / GE_FPS;
+         if(fTimeDelta > 1.0f)
+            fTimeDelta = 1.0f / gSettings.getTargetFPS();
 
-            Time::setDelta(fTimeDelta);
+         Time::setDelta(fTimeDelta);
 
-            TaskManager::getInstance()->update();
-            TaskManager::getInstance()->render();
+         TaskManager::getInstance()->update();
+         TaskManager::getInstance()->render();
 
-            bEnd = bEnd || TaskManager::getInstance()->getExitPending();
-        }
-    }
+         bEnd = bEnd || TaskManager::getInstance()->getExitPending();
+      }
+   }
 
-    cStateManager.getActiveState()->deactivate();
-    cStateManager.releaseStates();
+   cStateManager.getActiveState()->deactivate();
+   cStateManager.releaseStates();
 
-    GEInvokeDtor(Scaler, cPixelToScreenX);
-    Allocator::free(cPixelToScreenX);
-    GEInvokeDtor(Scaler, cPixelToScreenY);
-    Allocator::free(cPixelToScreenY);
+   GEInvokeDtor(Scaler, cPixelToScreenX);
+   Allocator::free(cPixelToScreenX);
+   GEInvokeDtor(Scaler, cPixelToScreenY);
+   Allocator::free(cPixelToScreenY);
 
-    Application::shutDown();
+   Application::shutDown();
 
-    distributionPlatform.shutdown();
+   distributionPlatform.shutdown();
 
-    return (int)iMsg.wParam;
+   return (int)iMsg.wParam;
 }
 
 GE::Vector2 GetMouseScreenPosition()
@@ -333,18 +334,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
       vMouseLastPosition = GetMouseScreenPosition();
       InputSystem::getInstance()->inputMouseLeftButton();
       InputSystem::getInstance()->inputTouchBegin(0, vMouseLastPosition);
-#if !defined (GE_FULLSCREEN_MODE)
-      SetCapture(hWnd);
-#endif
+
+      if(!gSettings.getFullscreen())
+         SetCapture(hWnd);
+
       return 0;
 
    case WM_LBUTTONUP:
       bMouseLeftButton = false;
       vMouseLastPosition = GetMouseScreenPosition();
       InputSystem::getInstance()->inputTouchEnd(0, vMouseLastPosition);
-#if !defined (GE_FULLSCREEN_MODE)
-      ReleaseCapture();
-#endif
+
+      if(!gSettings.getFullscreen())
+         ReleaseCapture();
+
       return 0;
 
    case WM_RBUTTONDOWN:
@@ -355,8 +358,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
       InputSystem::getInstance()->inputMouseWheel(GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA);
       return 0;
 
-#if !defined (GE_FULLSCREEN_MODE)
    case WM_MOUSEMOVE:
+      if(!gSettings.getFullscreen())
       {
          RECT rWindow;
          GetWindowRect(hWnd, &rWindow);
@@ -365,7 +368,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
             PostMessage(hWnd, WM_LBUTTONUP, 0, 0);
       }
       return 0;
-#endif
    }
     
    return DefWindowProc(hWnd, iMsg, wParam, lParam);
