@@ -155,6 +155,8 @@ namespace GE { namespace Core
       virtual void saveToStream(std::ostream& Stream) const;
 
       virtual void xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stream);
+
+      static void mergeXmlDescription(pugi::xml_node& pXmlBase, const pugi::xml_node& pXmlDerived);
    };
 
 

@@ -488,6 +488,35 @@ void Serializable::xmlToStream(const pugi::xml_node& XmlNode, std::ostream& Stre
 #endif
 }
 
+void Serializable::mergeXmlDescription(pugi::xml_node& pXmlBase, const pugi::xml_node& pXmlDerived)
+{
+   for(const pugi::xml_node& xmlDerivedNode : pXmlDerived.children())
+   {
+      // Property
+      if(strcmp(xmlDerivedNode.name(), "Property") == 0)
+      {
+         const char* propertyName = xmlDerivedNode.attribute("name").value();
+         pugi::xml_node& xmlBaseProperty = pXmlBase.find_child_by_attribute("Property", "name", propertyName);
+
+         if(xmlBaseProperty.empty())
+         {
+            pXmlBase.append_copy(xmlDerivedNode);
+         }
+         else
+         {
+            xmlBaseProperty.remove_attribute("value");
+            const char* value = xmlDerivedNode.attribute("value").value();
+            xmlBaseProperty.append_attribute("value").set_value(value);
+         }
+      }
+      // Property array element
+      else if(xmlDerivedNode.first_attribute().empty())
+      {
+         pXmlBase.append_copy(xmlDerivedNode);
+      }
+   }
+}
+
 
 //
 //  SerializableArrayElement

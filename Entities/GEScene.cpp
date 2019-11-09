@@ -553,6 +553,29 @@ void Scene::setupEntityFromPrefab(Entity* pEntity, const char* pPrefabName, bool
       pugi::xml_document xml;
       xml.load_buffer(cContent.getData(), cContent.getDataSize());
       pugi::xml_node xmlRoot = xml.child("Prefab");
+
+      pugi::xml_attribute xmlPrefabBase = xmlRoot.attribute("base");
+
+      while(!xmlPrefabBase.empty())
+      {
+         pugi::xml_document xmlDerived;
+         xmlDerived.append_copy(xmlRoot);
+         pugi::xml_node xmlDerivedRoot = xmlDerived.child("Prefab");
+
+         xml.remove_child(xmlRoot);
+
+         const char* prefabBaseName = xmlPrefabBase.value();
+         sprintf(sFilename, "%s.prefab", prefabBaseName);
+
+         Device::readContentFile(ContentType::GenericTextData, "Prefabs", sFilename, "xml", &cContent);
+         xml.load_buffer(cContent.getData(), cContent.getDataSize());
+         xmlRoot = xml.child("Prefab");
+
+         Entity::mergeXmlDescription(xmlRoot, xmlDerivedRoot);
+
+         xmlPrefabBase = xmlRoot.attribute("base");
+      }
+
       setupEntity(xmlRoot, pEntity);
    }
    else

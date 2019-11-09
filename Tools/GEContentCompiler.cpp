@@ -1198,7 +1198,29 @@ void ContentCompiler::packPrefabs()
 
       pugi::xml_document xml;
       xml.load_file(sInputPath);
-      const pugi::xml_node& xmlPrefab = xml.child("Prefab");
+      pugi::xml_node xmlPrefab = xml.child("Prefab");
+
+      pugi::xml_attribute xmlPrefabBase = xmlPrefab.attribute("base");
+
+      while(!xmlPrefabBase.empty())
+      {
+         pugi::xml_document xmlDerived;
+         xmlDerived.append_copy(xmlPrefab);
+         pugi::xml_node xmlDerivedRoot = xmlDerived.child("Prefab");
+
+         xml.remove_child(xmlPrefab);
+
+         const char* prefabBaseName = xmlPrefabBase.value();
+         sprintf(sInputPath, "%s\\Prefabs\\%s.prefab.xml", ContentXmlDirName, prefabBaseName);
+
+         xml.load_file(sInputPath);
+         xmlPrefab = xml.child("Prefab");
+
+         Entity::mergeXmlDescription(xmlPrefab, xmlDerivedRoot);
+
+         xmlPrefabBase = xmlPrefab.attribute("base");
+      }
+
       packEntity(ObjectName::Empty, xmlPrefab, sOutputFile, 0);
 
       sOutputFile.close();

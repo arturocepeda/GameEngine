@@ -190,5 +190,7 @@ namespace GE { namespace Entities
 
       uint8_t getInternalFlags() const;
       void setInternalFlags(uint8_t Flags);
+
+      static void mergeXmlDescription(pugi::xml_node& pXmlBase, const pugi::xml_node& pXmlDerived);
    };
 }}

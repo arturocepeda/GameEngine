@@ -302,3 +302,42 @@ void Entity::setInternalFlags(uint8_t Flags)
 {
    iInternalFlags = Flags;
 }
+
+void Entity::mergeXmlDescription(pugi::xml_node& pXmlBase, const pugi::xml_node& pXmlDerived)
+{
+   Serializable::mergeXmlDescription(pXmlBase, pXmlDerived);
+
+   for(const pugi::xml_node& xmlDerivedNode : pXmlDerived.children())
+   {
+      // Component
+      if(strcmp(xmlDerivedNode.name(), "Component") == 0)
+      {
+         const char* componentType = xmlDerivedNode.attribute("type").value();
+         pugi::xml_node& xmlBaseComponent = pXmlBase.find_child_by_attribute("Component", "type", componentType);
+
+         if(xmlBaseComponent.empty())
+         {
+            pXmlBase.append_copy(xmlDerivedNode);
+         }
+         else
+         {
+            Serializable::mergeXmlDescription(xmlBaseComponent, xmlDerivedNode);
+         }
+      }
+      // Child entity
+      else if(strcmp(xmlDerivedNode.name(), "Entity") == 0)
+      {
+         const char* childName = xmlDerivedNode.attribute("name").value();
+         pugi::xml_node& xmlBaseChild = pXmlBase.find_child_by_attribute("Entity", "name", childName);
+
+         if(xmlBaseChild.empty())
+         {
+            pXmlBase.append_copy(xmlDerivedNode);
+         }
+         else
+         {
+            mergeXmlDescription(xmlBaseChild, xmlDerivedNode);
+         }
+      }
+   }
+}
