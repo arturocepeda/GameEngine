@@ -247,7 +247,7 @@ void AudioSystem::init(uint32_t pChannelsCount, uint32_t pBuffersCount)
 
 void AudioSystem::update()
 {
-   const float deltaTime = Time::getDefaultClock()->getDelta();
+   const float deltaTime = Time::getDelta();
 
    // audio system update
    mTimeSinceLastUpdate += deltaTime;

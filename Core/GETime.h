@@ -22,8 +22,8 @@ namespace GE { namespace Core
    private:
       static const float MaxDelta;
 
-      float fDelta;
-      float fTimeFactor;
+      float mDelta;
+      float mTimeFactor;
 
    public:
       static const ObjectName TypeName;
@@ -33,11 +33,11 @@ namespace GE { namespace Core
       Clock(const ObjectName& Name, const ObjectName& GroupName);
       ~Clock();
 
-      float getDelta() const { return fDelta < MaxDelta ? fDelta : MaxDelta; }
-      float getTimeFactor() const { return fTimeFactor; }
+      float getDelta() const { return mDelta < MaxDelta ? mDelta : MaxDelta; }
+      float getTimeFactor() const { return mTimeFactor; }
 
-      void setDelta(float Delta) { fDelta = Delta * fTimeFactor; }
-      void setTimeFactor(float TimeFactor) { fTimeFactor = TimeFactor; }
+      void setDelta(float pDelta) { mDelta = pDelta * mTimeFactor; }
+      void setTimeFactor(float pTimeFactor) { mTimeFactor = pTimeFactor; }
    };
 
 
@@ -46,19 +46,21 @@ namespace GE { namespace Core
    private:
       static const ObjectName DefaultClockName;
 
-      static float fElapsed;
+      static float mDelta;
+      static float mElapsed;
       static ObjectManager<Clock>* mClocks;
 
    public:
       static void init();
       static void release();
 
+      static float getDelta();
       static float getElapsed();
 
       static Clock* getDefaultClock();
       static Clock* getClock(const ObjectName& pClockName);
 
       static void reset();
-      static void setDelta(float DeltaTime);
+      static void setDelta(float pDeltaTime);
    };
 }}

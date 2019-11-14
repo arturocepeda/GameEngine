@@ -29,13 +29,13 @@ const float Clock::MaxDelta = 0.1f;
 
 Clock::Clock(const ObjectName& Name, const ObjectName& GroupName)
    : Resource(Name, GroupName, TypeName)
-   , fDelta(0.0f)
-   , fTimeFactor(1.0f)
+   , mDelta(0.0f)
+   , mTimeFactor(1.0f)
 {
    GERegisterProperty(Float, TimeFactor);
 
-   registerAction("Run", [this] { fTimeFactor = 1.0f; });
-   registerAction("Stop", [this] { fTimeFactor = 0.0f; });
+   registerAction("Run", [this] { mTimeFactor = 1.0f; });
+   registerAction("Stop", [this] { mTimeFactor = 0.0f; });
 }
 
 Clock::~Clock()
@@ -48,7 +48,8 @@ Clock::~Clock()
 //
 const ObjectName Time::DefaultClockName = ObjectName("Default");
 
-float Time::fElapsed = 0.0f;
+float Time::mDelta = 0.0f;
+float Time::mElapsed = 0.0f;
 ObjectManager<Clock>* Time::mClocks = 0;
 
 void Time::init()
@@ -69,9 +70,14 @@ void Time::release()
    Allocator::free(mClocks);
 }
 
+float Time::getDelta()
+{
+   return mDelta;
+}
+
 float Time::getElapsed()
 {
-   return fElapsed;
+   return mElapsed;
 }
 
 Clock* Time::getDefaultClock()
@@ -86,16 +92,18 @@ Clock* Time::getClock(const ObjectName& pClockName)
 
 void Time::reset()
 {
-   fElapsed = 0.0f;
+   mDelta = 0.0f;
+   mElapsed = 0.0f;
 }
 
-void Time::setDelta(float DeltaTime)
+void Time::setDelta(float pDeltaTime)
 {
-   fElapsed += DeltaTime;
+   mDelta = pDeltaTime;
+   mElapsed += pDeltaTime;
 
-   mClocks->iterate([DeltaTime](Clock* pClock) -> bool
+   mClocks->iterate([pDeltaTime](Clock* pClock) -> bool
    {
-      pClock->setDelta(DeltaTime);
+      pClock->setDelta(pDeltaTime);
       return true;
    });
 }
