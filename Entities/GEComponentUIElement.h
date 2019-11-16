@@ -37,12 +37,21 @@ namespace GE { namespace Entities
    };
 
 
+   GESerializableEnum(OffsetMode)
+   {
+      Absolute,
+      Relative,
+
+      Count
+   };
+
+
    class ComponentUI2DElement : public ComponentUIElement
    {
    private:
       Alignment eAnchor;
       Vector2 vOffset;
-      float fScaledYOffset;
+      OffsetMode mOffsetMode;
 
       void updateTransformPosition();
 
@@ -54,11 +63,11 @@ namespace GE { namespace Entities
 
       Alignment getAnchor() const;
       const Vector2& getOffset() const;
-      float getScaledYOffset() const;
+      OffsetMode getOffsetMode() const;
 
       void setAnchor(Alignment Anchor);
       void setOffset(const Vector2& Offset);
-      void setScaledYOffset(float Offset);
+      void setOffsetMode(OffsetMode pMode);
    };
 
 

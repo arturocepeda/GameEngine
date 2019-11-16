@@ -30,10 +30,10 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    : ComponentRenderable(Owner)
    , vCenter(0.0f, 0.0f)
    , vSize(1.0f, 1.0f)
-   , mScaledYSize(0.0f)
    , iLayer(SpriteLayer::GUI)
    , eUVMode(UVMode::Normal)
    , mCenterMode(CenterMode::Absolute)
+   , mSizeMode(SizeMode::Absolute)
    , eFullScreenSizeMode(FullScreenSizeMode::None)
    , bVertexDataDirty(true)
 {
@@ -60,7 +60,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
    });
    EventHandlingObject::connectStaticEventCallback(Events::RenderingSurfaceChanged, this, [this](const EventArgs* args) -> bool
    {
-      if(mScaledYSize > GE_EPSILON || eFullScreenSizeMode != FullScreenSizeMode::None)
+      if(mSizeMode == SizeMode::Relative || eFullScreenSizeMode != FullScreenSizeMode::None)
       {
          updateVertexData();
       }
@@ -71,10 +71,10 @@ ComponentSprite::ComponentSprite(Entity* Owner)
 
    GERegisterProperty(Vector2, Center);
    GERegisterProperty(Vector2, Size);
-   GERegisterProperty(Float, ScaledYSize);
    GERegisterPropertyEnum(SpriteLayer, Layer);
    GERegisterPropertyEnum(UVMode, UVMode);
    GERegisterPropertyEnum(CenterMode, CenterMode);
+   GERegisterPropertyEnum(SizeMode, SizeMode);
    GERegisterPropertyEnum(FullScreenSizeMode, FullScreenSizeMode);
    GERegisterProperty(ObjectName, TextureAtlasName);
 
@@ -95,7 +95,7 @@ ComponentSprite::ComponentSprite(Entity* Owner)
       const float fAtlasRatio = (cAtlasEntry->UV.V1 - cAtlasEntry->UV.V0) / (cAtlasEntry->UV.U1 - cAtlasEntry->UV.U0);
       const float fRatio = fTextureRatio * fAtlasRatio;
 
-      mScaledYSize = 0.0f;
+      mSizeMode = SizeMode::Absolute;
       vSize.Y = vSize.X * fRatio;
       bVertexDataDirty = true;
    });
@@ -139,12 +139,6 @@ void ComponentSprite::updateVertexData()
    switch(eFullScreenSizeMode)
    {
       case FullScreenSizeMode::None:
-         {
-            if(mScaledYSize > GE_EPSILON)
-            {
-               vSize.Y = Device::getAspectRatio() * mScaledYSize;
-            }
-         }
          break;
 
       case FullScreenSizeMode::Stretch:
@@ -202,6 +196,12 @@ void ComponentSprite::updateVertexData()
    {
       fCenterX *= vSize.X * 0.5f;
       fCenterY *= vSize.Y * 0.5f;
+   }
+
+   if(mSizeMode == SizeMode::Relative)
+   {
+      fHalfSizeY *= Device::getAspectRatio();
+      fCenterY *= Device::getAspectRatio();
    }
 
    float* fVertexData = sGeometryData.VertexData;
@@ -307,12 +307,6 @@ void ComponentSprite::setSize(const Vector2& Size)
    bVertexDataDirty = true;
 }
 
-void ComponentSprite::setScaledYSize(float pSize)
-{
-   mScaledYSize = pSize;
-   bVertexDataDirty = true;
-}
-
 void ComponentSprite::setLayer(SpriteLayer Layer)
 {
    iLayer = Layer;
@@ -333,9 +327,21 @@ void ComponentSprite::setCenterMode(CenterMode pMode)
    bVertexDataDirty = true;
 }
 
+void ComponentSprite::setSizeMode(SizeMode pMode)
+{
+   mSizeMode = pMode;
+   bVertexDataDirty = true;
+}
+
 void ComponentSprite::setFullScreenSizeMode(FullScreenSizeMode Mode)
 {
    eFullScreenSizeMode = Mode;
+
+   if(eFullScreenSizeMode != FullScreenSizeMode::None)
+   {
+      mSizeMode = SizeMode::Absolute;
+   }
+
    bVertexDataDirty = true;
 }
 
@@ -353,8 +359,8 @@ bool ComponentSprite::isOver(const Vector2& ScreenPosition) const
       Vector3 vPosition = cTransform->getWorldPosition();
       Vector3 vScale = cTransform->getWorldScale();
 
-      const float fHalfSizeX = vSize.X * vScale.X * 0.5f;
-      const float fHalfSizeY = vSize.Y * vScale.Y * 0.5f;
+      float fHalfSizeX = vSize.X * vScale.X * 0.5f;
+      float fHalfSizeY = vSize.Y * vScale.Y * 0.5f;
 
       float fCenterX = vCenter.X;
       float fCenterY = vCenter.Y;
@@ -363,6 +369,12 @@ bool ComponentSprite::isOver(const Vector2& ScreenPosition) const
       {
          fCenterX *= vSize.X * 0.5f;
          fCenterY *= vSize.Y * 0.5f;
+      }
+
+      if(mSizeMode == SizeMode::Relative)
+      {
+         fHalfSizeY *= Device::getAspectRatio();
+         fCenterY *= Device::getAspectRatio();
       }
 
       return

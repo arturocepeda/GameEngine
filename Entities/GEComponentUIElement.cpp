@@ -78,7 +78,7 @@ ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
    : ComponentUIElement(Owner)
    , eAnchor(Alignment::None)
    , vOffset(Vector2::Zero)
-   , fScaledYOffset(0.0f)
+   , mOffsetMode(OffsetMode::Absolute)
 {
    mClassNames.push_back(ClassName);
 
@@ -92,7 +92,7 @@ ComponentUI2DElement::ComponentUI2DElement(Entity* Owner)
 
    GERegisterPropertyEnum(Alignment, Anchor);
    GERegisterProperty(Vector2, Offset);
-   GERegisterProperty(Float, ScaledYOffset);
+   GERegisterPropertyEnum(OffsetMode, OffsetMode);
 }
 
 ComponentUI2DElement::~ComponentUI2DElement()
@@ -108,6 +108,11 @@ void ComponentUI2DElement::updateTransformPosition()
       return;
 
    Vector3 vNewPosition = Vector3(vOffset.X, vOffset.Y, 0.0f);
+
+   if(mOffsetMode == OffsetMode::Relative)
+   {
+      vNewPosition.Y *= Device::getAspectRatio();
+   }
 
    switch(eAnchor)
    {
@@ -145,8 +150,6 @@ void ComponentUI2DElement::updateTransformPosition()
       break;
    }
 
-   vNewPosition.Y += fScaledYOffset * Device::getAspectRatio();
-
    cOwner->getComponent<ComponentTransform>()->setPosition(vNewPosition);
 }
 
@@ -160,9 +163,9 @@ const Vector2& ComponentUI2DElement::getOffset() const
    return vOffset;
 }
 
-float ComponentUI2DElement::getScaledYOffset() const
+OffsetMode ComponentUI2DElement::getOffsetMode() const
 {
-   return fScaledYOffset;
+   return mOffsetMode;
 }
 
 void ComponentUI2DElement::setAnchor(Alignment Anchor)
@@ -177,9 +180,9 @@ void ComponentUI2DElement::setOffset(const Vector2& Offset)
    updateTransformPosition();
 }
 
-void ComponentUI2DElement::setScaledYOffset(float Offset)
+void ComponentUI2DElement::setOffsetMode(OffsetMode pMode)
 {
-   fScaledYOffset = Offset;
+   mOffsetMode = pMode;
    updateTransformPosition();
 }
 

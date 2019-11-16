@@ -1088,10 +1088,8 @@ void Environment::registerTypes()
       , "isOver", &ComponentSprite::isOver
       , "getTextureAtlasName", &ComponentSprite::getTextureAtlasName
       , "getSize", &ComponentSprite::getSize
-      , "getScaledYSize", &ComponentSprite::getScaledYSize
       , "setTextureAtlasName", &ComponentSprite::setTextureAtlasName
       , "setSize", &ComponentSprite::setSize
-      , "setScaledYSize", &ComponentSprite::setScaledYSize
       , sol::base_classes, sol::bases<ComponentRenderable, Component, Serializable>()
    );
    mLua.new_simple_usertype<ComponentLabel>
@@ -1145,9 +1143,7 @@ void Environment::registerTypes()
    (
       "ComponentUI2DElement"
       , "getOffset", &ComponentUI2DElement::getOffset
-      , "getScaledYOffset", &ComponentUI2DElement::getScaledYOffset
       , "setOffset", &ComponentUI2DElement::setOffset
-      , "setScaledYOffset", &ComponentUI2DElement::setScaledYOffset
       , sol::base_classes, sol::bases<ComponentUIElement, Component, Serializable>()
    );
    mLua.new_simple_usertype<ComponentUI3DElement>

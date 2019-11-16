@@ -115,12 +115,24 @@ namespace GE { namespace Entities
       "Relative"
    };
 
+   const char* strSizeMode[] =
+   {
+      "Absolute",
+      "Relative"
+   };
+
    const char* strFullScreenSizeMode[] =
    {
       "None",
       "Stretch",
       "MatchWidth",
       "MatchHeight"
+   };
+
+   const char* strOffsetMode[] =
+   {
+      "Absolute",
+      "Relative"
    };
 
    const char* strLightType[] =
