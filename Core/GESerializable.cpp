@@ -496,7 +496,7 @@ void Serializable::mergeXmlDescription(pugi::xml_node& pXmlBase, const pugi::xml
       if(strcmp(xmlDerivedNode.name(), "Property") == 0)
       {
          const char* propertyName = xmlDerivedNode.attribute("name").value();
-         pugi::xml_node& xmlBaseProperty = pXmlBase.find_child_by_attribute("Property", "name", propertyName);
+         pugi::xml_node xmlBaseProperty = pXmlBase.find_child_by_attribute("Property", "name", propertyName);
 
          if(xmlBaseProperty.empty())
          {

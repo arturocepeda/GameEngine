@@ -313,7 +313,7 @@ void Entity::mergeXmlDescription(pugi::xml_node& pXmlBase, const pugi::xml_node&
       if(strcmp(xmlDerivedNode.name(), "Component") == 0)
       {
          const char* componentType = xmlDerivedNode.attribute("type").value();
-         pugi::xml_node& xmlBaseComponent = pXmlBase.find_child_by_attribute("Component", "type", componentType);
+         pugi::xml_node xmlBaseComponent = pXmlBase.find_child_by_attribute("Component", "type", componentType);
 
          if(xmlBaseComponent.empty())
          {
@@ -328,7 +328,7 @@ void Entity::mergeXmlDescription(pugi::xml_node& pXmlBase, const pugi::xml_node&
       else if(strcmp(xmlDerivedNode.name(), "Entity") == 0)
       {
          const char* childName = xmlDerivedNode.attribute("name").value();
-         pugi::xml_node& xmlBaseChild = pXmlBase.find_child_by_attribute("Entity", "name", childName);
+         pugi::xml_node xmlBaseChild = pXmlBase.find_child_by_attribute("Entity", "name", childName);
 
          if(xmlBaseChild.empty())
          {
