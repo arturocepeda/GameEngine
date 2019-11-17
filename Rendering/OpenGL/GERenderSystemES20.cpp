@@ -197,12 +197,13 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
    }
    else
    {
-      GLenum glFormat = GL_COMPRESSED_RGBA;
+      GLenum glFormat = GL_RGBA;
       GLsizei glImageSize = 0;
 
       const GLsizei glWidth = (GLsizei)cPreloadedTexture->Data->getWidth();
       const GLsizei glHeight = (GLsizei)cPreloadedTexture->Data->getHeight();
 
+#if GL_EXT_texture_compression_s3tc
       if(cPreloadedTexture->Data->getFormat() == ImageData::Format::DDS_DXT1)
       {
          glFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
@@ -218,6 +219,7 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
          glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
          glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 16;
       }
+#endif
 
       glCompressedTexImage2D(GL_TEXTURE_2D, 0, glFormat, glWidth, glHeight,
          0, glImageSize, cPreloadedTexture->Data->getData());

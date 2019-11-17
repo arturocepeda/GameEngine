@@ -64,9 +64,6 @@
     <ClCompile Include="Rendering\GETexture.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Rendering\OpenGL\GEFontES20.cpp">
-      <Filter>Rendering.OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="Entities\GEComponent.cpp">
       <Filter>Entities</Filter>
     </ClCompile>
@@ -209,6 +206,12 @@
       <Filter>Audio</Filter>
     </ClCompile>
     <ClCompile Include="Core\GEInterpolator.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEDistributionPlatform.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GEDistributionPlatform.default.cpp">
       <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -449,6 +452,9 @@
     </ClInclude>
     <ClInclude Include="Audio\GEAudioEvent.h">
       <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GEDistributionPlatform.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

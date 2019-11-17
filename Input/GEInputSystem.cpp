@@ -12,6 +12,8 @@
 
 #include "GEInputSystem.h"
 
+#include <algorithm>
+
 using namespace GE;
 using namespace GE::Input;
 using namespace GE::Core;
