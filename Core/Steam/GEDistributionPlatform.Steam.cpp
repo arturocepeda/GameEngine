@@ -112,7 +112,7 @@ bool DistributionPlatform::init() const
 
    if(!success)
    {
-      Log::log(LogType::Error, "The Steam API could no be initialized");
+      Log::log(LogType::Error, "The Steam API could not be initialized");
    }
 
    return success;
