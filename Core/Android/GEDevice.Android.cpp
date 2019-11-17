@@ -131,6 +131,14 @@ void Device::writeUserFile(const char* SubDir, const char* Name, const char* Ext
    fclose(file);
 }
 
+void Device::deleteUserFile(const char* SubDir, const char* Name, const char* Extension)
+{
+   char sFullPath[256];
+   sprintf(sFullPath, "/sdcard/Android/data/%s/%s/%s.%s", Application::ID, SubDir, Name, Extension);
+
+   remove(sFullPath);
+}
+
 uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
 {
    char sAppDataDirectory[256];

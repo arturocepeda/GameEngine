@@ -214,6 +214,9 @@
     <ClCompile Include="Core\GEDistributionPlatform.default.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core\GESettings.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\GETimer.h">
@@ -454,6 +457,9 @@
       <Filter>Audio</Filter>
     </ClInclude>
     <ClInclude Include="Core\GEDistributionPlatform.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GESettings.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
