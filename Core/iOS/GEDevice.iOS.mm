@@ -6,7 +6,7 @@
 //
 //  Device static class (iOS)
 //
-//  --- GEDevice.mm ---
+//  --- GEDevice.iOS.mm ---
 //
 //////////////////////////////////////////////////////////////////
 
@@ -101,7 +101,7 @@ namespace GE { namespace Core
       return iFilesCount;
    }
    
-   void Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
+   bool Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
    {
       char sSubDir[256];
       sprintf(sSubDir, "content/%s", SubDir);
@@ -123,12 +123,15 @@ namespace GE { namespace Core
                NSRange nsRange = [nsFileName rangeOfString:nsExtension];
                NSString* nsFileNameWithoutExtension = [nsFileName substringToIndex:(nsRange.location - 1)];
                strcpy(Name, [nsFileNameWithoutExtension fileSystemRepresentation]);
-               break;
+               
+               return true;
             }
             
             iFileIndex++;
          }
       }
+      
+      return false;
    }
    
    bool Device::contentFileExists(const char* SubDir, const char* Name, const char* Extension)
@@ -267,6 +270,11 @@ namespace GE { namespace Core
       fclose(file);
    }
    
+   void Device::deleteUserFile(const char* SubDir, const char* Name, const char* Extension)
+   {
+      //TODO
+   }
+   
    uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
    {
       NSString* nsSubDir = [NSString stringWithUTF8String:SubDir];
@@ -287,7 +295,7 @@ namespace GE { namespace Core
       return iFilesCount;
    }
    
-   void Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
+   bool Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
    {
       NSString* nsSubDir = [NSString stringWithUTF8String:SubDir];
       NSArray* nsPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -307,24 +315,15 @@ namespace GE { namespace Core
                NSRange nsRange = [nsFileName rangeOfString:nsExtension];
                NSString* nsFileNameWithoutExtension = [nsFileName substringToIndex:(nsRange.location - 1)];
                strcpy(Name, [nsFileNameWithoutExtension fileSystemRepresentation]);
-               break;
+               
+               return true;
             }
             
             iFileIndex++;
          }
       }
-   }
-
-   void Device::log(const char* Message, ...)
-   {
-     char sBuffer[256];
-
-     va_list vArguments;
-     va_start(vArguments, Message);
-     vsprintf(sBuffer, Message, vArguments);
-     va_end(vArguments);
-
-     NSLog(@"%s", sBuffer);
+      
+      return false;
    }
    
    int Device::getNumberOfCPUCores()

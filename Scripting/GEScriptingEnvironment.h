@@ -17,12 +17,6 @@
 #include "Entities/GEEntity.h"
 #include "Types/GESTLTypes.h"
 
-#if defined (GE_PLATFORM_IOS)
-# if !defined (SOL_USING_CXX_LUA)
-#  define SOL_USING_CXX_LUA 1
-# endif
-#endif
-
 #define SOL_SAFE_NUMERICS 1
 
 #include "Externals/sol2/sol.hpp"
