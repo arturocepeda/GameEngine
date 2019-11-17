@@ -16,19 +16,19 @@
 // 
 //  Platform
 //
-#if defined(WIN32)
-# if defined(WINAPI_FAMILY) && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if defined (WIN32)
+# if defined (WINAPI_FAMILY) && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
 #  define GE_PLATFORM_WP8
 # else
 #  define GE_PLATFORM_WINDOWS
 # endif
-#else
-# if defined(ANDROID)
-#  define GE_PLATFORM_ANDROID
-# elif defined(__APPLE__) && defined(__MACH__)
-#  define GE_PLATFORM_MACOS
-# else
+#elif defined (ANDROID)
+# define GE_PLATFORM_ANDROID
+#elif defined (__APPLE__)
+# if defined (TARGET_IPHONE_SIMULATOR) || defined (TARGET_OS_IPHONE)
 #  define GE_PLATFORM_IOS
+# else
+#  define GE_PLATFORM_MACOS
 # endif
 #endif
 

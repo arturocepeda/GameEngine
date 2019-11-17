@@ -534,7 +534,7 @@ void RenderSystem::renderShadowMap()
    glViewport(0, 0, ShadowMapSize, ShadowMapSize);
 
    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-#if defined (GE_PLATFORM_ANDROID)
+#if defined (GE_PLATFORM_ANDROID) || defined (GE_PLATFORM_IOS)
    glClearDepthf(1.0f);
 #else
    glClearDepth(1.0);
@@ -631,7 +631,7 @@ void RenderSystem::renderBegin()
 {
    glDepthMask(GL_TRUE);
    glClearColor(cBackgroundColor.Red, cBackgroundColor.Green, cBackgroundColor.Blue, 1.0f);
-#if defined (GE_PLATFORM_ANDROID)
+#if defined (GE_PLATFORM_ANDROID) || defined (GE_PLATFORM_IOS)
    glClearDepthf(1.0f);
 #else
    glClearDepth(1.0);

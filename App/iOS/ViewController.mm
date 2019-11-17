@@ -14,7 +14,7 @@
 #import "ViewController.h"
 
 #import "GERenderSystemES20.h"
-#import "GEAudioSystemOpenAL.h"
+#import "GEAudioSystem.h"
 #import "GEInputSystem.h"
 #import "GEStateManager.h"
 #import "GETaskManager.h"
@@ -39,13 +39,16 @@ using namespace GE::Input;
    RenderSystemES20* cRender;
    
    // Audio system
-   AudioSystemOpenAL* cAudio;
+   AudioSystem* cAudio;
    
    // Task management
    TaskManager* cTaskManager;
    
    // State management
    StateManager cStateManager;
+   
+   // Settings
+   AppSettings gSettings;
    
    // Input management
    UITouch* iFingerID[GE_MAX_FINGERS];
@@ -114,7 +117,7 @@ using namespace GE::Input;
    [EAGLContext setCurrentContext:self.context];
    
    // set frames per second
-   self.preferredFramesPerSecond = GE_FPS;
+   self.preferredFramesPerSecond = gSettings.getInstance()->getTargetFPS();
    
    // enable multiple touch
    self.view.userInteractionEnabled = YES;
@@ -166,7 +169,7 @@ using namespace GE::Input;
    cRender->setBackgroundColor(Color(0.0f, 0.0f, 0.0f));
    
    // initialize audio system
-   cAudio = new AudioSystemOpenAL();
+   cAudio = new AudioSystem();
    cAudio->init();
    
    // start the timer
