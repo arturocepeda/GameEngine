@@ -256,9 +256,11 @@ void ScriptInstance::registerScriptProperties()
 #endif
    }
 
+#if defined (GE_EDITOR_SUPPORT)
    EventArgs sArgs;
    sArgs.Data = cOwner;
    EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &sArgs);
+#endif
 }
 
 void ScriptInstance::registerScriptActions()
