@@ -35,10 +35,22 @@ int Device::getTouchPadHeight()
    return ScreenHeight;
 }
 
+static void getContentFullPath(const char* pSubDir, const char* pName, const char* pExtension, char* pFullPath)
+{
+   if(strcmp(pSubDir, ".") == 0)
+   {
+      sprintf(pFullPath, "%s.%s", pName, pExtension);
+   }
+   else
+   {
+      sprintf(pFullPath, "%s/%s.%s", pSubDir, pName, pExtension);
+   }
+}
+
 bool Device::contentFileExists(const char* SubDir, const char* Name, const char* Extension)
 {
    char sFileName[256];
-   sprintf(sFileName, "%s/%s.%s", SubDir, Name, Extension);
+   getContentFullPath(SubDir, Name, Extension, sFileName);
 
    return getFileLength(sFileName) > 0;
 }
@@ -46,10 +58,9 @@ bool Device::contentFileExists(const char* SubDir, const char* Name, const char*
 void Device::readContentFile(ContentType Type, const char* SubDir, const char* Name, const char* Extension, ContentData* ContentData)
 {
    char sFileName[256];
-   sprintf(sFileName, "%s/%s.%s", SubDir, Name, Extension);
+   getContentFullPath(SubDir, Name, Extension, sFileName);
 
-   unsigned int iFileLength = getFileLength(sFileName);
-
+   const unsigned int iFileLength = getFileLength(sFileName);
    GEAssert(iFileLength > 0);
 
    unsigned char* pFileData = new unsigned char[Type == ContentType::GenericTextData ? iFileLength + 1 : iFileLength];

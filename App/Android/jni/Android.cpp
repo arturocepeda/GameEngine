@@ -40,6 +40,7 @@ using namespace GE::Input;
 RenderSystem* cRender;
 AudioSystem* cAudio;
 TaskManager* cTaskManager;
+AppSettings gSettings;
 
 bool bInitialized = false;
 bool bPaused = false;
@@ -160,6 +161,9 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateFrame(JNIEnv
 
 JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Pause(JNIEnv* env, jobject obj)
 {
+   if(!bInitialized)
+      return;
+
    bPaused = true;
    cTimer.stop();
    dTime = 0.0;

@@ -44,7 +44,7 @@ void Settings::load()
 
    pugi::xml_document xml;
    xml.load_buffer(settingsData.getData(), settingsData.getDataSize());
-   const pugi::xml_node& xmlSettings = xml.child("Settings");
+   pugi::xml_node xmlSettings = xml.child("Settings");
 
    loadFromXml(xmlSettings);
 }
