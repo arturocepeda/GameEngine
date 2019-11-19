@@ -22,6 +22,7 @@
 #import "GETime.h"
 #import "GEDevice.h"
 #import "GEApplication.h"
+#import "GEDistributionPlatform.h"
 
 #import "config.h"
 
@@ -60,6 +61,9 @@ using namespace GE::Input;
    // Timer
    Timer cTimer;
    double dTime;
+   
+   // Distribution platform
+   DistributionPlatform cDistributionPlatform;
 }
 
 @property (strong, nonatomic) EAGLContext* context;
@@ -114,6 +118,9 @@ using namespace GE::Input;
 #endif
    Device::ScreenWidth = (int)(screenWidth * [[UIScreen mainScreen] scale]);
    Device::ScreenHeight = (int)(screenHeight * [[UIScreen mainScreen] scale]);
+   
+   // initialize the distribution platform
+   cDistributionPlatform.init();
    
    // initialize the application
    Application::startUp(initAppModule);
@@ -203,6 +210,8 @@ using namespace GE::Input;
    delete cPixelToScreenY;
 
    Application::shutDown();
+   
+   cDistributionPlatform.shutdown();
 }
 
 -(void) didReceiveMemoryWarning
