@@ -101,6 +101,20 @@ using namespace GE::Input;
     Application::ContentType = ApplicationContentType::Bin;
 #endif
 
+   // set device screen size and orientation
+   const CGSize& screenSize = [[UIScreen mainScreen] bounds].size;
+#if defined (GE_ORIENTATION_PORTRAIT)
+   Device::Orientation = DeviceOrientation::Portrait;
+   const float screenWidth = std::min(screenSize.width, screenSize.height);
+   const float screenHeight = std::max(screenSize.width, screenSize.height);
+#else
+   Device::Orientation = DeviceOrientation::Landscape;
+   const float screenWidth = std::max(screenSize.width, screenSize.height);
+   const float screenHeight = std::min(screenSize.width, screenSize.height);
+#endif
+   Device::ScreenWidth = (int)(screenWidth * [[UIScreen mainScreen] scale]);
+   Device::ScreenHeight = (int)(screenHeight * [[UIScreen mainScreen] scale]);
+   
    // initialize the application
    Application::startUp(initAppModule);
    
@@ -127,13 +141,6 @@ using namespace GE::Input;
    // IDs for touch management
    for(int i = 0; i < GE_MAX_FINGERS; i++)
       iFingerID[i] = 0;
-   
-   // device orientation
-#ifdef GE_ORIENTATION_PORTRAIT
-   Device::Orientation = DeviceOrientation::Portrait;
-#else
-   Device::Orientation = DeviceOrientation::Landscape;
-#endif
 
    // system language
    NSString* nsLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];

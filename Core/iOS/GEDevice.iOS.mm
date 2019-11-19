@@ -20,26 +20,6 @@ namespace GE { namespace Core
 {
    using namespace Content;
    
-   int Device::ScreenWidth = 0;
-   int Device::ScreenHeight = 0;
-   
-   DeviceOrientation Device::Orientation = DeviceOrientation::Portrait;
-   SystemLanguage Device::Language = SystemLanguage::English;
-   
-   int Device::getScreenWidth()
-   {
-      const CGSize& sScreenSize = [[UIScreen mainScreen] bounds].size;
-      float fWidth = std::min(sScreenSize.width, sScreenSize.height);
-      return (int)(fWidth * [[UIScreen mainScreen] scale]);
-   }
-
-   int Device::getScreenHeight()
-   {
-      const CGSize& sScreenSize = [[UIScreen mainScreen] bounds].size;
-      float fHeight = std::max(sScreenSize.width, sScreenSize.height);
-      return (int)(fHeight * [[UIScreen mainScreen] scale]);
-   }
-
    int Device::getTouchPadWidth()
    {
       const CGSize& sScreenSize = [[UIScreen mainScreen] bounds].size;
@@ -50,13 +30,6 @@ namespace GE { namespace Core
    {
       const CGSize& sScreenSize = [[UIScreen mainScreen] bounds].size;
       return (int)std::max(sScreenSize.width, sScreenSize.height);
-   }
-
-   float Device::getAspectRatio()
-   {
-      return Orientation == DeviceOrientation::Portrait
-         ? (float)getScreenHeight() / getScreenWidth()
-         : (float)getScreenWidth() / getScreenHeight();
    }
 
    uint Device::getFileLength(const char* Filename)
