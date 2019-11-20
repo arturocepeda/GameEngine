@@ -30,6 +30,7 @@
 #include "Core/GETimer.h"
 #include "Core/GETime.h"
 #include "Core/GEApplication.h"
+#include "Core/GEDistributionPlatform.h"
 
 using namespace GE;
 using namespace GE::Core;
@@ -41,6 +42,7 @@ RenderSystem* cRender;
 AudioSystem* cAudio;
 TaskManager* cTaskManager;
 AppSettings gSettings;
+DistributionPlatform gDistributionPlatform;
 
 bool bInitialized = false;
 bool bPaused = false;
@@ -84,6 +86,8 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
 #if defined (GE_BINARY_CONTENT)
    Application::ContentType = ApplicationContentType::Bin;
 #endif
+
+   gDistributionPlatform.init();
 
    // initialize the application
    Application::startUp(initAppModule);
