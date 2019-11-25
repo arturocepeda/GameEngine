@@ -23,6 +23,7 @@
 #include "Core/GETaskManager.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEApplication.h"
+#include "Core/GELog.h"
 #include "Core/GEProfiler.h"
 #include "Core/GEDistributionPlatform.h"
 
@@ -71,6 +72,20 @@ Scaler* cPixelToScreenY;
 bool bMouseLeftButton = false;
 GE::Vector2 vMouseLastPosition(0.0f, 0.0f);
 
+// log listener
+class Win32LogListener : public LogListener
+{
+public:
+   virtual void onLog(LogType pLogType, const char* pMsg) override
+   {
+      if(pLogType == LogType::Error)
+      {
+         MessageBoxA(nullptr, pMsg, "Error", MB_OK | MB_ICONERROR);
+      }
+   }
+}
+gLogListener;
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, int iCmdShow)
 {
    Application::Name = GE_APP_NAME;
@@ -81,6 +96,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
 #if defined (GE_BINARY_CONTENT)
    Application::ContentType = ApplicationContentType::Bin;
 #endif
+
+   Log::CurrentLogListener = &gLogListener;
 
    // initialize the distribution platform
    DistributionPlatform distributionPlatform;
