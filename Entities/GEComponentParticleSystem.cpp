@@ -649,15 +649,15 @@ void ComponentParticleSystem::composeBillboardVertexData()
       vCameraForward = Vector3::UnitZ;
    }
 
-   const Texture* cDiffuseTexture = nullptr;
+   const Texture* diffuseTexture = nullptr;
 
    if(!vMaterialPassList.empty())
    {
-      Material* cMaterial = getMaterialPass(0)->getMaterial();
+      Material* material = getMaterialPass(0)->getMaterial();
 
-      if(cMaterial)
+      if(material)
       {
-         cDiffuseTexture = cMaterial->getDiffuseTexture();
+         diffuseTexture = material->getDiffuseTexture();
       }
    }
 
@@ -695,40 +695,42 @@ void ComponentParticleSystem::composeBillboardVertexData()
       Matrix4Transform(mTransform, &vBottomLeftPosition);
       Matrix4Transform(mTransform, &vBottomRightPosition);
 
-      TextureCoordinates sTextureCoordinates;
+      TextureCoordinates textureCoordinates;
 
-      if(sParticle.TextureAtlasIndex > 0 && cDiffuseTexture)
+      if(sParticle.TextureAtlasIndex > 0u && diffuseTexture)
       {
-         uint iTextureAtlasIndex = sParticle.TextureAtlasIndex;
+         uint32_t textureAtlasIndex = sParticle.TextureAtlasIndex;
 
-         if(iTextureAtlasIndex > (uint)(cDiffuseTexture->AtlasUV.size() - 1))
-            iTextureAtlasIndex = (uint)(cDiffuseTexture->AtlasUV.size() - 1);
+         if(textureAtlasIndex > (uint32_t)(diffuseTexture->AtlasUV.size() - 1u))
+         {
+            textureAtlasIndex = (uint32_t)(diffuseTexture->AtlasUV.size() - 1u);
+         }
 
-         sTextureCoordinates = cDiffuseTexture->AtlasUV[iTextureAtlasIndex].UV;
+         textureCoordinates = diffuseTexture->AtlasUV[textureAtlasIndex].UV;
       }
       else
       {
-         sTextureCoordinates.U0 = 0.0f;
-         sTextureCoordinates.V0 = 0.0f;
-         sTextureCoordinates.U1 = 1.0f;
-         sTextureCoordinates.V1 = 1.0f;
+         textureCoordinates.U0 = 0.0f;
+         textureCoordinates.V0 = 0.0f;
+         textureCoordinates.U1 = 1.0f;
+         textureCoordinates.V1 = 1.0f;
       }
 
       *pVertexData++ = vTopLeftPosition.X; *pVertexData++ = vTopLeftPosition.Y; *pVertexData++ = vTopLeftPosition.Z;
       *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = sTextureCoordinates.U0; *pVertexData++ = sTextureCoordinates.V0;
+      *pVertexData++ = textureCoordinates.U0; *pVertexData++ = textureCoordinates.V0;
 
       *pVertexData++ = vBottomLeftPosition.X; *pVertexData++ = vBottomLeftPosition.Y; *pVertexData++ = vBottomLeftPosition.Z;
       *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = sTextureCoordinates.U0; *pVertexData++ = sTextureCoordinates.V1;
+      *pVertexData++ = textureCoordinates.U0; *pVertexData++ = textureCoordinates.V1;
 
       *pVertexData++ = vTopRightPosition.X; *pVertexData++ = vTopRightPosition.Y; *pVertexData++ = vTopRightPosition.Z;
       *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = sTextureCoordinates.U1; *pVertexData++ = sTextureCoordinates.V0;
+      *pVertexData++ = textureCoordinates.U1; *pVertexData++ = textureCoordinates.V0;
 
       *pVertexData++ = vBottomRightPosition.X; *pVertexData++ = vBottomRightPosition.Y; *pVertexData++ = vBottomRightPosition.Z;
       *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = sTextureCoordinates.U1; *pVertexData++ = sTextureCoordinates.V1;
+      *pVertexData++ = textureCoordinates.U1; *pVertexData++ = textureCoordinates.V1;
    }
 
    sGeometryData.NumVertices = (uint)lParticles.size() * 4;
@@ -746,6 +748,18 @@ void ComponentParticleSystem::composeMeshVertexData()
       Vector3 vP2ToCamera = cameraWorldPosition - P2.Position;
       return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
    });
+
+   const Texture* diffuseTexture = nullptr;
+
+   if(!vMaterialPassList.empty())
+   {
+      Material* material = getMaterialPass(0)->getMaterial();
+
+      if(material)
+      {
+         diffuseTexture = material->getDiffuseTexture();
+      }
+   }
 
    float* vertexData = sGeometryData.VertexData;
 
@@ -773,11 +787,33 @@ void ComponentParticleSystem::composeMeshVertexData()
          Vector3 vertexPosition(meshVertexData[0], meshVertexData[1], meshVertexData[2]);
          Matrix4Transform(transform, &vertexPosition);
 
-         const Vector2 vertexUV(meshVertexData[6], meshVertexData[7]);
+         TextureCoordinates textureCoordinates;
+
+         if(particle.TextureAtlasIndex > 0u && diffuseTexture)
+         {
+            uint32_t textureAtlasIndex = particle.TextureAtlasIndex;
+
+            if(textureAtlasIndex > (uint32_t)(diffuseTexture->AtlasUV.size() - 1u))
+            {
+               textureAtlasIndex = (uint32_t)(diffuseTexture->AtlasUV.size() - 1u);
+            }
+
+            textureCoordinates = diffuseTexture->AtlasUV[textureAtlasIndex].UV;
+         }
+         else
+         {
+            textureCoordinates.U0 = 0.0f;
+            textureCoordinates.V0 = 0.0f;
+            textureCoordinates.U1 = 1.0f;
+            textureCoordinates.V1 = 1.0f;
+         }
+
+         const float vertexU = textureCoordinates.U0 + (meshVertexData[6] * (textureCoordinates.U1 - textureCoordinates.U0));
+         const float vertexV = textureCoordinates.V0 + (meshVertexData[7] * (textureCoordinates.V1 - textureCoordinates.V0));         
 
          *vertexData++ = vertexPosition.X; *vertexData++ = vertexPosition.Y; *vertexData++ = vertexPosition.Z;
          *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
-         *vertexData++ = vertexUV.X; *vertexData++ = vertexUV.Y;
+         *vertexData++ = vertexU; *vertexData++ = vertexV;
       }
    }
 
