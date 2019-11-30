@@ -405,7 +405,7 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
 
    if(audioEvent->getAudioFileCount() > 1u)
    {
-      RandInt rand = RandInt(0, (int)audioEvent->getAudioFileCount() - 1);
+      RandInt rand(0, (int)audioEvent->getAudioFileCount() - 1);
       audioFileIndex = rand.generate();
    }
 
@@ -492,8 +492,17 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
 
    // play the sound
    const bool looping = audioEvent->getPlayMode() == AudioEventPlayMode::Loop;
+   float pitch = audioEvent->getPitchRange().X;
+
+   if(!GEFloatEquals(audioEvent->getPitchRange().X, audioEvent->getPitchRange().Y))
+   {
+      RandFloat rand(audioEvent->getPitchRange().X, audioEvent->getPitchRange().Y);
+      pitch = rand.generate();
+   }
+
    platformPlaySound(selectedChannel, bufferID, looping);
    platformSetVolume(selectedChannel, audioEventInstance->getVolume());
+   platformSetPitch(selectedChannel, pitch);
 
    // return the event instance
    return audioEventInstance;

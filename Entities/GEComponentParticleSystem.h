@@ -78,141 +78,141 @@ namespace GE { namespace Entities
 
 
 #if defined (GE_EDITOR_SUPPORT)
-# define GEValueProvider(PropertyBaseName) \
+# define GEValueProvider(pPropertyBaseName) \
    private: \
-      ValueProviderType e##PropertyBaseName##Type; \
-      float f##PropertyBaseName##Value; \
-      float f##PropertyBaseName##ValueMax; \
-      Curve* c##PropertyBaseName##Curve; \
+      ValueProviderType m##pPropertyBaseName##Type; \
+      float m##pPropertyBaseName##Value; \
+      float m##pPropertyBaseName##ValueMax; \
+      Curve* m##pPropertyBaseName##Curve; \
    public: \
-      ValueProviderType get##PropertyBaseName##Type() const { return e##PropertyBaseName##Type; } \
-      float get##PropertyBaseName##Value() const { return f##PropertyBaseName##Value; } \
-      float get##PropertyBaseName##ValueMax() const { return f##PropertyBaseName##ValueMax; } \
-      const Core::ObjectName& get##PropertyBaseName##Curve() const \
+      ValueProviderType get##pPropertyBaseName##Type() const { return m##pPropertyBaseName##Type; } \
+      float get##pPropertyBaseName##Value() const { return m##pPropertyBaseName##Value; } \
+      float get##pPropertyBaseName##ValueMax() const { return m##pPropertyBaseName##ValueMax; } \
+      const Core::ObjectName& get##pPropertyBaseName##Curve() const \
       { \
-         return c##PropertyBaseName##Curve ? c##PropertyBaseName##Curve->getName() : Core::ObjectName::Empty; \
+         return m##pPropertyBaseName##Curve ? m##pPropertyBaseName##Curve->getName() : Core::ObjectName::Empty; \
       } \
-      void set##PropertyBaseName##Type(ValueProviderType v) \
+      void set##pPropertyBaseName##Type(ValueProviderType v) \
       { \
-         e##PropertyBaseName##Type = v; \
-         switch(e##PropertyBaseName##Type) \
+         m##pPropertyBaseName##Type = v; \
+         switch(m##pPropertyBaseName##Type) \
          { \
          case ValueProviderType::Constant: \
-           c##PropertyBaseName##Curve = 0; \
-           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Value"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
-           const_cast<Core::Property*>(getProperty(#PropertyBaseName"ValueMax"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
-           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Curve"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
+           m##pPropertyBaseName##Curve = nullptr; \
+           const_cast<Core::Property*>(getProperty(#pPropertyBaseName"Value"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
+           const_cast<Core::Property*>(getProperty(#pPropertyBaseName"ValueMax"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
+           const_cast<Core::Property*>(getProperty(#pPropertyBaseName"Curve"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
            break; \
          case ValueProviderType::Random: \
-           c##PropertyBaseName##Curve = 0; \
-           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Value"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
-           const_cast<Core::Property*>(getProperty(#PropertyBaseName"ValueMax"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
-           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Curve"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
+           m##pPropertyBaseName##Curve = nullptr; \
+           const_cast<Core::Property*>(getProperty(#pPropertyBaseName"Value"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
+           const_cast<Core::Property*>(getProperty(#pPropertyBaseName"ValueMax"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
+           const_cast<Core::Property*>(getProperty(#pPropertyBaseName"Curve"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
            break; \
          case ValueProviderType::Curve: \
-           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Value"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
-           const_cast<Core::Property*>(getProperty(#PropertyBaseName"ValueMax"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
-           const_cast<Core::Property*>(getProperty(#PropertyBaseName"Curve"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
+           const_cast<Core::Property*>(getProperty(#pPropertyBaseName"Value"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
+           const_cast<Core::Property*>(getProperty(#pPropertyBaseName"ValueMax"))->Flags |= (uint)Core::PropertyFlags::Hidden; \
+           const_cast<Core::Property*>(getProperty(#pPropertyBaseName"Curve"))->Flags &= ~((uint)Core::PropertyFlags::Hidden); \
            break; \
          } \
-         Core::EventArgs sArgs; \
-         sArgs.Data = this; \
-         Core::EventHandlingObject::triggerEventStatic(Core::Events::PropertiesUpdated, &sArgs); \
+         Core::EventArgs args; \
+         args.Data = this; \
+         Core::EventHandlingObject::triggerEventStatic(Core::Events::PropertiesUpdated, &args); \
       } \
-      void set##PropertyBaseName##Value(float v) { f##PropertyBaseName##Value = v; } \
-      void set##PropertyBaseName##ValueMax(float v) { f##PropertyBaseName##ValueMax = v; } \
-      void set##PropertyBaseName##Curve(const Core::ObjectName& v) \
+      void set##pPropertyBaseName##Value(float v) { m##pPropertyBaseName##Value = v; } \
+      void set##pPropertyBaseName##ValueMax(float v) { m##pPropertyBaseName##ValueMax = v; } \
+      void set##pPropertyBaseName##Curve(const Core::ObjectName& v) \
       { \
-         const Core::ObjectRegistry* cRegistry = Content::ResourcesManager::getInstance()->getObjectRegistry("Curve"); \
-         Core::ObjectRegistry::const_iterator it = cRegistry->find(v.getID()); \
-         if(it != cRegistry->end()) \
+         const Core::ObjectRegistry* registry = Content::ResourcesManager::getInstance()->getObjectRegistry("Curve"); \
+         Core::ObjectRegistry::const_iterator it = registry->find(v.getID()); \
+         if(it != registry->end()) \
          { \
-            c##PropertyBaseName##Curve = static_cast<Curve*>(it->second); \
+            m##pPropertyBaseName##Curve = static_cast<Curve*>(it->second); \
          } \
       } \
-      float get##PropertyBaseName(float LifeTime, float RemainingLifeTime) \
+      float get##pPropertyBaseName(float pLifeTime, float pRemainingLifeTime) \
       { \
-         switch(e##PropertyBaseName##Type) \
+         switch(m##pPropertyBaseName##Type) \
          { \
          case ValueProviderType::Constant: \
-            return f##PropertyBaseName##Value; \
+            return m##pPropertyBaseName##Value; \
          case ValueProviderType::Random: \
-            return getRandomFloat(f##PropertyBaseName##Value, f##PropertyBaseName##ValueMax); \
+            return getRandomFloat(m##pPropertyBaseName##Value, m##pPropertyBaseName##ValueMax); \
          case ValueProviderType::Curve: \
-            if(c##PropertyBaseName##Curve) \
+            if(m##pPropertyBaseName##Curve) \
             { \
-               const float fCurveLength = c##PropertyBaseName##Curve->getLength(); \
-               if(fCurveLength > GE_EPSILON) \
+               const float curveLength = m##pPropertyBaseName##Curve->getLength(); \
+               if(curveLength > GE_EPSILON) \
                { \
-                  const float fRelativeTimePosition = (LifeTime - RemainingLifeTime) / LifeTime; \
-                  return c##PropertyBaseName##Curve->getValue(fRelativeTimePosition * fCurveLength); \
+                  const float relativeTimePosition = (pLifeTime - pRemainingLifeTime) / pLifeTime; \
+                  return m##pPropertyBaseName##Curve->getValue(relativeTimePosition * curveLength); \
                } \
             } \
             break; \
          } \
-         return f##PropertyBaseName##Value; \
+         return m##pPropertyBaseName##Value; \
       }
 #else
-# define GEValueProvider(PropertyBaseName) \
+# define GEValueProvider(pPropertyBaseName) \
    private: \
-      ValueProviderType e##PropertyBaseName##Type; \
-      float f##PropertyBaseName##Value; \
-      float f##PropertyBaseName##ValueMax; \
-      Curve* c##PropertyBaseName##Curve; \
+      ValueProviderType m##pPropertyBaseName##Type; \
+      float m##pPropertyBaseName##Value; \
+      float m##pPropertyBaseName##ValueMax; \
+      Curve* m##pPropertyBaseName##Curve; \
    public: \
-      ValueProviderType get##PropertyBaseName##Type() const { return e##PropertyBaseName##Type; } \
-      float get##PropertyBaseName##Value() const { return f##PropertyBaseName##Value; } \
-      float get##PropertyBaseName##ValueMax() const { return f##PropertyBaseName##ValueMax; } \
-      const Core::ObjectName& get##PropertyBaseName##Curve() const \
+      ValueProviderType get##pPropertyBaseName##Type() const { return m##pPropertyBaseName##Type; } \
+      float get##pPropertyBaseName##Value() const { return m##pPropertyBaseName##Value; } \
+      float get##pPropertyBaseName##ValueMax() const { return m##pPropertyBaseName##ValueMax; } \
+      const Core::ObjectName& get##pPropertyBaseName##Curve() const \
       { \
-         return c##PropertyBaseName##Curve ? c##PropertyBaseName##Curve->getName() : Core::ObjectName::Empty; \
+         return m##pPropertyBaseName##Curve ? m##pPropertyBaseName##Curve->getName() : Core::ObjectName::Empty; \
       } \
-      void set##PropertyBaseName##Type(ValueProviderType v) \
+      void set##pPropertyBaseName##Type(ValueProviderType v) \
       { \
-         e##PropertyBaseName##Type = v; \
-         switch(e##PropertyBaseName##Type) \
+         m##pPropertyBaseName##Type = v; \
+         switch(m##pPropertyBaseName##Type) \
          { \
          case ValueProviderType::Constant: \
          case ValueProviderType::Random: \
-           c##PropertyBaseName##Curve = 0; \
+           m##pPropertyBaseName##Curve = nullptr; \
            break; \
          } \
-         Core::EventArgs sArgs; \
-         sArgs.Data = this; \
-         Core::EventHandlingObject::triggerEventStatic(Core::Events::PropertiesUpdated, &sArgs); \
+         Core::EventArgs args; \
+         args.Data = this; \
+         Core::EventHandlingObject::triggerEventStatic(Core::Events::PropertiesUpdated, &args); \
       } \
-      void set##PropertyBaseName##Value(float v) { f##PropertyBaseName##Value = v; } \
-      void set##PropertyBaseName##ValueMax(float v) { f##PropertyBaseName##ValueMax = v; } \
-      void set##PropertyBaseName##Curve(const Core::ObjectName& v) \
+      void set##pPropertyBaseName##Value(float v) { m##pPropertyBaseName##Value = v; } \
+      void set##pPropertyBaseName##ValueMax(float v) { m##pPropertyBaseName##ValueMax = v; } \
+      void set##pPropertyBaseName##Curve(const Core::ObjectName& v) \
       { \
-         const Core::ObjectRegistry* cRegistry = Content::ResourcesManager::getInstance()->getObjectRegistry("Curve"); \
-         Core::ObjectRegistry::const_iterator it = cRegistry->find(v.getID()); \
-         if(it != cRegistry->end()) \
+         const Core::ObjectRegistry* registry = Content::ResourcesManager::getInstance()->getObjectRegistry("Curve"); \
+         Core::ObjectRegistry::const_iterator it = registry->find(v.getID()); \
+         if(it != registry->end()) \
          { \
-            c##PropertyBaseName##Curve = static_cast<Curve*>(it->second); \
+            m##pPropertyBaseName##Curve = static_cast<Curve*>(it->second); \
          } \
       } \
-      float get##PropertyBaseName(float LifeTime, float RemainingLifeTime) \
+      float get##pPropertyBaseName(float pLifeTime, float pRemainingLifeTime) \
       { \
-         switch(e##PropertyBaseName##Type) \
+         switch(m##pPropertyBaseName##Type) \
          { \
          case ValueProviderType::Constant: \
-            return f##PropertyBaseName##Value; \
+            return m##pPropertyBaseName##Value; \
          case ValueProviderType::Random: \
-            return getRandomFloat(f##PropertyBaseName##Value, f##PropertyBaseName##ValueMax); \
+            return getRandomFloat(m##pPropertyBaseName##Value, m##pPropertyBaseName##ValueMax); \
          case ValueProviderType::Curve: \
-            if(c##PropertyBaseName##Curve) \
+            if(m##pPropertyBaseName##Curve) \
             { \
-               const float fCurveLength = c##PropertyBaseName##Curve->getLength(); \
-               if(fCurveLength > GE_EPSILON) \
+               const float curveLength = m##pPropertyBaseName##Curve->getLength(); \
+               if(curveLength > GE_EPSILON) \
                { \
-                  const float fRelativeTimePosition = (LifeTime - RemainingLifeTime) / LifeTime; \
-                  return c##PropertyBaseName##Curve->getValue(fRelativeTimePosition * fCurveLength); \
+                  const float relativeTimePosition = (pLifeTime - pRemainingLifeTime) / pLifeTime; \
+                  return m##pPropertyBaseName##Curve->getValue(relativeTimePosition * curveLength); \
                } \
             } \
             break; \
          } \
-         return f##PropertyBaseName##Value; \
+         return m##pPropertyBaseName##Value; \
       }
 #endif
 

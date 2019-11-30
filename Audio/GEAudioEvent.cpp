@@ -47,10 +47,12 @@ AudioEvent::AudioEvent(const ObjectName& pName, const ObjectName& pGroupName)
    , mPlayMode(AudioEventPlayMode::OneShot)
    , mFadeInTime(0.0f)
    , mFadeOutTime(0.0f)
+   , mPitchRange(1.0f, 1.0f)
 {
    GERegisterPropertyEnum(AudioEventPlayMode, PlayMode);
    GERegisterProperty(Float, FadeInTime);
    GERegisterProperty(Float, FadeOutTime);
+   GERegisterProperty(Vector2, PitchRange);
 
    GERegisterPropertyArray(AudioFile);
 }

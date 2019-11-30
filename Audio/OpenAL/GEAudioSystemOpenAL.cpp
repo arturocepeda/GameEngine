@@ -140,6 +140,11 @@ void AudioSystem::platformSetVolume(ChannelID pChannel, float pVolume)
    alSourcef(alSources[pChannel], AL_GAIN, pVolume);
 }
 
+void AudioSystem::platformSetPitch(ChannelID pChannel, float pPitch)
+{
+   alSourcef(alSources[pChannel], AL_PITCH, pPitch);
+}
+
 void AudioSystem::platformSetPosition(ChannelID pChannel, const Vector3& pPosition)
 {
    alSourcei(alSources[pChannel], AL_SOURCE_RELATIVE, AL_FALSE);

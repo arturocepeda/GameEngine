@@ -30,15 +30,15 @@ using namespace GE::Rendering;
 using namespace GE::Content;
 
 
-#define GERegisterValueProvider(PropertyBaseName, CategoryName, DefaultValue) \
-   f##PropertyBaseName##Value = DefaultValue; \
-   f##PropertyBaseName##ValueMax = DefaultValue; \
-   c##PropertyBaseName##Curve = 0; \
-   GERegisterPropertyEnum(ValueProviderType, PropertyBaseName##Type)->setClass(#CategoryName); \
-   GERegisterProperty(Float, PropertyBaseName##Value)->setClass(#CategoryName); \
-   GERegisterProperty(Float, PropertyBaseName##ValueMax)->setClass(#CategoryName); \
-   GERegisterProperty(ObjectName, PropertyBaseName##Curve)->setClass(#CategoryName); \
-   set##PropertyBaseName##Type(ValueProviderType::Constant);
+#define GERegisterValueProvider(pPropertyBaseName, pCategoryName, pDefaultValue) \
+   m##pPropertyBaseName##Value = pDefaultValue; \
+   m##pPropertyBaseName##ValueMax = pDefaultValue; \
+   m##pPropertyBaseName##Curve = nullptr; \
+   GERegisterPropertyEnum(ValueProviderType, pPropertyBaseName##Type)->setClass(#pCategoryName); \
+   GERegisterProperty(Float, pPropertyBaseName##Value)->setClass(#pCategoryName); \
+   GERegisterProperty(Float, pPropertyBaseName##ValueMax)->setClass(#pCategoryName); \
+   GERegisterProperty(ObjectName, pPropertyBaseName##Curve)->setClass(#pCategoryName); \
+   set##pPropertyBaseName##Type(ValueProviderType::Constant);
 
 
 //
@@ -239,13 +239,13 @@ void ComponentParticleSystem::emitParticle()
    if((uint)lParticles.size() == iMaxParticles)
       return;
 
-   Particle sParticle;
+   Particle particle;
 
    switch(eEmitterType)
    {
    case ParticleEmitterType::Point:
       {
-         sParticle.Position = cTransform->getWorldPosition();
+         particle.Position = cTransform->getWorldPosition();
       }
       break;
 
@@ -257,7 +257,7 @@ void ComponentParticleSystem::emitParticle()
          Matrix4Transform(cTransform->getGlobalWorldMatrix(), &vEmitterWorldPointB);
 
          Vector3 vDiff = vEmitterWorldPointB - vEmitterWorldPointA;
-         sParticle.Position = vEmitterWorldPointA + (vDiff * getRandomFloat(0.0f, 1.0f));
+         particle.Position = vEmitterWorldPointA + (vDiff * getRandomFloat(0.0f, 1.0f));
       }
       break;
 
@@ -265,7 +265,7 @@ void ComponentParticleSystem::emitParticle()
       {
          Vector3 vDir = getRandomVector3(-Vector3::One, Vector3::One);
          vDir.normalize();
-         sParticle.Position = cTransform->getWorldPosition() + (vDir * getRandomFloat(0.0f, fEmitterRadius));
+         particle.Position = cTransform->getWorldPosition() + (vDir * getRandomFloat(0.0f, fEmitterRadius));
       }
       break;
 
@@ -280,7 +280,7 @@ void ComponentParticleSystem::emitParticle()
          while(vDir.getSquaredLength() < GE_EPSILON);
 
          vDir.normalize();
-         sParticle.Position = cTransform->getWorldPosition() + (vDir * fEmitterRadius);
+         particle.Position = cTransform->getWorldPosition() + (vDir * fEmitterRadius);
       }
       break;
 
@@ -325,46 +325,46 @@ void ComponentParticleSystem::emitParticle()
          Matrix4Transform(mWorldTransform, &v2);
          Matrix4Transform(mWorldTransform, &v3);
 
-         sParticle.Position = getRandomPointInTriangle(v1, v2, v3);
+         particle.Position = getRandomPointInTriangle(v1, v2, v3);
       }
       break;
 
    default:
       {
-         sParticle.Position = cTransform->getWorldPosition();
+         particle.Position = cTransform->getWorldPosition();
       }
       break;
    }
 
-   sParticle.LifeTime = getRandomFloat(fParticleLifeTimeMin, fParticleLifeTimeMax);
-   sParticle.RemainingLifeTime = sParticle.LifeTime;
+   particle.LifeTime = getRandomFloat(fParticleLifeTimeMin, fParticleLifeTimeMax);
+   particle.RemainingLifeTime = particle.LifeTime;
 
-   sParticle.Size = getParticleSize(sParticle.LifeTime, sParticle.RemainingLifeTime) * fParticleSizeMultiplier;
-   sParticle.DiffuseColor = Color
+   particle.Size = getParticleSize(particle.LifeTime, particle.RemainingLifeTime) * fParticleSizeMultiplier;
+   particle.DiffuseColor = Color
    (
-      getParticleColorR(sParticle.LifeTime, sParticle.RemainingLifeTime),
-      getParticleColorG(sParticle.LifeTime, sParticle.RemainingLifeTime),
-      getParticleColorB(sParticle.LifeTime, sParticle.RemainingLifeTime),
-      getParticleAlpha(sParticle.LifeTime, sParticle.RemainingLifeTime)
+      getParticleColorR(particle.LifeTime, particle.RemainingLifeTime),
+      getParticleColorG(particle.LifeTime, particle.RemainingLifeTime),
+      getParticleColorB(particle.LifeTime, particle.RemainingLifeTime),
+      getParticleAlpha(particle.LifeTime, particle.RemainingLifeTime)
    );
-   sParticle.Angle = getRandomVector3(mParticleInitialAngleMin * GE_DEG2RAD, mParticleInitialAngleMax * GE_DEG2RAD);
+   particle.Angle = getRandomVector3(mParticleInitialAngleMin * GE_DEG2RAD, mParticleInitialAngleMax * GE_DEG2RAD);
 
-   sParticle.LinearVelocity = Vector3
+   particle.LinearVelocity = Vector3
    (
-      getParticleLinearVelocityX(sParticle.LifeTime, sParticle.RemainingLifeTime),
-      getParticleLinearVelocityY(sParticle.LifeTime, sParticle.RemainingLifeTime),
-      getParticleLinearVelocityZ(sParticle.LifeTime, sParticle.RemainingLifeTime)
+      getParticleLinearVelocityX(particle.LifeTime, particle.RemainingLifeTime),
+      getParticleLinearVelocityY(particle.LifeTime, particle.RemainingLifeTime),
+      getParticleLinearVelocityZ(particle.LifeTime, particle.RemainingLifeTime)
    );
-   sParticle.AngularVelocity = Vector3
+   particle.AngularVelocity = Vector3
    (
-      getParticleAngularVelocityX(sParticle.LifeTime, sParticle.RemainingLifeTime),
-      getParticleAngularVelocityY(sParticle.LifeTime, sParticle.RemainingLifeTime),
-      getParticleAngularVelocityZ(sParticle.LifeTime, sParticle.RemainingLifeTime)
+      getParticleAngularVelocityX(particle.LifeTime, particle.RemainingLifeTime),
+      getParticleAngularVelocityY(particle.LifeTime, particle.RemainingLifeTime),
+      getParticleAngularVelocityZ(particle.LifeTime, particle.RemainingLifeTime)
    );
 
-   sParticle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(sParticle.LifeTime, sParticle.RemainingLifeTime);
+   particle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(particle.LifeTime, particle.RemainingLifeTime);
 
-   lParticles.push_back(sParticle);
+   lParticles.push_back(particle);
 }
 
 void ComponentParticleSystem::burst(uint NumParticles)
@@ -403,91 +403,91 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
 
    while(particleIndex < (uint32_t)lParticles.size())
    {
-      Particle& sParticle = lParticles[particleIndex];
-      sParticle.RemainingLifeTime -= pDeltaTime;
+      Particle& particle = lParticles[particleIndex];
+      particle.RemainingLifeTime -= pDeltaTime;
 
-      if(sParticle.RemainingLifeTime <= 0.0f)
+      if(particle.RemainingLifeTime <= 0.0f)
       {
-         sParticle = lParticles[lParticles.size() - 1];
+         particle = lParticles[lParticles.size() - 1];
          lParticles.pop_back();
          continue;
       }
 
-      sParticle.Position += sParticle.LinearVelocity * pDeltaTime;
-      sParticle.Angle += sParticle.AngularVelocity * GE_DEG2RAD * pDeltaTime;
+      particle.Position += particle.LinearVelocity * pDeltaTime;
+      particle.Angle += particle.AngularVelocity * GE_DEG2RAD * pDeltaTime;
 
-      if(eParticleSizeType == ValueProviderType::Curve)
+      if(mParticleSizeType == ValueProviderType::Curve)
       {
-         sParticle.Size = getParticleSize(sParticle.LifeTime, sParticle.RemainingLifeTime) * fParticleSizeMultiplier;
+         particle.Size = getParticleSize(particle.LifeTime, particle.RemainingLifeTime) * fParticleSizeMultiplier;
       }
-      if(eParticleColorRType == ValueProviderType::Curve)
+      if(mParticleColorRType == ValueProviderType::Curve)
       {
-         sParticle.DiffuseColor.Red = getParticleColorR(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.DiffuseColor.Red = getParticleColorR(particle.LifeTime, particle.RemainingLifeTime);
       }
-      if(eParticleColorGType == ValueProviderType::Curve)
+      if(mParticleColorGType == ValueProviderType::Curve)
       {
-         sParticle.DiffuseColor.Green = getParticleColorG(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.DiffuseColor.Green = getParticleColorG(particle.LifeTime, particle.RemainingLifeTime);
       }
-      if(eParticleColorBType == ValueProviderType::Curve)
+      if(mParticleColorBType == ValueProviderType::Curve)
       {
-         sParticle.DiffuseColor.Blue = getParticleColorB(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.DiffuseColor.Blue = getParticleColorB(particle.LifeTime, particle.RemainingLifeTime);
       }
-      if(eParticleAlphaType == ValueProviderType::Curve)
+      if(mParticleAlphaType == ValueProviderType::Curve)
       {
-         sParticle.DiffuseColor.Alpha = getParticleAlpha(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.DiffuseColor.Alpha = getParticleAlpha(particle.LifeTime, particle.RemainingLifeTime);
       }
-      if(eParticleLinearVelocityXType == ValueProviderType::Curve)
+      if(mParticleLinearVelocityXType == ValueProviderType::Curve)
       {
-         sParticle.LinearVelocity.X = getParticleLinearVelocityX(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.LinearVelocity.X = getParticleLinearVelocityX(particle.LifeTime, particle.RemainingLifeTime);
       }
-      if(eParticleLinearVelocityYType == ValueProviderType::Curve)
+      if(mParticleLinearVelocityYType == ValueProviderType::Curve)
       {
-         sParticle.LinearVelocity.Y = getParticleLinearVelocityY(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.LinearVelocity.Y = getParticleLinearVelocityY(particle.LifeTime, particle.RemainingLifeTime);
       }
-      if(eParticleLinearVelocityZType == ValueProviderType::Curve)
+      if(mParticleLinearVelocityZType == ValueProviderType::Curve)
       {
-         sParticle.LinearVelocity.Z = getParticleLinearVelocityZ(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.LinearVelocity.Z = getParticleLinearVelocityZ(particle.LifeTime, particle.RemainingLifeTime);
       }
-      if(eParticleAngularVelocityXType == ValueProviderType::Curve)
+      if(mParticleAngularVelocityXType == ValueProviderType::Curve)
       {
-         sParticle.AngularVelocity.X = getParticleAngularVelocityX(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.AngularVelocity.X = getParticleAngularVelocityX(particle.LifeTime, particle.RemainingLifeTime);
       }
-      if(eParticleAngularVelocityYType == ValueProviderType::Curve)
+      if(mParticleAngularVelocityYType == ValueProviderType::Curve)
       {
-         sParticle.AngularVelocity.Y = getParticleAngularVelocityY(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.AngularVelocity.Y = getParticleAngularVelocityY(particle.LifeTime, particle.RemainingLifeTime);
       }
-      if(eParticleAngularVelocityZType == ValueProviderType::Curve)
+      if(mParticleAngularVelocityZType == ValueProviderType::Curve)
       {
-         sParticle.AngularVelocity.Z = getParticleAngularVelocityZ(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.AngularVelocity.Z = getParticleAngularVelocityZ(particle.LifeTime, particle.RemainingLifeTime);
       }
-      if(eParticleTextureAtlasIndexType == ValueProviderType::Curve)
+      if(mParticleTextureAtlasIndexType == ValueProviderType::Curve)
       {
-         sParticle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         particle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(particle.LifeTime, particle.RemainingLifeTime);
       }
 
-      sParticle.Position += vConstantForce * pDeltaTime;
-      sParticle.LinearVelocity += vConstantAcceleration * pDeltaTime;
+      particle.Position += vConstantForce * pDeltaTime;
+      particle.LinearVelocity += vConstantAcceleration * pDeltaTime;
 
       if(mTurbulenceFactor.X > GE_EPSILON)
       {
-         sParticle.LinearVelocity.X +=
+         particle.LinearVelocity.X +=
             getRandomFloat(-mTurbulenceFactor.X, mTurbulenceFactor.X) * pDeltaTime;
       }
       if(mTurbulenceFactor.Y > GE_EPSILON)
       {
-         sParticle.LinearVelocity.Y +=
+         particle.LinearVelocity.Y +=
             getRandomFloat(-mTurbulenceFactor.Y, mTurbulenceFactor.Y) * pDeltaTime;
       }
       if(mTurbulenceFactor.Z > GE_EPSILON)
       {
-         sParticle.LinearVelocity.Z +=
+         particle.LinearVelocity.Z +=
             getRandomFloat(-mTurbulenceFactor.Z, mTurbulenceFactor.Z) * pDeltaTime;
       }
 
       if(mFrictionFactor > GE_EPSILON)
       {
-         sParticle.LinearVelocity =
-            sParticle.LinearVelocity * (1.0f - (mFrictionFactor * pDeltaTime));
+         particle.LinearVelocity =
+            particle.LinearVelocity * (1.0f - (mFrictionFactor * pDeltaTime));
       }
 
       particleIndex++;
@@ -622,31 +622,35 @@ void ComponentParticleSystem::composeVertexData()
 
 void ComponentParticleSystem::composeBillboardVertexData()
 {
-   Vector3 vCameraRight;
-   Vector3 vCameraUp;
-   Vector3 vCameraForward;
+   Vector3 cameraRight;
+   Vector3 cameraUp;
+   Vector3 cameraForward;
 
    if(eRenderingMode == RenderingMode::_3D)
    {
-      ComponentCamera* cCamera = RenderSystem::getInstance()->getActiveCamera();
-      const Vector3& vCameraWorldPosition = cCamera->getTransform()->getWorldPosition();
+      ComponentCamera* camera = RenderSystem::getInstance()->getActiveCamera();
 
-      vCameraRight = cCamera->getTransform()->getRightVector();
-      vCameraUp = cCamera->getTransform()->getUpVector();
-      vCameraForward = cCamera->getTransform()->getForwardVector();
+      if(!camera)
+         return;
+
+      const Vector3& cameraWorldPosition = camera->getTransform()->getWorldPosition();
+
+      cameraRight = camera->getTransform()->getRightVector();
+      cameraUp = camera->getTransform()->getUpVector();
+      cameraForward = camera->getTransform()->getForwardVector();
 
       std::sort(lParticles.begin(), lParticles.end(), [&](const Particle& P1, const Particle& P2) -> bool
       {
-         Vector3 vP1ToCamera = vCameraWorldPosition - P1.Position;
-         Vector3 vP2ToCamera = vCameraWorldPosition - P2.Position;
+         Vector3 vP1ToCamera = cameraWorldPosition - P1.Position;
+         Vector3 vP2ToCamera = cameraWorldPosition - P2.Position;
          return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
       });
    }
    else
    {
-      vCameraRight = Vector3::UnitX;
-      vCameraUp = Vector3::UnitY;
-      vCameraForward = Vector3::UnitZ;
+      cameraRight = Vector3::UnitX;
+      cameraUp = Vector3::UnitY;
+      cameraForward = Vector3::UnitZ;
    }
 
    const Texture* diffuseTexture = nullptr;
@@ -661,45 +665,45 @@ void ComponentParticleSystem::composeBillboardVertexData()
       }
    }
 
-   float* pVertexData = sGeometryData.VertexData;
+   float* vertexData = sGeometryData.VertexData;
 
    for(ParticleList::iterator it = lParticles.begin(); it != lParticles.end(); it++)
    {
-      Particle& sParticle = *it;
+      Particle& particle = *it;
 
-      const float fParticleHalfSize = sParticle.Size * 0.5f;
+      const float particleHalfSize = particle.Size * 0.5f;
 
-      Vector3 vTopLeftPosition = -(vCameraRight * fParticleHalfSize) + (vCameraUp * fParticleHalfSize);
-      Vector3 vTopRightPosition = (vCameraRight * fParticleHalfSize) + (vCameraUp * fParticleHalfSize);
-      Vector3 vBottomLeftPosition = -(vCameraRight * fParticleHalfSize) - (vCameraUp * fParticleHalfSize);
-      Vector3 vBottomRightPosition = (vCameraRight * fParticleHalfSize) - (vCameraUp * fParticleHalfSize);
+      Vector3 topLeftPosition = -(cameraRight * particleHalfSize) + (cameraUp * particleHalfSize);
+      Vector3 topRightPosition = (cameraRight * particleHalfSize) + (cameraUp * particleHalfSize);
+      Vector3 bottomLeftPosition = -(cameraRight * particleHalfSize) - (cameraUp * particleHalfSize);
+      Vector3 bottomRightPosition = (cameraRight * particleHalfSize) - (cameraUp * particleHalfSize);
 
       Matrix4 mTransform;
 
-      if(fabsf(sParticle.Angle.Z) < GE_EPSILON)
+      if(fabsf(particle.Angle.Z) < GE_EPSILON)
       {
          Matrix4MakeIdentity(&mTransform);
       }
       else
       {
-         Rotation cRotation = Rotation(vCameraForward, sParticle.Angle.Z);
+         Rotation cRotation = Rotation(cameraForward, particle.Angle.Z);
          mTransform = cRotation.getRotationMatrix();
       }
 
-      mTransform.m[GE_M4_1_4] = sParticle.Position.X;
-      mTransform.m[GE_M4_2_4] = sParticle.Position.Y;
-      mTransform.m[GE_M4_3_4] = sParticle.Position.Z;
+      mTransform.m[GE_M4_1_4] = particle.Position.X;
+      mTransform.m[GE_M4_2_4] = particle.Position.Y;
+      mTransform.m[GE_M4_3_4] = particle.Position.Z;
 
-      Matrix4Transform(mTransform, &vTopLeftPosition);
-      Matrix4Transform(mTransform, &vTopRightPosition);
-      Matrix4Transform(mTransform, &vBottomLeftPosition);
-      Matrix4Transform(mTransform, &vBottomRightPosition);
+      Matrix4Transform(mTransform, &topLeftPosition);
+      Matrix4Transform(mTransform, &topRightPosition);
+      Matrix4Transform(mTransform, &bottomLeftPosition);
+      Matrix4Transform(mTransform, &bottomRightPosition);
 
       TextureCoordinates textureCoordinates;
 
-      if(sParticle.TextureAtlasIndex > 0u && diffuseTexture)
+      if(particle.TextureAtlasIndex > 0u && diffuseTexture)
       {
-         uint32_t textureAtlasIndex = sParticle.TextureAtlasIndex;
+         uint32_t textureAtlasIndex = particle.TextureAtlasIndex;
 
          if(textureAtlasIndex > (uint32_t)(diffuseTexture->AtlasUV.size() - 1u))
          {
@@ -716,21 +720,21 @@ void ComponentParticleSystem::composeBillboardVertexData()
          textureCoordinates.V1 = 1.0f;
       }
 
-      *pVertexData++ = vTopLeftPosition.X; *pVertexData++ = vTopLeftPosition.Y; *pVertexData++ = vTopLeftPosition.Z;
-      *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = textureCoordinates.U0; *pVertexData++ = textureCoordinates.V0;
+      *vertexData++ = topLeftPosition.X; *vertexData++ = topLeftPosition.Y; *vertexData++ = topLeftPosition.Z;
+      *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
+      *vertexData++ = textureCoordinates.U0; *vertexData++ = textureCoordinates.V0;
 
-      *pVertexData++ = vBottomLeftPosition.X; *pVertexData++ = vBottomLeftPosition.Y; *pVertexData++ = vBottomLeftPosition.Z;
-      *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = textureCoordinates.U0; *pVertexData++ = textureCoordinates.V1;
+      *vertexData++ = bottomLeftPosition.X; *vertexData++ = bottomLeftPosition.Y; *vertexData++ = bottomLeftPosition.Z;
+      *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
+      *vertexData++ = textureCoordinates.U0; *vertexData++ = textureCoordinates.V1;
 
-      *pVertexData++ = vTopRightPosition.X; *pVertexData++ = vTopRightPosition.Y; *pVertexData++ = vTopRightPosition.Z;
-      *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = textureCoordinates.U1; *pVertexData++ = textureCoordinates.V0;
+      *vertexData++ = topRightPosition.X; *vertexData++ = topRightPosition.Y; *vertexData++ = topRightPosition.Z;
+      *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
+      *vertexData++ = textureCoordinates.U1; *vertexData++ = textureCoordinates.V0;
 
-      *pVertexData++ = vBottomRightPosition.X; *pVertexData++ = vBottomRightPosition.Y; *pVertexData++ = vBottomRightPosition.Z;
-      *pVertexData++ = sParticle.DiffuseColor.Red; *pVertexData++ = sParticle.DiffuseColor.Green; *pVertexData++ = sParticle.DiffuseColor.Blue; *pVertexData++ = sParticle.DiffuseColor.Alpha;
-      *pVertexData++ = textureCoordinates.U1; *pVertexData++ = textureCoordinates.V1;
+      *vertexData++ = bottomRightPosition.X; *vertexData++ = bottomRightPosition.Y; *vertexData++ = bottomRightPosition.Z;
+      *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
+      *vertexData++ = textureCoordinates.U1; *vertexData++ = textureCoordinates.V1;
    }
 
    sGeometryData.NumVertices = (uint)lParticles.size() * 4;
@@ -740,6 +744,10 @@ void ComponentParticleSystem::composeBillboardVertexData()
 void ComponentParticleSystem::composeMeshVertexData()
 {
    ComponentCamera* camera = RenderSystem::getInstance()->getActiveCamera();
+
+   if(!camera)
+      return;
+
    const Vector3& cameraWorldPosition = camera->getTransform()->getWorldPosition();
 
    std::sort(lParticles.begin(), lParticles.end(), [&](const Particle& P1, const Particle& P2) -> bool

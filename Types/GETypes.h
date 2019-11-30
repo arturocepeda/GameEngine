@@ -24,6 +24,8 @@
 #define GEMin(a, b)  (((a) < (b)) ? (a) : (b))
 #define GEMax(a, b)  (((a) > (b)) ? (a) : (b))
 
+#define GEFloatEquals(a, b)  (fabsf(a - b) < GE_EPSILON)
+
 #define GEAssert(Expr)  assert(Expr)
 
 namespace GE

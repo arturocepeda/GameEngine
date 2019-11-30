@@ -193,6 +193,7 @@ namespace GE { namespace Audio
       bool platformIsInUse(ChannelID pChannel) const;
 
       void platformSetVolume(ChannelID pChannel, float pVolume);
+      void platformSetPitch(ChannelID pChannel, float pPitch);
 
       void platformSetPosition(ChannelID pChannel, const Vector3& pPosition);
       void platformSetOrientation(ChannelID pChannel, const Rotation& pOrientation);
