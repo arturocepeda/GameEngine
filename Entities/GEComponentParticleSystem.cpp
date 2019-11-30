@@ -57,18 +57,18 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , iMaxParticles(256)
    , bVertexDataReallocationPending(true)
    , fElapsedTimeSinceLastEmission(0.0f)
+   , mParticleType(ParticleType::Billboard)
    , eEmitterType(ParticleEmitterType::Point)
    , fEmitterRadius(0.0f)
-   , cEmitterMesh(0)
-   , cEmitterMeshEntity(0)
+   , mParticleMesh(nullptr)
+   , cEmitterMesh(nullptr)
+   , cEmitterMeshEntity(nullptr)
    , bEmitterActive(false)
    , mSettings(0u)
    , fEmissionRate(0.0f)
    , iEmissionBurstCount(1)
    , fParticleLifeTimeMin(0.0f)
    , fParticleLifeTimeMax(0.0f)
-   , fParticleInitialAngleMin(0.0f)
-   , fParticleInitialAngleMax(0.0f)
    , fParticleSizeMultiplier(1.0f)
    , mFrictionFactor(0.0f)
 {
@@ -77,13 +77,16 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterProperty(UInt, MaxParticles);
    GERegisterPropertyReadonly(UInt, ParticlesCount);
 
+   GERegisterPropertyEnum(ParticleType, ParticleType);
+   GERegisterProperty(ObjectName, ParticleMesh);
+
    GERegisterPropertyBitMask(ParticleSystemSettingsBitMask, Settings);
 
    GERegisterProperty(Float, ParticleLifeTimeMin);
    GERegisterProperty(Float, ParticleLifeTimeMax);
 
-   GERegisterProperty(Float, ParticleInitialAngleMin);
-   GERegisterProperty(Float, ParticleInitialAngleMax);
+   GERegisterProperty(Vector3, ParticleInitialAngleMin);
+   GERegisterProperty(Vector3, ParticleInitialAngleMax);
 
    GERegisterProperty(Bool, EmitterActive)->setClass(ParticleEmissionName);
    GERegisterPropertyEnum(ParticleEmitterType, EmitterType)->setClass(ParticleEmissionName);
@@ -106,7 +109,9 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    GERegisterValueProvider(ParticleLinearVelocityX, ParticleVelocity, 0.0f);
    GERegisterValueProvider(ParticleLinearVelocityY, ParticleVelocity, 0.0f);
    GERegisterValueProvider(ParticleLinearVelocityZ, ParticleVelocity, 0.0f);
-   GERegisterValueProvider(ParticleAngularVelocity, ParticleVelocity, 0.0f);
+   GERegisterValueProvider(ParticleAngularVelocityX, ParticleVelocity, 0.0f);
+   GERegisterValueProvider(ParticleAngularVelocityY, ParticleVelocity, 0.0f);
+   GERegisterValueProvider(ParticleAngularVelocityZ, ParticleVelocity, 0.0f);
    GERegisterProperty(Vector3, ConstantForce)->setClass(ParticleVelocityName);
    GERegisterProperty(Vector3, ConstantAcceleration)->setClass(ParticleVelocityName);
    GERegisterProperty(Vector3, TurbulenceFactor)->setClass(ParticleVelocityName);
@@ -145,6 +150,20 @@ void ComponentParticleSystem::setMaxParticles(uint MaxParticles)
    bVertexDataReallocationPending = true;
 }
 
+void ComponentParticleSystem::setParticleMesh(const ObjectName& pMeshName)
+{
+   if(pMeshName.isEmpty())
+   {
+      mParticleMesh = nullptr;
+   }
+   else
+   {
+      mParticleMesh = SerializableResourcesManager::getInstance()->get<Mesh>(pMeshName);
+   }
+
+   bVertexDataReallocationPending = true;
+}
+
 void ComponentParticleSystem::setEmitterPointA(const Vector3& Point)
 {
    vEmitterPointA = Point;
@@ -160,7 +179,7 @@ void ComponentParticleSystem::setEmitterRadius(float Radius)
    fEmitterRadius = Radius;
 }
 
-void ComponentParticleSystem::setEmitterMesh(const Core::ObjectName& MeshName)
+void ComponentParticleSystem::setEmitterMesh(const ObjectName& MeshName)
 {
    if(MeshName.isEmpty())
    {
@@ -172,7 +191,7 @@ void ComponentParticleSystem::setEmitterMesh(const Core::ObjectName& MeshName)
    }
 }
 
-void ComponentParticleSystem::setEmitterMeshEntity(const Core::ObjectName& EntityName)
+void ComponentParticleSystem::setEmitterMeshEntity(const ObjectName& EntityName)
 {
    if(EntityName.isEmpty())
    {
@@ -183,6 +202,11 @@ void ComponentParticleSystem::setEmitterMeshEntity(const Core::ObjectName& Entit
       Scene* cScene = cOwner->getOwner();
       cEmitterMeshEntity = cScene->getEntity(EntityName);
    }
+}
+
+const ObjectName& ComponentParticleSystem::getParticleMesh() const
+{
+   return mParticleMesh ? mParticleMesh->getName() : ObjectName::Empty;
 }
 
 const Vector3& ComponentParticleSystem::getEmitterPointA() const
@@ -323,7 +347,7 @@ void ComponentParticleSystem::emitParticle()
       getParticleColorB(sParticle.LifeTime, sParticle.RemainingLifeTime),
       getParticleAlpha(sParticle.LifeTime, sParticle.RemainingLifeTime)
    );
-   sParticle.Angle = getRandomFloat(fParticleInitialAngleMin * GE_DEG2RAD, fParticleInitialAngleMax * GE_DEG2RAD);
+   sParticle.Angle = getRandomVector3(mParticleInitialAngleMin * GE_DEG2RAD, mParticleInitialAngleMax * GE_DEG2RAD);
 
    sParticle.LinearVelocity = Vector3
    (
@@ -331,7 +355,12 @@ void ComponentParticleSystem::emitParticle()
       getParticleLinearVelocityY(sParticle.LifeTime, sParticle.RemainingLifeTime),
       getParticleLinearVelocityZ(sParticle.LifeTime, sParticle.RemainingLifeTime)
    );
-   sParticle.AngularVelocity = getParticleAngularVelocity(sParticle.LifeTime, sParticle.RemainingLifeTime);
+   sParticle.AngularVelocity = Vector3
+   (
+      getParticleAngularVelocityX(sParticle.LifeTime, sParticle.RemainingLifeTime),
+      getParticleAngularVelocityY(sParticle.LifeTime, sParticle.RemainingLifeTime),
+      getParticleAngularVelocityZ(sParticle.LifeTime, sParticle.RemainingLifeTime)
+   );
 
    sParticle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(sParticle.LifeTime, sParticle.RemainingLifeTime);
 
@@ -419,9 +448,17 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
       {
          sParticle.LinearVelocity.Z = getParticleLinearVelocityZ(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
-      if(eParticleAngularVelocityType == ValueProviderType::Curve)
+      if(eParticleAngularVelocityXType == ValueProviderType::Curve)
       {
-         sParticle.AngularVelocity = getParticleAngularVelocity(sParticle.LifeTime, sParticle.RemainingLifeTime);
+         sParticle.AngularVelocity.X = getParticleAngularVelocityX(sParticle.LifeTime, sParticle.RemainingLifeTime);
+      }
+      if(eParticleAngularVelocityYType == ValueProviderType::Curve)
+      {
+         sParticle.AngularVelocity.Y = getParticleAngularVelocityY(sParticle.LifeTime, sParticle.RemainingLifeTime);
+      }
+      if(eParticleAngularVelocityZType == ValueProviderType::Curve)
+      {
+         sParticle.AngularVelocity.Z = getParticleAngularVelocityZ(sParticle.LifeTime, sParticle.RemainingLifeTime);
       }
       if(eParticleTextureAtlasIndexType == ValueProviderType::Curve)
       {
@@ -479,6 +516,15 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
    }
 }
 
+void ComponentParticleSystem::setParticleType(ParticleType pParticleType)
+{
+   if(mParticleType != pParticleType)
+   {
+      mParticleType = pParticleType;
+      bVertexDataReallocationPending = true;
+   }
+}
+
 void ComponentParticleSystem::setEmitterActive(bool Active)
 {
    if(bEmitterActive != Active)
@@ -504,28 +550,55 @@ void ComponentParticleSystem::prewarm()
 
 void ComponentParticleSystem::allocateVertexData()
 {
-   sGeometryData.NumVertices = 4 * iMaxParticles;
-   sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
-   sGeometryData.VertexData =
-      Allocator::realloc<float>(sGeometryData.VertexData, sGeometryData.VertexStride * sGeometryData.NumVertices);
-
-   sGeometryData.NumIndices = 6 * iMaxParticles;
-   sGeometryData.Indices =
-      Allocator::realloc<ushort>(sGeometryData.Indices, sGeometryData.NumIndices);
-
-   ushort* pIndices = sGeometryData.Indices;
-   ushort iCurrentVertexOffset = 0;
-
-   for(uint i = 0; i < iMaxParticles; i++)
+   if(mParticleType == ParticleType::Billboard)
    {
-      *pIndices++ = QuadIndices[0] + iCurrentVertexOffset;
-      *pIndices++ = QuadIndices[1] + iCurrentVertexOffset;
-      *pIndices++ = QuadIndices[2] + iCurrentVertexOffset;
-      *pIndices++ = QuadIndices[3] + iCurrentVertexOffset;
-      *pIndices++ = QuadIndices[4] + iCurrentVertexOffset;
-      *pIndices++ = QuadIndices[5] + iCurrentVertexOffset;
+      sGeometryData.NumVertices = 4 * iMaxParticles;
+      sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
+      sGeometryData.VertexData =
+         Allocator::realloc<float>(sGeometryData.VertexData, sGeometryData.VertexStride * sGeometryData.NumVertices);
 
-      iCurrentVertexOffset += 4;
+      sGeometryData.NumIndices = 6 * iMaxParticles;
+      sGeometryData.Indices =
+         Allocator::realloc<ushort>(sGeometryData.Indices, sGeometryData.NumIndices);
+
+      ushort* indices = sGeometryData.Indices;
+      ushort currentVertexOffset = 0u;
+
+      for(uint32_t i = 0u; i < iMaxParticles; i++)
+      {
+         *indices++ = QuadIndices[0] + currentVertexOffset;
+         *indices++ = QuadIndices[1] + currentVertexOffset;
+         *indices++ = QuadIndices[2] + currentVertexOffset;
+         *indices++ = QuadIndices[3] + currentVertexOffset;
+         *indices++ = QuadIndices[4] + currentVertexOffset;
+         *indices++ = QuadIndices[5] + currentVertexOffset;
+
+         currentVertexOffset += 4u;
+      }
+   }
+   else if(mParticleMesh)
+   {
+      sGeometryData.NumVertices = mParticleMesh->getVertexCount() * iMaxParticles;
+      sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
+      sGeometryData.VertexData =
+         Allocator::realloc<float>(sGeometryData.VertexData, sGeometryData.VertexStride * sGeometryData.NumVertices);
+
+      sGeometryData.NumIndices = mParticleMesh->getGeometryData().NumIndices * iMaxParticles;
+      sGeometryData.Indices =
+         Allocator::realloc<ushort>(sGeometryData.Indices, sGeometryData.NumIndices);
+
+      ushort* indices = sGeometryData.Indices;
+      ushort currentVertexOffset = 0u;
+
+      for(uint32_t i = 0u; i < iMaxParticles; i++)
+      {
+         for(uint32_t j = 0u; j < mParticleMesh->getGeometryData().NumIndices; j++)
+         {
+            *indices++ = mParticleMesh->getGeometryData().Indices[j] + currentVertexOffset;
+         }
+
+         currentVertexOffset += mParticleMesh->getVertexCount();
+      }
    }
 
    if(lParticles.size() > iMaxParticles)
@@ -536,6 +609,18 @@ void ComponentParticleSystem::allocateVertexData()
 }
 
 void ComponentParticleSystem::composeVertexData()
+{
+   if(mParticleType == ParticleType::Billboard)
+   {
+      composeBillboardVertexData();
+   }
+   else if(mParticleMesh)
+   {
+      composeMeshVertexData();
+   }
+}
+
+void ComponentParticleSystem::composeBillboardVertexData()
 {
    Vector3 vCameraRight;
    Vector3 vCameraUp;
@@ -564,7 +649,7 @@ void ComponentParticleSystem::composeVertexData()
       vCameraForward = Vector3::UnitZ;
    }
 
-   const Texture* cDiffuseTexture = 0;
+   const Texture* cDiffuseTexture = nullptr;
 
    if(!vMaterialPassList.empty())
    {
@@ -591,13 +676,13 @@ void ComponentParticleSystem::composeVertexData()
 
       Matrix4 mTransform;
 
-      if(fabsf(sParticle.Angle) < GE_EPSILON)
+      if(fabsf(sParticle.Angle.Z) < GE_EPSILON)
       {
          Matrix4MakeIdentity(&mTransform);
       }
       else
       {
-         Rotation cRotation = Rotation(vCameraForward, sParticle.Angle);
+         Rotation cRotation = Rotation(vCameraForward, sParticle.Angle.Z);
          mTransform = cRotation.getRotationMatrix();
       }
 
@@ -648,6 +733,56 @@ void ComponentParticleSystem::composeVertexData()
 
    sGeometryData.NumVertices = (uint)lParticles.size() * 4;
    sGeometryData.NumIndices = (uint)lParticles.size() * 6;
+}
+
+void ComponentParticleSystem::composeMeshVertexData()
+{
+   ComponentCamera* camera = RenderSystem::getInstance()->getActiveCamera();
+   const Vector3& cameraWorldPosition = camera->getTransform()->getWorldPosition();
+
+   std::sort(lParticles.begin(), lParticles.end(), [&](const Particle& P1, const Particle& P2) -> bool
+   {
+      Vector3 vP1ToCamera = cameraWorldPosition - P1.Position;
+      Vector3 vP2ToCamera = cameraWorldPosition - P2.Position;
+      return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
+   });
+
+   float* vertexData = sGeometryData.VertexData;
+
+   for(ParticleList::iterator it = lParticles.begin(); it != lParticles.end(); it++)
+   {
+      Particle& particle = *it;
+
+      Rotation rotation(particle.Angle);
+      Matrix4 transform = rotation.getRotationMatrix();
+
+      transform.m[GE_M4_1_4] = particle.Position.X;
+      transform.m[GE_M4_2_4] = particle.Position.Y;
+      transform.m[GE_M4_3_4] = particle.Position.Z;
+
+      const Vector3 particleSize(particle.Size, particle.Size, particle.Size);
+      Matrix4Scale(&transform, particleSize);
+
+      const uint32_t meshFloatsPerVertex = (uint32_t)(mParticleMesh->getGeometryData().VertexStride / sizeof(float));
+
+      for(uint32_t i = 0u; i < mParticleMesh->getVertexCount(); i++)
+      {
+         const uint32_t meshVertexOffset = i * meshFloatsPerVertex;
+         const float* meshVertexData = mParticleMesh->getGeometryData().VertexData + meshVertexOffset;
+
+         Vector3 vertexPosition(meshVertexData[0], meshVertexData[1], meshVertexData[2]);
+         Matrix4Transform(transform, &vertexPosition);
+
+         const Vector2 vertexUV(meshVertexData[6], meshVertexData[7]);
+
+         *vertexData++ = vertexPosition.X; *vertexData++ = vertexPosition.Y; *vertexData++ = vertexPosition.Z;
+         *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
+         *vertexData++ = vertexUV.X; *vertexData++ = vertexUV.Y;
+      }
+   }
+
+   sGeometryData.NumVertices = (uint32_t)lParticles.size() * mParticleMesh->getVertexCount();
+   sGeometryData.NumIndices = (uint32_t)lParticles.size() * mParticleMesh->getGeometryData().NumIndices;
 }
 
 float ComponentParticleSystem::getRandomFloat(float fMin, float fMax)

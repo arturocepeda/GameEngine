@@ -21,6 +21,15 @@
 
 namespace GE { namespace Entities
 {
+   GESerializableEnum(ParticleType)
+   {
+      Billboard,
+      Mesh,
+
+      Count
+   };
+
+
    GESerializableEnum(ParticleSystemSettingsBitMask)
    {
       Prewarm         = 1 << 0,
@@ -46,12 +55,12 @@ namespace GE { namespace Entities
    {
       Vector3 Position;
       float Size;
-      float Angle;
       Color DiffuseColor;
-      uint TextureAtlasIndex;
+      Vector3 Angle;
+      uint32_t TextureAtlasIndex;
 
       Vector3 LinearVelocity;
-      float AngularVelocity;
+      Vector3 AngularVelocity;
 
       float LifeTime;
       float RemainingLifeTime;
@@ -217,10 +226,12 @@ namespace GE { namespace Entities
       bool bVertexDataReallocationPending;
       float fElapsedTimeSinceLastEmission;
 
+      ParticleType mParticleType;
       ParticleEmitterType eEmitterType;
       Vector3 vEmitterPointA;
       Vector3 vEmitterPointB;
       float fEmitterRadius;
+      Content::Mesh* mParticleMesh;
       Content::Mesh* cEmitterMesh;
       Entity* cEmitterMeshEntity;
 
@@ -232,8 +243,8 @@ namespace GE { namespace Entities
       float fParticleLifeTimeMin;
       float fParticleLifeTimeMax;
 
-      float fParticleInitialAngleMin;
-      float fParticleInitialAngleMax;
+      Vector3 mParticleInitialAngleMin;
+      Vector3 mParticleInitialAngleMax;
 
       float fParticleSizeMultiplier;
 
@@ -247,6 +258,8 @@ namespace GE { namespace Entities
 
       void allocateVertexData();
       void composeVertexData();
+      void composeBillboardVertexData();
+      void composeMeshVertexData();
 
       static float getRandomFloat(float fMin, float fMax);
       static Vector3 getRandomVector3(const Vector3& vMin, const Vector3& vMax);
@@ -265,11 +278,15 @@ namespace GE { namespace Entities
 
       uint getParticlesCount() const { return (uint)lParticles.size(); }
 
+      void setParticleMesh(const Core::ObjectName& pMeshName);
+
       void setEmitterPointA(const Vector3& Point);
       void setEmitterPointB(const Vector3& Point);
       void setEmitterRadius(float Radius);
       void setEmitterMesh(const Core::ObjectName& MeshName);
       void setEmitterMeshEntity(const Core::ObjectName& EntityName);
+
+      const Core::ObjectName& getParticleMesh() const;
 
       const Vector3& getEmitterPointA() const;
       const Vector3& getEmitterPointB() const;
@@ -282,6 +299,7 @@ namespace GE { namespace Entities
 
       void update();
 
+      GEDefaultGetter(ParticleType, ParticleType, m);
       ParticleEmitterType getEmitterType() const { return eEmitterType; }
       bool getEmitterActive() const { return bEmitterActive; }
       uint8_t getSettings() const { return mSettings; }
@@ -291,8 +309,8 @@ namespace GE { namespace Entities
       float getParticleLifeTimeMin() const { return fParticleLifeTimeMin; }
       float getParticleLifeTimeMax() const { return fParticleLifeTimeMax; }
 
-      float getParticleInitialAngleMin() const { return fParticleInitialAngleMin; }
-      float getParticleInitialAngleMax() const { return fParticleInitialAngleMax; }
+      const Vector3& getParticleInitialAngleMin() const { return mParticleInitialAngleMin; }
+      const Vector3& getParticleInitialAngleMax() const { return mParticleInitialAngleMax; }
 
       float getParticleSizeMultiplier() const { return fParticleSizeMultiplier; }
 
@@ -301,6 +319,7 @@ namespace GE { namespace Entities
       GEDefaultGetter(const Vector3&, TurbulenceFactor, m);
       GEDefaultGetter(float, FrictionFactor, m);
 
+      void setParticleType(ParticleType pParticleType);
       void setEmitterType(ParticleEmitterType EmitterType) { eEmitterType = EmitterType; }
       void setEmitterActive(bool Active);
       void setSettings(uint8_t pValue) { mSettings = pValue; }
@@ -310,8 +329,8 @@ namespace GE { namespace Entities
       void setParticleLifeTimeMin(float Value) { fParticleLifeTimeMin = Value; }
       void setParticleLifeTimeMax(float Value) { fParticleLifeTimeMax = Value; }
 
-      void setParticleInitialAngleMin(float Value) { fParticleInitialAngleMin = Value; }
-      void setParticleInitialAngleMax(float Value) { fParticleInitialAngleMax = Value; }
+      void setParticleInitialAngleMin(const Vector3& Value) { mParticleInitialAngleMin = Value; }
+      void setParticleInitialAngleMax(const Vector3& Value) { mParticleInitialAngleMax = Value; }
 
       void setParticleSizeMultiplier(float Value) { fParticleSizeMultiplier = Value; }
 
@@ -328,7 +347,9 @@ namespace GE { namespace Entities
       GEValueProvider(ParticleLinearVelocityX)
       GEValueProvider(ParticleLinearVelocityY)
       GEValueProvider(ParticleLinearVelocityZ)
-      GEValueProvider(ParticleAngularVelocity)
+      GEValueProvider(ParticleAngularVelocityX)
+      GEValueProvider(ParticleAngularVelocityY)
+      GEValueProvider(ParticleAngularVelocityZ)
       GEValueProvider(ParticleTextureAtlasIndex)
    };
 }}

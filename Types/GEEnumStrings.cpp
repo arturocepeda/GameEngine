@@ -148,6 +148,12 @@ namespace GE { namespace Entities
       "SkyBox"
    };
 
+   const char* strParticleType[] =
+   {
+      "Billboard",
+      "Mesh"
+   };
+
    const char* strParticleSystemSettingsBitMask[] =
    {
       "Prewarm",
