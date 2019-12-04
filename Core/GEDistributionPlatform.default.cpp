@@ -34,7 +34,7 @@ const char* DistributionPlatform::getUserName() const
    return defaultUserName;
 }
 
-void DistributionPlatform::unlockAchievement(const ObjectName& pAchievementName)
+void DistributionPlatform::unlockAchievement(const ObjectName&)
 {
 }
 
