@@ -935,6 +935,7 @@ void Environment::registerTypes()
       "DistributionPlatform"
       , "getInstance", &DistributionPlatform::getInstance
       , "getUserName", &DistributionPlatform::getUserName
+      , "unlockAchievement", &DistributionPlatform::unlockAchievement
       , "updateLeaderboardScore", &DistributionPlatform::updateLeaderboardScore
       , "resetLeaderboard", &DistributionPlatform::resetLeaderboard
       , "requestLeaderboardScores", &DistributionPlatform::requestLeaderboardScores

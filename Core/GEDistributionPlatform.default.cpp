@@ -34,6 +34,10 @@ const char* DistributionPlatform::getUserName() const
    return defaultUserName;
 }
 
+void DistributionPlatform::unlockAchievement(const ObjectName& pAchievementName)
+{
+}
+
 void DistributionPlatform::updateLeaderboardScore(const ObjectName&, uint32_t)
 {
 }

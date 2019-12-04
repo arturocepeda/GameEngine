@@ -45,6 +45,9 @@ namespace GE { namespace Core
 
       const char* getUserName() const;
 
+      // Achievements
+      void unlockAchievement(const ObjectName& pAchievementName);
+
       // Leaderboards
       void updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore);
       void resetLeaderboard(const ObjectName& pLeaderboardName);

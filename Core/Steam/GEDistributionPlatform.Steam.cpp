@@ -23,6 +23,60 @@ using namespace GE;
 using namespace GE::Core;
 
 //
+//  SteamCallback
+//
+template<typename T>
+class SteamCallback : private CCallbackBase
+{
+public:
+	typedef std::function<void(T*, bool)> func_t;
+
+private:
+	func_t mFunc;
+
+	virtual void Run(void* pParam) override
+   {
+	   mFunc((T*)pParam, false);
+   }
+	virtual void Run(void* pParam, bool pIOFailure, SteamAPICall_t) override
+   {
+      mFunc((T*)pParam, pIOFailure);
+   }
+	virtual int GetCallbackSizeBytes() override
+   {
+      return sizeof(T);
+   }
+
+public:
+	SteamCallback()
+      : mFunc(nullptr)
+   {
+	   m_iCallback = T::k_iCallback;
+   }
+	~SteamCallback()
+   {
+      Cancel();
+   }
+	
+	void Set(func_t pFunc)
+   {
+      SteamAPI_UnregisterCallback(this);
+
+	   mFunc = pFunc;
+
+      SteamAPI_RegisterCallback(this, m_iCallback);
+   }
+	void Cancel()
+   {
+		SteamAPI_UnregisterCallback(this);
+      mFunc = nullptr;
+   }
+};
+
+SteamCallback<UserStatsReceived_t> gCallbackRequestCurrentStats;
+
+
+//
 //  SteamCallResult
 //
 template<typename T>
@@ -110,7 +164,17 @@ bool DistributionPlatform::init() const
 {
    const bool success = SteamAPI_Init();
 
-   if(!success)
+   if(success)
+   {
+      gCallbackRequestCurrentStats.Set([](UserStatsReceived_t* pResult, bool pIOFailure)
+      {
+         (void)pResult;
+         (void)pIOFailure;
+      });
+
+      SteamUserStats()->RequestCurrentStats();
+   }
+   else
    {
       Log::log(LogType::Error, "The Steam API could not be initialized");
    }
@@ -131,6 +195,18 @@ void DistributionPlatform::shutdown() const
 const char* DistributionPlatform::getUserName() const
 {
    return SteamFriends()->GetPersonaName();
+}
+
+void DistributionPlatform::unlockAchievement(const ObjectName& pAchievementName)
+{
+   bool achievementUnlocked = false;
+   SteamUserStats()->GetAchievement(pAchievementName.getString(), &achievementUnlocked);
+
+   if(!achievementUnlocked)
+   {
+      SteamUserStats()->SetAchievement(pAchievementName.getString());
+      SteamUserStats()->StoreStats();
+   }
 }
 
 void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore)
