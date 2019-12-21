@@ -54,9 +54,10 @@ namespace GE { namespace Entities
    struct Particle
    {
       Vector3 Position;
-      float Size;
-      Color DiffuseColor;
       Vector3 Angle;
+      Vector3 Scale;
+      Color DiffuseColor;
+      float Size;
       uint32_t TextureAtlasIndex;
 
       Vector3 LinearVelocity;
@@ -344,6 +345,9 @@ namespace GE { namespace Entities
       GEValueProvider(ParticleColorB)
       GEValueProvider(ParticleAlpha)
       GEValueProvider(ParticleSize)
+      GEValueProvider(ParticleScaleX)
+      GEValueProvider(ParticleScaleY)
+      GEValueProvider(ParticleScaleZ)
       GEValueProvider(ParticleLinearVelocityX)
       GEValueProvider(ParticleLinearVelocityY)
       GEValueProvider(ParticleLinearVelocityZ)

@@ -105,6 +105,9 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
 
    GERegisterValueProvider(ParticleSize, ParticleSize, 1.0f);
    GERegisterProperty(Float, ParticleSizeMultiplier)->setClass(ParticleSizeName);
+   GERegisterValueProvider(ParticleScaleX, ParticleSize, 1.0f);
+   GERegisterValueProvider(ParticleScaleY, ParticleSize, 1.0f);
+   GERegisterValueProvider(ParticleScaleZ, ParticleSize, 1.0f);
 
    GERegisterValueProvider(ParticleLinearVelocityX, ParticleVelocity, 0.0f);
    GERegisterValueProvider(ParticleLinearVelocityY, ParticleVelocity, 0.0f);
@@ -336,10 +339,14 @@ void ComponentParticleSystem::emitParticle()
       break;
    }
 
-   particle.LifeTime = getRandomFloat(fParticleLifeTimeMin, fParticleLifeTimeMax);
-   particle.RemainingLifeTime = particle.LifeTime;
+   particle.Angle = getRandomVector3(mParticleInitialAngleMin * GE_DEG2RAD, mParticleInitialAngleMax * GE_DEG2RAD);
+   particle.Scale = Vector3
+   (
+      getParticleScaleX(particle.LifeTime, particle.RemainingLifeTime),
+      getParticleScaleY(particle.LifeTime, particle.RemainingLifeTime),
+      getParticleScaleZ(particle.LifeTime, particle.RemainingLifeTime)
+   );
 
-   particle.Size = getParticleSize(particle.LifeTime, particle.RemainingLifeTime) * fParticleSizeMultiplier;
    particle.DiffuseColor = Color
    (
       getParticleColorR(particle.LifeTime, particle.RemainingLifeTime),
@@ -347,7 +354,10 @@ void ComponentParticleSystem::emitParticle()
       getParticleColorB(particle.LifeTime, particle.RemainingLifeTime),
       getParticleAlpha(particle.LifeTime, particle.RemainingLifeTime)
    );
-   particle.Angle = getRandomVector3(mParticleInitialAngleMin * GE_DEG2RAD, mParticleInitialAngleMax * GE_DEG2RAD);
+
+   particle.Size = getParticleSize(particle.LifeTime, particle.RemainingLifeTime) * fParticleSizeMultiplier;
+
+   particle.TextureAtlasIndex = (uint32_t)getParticleTextureAtlasIndex(particle.LifeTime, particle.RemainingLifeTime);
 
    particle.LinearVelocity = Vector3
    (
@@ -362,7 +372,8 @@ void ComponentParticleSystem::emitParticle()
       getParticleAngularVelocityZ(particle.LifeTime, particle.RemainingLifeTime)
    );
 
-   particle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(particle.LifeTime, particle.RemainingLifeTime);
+   particle.LifeTime = getRandomFloat(fParticleLifeTimeMin, fParticleLifeTimeMax);
+   particle.RemainingLifeTime = particle.LifeTime;
 
    lParticles.push_back(particle);
 }
@@ -419,6 +430,18 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
       if(mParticleSizeType == ValueProviderType::Curve)
       {
          particle.Size = getParticleSize(particle.LifeTime, particle.RemainingLifeTime) * fParticleSizeMultiplier;
+      }
+      if(mParticleScaleXType == ValueProviderType::Curve)
+      {
+         particle.Scale.X = getParticleScaleX(particle.LifeTime, particle.RemainingLifeTime);
+      }
+      if(mParticleScaleYType == ValueProviderType::Curve)
+      {
+         particle.Scale.Y = getParticleScaleY(particle.LifeTime, particle.RemainingLifeTime);
+      }
+      if(mParticleScaleZType == ValueProviderType::Curve)
+      {
+         particle.Scale.Z = getParticleScaleZ(particle.LifeTime, particle.RemainingLifeTime);
       }
       if(mParticleColorRType == ValueProviderType::Curve)
       {
@@ -671,12 +694,13 @@ void ComponentParticleSystem::composeBillboardVertexData()
    {
       Particle& particle = *it;
 
-      const float particleHalfSize = particle.Size * 0.5f;
+      const float particleHalfSizeX = particle.Size * particle.Scale.X * 0.5f;
+      const float particleHalfSizeY = particle.Size * particle.Scale.Y * 0.5f;
 
-      Vector3 topLeftPosition = -(cameraRight * particleHalfSize) + (cameraUp * particleHalfSize);
-      Vector3 topRightPosition = (cameraRight * particleHalfSize) + (cameraUp * particleHalfSize);
-      Vector3 bottomLeftPosition = -(cameraRight * particleHalfSize) - (cameraUp * particleHalfSize);
-      Vector3 bottomRightPosition = (cameraRight * particleHalfSize) - (cameraUp * particleHalfSize);
+      Vector3 topLeftPosition = -(cameraRight * particleHalfSizeX) + (cameraUp * particleHalfSizeY);
+      Vector3 topRightPosition = (cameraRight * particleHalfSizeX) + (cameraUp * particleHalfSizeY);
+      Vector3 bottomLeftPosition = -(cameraRight * particleHalfSizeX) - (cameraUp * particleHalfSizeY);
+      Vector3 bottomRightPosition = (cameraRight * particleHalfSizeX) - (cameraUp * particleHalfSizeY);
 
       Matrix4 mTransform;
 
@@ -782,7 +806,7 @@ void ComponentParticleSystem::composeMeshVertexData()
       transform.m[GE_M4_2_4] = particle.Position.Y;
       transform.m[GE_M4_3_4] = particle.Position.Z;
 
-      const Vector3 particleSize(particle.Size, particle.Size, particle.Size);
+      const Vector3 particleSize = particle.Scale * particle.Size;
       Matrix4Scale(&transform, particleSize);
 
       const uint32_t meshFloatsPerVertex = (uint32_t)(mParticleMesh->getGeometryData().VertexStride / sizeof(float));
