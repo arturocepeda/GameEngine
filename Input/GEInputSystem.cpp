@@ -217,9 +217,6 @@ void InputSystem::inputKeyPress(char pKey)
 
 void InputSystem::inputKeyRelease(char pKey)
 {
-   if(!mInputEnabled)
-      return;
-
    InputEvent event;
    event.mType = InputEventType::KeyReleased;
    event.mID = (int16_t)pKey;
@@ -318,9 +315,6 @@ void InputSystem::inputTouchMove(int pID, const Vector2& pPreviousPoint, const V
 
 void InputSystem::inputTouchEnd(int pID, const Vector2& pPoint)
 {
-   if(!mInputEnabled)
-      return;
-
    InputEvent event;
    event.mType = InputEventType::TouchEnd;
    event.mID = (int16_t)pID;
