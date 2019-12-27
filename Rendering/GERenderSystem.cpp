@@ -47,7 +47,6 @@ const ObjectName _ParticleSystem_ = ObjectName("ParticleSystem");
 RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint ScreenHeight)
    : pWindow(Window)
    , bWindowed(Windowed)
-   , bVSync(false)
    , iScreenWidth(ScreenWidth)
    , iScreenHeight(ScreenHeight)
    , cBackgroundColor(Color(0.0f, 0.0f, 0.0f))

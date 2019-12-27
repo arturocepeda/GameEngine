@@ -24,11 +24,13 @@ Settings::Settings()
    : Serializable(ClassName)
    , mTargetFPS(60u)
    , mFullscreen(false)
+   , mVSync(false)
    , mWindowSizeX(1024u)
    , mWindowSizeY(600u)
 {
    GERegisterProperty(UInt, TargetFPS);
    GERegisterProperty(Bool, Fullscreen);
+   GERegisterProperty(Bool, VSync);
    GERegisterProperty(UInt, WindowSizeX);
    GERegisterProperty(UInt, WindowSizeY);
 }

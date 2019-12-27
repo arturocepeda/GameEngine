@@ -91,7 +91,6 @@ namespace GE { namespace Rendering
       void* pDevice;
       void* pWindow;
       bool bWindowed;
-      bool bVSync;
 
       uint iScreenWidth;
       uint iScreenHeight;

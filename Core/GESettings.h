@@ -22,6 +22,7 @@ namespace GE { namespace Core
    private:
       uint32_t mTargetFPS;
       bool mFullscreen;
+      bool mVSync;
       uint32_t mWindowSizeX;
       uint32_t mWindowSizeY;
 
@@ -33,11 +34,13 @@ namespace GE { namespace Core
 
       GEDefaultSetter(uint32_t, TargetFPS, m)
       GEDefaultSetter(bool, Fullscreen, m)
+      GEDefaultSetter(bool, VSync, m)
       GEDefaultSetter(uint32_t, WindowSizeX, m)
       GEDefaultSetter(uint32_t, WindowSizeY, m)
 
       GEDefaultGetter(uint32_t, TargetFPS, m)
       GEDefaultGetter(bool, Fullscreen, m)
+      GEDefaultGetter(bool, VSync, m)
       GEDefaultGetter(uint32_t, WindowSizeX, m)
       GEDefaultGetter(uint32_t, WindowSizeY, m)
    };

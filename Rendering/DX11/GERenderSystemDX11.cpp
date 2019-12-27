@@ -13,6 +13,7 @@
 #include "GERenderSystemDX11.h"
 #include "Core/GEDevice.h"
 #include "Core/GEAllocator.h"
+#include "Core/GESettings.h"
 #include "Core/GEProfiler.h"
 #include "Core/GEApplication.h"
 #include "Core/GEEvents.h"
@@ -1067,7 +1068,7 @@ void RenderSystem::renderEnd()
 {
    GEProfilerMarker("RenderSystem::renderEnd()");
 
-   HRESULT hr = dxSwapChain->Present((UINT)bVSync, 0);
+   HRESULT hr = dxSwapChain->Present((UINT)Settings::getInstance()->getVSync(), 0);
 
    dxContext->DiscardView(dxRenderTargetView.Get());
    dxContext->DiscardView(dxDepthStencilView.Get());
