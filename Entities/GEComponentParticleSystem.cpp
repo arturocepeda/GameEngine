@@ -412,6 +412,13 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
    // active particles
    uint32_t particleIndex = 0;
 
+   Rotation worldRotation;
+   
+   if(GEHasFlag(mSettings, ParticleSystemSettingsBitMask::LocalSpace))
+   {
+      worldRotation = cTransform->getWorldRotation();
+   }
+
    while(particleIndex < (uint32_t)lParticles.size())
    {
       Particle& particle = lParticles[particleIndex];
@@ -424,7 +431,14 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
          continue;
       }
 
-      particle.Position += particle.LinearVelocity * pDeltaTime;
+      Vector3 particleTranslation = particle.LinearVelocity + vConstantForce;
+
+      if(GEHasFlag(mSettings, ParticleSystemSettingsBitMask::LocalSpace))
+      {
+         Matrix4Transform(worldRotation.getRotationMatrix(), &particleTranslation);
+      }
+
+      particle.Position += particleTranslation * pDeltaTime;
       particle.Angle += particle.AngularVelocity * GE_DEG2RAD * pDeltaTime;
 
       if(mParticleSizeType == ValueProviderType::Curve)
@@ -488,7 +502,6 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
          particle.TextureAtlasIndex = (uint)getParticleTextureAtlasIndex(particle.LifeTime, particle.RemainingLifeTime);
       }
 
-      particle.Position += vConstantForce * pDeltaTime;
       particle.LinearVelocity += vConstantAcceleration * pDeltaTime;
 
       if(mTurbulenceFactor.X > GE_EPSILON)

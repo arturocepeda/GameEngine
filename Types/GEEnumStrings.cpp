@@ -157,7 +157,8 @@ namespace GE { namespace Entities
    const char* strParticleSystemSettingsBitMask[] =
    {
       "Prewarm",
-      "DynamicShadows"
+      "DynamicShadows",
+      "LocalSpace"
    };
 
    const char* strParticleEmitterType[] =

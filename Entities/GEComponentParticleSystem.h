@@ -34,8 +34,9 @@ namespace GE { namespace Entities
    {
       Prewarm         = 1 << 0,
       DynamicShadows  = 1 << 1,
+      LocalSpace      = 1 << 2,
 
-      Count = 2
+      Count = 3
    };
 
 
