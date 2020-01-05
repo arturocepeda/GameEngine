@@ -19,7 +19,6 @@
 #include "Core/GEApplication.h"
 #include "Content/GEImageData.h"
 #include "Entities/GEEntity.h"
-#include "Entities/GEComponentUIElement.h"
 #include "pugixml/pugixml.hpp"
 #include "GEOpenGLES20.h"
 
@@ -696,12 +695,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::WorldViewProjectionMatrix), 1, 0, matModelViewProjection.m);
 
    Material* cMaterial = cMaterialPass->getMaterial();
-   Color cDiffuseColor = cMaterial->getDiffuseColor() * cRenderable->getColor();
-
-   ComponentUIElement* cUIElement = cRenderable->getOwner()->getComponent<ComponentUIElement>();
-   
-   if(cUIElement)
-      cDiffuseColor.Alpha *= cUIElement->getAlphaInHierarchy();
+   Color cDiffuseColor = cMaterial->getDiffuseColor() * sRenderOperation.mColor;
 
    glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseColor), 1, &cDiffuseColor.Red);
    glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::SpecularColor), 1, &cMaterial->getSpecularColor().Red);

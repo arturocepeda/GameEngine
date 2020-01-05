@@ -19,7 +19,6 @@
 #include "Core/GEEvents.h"
 #include "Content/GEImageData.h"
 #include "Entities/GEEntity.h"
-#include "Entities/GEComponentUIElement.h"
 #include "pugixml/pugixml.hpp"
 
 using namespace GE::Core;
@@ -945,13 +944,8 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    sShaderConstantsTransform.WorldViewProjectionMatrix = matModelViewProjection;
    dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
 
-   sShaderConstantsMaterial.DiffuseColor = cMaterialPass->getMaterial()->getDiffuseColor() * cRenderable->getColor();
+   sShaderConstantsMaterial.DiffuseColor = cMaterialPass->getMaterial()->getDiffuseColor() * sRenderOperation.mColor;
    sShaderConstantsMaterial.SpecularColor = cMaterialPass->getMaterial()->getSpecularColor();
-
-   ComponentUIElement* cUIElement = cRenderable->getOwner()->getComponent<ComponentUIElement>();
-
-   if(cUIElement)
-      sShaderConstantsMaterial.DiffuseColor.Alpha *= cUIElement->getAlphaInHierarchy();
 
    dxContext->UpdateSubresource(dxConstantBufferMaterial, 0, NULL, &sShaderConstantsMaterial, 0, 0);
 

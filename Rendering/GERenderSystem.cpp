@@ -824,6 +824,13 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
    sRenderOperation.mData = const_cast<GeometryData*>(&renderable->getGeometryData());
    const uint32_t renderableID = renderable->getOwner()->getFullName().getID();
 
+   sRenderOperation.mColor = renderable->getColor();
+
+   if(uiElement)
+   {
+      sRenderOperation.mColor.Alpha *= uiElement->getAlphaInHierarchy();
+   }
+
    if(renderable->getClassName() == _Mesh_)
    {
       ComponentMesh* cMesh = static_cast<ComponentMesh*>(renderable);

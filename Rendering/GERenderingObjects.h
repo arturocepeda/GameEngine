@@ -83,6 +83,7 @@ namespace GE { namespace Rendering
       Entities::ComponentRenderable* mRenderable;
       Content::GeometryData* mData;
       int mGroup;
+      Color mColor;
 
       RenderOperation()
          : mIndex(0u)
