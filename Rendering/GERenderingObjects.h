@@ -93,7 +93,7 @@ namespace GE { namespace Rendering
       uint16_t mVertexIndexSize;
 
       MaterialPass* mRenderMaterialPass;
-      Entities::ComponentRenderable* mRenderable;
+      Texture* mDiffuseTexture;
       Content::GeometryData* mData;
       Matrix4 mWorldTransform;
       Color mColor;
@@ -105,7 +105,7 @@ namespace GE { namespace Rendering
          , mGroup(0u)
          , mVertexIndexSize(2u)
          , mRenderMaterialPass(nullptr)
-         , mRenderable(nullptr)
+         , mDiffuseTexture(nullptr)
          , mData(nullptr)
       {
          Matrix4MakeIdentity(&mWorldTransform);

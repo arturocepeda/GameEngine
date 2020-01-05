@@ -802,17 +802,15 @@ void RenderSystem::renderShadowMap()
       for(; it != vShadowedMeshesToRender.end(); it++)
       {
          const RenderOperation& sRenderOperation = *it;
-         Entity* cEntity = sRenderOperation.mRenderable->getOwner();
 
          // set uniform
-         const Matrix4& matModel = cEntity->getComponent<ComponentTransform>()->getGlobalWorldMatrix();
-         Matrix4Multiply(matLightViewProjection, matModel, &sShaderConstantsTransform.WorldViewProjectionMatrix);
+         Matrix4Multiply(matLightViewProjection, sRenderOperation.mWorldTransform, &sShaderConstantsTransform.WorldViewProjectionMatrix);
          dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
 
          // draw
          GESTLMap(uint, GeometryRenderInfo)* mGeometryRegistry = 0;
 
-         if(sRenderOperation.mRenderable->getGeometryType() == GeometryType::Static)
+         if(sRenderOperation.isStatic())
          {
             mGeometryRegistry = &mStaticGeometryToRender;
             bindBuffers(sGPUBufferPairs[GeometryGroup::MeshStatic]);
@@ -823,13 +821,13 @@ void RenderSystem::renderShadowMap()
             bindBuffers(sGPUBufferPairs[GeometryGroup::MeshDynamic]);
          }
 
-         GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mGeometryRegistry->find(cEntity->getFullName().getID());
+         GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mGeometryRegistry->find(sRenderOperation.mGeometryID);
          const GeometryRenderInfo& sGeometryInfo = itInfo->second;
          UINT iStartIndexLocation = sGeometryInfo.mIndexBufferOffset / sizeof(ushort);
-         INT iBaseVertexLocation = sGeometryInfo.mVertexBufferOffset / sRenderOperation.mRenderable->getGeometryData().VertexStride;
+         INT iBaseVertexLocation = sGeometryInfo.mVertexBufferOffset / sRenderOperation.mData->VertexStride;
 
          dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-         dxContext->DrawIndexed(sRenderOperation.mRenderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
+         dxContext->DrawIndexed(sRenderOperation.mData->NumIndices, iStartIndexLocation, iBaseVertexLocation);
       }
    }
 
@@ -843,7 +841,6 @@ void RenderSystem::renderShadowMap()
       for(; it != vShadowedParticlesToRender.end(); it++)
       {
          const RenderOperation& sRenderOperation = *it;
-         Entity* cEntity = sRenderOperation.mRenderable->getOwner();
 
          // set uniform
          memcpy(&sShaderConstantsTransform.WorldViewProjectionMatrix, &matLightViewProjection, sizeof(Matrix4));
@@ -857,13 +854,13 @@ void RenderSystem::renderShadowMap()
          // draw
          bindBuffers(sGPUBufferPairs[GeometryGroup::Particles]);
 
-         GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
+         GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mDynamicGeometryToRender.find(sRenderOperation.mGeometryID);
          const GeometryRenderInfo& sGeometryInfo = itInfo->second;
          UINT iStartIndexLocation = sGeometryInfo.mIndexBufferOffset / sizeof(ushort);
-         INT iBaseVertexLocation = sGeometryInfo.mVertexBufferOffset / sRenderOperation.mRenderable->getGeometryData().VertexStride;
+         INT iBaseVertexLocation = sGeometryInfo.mVertexBufferOffset / sRenderOperation.mData->VertexStride;
 
          dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-         dxContext->DrawIndexed(sRenderOperation.mRenderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
+         dxContext->DrawIndexed(sRenderOperation.mData->NumIndices, iStartIndexLocation, iBaseVertexLocation);
       }
    }
 
@@ -894,8 +891,6 @@ void RenderSystem::renderBegin()
 void RenderSystem::render(const RenderOperation& sRenderOperation)
 {
    GEProfilerMarker("RenderSystem::render()");
-
-   ComponentRenderable* cRenderable = sRenderOperation.mRenderable;
 
    const Matrix4& mViewProjection = GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::RenderThroughActiveCamera)
       ? cActiveCamera->getViewProjectionMatrix()
@@ -948,14 +943,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    }
 
    // bind diffuse texture
-   if(cRenderable->getClassName() == _Label_)
-   {
-      bindTexture(TextureSlot::Diffuse, static_cast<ComponentLabel*>(cRenderable)->getFont()->getTexture());
-   }
-   else
-   {
-      bindTexture(TextureSlot::Diffuse, cMaterialPass->getMaterial()->getDiffuseTexture());
-   }
+   bindTexture(TextureSlot::Diffuse, sRenderOperation.mDiffuseTexture);
 
    bool bRenderOncePerLight =
       GEHasFlag(cMaterialPass->getMaterial()->getFlags(), MaterialFlagsBitMask::RenderOncePerLight) &&

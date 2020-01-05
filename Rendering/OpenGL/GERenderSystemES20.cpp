@@ -557,18 +557,16 @@ void RenderSystem::renderShadowMap()
       for(; it != vShadowedMeshesToRender.end(); it++)
       {
          const RenderOperation& sRenderOperation = *it;
-         Entity* cEntity = sRenderOperation.mRenderable->getOwner();
 
          // set uniform
-         const Matrix4& matModel = cEntity->getComponent<ComponentTransform>()->getGlobalWorldMatrix();
          Matrix4 matLightWVP;
-         Matrix4Multiply(matLightViewProjection, matModel, &matLightWVP);
+         Matrix4Multiply(matLightViewProjection, sRenderOperation.mWorldTransform, &matLightWVP);
          glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
 
          // bind buffers
          GESTLMap(uint, GeometryRenderInfo)* cGeometryRegistry = 0;
 
-         if(sRenderOperation.mRenderable->getGeometryType() == GeometryType::Static)
+         if(sRenderOperation.isStatic())
          {
             cGeometryRegistry = &mStaticGeometryToRender;
             bindBuffers(sGPUBufferPairs[GeometryGroup::MeshStatic]);
@@ -580,15 +578,15 @@ void RenderSystem::renderShadowMap()
          }
 
          // set vertex declaration
-         const int iVertexStride = sRenderOperation.mRenderable->getGeometryData().VertexStride;
+         const int iVertexStride = sRenderOperation.mData->VertexStride;
          glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, 0);
 
          // draw
-         std::map<uint, GeometryRenderInfo>::const_iterator itInfo = cGeometryRegistry->find(cEntity->getFullName().getID());
+         std::map<uint, GeometryRenderInfo>::const_iterator itInfo = cGeometryRegistry->find(sRenderOperation.mGeometryID);
          const GeometryRenderInfo& sGeometryInfo = itInfo->second;
          char* pOffset = (char*)((uintPtrSize)sGeometryInfo.mIndexBufferOffset);
 
-         glDrawElements(GL_TRIANGLES, sRenderOperation.mRenderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
+         glDrawElements(GL_TRIANGLES, sRenderOperation.mData->NumIndices, GL_UNSIGNED_INT, pOffset);
       }
    }
 
@@ -601,7 +599,6 @@ void RenderSystem::renderShadowMap()
       for(; it != vShadowedParticlesToRender.end(); it++)
       {
          const RenderOperation& sRenderOperation = *it;
-         Entity* cEntity = sRenderOperation.mRenderable->getOwner();
 
          // set uniform
          glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightViewProjection.m);
@@ -620,11 +617,11 @@ void RenderSystem::renderShadowMap()
          static_cast<RenderSystemES20*>(this)->setVertexDeclaration(sRenderOperation);
 
          // draw
-         std::map<uint, GeometryRenderInfo>::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
+         std::map<uint, GeometryRenderInfo>::const_iterator itInfo = mDynamicGeometryToRender.find(sRenderOperation.mGeometryID);
          const GeometryRenderInfo& sGeometryInfo = itInfo->second;
          char* pOffset = (char*)((uintPtrSize)sGeometryInfo.mIndexBufferOffset);
 
-         glDrawElements(GL_TRIANGLES, sRenderOperation.mRenderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
+         glDrawElements(GL_TRIANGLES, sRenderOperation.mData->NumIndices, GL_UNSIGNED_INT, pOffset);
       }
    }
    
@@ -712,14 +709,9 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       }
    }
 
-   if(sRenderOperation.mRenderable->getClassName() == _Label_)
+   if(sRenderOperation.mDiffuseTexture)
    {
-      bindTexture(TextureSlot::Diffuse, static_cast<ComponentLabel*>(sRenderOperation.mRenderable)->getFont()->getTexture());
-      glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), (uint)TextureSlot::Diffuse);
-   }
-   else if(cMaterial->getDiffuseTexture())
-   {
-      bindTexture(TextureSlot::Diffuse, cMaterial->getDiffuseTexture());
+      bindTexture(TextureSlot::Diffuse, sRenderOperation.mDiffuseTexture);
       glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), (uint)TextureSlot::Diffuse);
    }
 

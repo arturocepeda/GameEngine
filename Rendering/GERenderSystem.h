@@ -172,9 +172,10 @@ namespace GE { namespace Rendering
 
       void loadRenderingData(const Content::GeometryData* pData, GPUBufferPair& pBuffers, uint32_t pIndexSize = 2u);
 
-      void queueForRenderingSingle(RenderOperation& sRenderOperation);
-      void queueForRendering3DUI(RenderOperation& pRenderOperation);
-      void queueForRenderingBatch(RenderOperation& sBatch);
+      void queueForRenderingSingle(Entities::ComponentRenderable* pRenderable, RenderOperation& sRenderOperation);
+      void queueForRendering3DUI(Entities::ComponentRenderable* pRenderable, RenderOperation& pRenderOperation);
+      void queueForRenderingBatch(Entities::ComponentRenderable* pRenderable, RenderOperation& sBatch);
+
       void prepareBatchForRendering(const RenderOperation& sBatch);
 
       void render(const RenderOperation& sRenderOperation);
