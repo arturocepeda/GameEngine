@@ -227,34 +227,37 @@ void RenderSystem::loadMaterial(Material* cMaterial)
 
    if(GEHasFlag(cMaterial->getFlags(), MaterialFlagsBitMask::BatchRendering))
    {
-      const uint iMaterialID = cMaterial->getName().getID();
-      mBatches[iMaterialID] = RenderOperation();
+      const uint32_t materialID = cMaterial->getName().getID();
+      mBatches[materialID] = RenderOperation();
 
-      GESTLMap(uint, RenderOperation)::iterator it = mBatches.find(iMaterialID);
-      RenderOperation& sRenderBatch = it->second;
+      GESTLMap(uint32_t, RenderOperation)::iterator it = mBatches.find(materialID);
+      RenderOperation& renderBatch = it->second;
 
-      sRenderBatch.RenderMaterialPass = Allocator::alloc<MaterialPass>();
-      GEInvokeCtor(MaterialPass, sRenderBatch.RenderMaterialPass)();
-      sRenderBatch.RenderMaterialPass->setMaterial(cMaterial);
+      renderBatch.mRenderMaterialPass = Allocator::alloc<MaterialPass>();
+      GEInvokeCtor(MaterialPass, renderBatch.mRenderMaterialPass)();
+      renderBatch.mRenderMaterialPass->setMaterial(cMaterial);
 
-      sRenderBatch.Data.VertexData = Allocator::alloc<float>(RenderBatchVertexDataFloatsCount);
-      sRenderBatch.Data.Indices = Allocator::alloc<ushort>(RenderBatchIndicesCount);
+      renderBatch.mData = Allocator::alloc<GeometryData>();
+      GEInvokeCtor(GeometryData, renderBatch.mData);
+      renderBatch.mData->VertexData = Allocator::alloc<float>(RenderBatchVertexDataFloatsCount);
+      renderBatch.mData->Indices = Allocator::alloc<ushort>(RenderBatchIndicesCount);
    }
 }
 
 void RenderSystem::unloadMaterial(const ObjectName& cMaterialName)
 {
-   Material* cMaterial = mMaterials.get(cMaterialName);
-   GEAssert(cMaterial);
+   Material* material = mMaterials.get(cMaterialName);
+   GEAssert(material);
 
-   if(GEHasFlag(cMaterial->getFlags(), MaterialFlagsBitMask::BatchRendering))
+   if(GEHasFlag(material->getFlags(), MaterialFlagsBitMask::BatchRendering))
    {
-      GESTLMap(uint, RenderOperation)::iterator it = mBatches.find(cMaterial->getName().getID());
-      RenderOperation& sRenderBatch = it->second;
-      GEInvokeDtor(MaterialPass, sRenderBatch.RenderMaterialPass);
-      Allocator::free(sRenderBatch.RenderMaterialPass);
-      Allocator::free(sRenderBatch.Data.VertexData);
-      Allocator::free(sRenderBatch.Data.Indices);
+      GESTLMap(uint32_t, RenderOperation)::iterator it = mBatches.find(material->getName().getID());
+      RenderOperation& renderBatch = it->second;
+      GEInvokeDtor(MaterialPass, renderBatch.mRenderMaterialPass);
+      Allocator::free(renderBatch.mRenderMaterialPass);
+      Allocator::free(renderBatch.mData->VertexData);
+      Allocator::free(renderBatch.mData->Indices);
+      Allocator::free(renderBatch.mData);
       mBatches.erase(it);
    }
 
@@ -731,64 +734,64 @@ void RenderSystem::queueForRendering(ComponentRenderable* Renderable, uint Reque
 
    for(uint i = 0; i < Renderable->getMaterialPassCount(); i++)
    {
-      MaterialPass* cMaterialPass = Renderable->getMaterialPass(i);
+      MaterialPass* materialPass = Renderable->getMaterialPass(i);
 
-      if(!cMaterialPass->getMaterial() || !cMaterialPass->getActive())
+      if(!materialPass->getMaterial() || !materialPass->getActive())
          continue;
 
-      if(GEHasFlag(cMaterialPass->getMaterial()->getFlags(), MaterialFlagsBitMask::BatchRendering))
+      if(GEHasFlag(materialPass->getMaterial()->getFlags(), MaterialFlagsBitMask::BatchRendering))
       {
          GEMutexLock(mTextureLoadMutex);
 
-         const uint iMaterialID = cMaterialPass->getMaterial()->getName().getID();
-         RenderOperation& sBatch = mBatches.find(iMaterialID)->second;
-         sBatch.Renderable = Renderable;
-         sBatch.RenderMaterialPass = cMaterialPass;
+         const uint32_t materialID = materialPass->getMaterial()->getName().getID();
+         RenderOperation& batch = mBatches.find(materialID)->second;
+         batch.mRenderable = Renderable;
+         batch.mRenderMaterialPass = materialPass;
 
          if(Renderable->getClassName() == _Mesh_)
          {
-            sBatch.Group = GeometryGroup::MeshBatch;
+            batch.mGroup = GeometryGroup::MeshBatch;
          }
          else if(Renderable->getClassName() == _Sprite_)
          {
-            sBatch.Group = GeometryGroup::SpriteBatch;
+            batch.mGroup = GeometryGroup::SpriteBatch;
          }
          else if(Renderable->getClassName() == _Label_)
          {
-            sBatch.Group = GeometryGroup::LabelBatch;
+            batch.mGroup = GeometryGroup::LabelBatch;
          }
 
-         queueForRenderingBatch(sBatch);
+         queueForRenderingBatch(batch);
 
          GEMutexUnlock(mTextureLoadMutex);
       }
       else
       {
-         RenderOperation sRenderOperation;
-         sRenderOperation.Index = (Renderable->getRenderPriority() << 24) | (RequestIndex << 8) | i;
-         sRenderOperation.Renderable = Renderable;
-         sRenderOperation.RenderMaterialPass = cMaterialPass;
+         RenderOperation renderOperation;
+         renderOperation.mIndex = (Renderable->getRenderPriority() << 24) | (RequestIndex << 8) | i;
+         renderOperation.mRenderable = Renderable;
+         renderOperation.mRenderMaterialPass = materialPass;
 
          if(Renderable->getClassName() == _Mesh_)
          {
-            sRenderOperation.Group = Renderable->getGeometryType() == GeometryType::Static ? GeometryGroup::MeshStatic : GeometryGroup::MeshDynamic;
+            renderOperation.mGroup = Renderable->getGeometryType() == GeometryType::Static ? GeometryGroup::MeshStatic : GeometryGroup::MeshDynamic;
          }
          else if(Renderable->getClassName() == _Sprite_)
          {
-            sRenderOperation.Group = Renderable->getGeometryType() == GeometryType::Static ? GeometryGroup::SpriteStatic : GeometryGroup::SpriteDynamic;
+            renderOperation.mGroup = Renderable->getGeometryType() == GeometryType::Static ? GeometryGroup::SpriteStatic : GeometryGroup::SpriteDynamic;
          }
          else if(Renderable->getClassName() == _Label_)
          {
-            sRenderOperation.Group = GeometryGroup::Label;
+            renderOperation.mGroup = GeometryGroup::Label;
          }
          else if(Renderable->getClassName() == _ParticleSystem_)
          {
-            sRenderOperation.Group = GeometryGroup::Particles;
+            renderOperation.mGroup = GeometryGroup::Particles;
          }
 
          GEMutexLock(mTextureLoadMutex);
 
-         queueForRenderingSingle(sRenderOperation);
+         queueForRenderingSingle(renderOperation);
 
          GEMutexUnlock(mTextureLoadMutex);
       }
@@ -805,26 +808,26 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 {
    GEProfilerMarker("RenderSystem::queueForRenderingSingle()");
 
-   ComponentRenderable* cRenderable = sRenderOperation.Renderable;
-   ComponentUIElement* cUIElement = cRenderable->getOwner()->getComponent<ComponentUIElement>();
+   ComponentRenderable* renderable = sRenderOperation.mRenderable;
+   ComponentUIElement* uiElement = renderable->getOwner()->getComponent<ComponentUIElement>();
 
 #if defined (GE_EDITOR_SUPPORT)
-   if(cRenderable->getRenderingMode() == RenderingMode::_3D && !cActiveCamera)
+   if(renderable->getRenderingMode() == RenderingMode::_3D && !cActiveCamera)
    {
-      Entity* cOwner = cRenderable->getOwner();
-      Log::log(LogType::Warning, "There is no active camera. The entity '%s' will be deactivated.", cOwner->getFullName().getString());
-      cOwner->setActive(false);
+      Entity* owner = renderable->getOwner();
+      Log::log(LogType::Warning, "There is no active camera. The entity '%s' will be deactivated.", owner->getFullName().getString());
+      owner->setActive(false);
       return;
    }
 #endif
 
-   memcpy(&sRenderOperation.Data, &cRenderable->getGeometryData(), sizeof(GeometryData));
-   uint iRenderableID = cRenderable->getOwner()->getFullName().getID();
+   sRenderOperation.mData = const_cast<GeometryData*>(&renderable->getGeometryData());
+   const uint32_t renderableID = renderable->getOwner()->getFullName().getID();
 
-   if(cRenderable->getClassName() == _Mesh_)
+   if(renderable->getClassName() == _Mesh_)
    {
-      ComponentMesh* cMesh = static_cast<ComponentMesh*>(cRenderable);
-      MaterialPass* cMaterialPass = sRenderOperation.RenderMaterialPass;
+      ComponentMesh* cMesh = static_cast<ComponentMesh*>(renderable);
+      MaterialPass* cMaterialPass = sRenderOperation.mRenderMaterialPass;
 
       if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Cast))
       {
@@ -832,7 +835,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 
          for(uint i = 0; i < vShadowedMeshesToRender.size(); i++)
          {
-            if(vShadowedMeshesToRender[i].Renderable == cRenderable)
+            if(vShadowedMeshesToRender[i].mRenderable == renderable)
             {
                bAlreadyQueued = true;
                break;
@@ -846,14 +849,14 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
       }
 
 #if defined (GE_EDITOR_SUPPORT)
-      if(GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
+      if(GEHasFlag(renderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
       {
          vDebugGeometryToRender.push(sRenderOperation);
       }
       else
 #endif
       {
-         if(cUIElement)
+         if(uiElement)
          {
             queueForRendering3DUI(sRenderOperation);
          }
@@ -869,37 +872,37 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
 
       if(cMesh->getGeometryType() == GeometryType::Static)
       {
-         GESTLMap(uint, GeometryRenderInfo)::const_iterator it = mStaticGeometryToRender.find(iRenderableID);
+         GESTLMap(uint, GeometryRenderInfo)::const_iterator it = mStaticGeometryToRender.find(renderableID);
 
          if(it == mStaticGeometryToRender.end())
          {
             GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::MeshStatic];
-            mStaticGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
-            loadRenderingData(cRenderable->getGeometryData(), sBuffers, 4);
+            mStaticGeometryToRender[renderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+            loadRenderingData(sRenderOperation.mData, sBuffers, 4u);
          }
       }
       else
       {
          GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::MeshDynamic];
-         mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
-         loadRenderingData(cRenderable->getGeometryData(), sBuffers, 4);
+         mDynamicGeometryToRender[renderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+         loadRenderingData(sRenderOperation.mData, sBuffers, 4u);
       }
    }
-   else if(cRenderable->getClassName() == _Sprite_)
+   else if(renderable->getClassName() == _Sprite_)
    {
-      ComponentSprite* cSprite = static_cast<ComponentSprite*>(cRenderable);
+      ComponentSprite* sprite = static_cast<ComponentSprite*>(renderable);
 
 #if defined (GE_EDITOR_SUPPORT)
-      if(GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
+      if(GEHasFlag(renderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
       {
          vDebugGeometryToRender.push(sRenderOperation);
       }
       else
 #endif
       {
-         if(cSprite->getLayer() == SpriteLayer::GUI)
+         if(sprite->getLayer() == SpriteLayer::GUI)
          {
-            if(!cUIElement || cUIElement->getClassName() == ComponentUI2DElement::ClassName)
+            if(!uiElement || uiElement->getClassName() == ComponentUI2DElement::ClassName)
             {
                vUIElementsToRender.push(sRenderOperation);
             }
@@ -908,7 +911,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
                queueForRendering3DUI(sRenderOperation);
             }
          }
-         else if(cSprite->getLayer() == SpriteLayer::Pre3D)
+         else if(sprite->getLayer() == SpriteLayer::Pre3D)
          {
             vPre3DSpritesToRender.push(sRenderOperation);
          }
@@ -918,41 +921,41 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          }
       }
 
-      if(cSprite->getGeometryType() == GeometryType::Static)
+      if(sprite->getGeometryType() == GeometryType::Static)
       {
-         GESTLMap(uint, GeometryRenderInfo)::const_iterator it = mStaticGeometryToRender.find(iRenderableID);
+         GESTLMap(uint, GeometryRenderInfo)::const_iterator it = mStaticGeometryToRender.find(renderableID);
 
          if(it == mStaticGeometryToRender.end())
          {
             GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::SpriteStatic];
-            mStaticGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
-            loadRenderingData(cRenderable->getGeometryData(), sBuffers);
+            mStaticGeometryToRender[renderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+            loadRenderingData(sRenderOperation.mData, sBuffers);
          }
       }
       else
       {
          GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::SpriteDynamic];
-         mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
-         loadRenderingData(cRenderable->getGeometryData(), sBuffers);
+         mDynamicGeometryToRender[renderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+         loadRenderingData(sRenderOperation.mData, sBuffers);
       }
    }
-   else if(cRenderable->getClassName() == _Label_)
+   else if(renderable->getClassName() == _Label_)
    {
 #if defined (GE_EDITOR_SUPPORT)
-      if(GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
+      if(GEHasFlag(renderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
       {
          vDebugGeometryToRender.push(sRenderOperation);
       }
       else
 #endif
       {
-         ComponentLabel* cLabel = static_cast<ComponentLabel*>(cRenderable);
+         ComponentLabel* label = static_cast<ComponentLabel*>(renderable);
 
-         if(cLabel->getLayer() == SpriteLayer::GUI)
+         if(label->getLayer() == SpriteLayer::GUI)
          {
-            if(cUIElement)
+            if(uiElement)
             {
-               if(cUIElement->getClassName() == ComponentUI2DElement::ClassName)
+               if(uiElement->getClassName() == ComponentUI2DElement::ClassName)
                {
                   vUIElementsToRender.push(sRenderOperation);
                }
@@ -966,7 +969,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
                v3DLabelsToRender.push(sRenderOperation);
             }
          }
-         else if(cLabel->getLayer() == SpriteLayer::Pre3D)
+         else if(label->getLayer() == SpriteLayer::Pre3D)
          {
             vPre3DSpritesToRender.push(sRenderOperation);
          }
@@ -976,25 +979,25 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          }
       }
 
-      GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::Label];
-      mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
-      loadRenderingData(cRenderable->getGeometryData(), sBuffers);
+      GPUBufferPair& buffers = sGPUBufferPairs[GeometryGroup::Label];
+      mDynamicGeometryToRender[renderableID] = GeometryRenderInfo(buffers.CurrentVertexBufferOffset, buffers.CurrentIndexBufferOffset);
+      loadRenderingData(sRenderOperation.mData, buffers);
    }
-   else if(cRenderable->getClassName() == _ParticleSystem_)
+   else if(renderable->getClassName() == _ParticleSystem_)
    {
-      if(cRenderable->getGeometryData().NumIndices > 0)
+      if(renderable->getGeometryData().NumIndices > 0)
       {
-         ComponentParticleSystem* cParticleSystem = static_cast<ComponentParticleSystem*>(cRenderable);
+         ComponentParticleSystem* cParticleSystem = static_cast<ComponentParticleSystem*>(renderable);
 
          if(GEHasFlag(cParticleSystem->getSettings(), ParticleSystemSettingsBitMask::DynamicShadows) &&
-            cRenderable->getRenderingMode() == RenderingMode::_3D)
+            renderable->getRenderingMode() == RenderingMode::_3D)
          {
             vShadowedParticlesToRender.push_back(sRenderOperation);
          }
 
-         if(cUIElement)
+         if(uiElement)
          {
-            if(cUIElement->getClassName() == ComponentUI2DElement::ClassName)
+            if(uiElement->getClassName() == ComponentUI2DElement::ClassName)
             {
                vUIElementsToRender.push(sRenderOperation);
             }
@@ -1003,7 +1006,7 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
                queueForRendering3DUI(sRenderOperation);
             }
          }
-         else if(cRenderable->getRenderingMode() == RenderingMode::_2D)
+         else if(renderable->getRenderingMode() == RenderingMode::_2D)
          {
             vUIElementsToRender.push(sRenderOperation);
          }
@@ -1013,15 +1016,15 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          }
 
          GPUBufferPair& sBuffers = sGPUBufferPairs[GeometryGroup::Particles];
-         mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
-         loadRenderingData(cRenderable->getGeometryData(), sBuffers, 4);
+         mDynamicGeometryToRender[renderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
+         loadRenderingData(sRenderOperation.mData, sBuffers, 4u);
       }
    }
 }
 
 void RenderSystem::queueForRendering3DUI(RenderOperation& pRenderOperation)
 {
-   ComponentRenderable* renderable = pRenderOperation.Renderable;
+   ComponentRenderable* renderable = pRenderOperation.mRenderable;
    ComponentUI3DElement* uiElement = renderable->getOwner()->getComponent<ComponentUI3DElement>();
 
    GEAssert(uiElement);
@@ -1043,7 +1046,7 @@ void RenderSystem::queueForRenderingBatch(RenderOperation& sBatch)
 {
    GEProfilerMarker("RenderSystem::queueForRenderingBatch()");
 
-   ComponentRenderable* cRenderable = sBatch.Renderable;
+   ComponentRenderable* cRenderable = sBatch.mRenderable;
    cRenderable->setGeometryType(GeometryType::Dynamic);
 
    ComponentTransform* cTransform = cRenderable->getTransform();
@@ -1051,13 +1054,13 @@ void RenderSystem::queueForRenderingBatch(RenderOperation& sBatch)
    
    const uint iRenderableNumVertices = cRenderable->getGeometryData().NumVertices;
    const uint iRenderableVertexStride = cRenderable->getGeometryData().VertexStride;
-   const uint iBatchNumVertices = sBatch.Data.NumVertices;
+   const uint iBatchNumVertices = sBatch.mData->NumVertices;
 
-   sBatch.Data.VertexStride = iRenderableVertexStride;
+   sBatch.mData->VertexStride = iRenderableVertexStride;
 
    GE::byte* pRenderableVertexData = reinterpret_cast<GE::byte*>(cRenderable->getGeometryData().VertexData);
-   GE::byte* pBatchVertexData = reinterpret_cast<GE::byte*>(sBatch.Data.VertexData);
-   pBatchVertexData += iBatchNumVertices * sBatch.Data.VertexStride;
+   GE::byte* pBatchVertexData = reinterpret_cast<GE::byte*>(sBatch.mData->VertexData);
+   pBatchVertexData += iBatchNumVertices * sBatch.mData->VertexStride;
 
    for(uint i = 0; i < iRenderableNumVertices; i++)
    {
@@ -1075,10 +1078,10 @@ void RenderSystem::queueForRenderingBatch(RenderOperation& sBatch)
    }
 
    const uint iRenderableNumIndices = cRenderable->getGeometryData().NumIndices;
-   const uint iBatchNumIndices = sBatch.Data.NumIndices;
+   const uint iBatchNumIndices = sBatch.mData->NumIndices;
 
    GE::ushort* pRenderableIndices = cRenderable->getGeometryData().Indices;
-   GE::ushort* pBatchIndices = sBatch.Data.Indices + iBatchNumIndices;
+   GE::ushort* pBatchIndices = sBatch.mData->Indices + iBatchNumIndices;
 
    GE::ushort iBatchNumVerticesUShort = (GE::ushort)iBatchNumVertices;
 
@@ -1090,21 +1093,21 @@ void RenderSystem::queueForRenderingBatch(RenderOperation& sBatch)
       pBatchIndices++;
    }
 
-   sBatch.Data.NumVertices += iRenderableNumVertices;
-   sBatch.Data.NumIndices += iRenderableNumIndices;
+   sBatch.mData->NumVertices += iRenderableNumVertices;
+   sBatch.mData->NumIndices += iRenderableNumIndices;
 }
 
 void RenderSystem::prepareBatchForRendering(const RenderOperation& sBatch)
 {
    GEProfilerMarker("RenderSystem::prepareBatchForRendering()");
 
-   ComponentRenderable* cRenderable = sBatch.Renderable;
-   GPUBufferPair& sBuffers = sGPUBufferPairs[sBatch.Group];
+   ComponentRenderable* cRenderable = sBatch.mRenderable;
+   GPUBufferPair& sBuffers = sGPUBufferPairs[sBatch.mGroup];
 
    const uint iRenderableID = cRenderable->getOwner()->getFullName().getID();
    mDynamicGeometryToRender[iRenderableID] = GeometryRenderInfo(sBuffers.CurrentVertexBufferOffset, sBuffers.CurrentIndexBufferOffset);
 
-   loadRenderingData(sBatch.Data, sBuffers, cRenderable->getClassName() == _Mesh_ ? 4 : 2);
+   loadRenderingData(sBatch.mData, sBuffers, cRenderable->getClassName() == _Mesh_ ? 4 : 2);
 
    if(cRenderable->getClassName() == _Sprite_ || cRenderable->getClassName() == _Label_)
    {
@@ -1135,8 +1138,8 @@ void RenderSystem::clearRenderingQueues()
    for(GESTLMap(uint, RenderOperation)::iterator it = mBatches.begin(); it != mBatches.end(); it++)
    {
       RenderOperation& sBatch = (*it).second;
-      sBatch.Data.NumVertices = 0;
-      sBatch.Data.NumIndices = 0;
+      sBatch.mData->NumVertices = 0;
+      sBatch.mData->NumIndices = 0;
    }
 
    for(int i = 0; i < GeometryGroup::Count; i++)
@@ -1189,7 +1192,7 @@ void RenderSystem::renderFrame()
       {
          const RenderOperation& sBatch = it->second;
 
-         if(sBatch.Data.NumVertices > 0)
+         if(sBatch.mData->NumVertices > 0)
          {
             prepareBatchForRendering(sBatch);
          }
@@ -1199,7 +1202,7 @@ void RenderSystem::renderFrame()
    while(!vPre3DSpritesToRender.empty())
    {
       const RenderOperation& sRenderOperation = vPre3DSpritesToRender.top();
-      useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+      useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
       render(sRenderOperation);
       vPre3DSpritesToRender.pop();
    }
@@ -1217,7 +1220,7 @@ void RenderSystem::renderFrame()
       while(!vOpaqueMeshesToRender.empty())
       {
          const RenderOperation& sRenderOperation = vOpaqueMeshesToRender.top();
-         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+         useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
          render(sRenderOperation);
          vOpaqueMeshesToRender.pop();
       }
@@ -1225,7 +1228,7 @@ void RenderSystem::renderFrame()
       while(!v3DLabelsToRender.empty())
       {
          const RenderOperation& sRenderOperation = v3DLabelsToRender.top();
-         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+         useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
          render(sRenderOperation);
          v3DLabelsToRender.pop();
       }
@@ -1239,8 +1242,8 @@ void RenderSystem::renderFrame()
             {
                const Vector3& vCameraWorldPosition = cActiveCamera->getTransform()->getWorldPosition();
 
-               Vector3 vP1ToCamera = vCameraWorldPosition - sRO1.Renderable->getTransform()->getWorldPosition();
-               Vector3 vP2ToCamera = vCameraWorldPosition - sRO2.Renderable->getTransform()->getWorldPosition();
+               Vector3 vP1ToCamera = vCameraWorldPosition - sRO1.mRenderable->getTransform()->getWorldPosition();
+               Vector3 vP2ToCamera = vCameraWorldPosition - sRO2.mRenderable->getTransform()->getWorldPosition();
 
                return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
             });
@@ -1250,7 +1253,7 @@ void RenderSystem::renderFrame()
             for(; it != vTransparentMeshesToRender.end(); it++)
             {
                const RenderOperation& sRenderOperation = *it;
-               useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+               useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
                render(sRenderOperation);
             }
          }
@@ -1266,7 +1269,7 @@ void RenderSystem::renderFrame()
                while(!v3DUIElementsToRender[iIndex].empty())
                {
                   const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
-                  useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+                  useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
                   render(sRenderOperation);
                   v3DUIElementsToRender[iIndex].pop();
                }
@@ -1278,7 +1281,7 @@ void RenderSystem::renderFrame()
    while(!vUIElementsToRender.empty())
    {
       const RenderOperation& sRenderOperation = vUIElementsToRender.top();
-      useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+      useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
       render(sRenderOperation);
       vUIElementsToRender.pop();
    }
@@ -1290,7 +1293,7 @@ void RenderSystem::renderFrame()
       while(!v3DUIElementsToRender[iIndex].empty())
       {
          const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
-         useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+         useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
          render(sRenderOperation);
          v3DUIElementsToRender[iIndex].pop();
       }
@@ -1299,7 +1302,7 @@ void RenderSystem::renderFrame()
    while(!vPostUISpritesToRender.empty())
    {
       const RenderOperation& sRenderOperation = vPostUISpritesToRender.top();
-      useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+      useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
       render(sRenderOperation);
       vPostUISpritesToRender.pop();
    }
@@ -1308,7 +1311,7 @@ void RenderSystem::renderFrame()
    while(!vDebugGeometryToRender.empty())
    {
       const RenderOperation& sRenderOperation = vDebugGeometryToRender.top();
-      useMaterial(sRenderOperation.RenderMaterialPass->getMaterial());
+      useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
       render(sRenderOperation);
       vDebugGeometryToRender.pop();
    }

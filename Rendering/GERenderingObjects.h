@@ -78,41 +78,42 @@ namespace GE { namespace Rendering
 
    struct RenderOperation
    {
-      uint Index;
-      MaterialPass* RenderMaterialPass;
-      Entities::ComponentRenderable* Renderable;
-      Content::GeometryData Data;
-      int Group;
+      uint32_t mIndex;
+      MaterialPass* mRenderMaterialPass;
+      Entities::ComponentRenderable* mRenderable;
+      Content::GeometryData* mData;
+      int mGroup;
 
       RenderOperation()
-         : Index(0)
-         , RenderMaterialPass(0)
-         , Renderable(0)
-         , Group(0)
+         : mIndex(0u)
+         , mRenderMaterialPass(nullptr)
+         , mRenderable(nullptr)
+         , mData(nullptr)
+         , mGroup(0)
       {
       }
 
-      bool operator<(const RenderOperation& Other) const
+      bool operator<(const RenderOperation& pOther) const
       {
-         return Other.Index < Index;
+         return pOther.mIndex < mIndex;
       }
    };
 
 
    struct GeometryRenderInfo
    {
-      uint VertexBufferOffset;
-      uint IndexBufferOffset;
+      uint32_t mVertexBufferOffset;
+      uint32_t mIndexBufferOffset;
 
       GeometryRenderInfo()
-         : VertexBufferOffset(0)
-         , IndexBufferOffset(0)
+         : mVertexBufferOffset(0u)
+         , mIndexBufferOffset(0u)
       {
       }
 
-      GeometryRenderInfo(uint VertexOffset, uint IndexOffset)
-         : VertexBufferOffset(VertexOffset)
-         , IndexBufferOffset(IndexOffset)
+      GeometryRenderInfo(uint32_t pVertexOffset, uint32_t pIndexOffset)
+         : mVertexBufferOffset(pVertexOffset)
+         , mIndexBufferOffset(pIndexOffset)
       {      
       }
    };

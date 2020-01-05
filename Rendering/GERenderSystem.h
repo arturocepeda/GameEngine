@@ -170,7 +170,7 @@ namespace GE { namespace Rendering
       void loadMaterial(Material* cMaterial);
       void unloadMaterial(const Core::ObjectName& cMaterialName);
 
-      void loadRenderingData(const Content::GeometryData& sData, GPUBufferPair& sBuffers, uint iIndexSize = 2);
+      void loadRenderingData(const Content::GeometryData* pData, GPUBufferPair& pBuffers, uint32_t pIndexSize = 2u);
 
       void queueForRenderingSingle(RenderOperation& sRenderOperation);
       void queueForRendering3DUI(RenderOperation& pRenderOperation);

@@ -241,30 +241,30 @@ void RenderSystem::unloadTexture(Texture* pTexture)
    pTexture->setHandler(nullptr);
 }
 
-void RenderSystem::loadRenderingData(const GeometryData& sData, GPUBufferPair& sBuffers, GE::uint)
+void RenderSystem::loadRenderingData(const GeometryData* pData, GPUBufferPair& pBuffers, uint32_t)
 {
    GEProfilerMarker("RenderSystem::loadRenderingData()");
 
-   uint iVertexDataSize = sData.NumVertices * sData.VertexStride;
-   uint iIndicesSize = sData.NumIndices * sizeof(ushort);
+   uint iVertexDataSize = pData->NumVertices * pData->VertexStride;
+   uint iIndicesSize = pData->NumIndices * sizeof(ushort);
 
-   const D3D11_MAP dxMapType = sBuffers.CurrentVertexBufferOffset == 0u
+   const D3D11_MAP dxMapType = pBuffers.CurrentVertexBufferOffset == 0u
       ? D3D11_MAP_WRITE_DISCARD
       : D3D11_MAP_WRITE_NO_OVERWRITE;
 
    D3D11_MAPPED_SUBRESOURCE dxResource;
-   ID3D11Buffer* dxVertexBuffer = static_cast<ID3D11Buffer*>(sBuffers.VertexBuffer);
+   ID3D11Buffer* dxVertexBuffer = static_cast<ID3D11Buffer*>(pBuffers.VertexBuffer);
    dxContext->Map(dxVertexBuffer, 0, dxMapType, 0, &dxResource);
-   memcpy((char*)dxResource.pData + sBuffers.CurrentVertexBufferOffset, sData.VertexData, iVertexDataSize);
+   memcpy((char*)dxResource.pData + pBuffers.CurrentVertexBufferOffset, pData->VertexData, iVertexDataSize);
    dxContext->Unmap(dxVertexBuffer, 0);
 
-   ID3D11Buffer* dxIndexBuffer = static_cast<ID3D11Buffer*>(sBuffers.IndexBuffer);
+   ID3D11Buffer* dxIndexBuffer = static_cast<ID3D11Buffer*>(pBuffers.IndexBuffer);
    dxContext->Map(dxIndexBuffer, 0, dxMapType, 0, &dxResource);
-   memcpy((char*)dxResource.pData + sBuffers.CurrentIndexBufferOffset, sData.Indices, iIndicesSize);
+   memcpy((char*)dxResource.pData + pBuffers.CurrentIndexBufferOffset, pData->Indices, iIndicesSize);
    dxContext->Unmap(dxIndexBuffer, 0);
 
-   sBuffers.CurrentVertexBufferOffset += iVertexDataSize;
-   sBuffers.CurrentIndexBufferOffset += iIndicesSize;
+   pBuffers.CurrentVertexBufferOffset += iVertexDataSize;
+   pBuffers.CurrentIndexBufferOffset += iIndicesSize;
 }
 
 void RenderSystemDX11Helper::createDeviceResources()
@@ -803,7 +803,7 @@ void RenderSystem::renderShadowMap()
       for(; it != vShadowedMeshesToRender.end(); it++)
       {
          const RenderOperation& sRenderOperation = *it;
-         Entity* cEntity = sRenderOperation.Renderable->getOwner();
+         Entity* cEntity = sRenderOperation.mRenderable->getOwner();
 
          // set uniform
          const Matrix4& matModel = cEntity->getComponent<ComponentTransform>()->getGlobalWorldMatrix();
@@ -813,7 +813,7 @@ void RenderSystem::renderShadowMap()
          // draw
          GESTLMap(uint, GeometryRenderInfo)* mGeometryRegistry = 0;
 
-         if(sRenderOperation.Renderable->getGeometryType() == GeometryType::Static)
+         if(sRenderOperation.mRenderable->getGeometryType() == GeometryType::Static)
          {
             mGeometryRegistry = &mStaticGeometryToRender;
             bindBuffers(sGPUBufferPairs[GeometryGroup::MeshStatic]);
@@ -826,11 +826,11 @@ void RenderSystem::renderShadowMap()
 
          GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mGeometryRegistry->find(cEntity->getFullName().getID());
          const GeometryRenderInfo& sGeometryInfo = itInfo->second;
-         UINT iStartIndexLocation = sGeometryInfo.IndexBufferOffset / sizeof(ushort);
-         INT iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / sRenderOperation.Renderable->getGeometryData().VertexStride;
+         UINT iStartIndexLocation = sGeometryInfo.mIndexBufferOffset / sizeof(ushort);
+         INT iBaseVertexLocation = sGeometryInfo.mVertexBufferOffset / sRenderOperation.mRenderable->getGeometryData().VertexStride;
 
          dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-         dxContext->DrawIndexed(sRenderOperation.Renderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
+         dxContext->DrawIndexed(sRenderOperation.mRenderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
       }
    }
 
@@ -844,15 +844,15 @@ void RenderSystem::renderShadowMap()
       for(; it != vShadowedParticlesToRender.end(); it++)
       {
          const RenderOperation& sRenderOperation = *it;
-         Entity* cEntity = sRenderOperation.Renderable->getOwner();
+         Entity* cEntity = sRenderOperation.mRenderable->getOwner();
 
          // set uniform
          memcpy(&sShaderConstantsTransform.WorldViewProjectionMatrix, &matLightViewProjection, sizeof(Matrix4));
          dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
 
-         if(sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture())
+         if(sRenderOperation.mRenderMaterialPass->getMaterial()->getDiffuseTexture())
          {
-            bindTexture(TextureSlot::Diffuse, sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture());
+            bindTexture(TextureSlot::Diffuse, sRenderOperation.mRenderMaterialPass->getMaterial()->getDiffuseTexture());
          }
 
          // draw
@@ -860,11 +860,11 @@ void RenderSystem::renderShadowMap()
 
          GESTLMap(uint, GeometryRenderInfo)::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
          const GeometryRenderInfo& sGeometryInfo = itInfo->second;
-         UINT iStartIndexLocation = sGeometryInfo.IndexBufferOffset / sizeof(ushort);
-         INT iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / sRenderOperation.Renderable->getGeometryData().VertexStride;
+         UINT iStartIndexLocation = sGeometryInfo.mIndexBufferOffset / sizeof(ushort);
+         INT iBaseVertexLocation = sGeometryInfo.mVertexBufferOffset / sRenderOperation.mRenderable->getGeometryData().VertexStride;
 
          dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-         dxContext->DrawIndexed(sRenderOperation.Renderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
+         dxContext->DrawIndexed(sRenderOperation.mRenderable->getGeometryData().NumIndices, iStartIndexLocation, iBaseVertexLocation);
       }
    }
 
@@ -896,8 +896,8 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 {
    GEProfilerMarker("RenderSystem::render()");
 
-   MaterialPass* cMaterialPass = sRenderOperation.RenderMaterialPass;
-   ComponentRenderable* cRenderable = sRenderOperation.Renderable;
+   MaterialPass* cMaterialPass = sRenderOperation.mRenderMaterialPass;
+   ComponentRenderable* cRenderable = sRenderOperation.mRenderable;
 
    ComponentMesh* cMesh = 0;
 
@@ -1015,11 +1015,11 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       ? &mStaticGeometryToRender
       : &mDynamicGeometryToRender;
 
-   bindBuffers(sGPUBufferPairs[sRenderOperation.Group]);
+   bindBuffers(sGPUBufferPairs[sRenderOperation.mGroup]);
    GESTLMap(uint, GeometryRenderInfo)::const_iterator it = mGeometryToRenderMap->find(cRenderable->getOwner()->getFullName().getID());
    const GeometryRenderInfo& sGeometryInfo = it->second;
-   uint iStartIndexLocation = sGeometryInfo.IndexBufferOffset / sizeof(ushort);
-   uint iBaseVertexLocation = sGeometryInfo.VertexBufferOffset / sRenderOperation.Data.VertexStride;
+   uint iStartIndexLocation = sGeometryInfo.mIndexBufferOffset / sizeof(ushort);
+   uint iBaseVertexLocation = sGeometryInfo.mVertexBufferOffset / sRenderOperation.mData->VertexStride;
 
    dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -1038,12 +1038,12 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
          sShaderConstantsLighting.ShadowIntensity = cLight->getShadowIntensity();
 
          dxContext->UpdateSubresource(dxConstantBufferLighting, 0, NULL, &sShaderConstantsLighting, 0, 0);
-         dxContext->DrawIndexed(sRenderOperation.Data.NumIndices, iStartIndexLocation, iBaseVertexLocation);
+         dxContext->DrawIndexed(sRenderOperation.mData->NumIndices, iStartIndexLocation, iBaseVertexLocation);
       }
    }
    else
    {
-      dxContext->DrawIndexed(sRenderOperation.Data.NumIndices, iStartIndexLocation, iBaseVertexLocation);
+      dxContext->DrawIndexed(sRenderOperation.mData->NumIndices, iStartIndexLocation, iBaseVertexLocation);
    }
 
    if(!cRenderable || !GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))

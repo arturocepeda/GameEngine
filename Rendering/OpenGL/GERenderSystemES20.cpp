@@ -33,8 +33,8 @@ using namespace GE::Rendering;
 void* iCurrentVertexBuffer = 0;
 void* iCurrentIndexBuffer = 0;
 
-GESTLVector(ushort) vMappedIndicesUshort;
-GESTLVector(uint) vMappedIndicesUint;
+GESTLVector(uint16_t) gMappedIndices16;
+GESTLVector(uint32_t) gMappedIndices32;
 
 // shadow mapping
 uint iFrameBuffer = 0;
@@ -242,49 +242,53 @@ void RenderSystem::unloadTexture(Texture* pTexture)
    pTexture->setHandler(nullptr);
 }
 
-void RenderSystem::loadRenderingData(const GeometryData& sData, GPUBufferPair& sBuffers, uint iIndexSize)
+void RenderSystem::loadRenderingData(const GeometryData* pData, GPUBufferPair& pBuffers, uint32_t pIndexSize)
 {
    GEProfilerMarker("RenderSystem::loadRenderingData()");
 
-   GEAssert(sData.VertexStride == sBuffers.VertexStride);
+   GEAssert(pData->VertexStride == pBuffers.VertexStride);
 
-   uint iVertexDataSize = sData.NumVertices * sData.VertexStride;
-   uint iIndicesSize = sData.NumIndices * iIndexSize;
+   const uint32_t vertexDataSize = pData->NumVertices * pData->VertexStride;
+   const uint32_t indicesSize = pData->NumIndices * pIndexSize;
 
-   void* pMappedIndices = 0;
+   void* mappedIndices = nullptr;
 
-   if(iIndexSize == 4)
+   if(pIndexSize == 4u)
    {
-      uint iBaseVertexIndex = sBuffers.CurrentVertexBufferOffset / sData.VertexStride;
-      vMappedIndicesUint.clear();
+      const uint32_t baseVertexIndex = pBuffers.CurrentVertexBufferOffset / pData->VertexStride;
+      gMappedIndices32.clear();
 
-      ushort* pCurrentIndex = sData.Indices;
+      uint16_t* currentIndex = pData->Indices;
 
-      for(uint i = 0; i < sData.NumIndices; i++, pCurrentIndex++)
-         vMappedIndicesUint.push_back(*pCurrentIndex + iBaseVertexIndex);
+      for(uint32_t i = 0u; i < pData->NumIndices; i++, currentIndex++)
+      {
+         gMappedIndices32.push_back(*currentIndex + baseVertexIndex);
+      }
 
-      pMappedIndices = &vMappedIndicesUint[0];
+      mappedIndices = &gMappedIndices32[0];
    }
    else
    {
-      ushort iBaseVertexIndex = (ushort)(sBuffers.CurrentVertexBufferOffset / sData.VertexStride);
-      vMappedIndicesUshort.clear();
+      const uint16_t baseVertexIndex = (uint16_t)(pBuffers.CurrentVertexBufferOffset / pData->VertexStride);
+      gMappedIndices16.clear();
 
-      ushort* pCurrentIndex = sData.Indices;
+      uint16_t* currentIndex = pData->Indices;
 
-      for(uint i = 0; i < sData.NumIndices; i++, pCurrentIndex++)
-         vMappedIndicesUshort.push_back((ushort)(*pCurrentIndex + iBaseVertexIndex));
+      for(uint32_t i = 0u; i < pData->NumIndices; i++, currentIndex++)
+      {
+         gMappedIndices16.push_back((ushort)(*currentIndex + baseVertexIndex));
+      }
 
-      pMappedIndices = &vMappedIndicesUshort[0];
+      mappedIndices = &gMappedIndices16[0];
    }
 
-   bindBuffers(sBuffers);
+   bindBuffers(pBuffers);
 
-   glBufferSubData(GL_ARRAY_BUFFER, sBuffers.CurrentVertexBufferOffset, iVertexDataSize, sData.VertexData);
-   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, sBuffers.CurrentIndexBufferOffset, iIndicesSize, pMappedIndices);
+   glBufferSubData(GL_ARRAY_BUFFER, pBuffers.CurrentVertexBufferOffset, vertexDataSize, pData->VertexData);
+   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, pBuffers.CurrentIndexBufferOffset, indicesSize, mappedIndices);
 
-   sBuffers.CurrentVertexBufferOffset += iVertexDataSize;
-   sBuffers.CurrentIndexBufferOffset += iIndicesSize;
+   pBuffers.CurrentVertexBufferOffset += vertexDataSize;
+   pBuffers.CurrentIndexBufferOffset += indicesSize;
 }
 
 void RenderSystem::loadShaders()
@@ -456,33 +460,33 @@ void RenderSystemES20::getUniformsLocation(ShaderProgramES20* cProgram)
 
 void RenderSystemES20::setVertexDeclaration(const RenderOperation& cRenderOperation)
 {
-   const int iVertexStride = cRenderOperation.Data.VertexStride;
+   const int vertexStride = cRenderOperation.mData->VertexStride;
 
    ShaderProgramES20* cShaderProgram =
-      static_cast<ShaderProgramES20*>(mShaderPrograms.get(cRenderOperation.RenderMaterialPass->getMaterial()->getShaderProgram()));
+      static_cast<ShaderProgramES20*>(mShaderPrograms.get(cRenderOperation.mRenderMaterialPass->getMaterial()->getShaderProgram()));
    GEAssert(cShaderProgram);
 
-   uintPtrSize iOffset = 0;
+   uintPtrSize offset = 0u;
 
    if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::Position))
    {
-      glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
-      iOffset += 3 * sizeof(float);
+      glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, vertexStride, (void*)offset);
+      offset += 3u * sizeof(float);
    }
    if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::Normal))
    {
-      glVertexAttribPointer((GLuint)VertexAttributes::Normal, 3, GL_FLOAT, GL_TRUE, iVertexStride, (void*)iOffset);
-      iOffset += 3 * sizeof(float);
+      glVertexAttribPointer((GLuint)VertexAttributes::Normal, 3, GL_FLOAT, GL_TRUE, vertexStride, (void*)offset);
+      offset += 3u * sizeof(float);
    }
    if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::Color))
    {
-      glVertexAttribPointer((GLuint)VertexAttributes::Color, 4, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
-      iOffset += 4 * sizeof(float);
+      glVertexAttribPointer((GLuint)VertexAttributes::Color, 4, GL_FLOAT, GL_FALSE, vertexStride, (void*)offset);
+      offset += 4u * sizeof(float);
    }
    if(GEHasFlag(cShaderProgram->getVertexElements(), VertexElementsBitMask::TexCoord))
    {
-      glVertexAttribPointer((GLuint)VertexAttributes::TextureCoord0, 2, GL_FLOAT, GL_FALSE, iVertexStride, (void*)iOffset);
-      iOffset += 2 * sizeof(float);
+      glVertexAttribPointer((GLuint)VertexAttributes::TextureCoord0, 2, GL_FLOAT, GL_FALSE, vertexStride, (void*)offset);
+      offset += 2u * sizeof(float);
    }
 }
 
@@ -552,7 +556,7 @@ void RenderSystem::renderShadowMap()
       for(; it != vShadowedMeshesToRender.end(); it++)
       {
          const RenderOperation& sRenderOperation = *it;
-         Entity* cEntity = sRenderOperation.Renderable->getOwner();
+         Entity* cEntity = sRenderOperation.mRenderable->getOwner();
 
          // set uniform
          const Matrix4& matModel = cEntity->getComponent<ComponentTransform>()->getGlobalWorldMatrix();
@@ -563,7 +567,7 @@ void RenderSystem::renderShadowMap()
          // bind buffers
          GESTLMap(uint, GeometryRenderInfo)* cGeometryRegistry = 0;
 
-         if(sRenderOperation.Renderable->getGeometryType() == GeometryType::Static)
+         if(sRenderOperation.mRenderable->getGeometryType() == GeometryType::Static)
          {
             cGeometryRegistry = &mStaticGeometryToRender;
             bindBuffers(sGPUBufferPairs[GeometryGroup::MeshStatic]);
@@ -575,15 +579,15 @@ void RenderSystem::renderShadowMap()
          }
 
          // set vertex declaration
-         const int iVertexStride = sRenderOperation.Renderable->getGeometryData().VertexStride;
+         const int iVertexStride = sRenderOperation.mRenderable->getGeometryData().VertexStride;
          glVertexAttribPointer((GLuint)VertexAttributes::Position, 3, GL_FLOAT, GL_FALSE, iVertexStride, 0);
 
          // draw
          std::map<uint, GeometryRenderInfo>::const_iterator itInfo = cGeometryRegistry->find(cEntity->getFullName().getID());
          const GeometryRenderInfo& sGeometryInfo = itInfo->second;
-         char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
+         char* pOffset = (char*)((uintPtrSize)sGeometryInfo.mIndexBufferOffset);
 
-         glDrawElements(GL_TRIANGLES, sRenderOperation.Renderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
+         glDrawElements(GL_TRIANGLES, sRenderOperation.mRenderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
       }
    }
 
@@ -596,15 +600,15 @@ void RenderSystem::renderShadowMap()
       for(; it != vShadowedParticlesToRender.end(); it++)
       {
          const RenderOperation& sRenderOperation = *it;
-         Entity* cEntity = sRenderOperation.Renderable->getOwner();
+         Entity* cEntity = sRenderOperation.mRenderable->getOwner();
 
          // set uniform
          glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightViewProjection.m);
 
          // bind diffuse texture
-         if(sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture())
+         if(sRenderOperation.mRenderMaterialPass->getMaterial()->getDiffuseTexture())
          {
-            bindTexture(TextureSlot::Diffuse, sRenderOperation.RenderMaterialPass->getMaterial()->getDiffuseTexture());
+            bindTexture(TextureSlot::Diffuse, sRenderOperation.mRenderMaterialPass->getMaterial()->getDiffuseTexture());
             glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), 0);
          }
 
@@ -617,9 +621,9 @@ void RenderSystem::renderShadowMap()
          // draw
          std::map<uint, GeometryRenderInfo>::const_iterator itInfo = mDynamicGeometryToRender.find(cEntity->getFullName().getID());
          const GeometryRenderInfo& sGeometryInfo = itInfo->second;
-         char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
+         char* pOffset = (char*)((uintPtrSize)sGeometryInfo.mIndexBufferOffset);
 
-         glDrawElements(GL_TRIANGLES, sRenderOperation.Renderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
+         glDrawElements(GL_TRIANGLES, sRenderOperation.mRenderable->getGeometryData().NumIndices, GL_UNSIGNED_INT, pOffset);
       }
    }
    
@@ -642,8 +646,8 @@ void RenderSystem::renderBegin()
 
 void RenderSystem::render(const RenderOperation& sRenderOperation)
 {
-   MaterialPass* cMaterialPass = sRenderOperation.RenderMaterialPass;
-   ComponentRenderable* cRenderable = sRenderOperation.Renderable;
+   MaterialPass* cMaterialPass = sRenderOperation.mRenderMaterialPass;
+   ComponentRenderable* cRenderable = sRenderOperation.mRenderable;
    ComponentMesh* cMesh = 0;
 
    // set uniform values for the shaders
@@ -756,10 +760,10 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       ? &mStaticGeometryToRender
       : &mDynamicGeometryToRender;
 
-   bindBuffers(sGPUBufferPairs[sRenderOperation.Group]);
+   bindBuffers(sGPUBufferPairs[sRenderOperation.mGroup]);
    std::map<uint, GeometryRenderInfo>::const_iterator it = mGeometryToRenderMap->find(cRenderable->getOwner()->getFullName().getID());
    const GeometryRenderInfo& sGeometryInfo = it->second;
-   char* pOffset = (char*)((uintPtrSize)sGeometryInfo.IndexBufferOffset);
+   char* pOffset = (char*)((uintPtrSize)sGeometryInfo.mIndexBufferOffset);
 
    // set vertex declaration
    static_cast<RenderSystemES20*>(this)->setVertexDeclaration(sRenderOperation);
@@ -768,7 +772,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    const GLenum glIndexType = cRenderable->getClassName() == _Mesh_ || cRenderable->getClassName() == _ParticleSystem_
       ? GL_UNSIGNED_INT
       : GL_UNSIGNED_SHORT;
-   glDrawElements(GL_TRIANGLES, sRenderOperation.Data.NumIndices, glIndexType, pOffset);
+   glDrawElements(GL_TRIANGLES, sRenderOperation.mData->NumIndices, glIndexType, pOffset);
    iDrawCalls++;
 }
 
