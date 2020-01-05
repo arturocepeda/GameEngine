@@ -809,7 +809,6 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
    GEProfilerMarker("RenderSystem::queueForRenderingSingle()");
 
    ComponentRenderable* renderable = sRenderOperation.mRenderable;
-   ComponentUIElement* uiElement = renderable->getOwner()->getComponent<ComponentUIElement>();
 
 #if defined (GE_EDITOR_SUPPORT)
    if(renderable->getRenderingMode() == RenderingMode::_3D && !cActiveCamera)
@@ -821,14 +820,30 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
    }
 #endif
 
-   sRenderOperation.mData = const_cast<GeometryData*>(&renderable->getGeometryData());
    const uint32_t renderableID = renderable->getOwner()->getFullName().getID();
+   ComponentTransform* transform = renderable->getOwner()->getComponent<ComponentTransform>();
+   ComponentUIElement* uiElement = renderable->getOwner()->getComponent<ComponentUIElement>();
 
+   sRenderOperation.mGeometryID = renderableID;
+   sRenderOperation.mVertexIndexSize = renderable->getClassName() == _Mesh_ || renderable->getClassName() == _ParticleSystem_
+      ? 4u
+      : 2u;
+   sRenderOperation.mData = const_cast<GeometryData*>(&renderable->getGeometryData());
    sRenderOperation.mColor = renderable->getColor();
 
    if(uiElement)
    {
       sRenderOperation.mColor.Alpha *= uiElement->getAlphaInHierarchy();
+   }
+
+   if(renderable->getClassName() != _ParticleSystem_)
+   {
+      sRenderOperation.mWorldTransform = transform->getGlobalWorldMatrix();
+   }
+
+   if(renderable->getRenderingMode() == RenderingMode::_3D)
+   {
+      GESetFlag(sRenderOperation.mFlags, RenderOperationFlags::RenderThroughActiveCamera);
    }
 
    if(renderable->getClassName() == _Mesh_)
@@ -853,6 +868,13 @@ void RenderSystem::queueForRenderingSingle(RenderOperation& sRenderOperation)
          {
             vShadowedMeshesToRender.push_back(sRenderOperation);
          }
+      }
+
+      GESetFlag(sRenderOperation.mFlags, RenderOperationFlags::LightingSupport);
+
+      if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
+      {
+         GESetFlag(sRenderOperation.mFlags, RenderOperationFlags::BindShadowMap);
       }
 
 #if defined (GE_EDITOR_SUPPORT)
@@ -1212,6 +1234,7 @@ void RenderSystem::renderFrame()
       useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
       render(sRenderOperation);
       vPre3DSpritesToRender.pop();
+      iDrawCalls++;
    }
 
    if(!vOpaqueMeshesToRender.empty() ||
@@ -1230,6 +1253,7 @@ void RenderSystem::renderFrame()
          useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
          render(sRenderOperation);
          vOpaqueMeshesToRender.pop();
+         iDrawCalls++;
       }
 
       while(!v3DLabelsToRender.empty())
@@ -1238,6 +1262,7 @@ void RenderSystem::renderFrame()
          useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
          render(sRenderOperation);
          v3DLabelsToRender.pop();
+         iDrawCalls++;
       }
 
       if(cActiveCamera)
@@ -1262,6 +1287,7 @@ void RenderSystem::renderFrame()
                const RenderOperation& sRenderOperation = *it;
                useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
                render(sRenderOperation);
+               iDrawCalls++;
             }
          }
 
@@ -1279,6 +1305,7 @@ void RenderSystem::renderFrame()
                   useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
                   render(sRenderOperation);
                   v3DUIElementsToRender[iIndex].pop();
+                  iDrawCalls++;
                }
             }
          }
@@ -1291,6 +1318,7 @@ void RenderSystem::renderFrame()
       useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
       render(sRenderOperation);
       vUIElementsToRender.pop();
+      iDrawCalls++;
    }
 
    for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
@@ -1303,6 +1331,7 @@ void RenderSystem::renderFrame()
          useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
          render(sRenderOperation);
          v3DUIElementsToRender[iIndex].pop();
+         iDrawCalls++;
       }
    }
 
@@ -1312,6 +1341,7 @@ void RenderSystem::renderFrame()
       useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
       render(sRenderOperation);
       vPostUISpritesToRender.pop();
+      iDrawCalls++;
    }
 
 #if defined (GE_EDITOR_SUPPORT)

@@ -76,27 +76,50 @@ namespace GE { namespace Rendering
    };
 
 
+   enum class RenderOperationFlags
+   {
+      RenderThroughActiveCamera  = 1 << 0,
+      LightingSupport            = 1 << 1,
+      BindShadowMap              = 1 << 2
+   };
+
+
    struct RenderOperation
    {
       uint32_t mIndex;
+      uint32_t mFlags;
+      uint32_t mGeometryID;
+      uint16_t mGroup;
+      uint16_t mVertexIndexSize;
+
       MaterialPass* mRenderMaterialPass;
       Entities::ComponentRenderable* mRenderable;
       Content::GeometryData* mData;
-      int mGroup;
+      Matrix4 mWorldTransform;
       Color mColor;
 
       RenderOperation()
          : mIndex(0u)
+         , mFlags(0u)
+         , mGeometryID(0u)
+         , mGroup(0u)
+         , mVertexIndexSize(2u)
          , mRenderMaterialPass(nullptr)
          , mRenderable(nullptr)
          , mData(nullptr)
-         , mGroup(0)
       {
+         Matrix4MakeIdentity(&mWorldTransform);
       }
 
       bool operator<(const RenderOperation& pOther) const
       {
          return pOther.mIndex < mIndex;
+      }
+      bool isStatic() const
+      {
+         return
+            mGroup == GeometryGroup::SpriteStatic ||
+            mGroup == GeometryGroup::MeshStatic;
       }
    };
 

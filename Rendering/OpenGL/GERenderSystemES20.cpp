@@ -515,6 +515,8 @@ void RenderSystem::useShaderProgram(const Core::ObjectName& cName)
 
    setDepthBufferMode(cShaderProgram->getDepthBufferMode());
    setCullingMode(cShaderProgram->getCullingMode());
+
+   glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::AmbientLightColor), 1, &cAmbientLightColor.Red);
 }
 
 void RenderSystem::renderShadowMap()
@@ -645,62 +647,50 @@ void RenderSystem::renderBegin()
 
 void RenderSystem::render(const RenderOperation& sRenderOperation)
 {
-   MaterialPass* cMaterialPass = sRenderOperation.mRenderMaterialPass;
-   ComponentRenderable* cRenderable = sRenderOperation.mRenderable;
-   ComponentMesh* cMesh = 0;
-
    // set uniform values for the shaders
-   const Matrix4& mViewProjection = cRenderable->getRenderingMode() == RenderingMode::_3D
+   const Matrix4& mViewProjection = GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::RenderThroughActiveCamera)
       ? cActiveCamera->getViewProjectionMatrix()
       : mat2DViewProjection;
    glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::ViewProjectionMatrix), 1, 0, mViewProjection.m);
 
-   if(cRenderable->getClassName() == _ParticleSystem_)
+   if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::RenderThroughActiveCamera))
    {
-      matModelViewProjection = mViewProjection;
-
-      glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::AmbientLightColor), 1, &cAmbientLightColor.Red);
+      calculate3DTransformMatrix(sRenderOperation.mWorldTransform);
    }
    else
    {
-      ComponentTransform* cTransform = cRenderable->getTransform();
-      const Matrix4& matModel = cTransform->getGlobalWorldMatrix();
+      calculate2DTransformMatrix(sRenderOperation.mWorldTransform);
+   }
 
-      if(cRenderable->getRenderingMode() == RenderingMode::_2D)
-         calculate2DTransformMatrix(matModel);
-      else
-         calculate3DTransformMatrix(matModel);
+   glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::WorldMatrix), 1, 0, sRenderOperation.mWorldTransform.m);
 
-      glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::WorldMatrix), 1, 0, matModel.m);
+   if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::LightingSupport))
+   {
+      calculate3DInverseTransposeMatrix(sRenderOperation.mWorldTransform);
 
-      if(cRenderable->getClassName() == _Mesh_)
+      glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::InverseTransposeWorldMatrix), 1, 0, matModelInverseTranspose.m);
+
+      if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::BindShadowMap))
       {
-         cMesh = static_cast<ComponentMesh*>(cRenderable);
-         calculate3DInverseTransposeMatrix(matModel);
-
-         glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::InverseTransposeWorldMatrix), 1, 0, matModelInverseTranspose.m);
-
-         if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
-         {
-            Matrix4 matLightWVP;
-            Matrix4Multiply(matLightViewProjection, matModel, &matLightWVP);
-            glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
-         }
-
-         glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::AmbientLightColor), 1, &cAmbientLightColor.Red);
-         glUniform3fv(cActiveProgram->getUniformLocation((uint)Uniforms::EyePosition), 1, &cActiveCamera->getTransform()->getPosition().X);
+         Matrix4 matLightWVP;
+         Matrix4Multiply(matLightViewProjection, sRenderOperation.mWorldTransform, &matLightWVP);
+         glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
       }
+
+      glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::AmbientLightColor), 1, &cAmbientLightColor.Red);
+      glUniform3fv(cActiveProgram->getUniformLocation((uint)Uniforms::EyePosition), 1, &cActiveCamera->getTransform()->getPosition().X);
    }
 
    glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::WorldViewProjectionMatrix), 1, 0, matModelViewProjection.m);
 
+   MaterialPass* cMaterialPass = sRenderOperation.mRenderMaterialPass;
    Material* cMaterial = cMaterialPass->getMaterial();
    Color cDiffuseColor = cMaterial->getDiffuseColor() * sRenderOperation.mColor;
 
    glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseColor), 1, &cDiffuseColor.Red);
    glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::SpecularColor), 1, &cMaterial->getSpecularColor().Red);
 
-   if(cRenderable->getClassName() == _Mesh_)
+   if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::LightingSupport))
    {
       if(vLightsToRender.empty())
       {
@@ -722,9 +712,9 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       }
    }
 
-   if(cRenderable->getClassName() == _Label_)
+   if(sRenderOperation.mRenderable->getClassName() == _Label_)
    {
-      bindTexture(TextureSlot::Diffuse, static_cast<ComponentLabel*>(cRenderable)->getFont()->getTexture());
+      bindTexture(TextureSlot::Diffuse, static_cast<ComponentLabel*>(sRenderOperation.mRenderable)->getFont()->getTexture());
       glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), (uint)TextureSlot::Diffuse);
    }
    else if(cMaterial->getDiffuseTexture())
@@ -733,7 +723,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), (uint)TextureSlot::Diffuse);
    }
 
-   if(cMesh && GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
+   if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::BindShadowMap))
    {
       bindTexture(TextureSlot::ShadowMap, cDepthTexture);
       glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::ShadowTexture), (uint)TextureSlot::ShadowMap);
@@ -750,12 +740,12 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    }
 
    // bind buffers and get index offset
-   GESTLMap(uint, GeometryRenderInfo)* mGeometryToRenderMap = cRenderable->getGeometryType() == GeometryType::Static
+   GESTLMap(uint, GeometryRenderInfo)* mGeometryToRenderMap = sRenderOperation.isStatic()
       ? &mStaticGeometryToRender
       : &mDynamicGeometryToRender;
 
    bindBuffers(sGPUBufferPairs[sRenderOperation.mGroup]);
-   std::map<uint, GeometryRenderInfo>::const_iterator it = mGeometryToRenderMap->find(cRenderable->getOwner()->getFullName().getID());
+   std::map<uint, GeometryRenderInfo>::const_iterator it = mGeometryToRenderMap->find(sRenderOperation.mGeometryID);
    const GeometryRenderInfo& sGeometryInfo = it->second;
    char* pOffset = (char*)((uintPtrSize)sGeometryInfo.mIndexBufferOffset);
 
@@ -763,11 +753,10 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    static_cast<RenderSystemES20*>(this)->setVertexDeclaration(sRenderOperation);
 
    // draw
-   const GLenum glIndexType = cRenderable->getClassName() == _Mesh_ || cRenderable->getClassName() == _ParticleSystem_
+   const GLenum glIndexType = sRenderOperation.mVertexIndexSize == 4u
       ? GL_UNSIGNED_INT
       : GL_UNSIGNED_SHORT;
    glDrawElements(GL_TRIANGLES, sRenderOperation.mData->NumIndices, glIndexType, pOffset);
-   iDrawCalls++;
 }
 
 void RenderSystem::renderEnd()

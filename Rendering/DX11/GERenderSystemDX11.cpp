@@ -895,65 +895,57 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 {
    GEProfilerMarker("RenderSystem::render()");
 
-   MaterialPass* cMaterialPass = sRenderOperation.mRenderMaterialPass;
    ComponentRenderable* cRenderable = sRenderOperation.mRenderable;
 
-   ComponentMesh* cMesh = 0;
-
-   const Matrix4& mViewProjection = cRenderable->getRenderingMode() == RenderingMode::_3D
+   const Matrix4& mViewProjection = GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::RenderThroughActiveCamera)
       ? cActiveCamera->getViewProjectionMatrix()
       : mat2DViewProjection;
    sShaderConstantsTransform.ViewProjectionMatrix = mViewProjection;
 
-   if(cRenderable)
+   // calculate the world-view-projection matrix
+   if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::RenderThroughActiveCamera))
    {
-      if(cRenderable->getClassName() != _ParticleSystem_)
+      calculate3DTransformMatrix(sRenderOperation.mWorldTransform);
+   }
+   else
+   {
+      calculate2DTransformMatrix(sRenderOperation.mWorldTransform);
+   }
+
+   // if there is lighting, calculate the inverse transpose matrix
+   if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::LightingSupport))
+   {
+      calculate3DInverseTransposeMatrix(sRenderOperation.mWorldTransform);
+
+      sShaderConstantsTransform.InverseTransposeWorldMatrix = matModelInverseTranspose;
+
+      if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::BindShadowMap))
       {
-         // get model matrix from the renderable
-         ComponentTransform* cTransform = cRenderable->getTransform();
-         const Matrix4& matModel = cTransform->getGlobalWorldMatrix();
-
-         if(cRenderable->getRenderingMode() == RenderingMode::_2D)
-         {
-            calculate2DTransformMatrix(matModel);
-         }
-         else
-         {
-            calculate3DTransformMatrix(matModel);
-         }
-
-         // if the renderable is a 3D mesh, calculate the inverse transpose matrix
-         if(cRenderable->getClassName() == _Mesh_)
-         {
-            cMesh = static_cast<ComponentMesh*>(cRenderable);
-            calculate3DInverseTransposeMatrix(matModel);
-
-            sShaderConstantsTransform.InverseTransposeWorldMatrix = matModelInverseTranspose;
-
-            if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
-            {
-               Matrix4Multiply(matLightViewProjection, matModel, &sShaderConstantsTransform.LightWorldViewProjection);
-            }
-         }
-
-         sShaderConstantsTransform.WorldMatrix = matModel;
+         Matrix4Multiply(matLightViewProjection, sRenderOperation.mWorldTransform, &sShaderConstantsTransform.LightWorldViewProjection);
       }
    }
+
+   sShaderConstantsTransform.WorldMatrix = sRenderOperation.mWorldTransform;
 
    // update values in the constant buffers
    sShaderConstantsTransform.WorldViewProjectionMatrix = matModelViewProjection;
    dxContext->UpdateSubresource(dxConstantBufferTransform, 0, NULL, &sShaderConstantsTransform, 0, 0);
 
+   MaterialPass* cMaterialPass = sRenderOperation.mRenderMaterialPass;
    sShaderConstantsMaterial.DiffuseColor = cMaterialPass->getMaterial()->getDiffuseColor() * sRenderOperation.mColor;
    sShaderConstantsMaterial.SpecularColor = cMaterialPass->getMaterial()->getSpecularColor();
 
    dxContext->UpdateSubresource(dxConstantBufferMaterial, 0, NULL, &sShaderConstantsMaterial, 0, 0);
 
    if(cMaterialPass->hasVertexParameters())
+   {
       dxContext->UpdateSubresource(dxConstantBufferVertexParameters, 0, NULL, cMaterialPass->getConstantBufferDataVertex(), 0, 0);
+   }
 
    if(cMaterialPass->hasFragmentParameters())
+   {
       dxContext->UpdateSubresource(dxConstantBufferFragmentParameters, 0, NULL, cMaterialPass->getConstantBufferDataFragment(), 0, 0);
+   }
 
    // bind diffuse texture
    if(cRenderable->getClassName() == _Label_)
@@ -969,10 +961,10 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       GEHasFlag(cMaterialPass->getMaterial()->getFlags(), MaterialFlagsBitMask::RenderOncePerLight) &&
       vLightsToRender.size() > 1;
 
-   if(cMesh)
+   if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::LightingSupport))
    {
       // if the renderable is a shadowed 3D mesh, bind shadow map
-      if(GEHasFlag(cMesh->getDynamicShadows(), DynamicShadowsBitMask::Receive))
+      if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::BindShadowMap))
       {
          ID3D11ShaderResourceView* dxShaderResourceView = cShadowMap->getShaderResourceView();
          dxContext->PSSetShaderResources((UINT)TextureSlot::ShadowMap, 1, &dxShaderResourceView);
@@ -1005,14 +997,14 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    }
 
    // draw
-   GESTLMap(uint, GeometryRenderInfo)* mGeometryToRenderMap = cRenderable->getGeometryType() == GeometryType::Static
+   GESTLMap(uint, GeometryRenderInfo)* mGeometryToRenderMap = sRenderOperation.isStatic()
       ? &mStaticGeometryToRender
       : &mDynamicGeometryToRender;
 
    bindBuffers(sGPUBufferPairs[sRenderOperation.mGroup]);
-   GESTLMap(uint, GeometryRenderInfo)::const_iterator it = mGeometryToRenderMap->find(cRenderable->getOwner()->getFullName().getID());
+   GESTLMap(uint, GeometryRenderInfo)::const_iterator it = mGeometryToRenderMap->find(sRenderOperation.mGeometryID);
    const GeometryRenderInfo& sGeometryInfo = it->second;
-   uint iStartIndexLocation = sGeometryInfo.mIndexBufferOffset / sizeof(ushort);
+   uint iStartIndexLocation = sGeometryInfo.mIndexBufferOffset / sizeof(uint16_t);
    uint iBaseVertexLocation = sGeometryInfo.mVertexBufferOffset / sRenderOperation.mData->VertexStride;
 
    dxContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -1038,11 +1030,6 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    else
    {
       dxContext->DrawIndexed(sRenderOperation.mData->NumIndices, iStartIndexLocation, iBaseVertexLocation);
-   }
-
-   if(!cRenderable || !GEHasFlag(cRenderable->getInternalFlags(), ComponentRenderable::InternalFlags::DebugGeometry))
-   {
-      iDrawCalls++;
    }
 }
 
