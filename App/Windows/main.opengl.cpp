@@ -324,11 +324,10 @@ void mouseMove(int x, int y)
 
    if(bMouseLeftButton)
    {
-      if(gSettings.getFullscreen())
-      {
-         InputSystem::getInstance()->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
-      }
-      else if(x < 0 || y < 0 || x >= Device::ScreenWidth || y >= Device::ScreenHeight)
+      InputSystem::getInstance()->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
+
+      if(!gSettings.getFullscreen() &&
+         (x < 0 || y < 0 || x >= Device::ScreenWidth || y >= Device::ScreenHeight))
       {
          mouseButton(GLUT_LEFT_BUTTON, GLUT_UP, x, y);
       }
