@@ -933,16 +933,29 @@ void Scene::queueForRendering()
 {
    GEProfilerMarker("Scene::queueForRendering()");
 
-   GESTLVector(Component*)& vRenderables = vComponents[(uint)ComponentType::Renderable];
+   GESTLVector(Component*)& uiElements = vComponents[(uint32_t)ComponentType::UIElement];
 
-   for(uint i = 0; i < vRenderables.size(); i++)
+   for(size_t i = 0u; i < uiElements.size(); i++)
    {
-      ComponentRenderable* cRenderable = static_cast<ComponentRenderable*>(vRenderables[i]);
+      if(uiElements[i]->getClassName() == ComponentUI3DCanvas::ClassName)
+      {
+         ComponentUI3DCanvas* canvas = static_cast<ComponentUI3DCanvas*>(uiElements[i]);
 
-      if(!cRenderable->getVisible())
-         continue;
+         const uint32_t canvasIndex = (uint32_t)canvas->getCanvasIndex();
+         const Vector3& canvasWorldPosition =
+            canvas->getOwner()->getComponent<ComponentTransform>()->getWorldPosition();
+         const uint16_t canvasSettings = (uint16_t)canvas->getSettings();
 
-      RenderSystem::getInstance()->queueForRendering(cRenderable, i);
+         RenderSystem::getInstance()->setup3DUICanvas(canvasIndex, canvasWorldPosition, canvasSettings);
+      }
+   }
+
+   GESTLVector(Component*)& renderables = vComponents[(uint32_t)ComponentType::Renderable];
+
+   for(size_t i = 0u; i < renderables.size(); i++)
+   {
+      ComponentRenderable* renderable = static_cast<ComponentRenderable*>(renderables[i]);
+      RenderSystem::getInstance()->queueForRendering(renderable, (uint32_t)i);
    }
 }
 

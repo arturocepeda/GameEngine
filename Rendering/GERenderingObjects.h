@@ -193,4 +193,21 @@ namespace GE { namespace Rendering
 
       Count = 2
    };
+
+
+   GESerializableEnum(RenderPass)
+   {
+      None,
+      _01_Pre3D,
+      _02_OpaqueMeshes,
+      _03_Labels3D,
+      _04_TransparentMeshes,
+      _05_UI3DFirst,
+      _06_UI2D,
+      _07_UI3DSecond,
+      _08_PostUI,
+      _09_DebugGeometry,
+
+      Count
+   };
 }}

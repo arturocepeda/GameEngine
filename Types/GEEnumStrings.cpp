@@ -270,6 +270,20 @@ namespace GE { namespace Rendering
       "Clamp",
       "Repeat"
    };
+
+   const char* strRenderPass[] =
+   {
+      "None",
+      "01_Pre3D",
+      "02_OpaqueMeshes",
+      "03_Labels3D",
+      "04_TransparentMeshes",
+      "05_UI3DFirst",
+      "06_UI2D",
+      "07_UI3DSecond",
+      "08_PostUI",
+      "09_DebugGeometry"
+   };
 }}
 
 namespace GE { namespace Audio

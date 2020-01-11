@@ -47,6 +47,7 @@ namespace GE { namespace Entities
       GeometryType eGeometryType;
       RenderingMode eRenderingMode;
       uint8_t iRenderPriority;
+      Rendering::RenderPass mRenderPass;
       ComponentTransform* cTransform;
       Color cColor;
     
@@ -68,6 +69,7 @@ namespace GE { namespace Entities
       GeometryType getGeometryType() const;
       RenderingMode getRenderingMode() const;
       uint8_t getRenderPriority() const;
+      GEDefaultGetter(Rendering::RenderPass, RenderPass, m)
       ComponentTransform* getTransform() const;
 
       const Color& getColor() const;
@@ -79,6 +81,7 @@ namespace GE { namespace Entities
       void setGeometryType(GeometryType Type);
       void setRenderingMode(RenderingMode Mode);
       void setRenderPriority(uint8_t Priority);
+      GEDefaultSetter(Rendering::RenderPass, RenderPass, m)
       void setColor(const Color& C);
       void setVisible(bool Visible);
       void setInternalFlags(uint8_t Flags);

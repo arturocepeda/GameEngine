@@ -33,6 +33,7 @@ ComponentRenderable::ComponentRenderable(Entity* Owner)
    , eGeometryType(GeometryType::Dynamic)
    , eRenderingMode(RenderingMode::_2D)
    , iRenderPriority(128)
+   , mRenderPass(RenderPass::None)
    , cColor(1.0f, 1.0f, 1.0f)
    , iInternalFlags((uint8_t)InternalFlags::Visible)
 {
@@ -46,6 +47,7 @@ ComponentRenderable::ComponentRenderable(Entity* Owner)
    GERegisterPropertyEnum(RenderingMode, RenderingMode);
    GERegisterProperty(Byte, RenderPriority);
    GERegisterProperty(Color, Color);
+   GERegisterPropertyEnumReadonly(RenderPass, RenderPass);
    GERegisterPropertyArray(MaterialPass);
 }
 

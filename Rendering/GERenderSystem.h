@@ -244,6 +244,7 @@ namespace GE { namespace Rendering
       void setCullingMode(CullingMode Mode);
 
       // components to render
+      void setup3DUICanvas(uint32_t pCanvasIndex, const Vector3& pWorldPosition, uint16_t pSettings);
       void queueForRendering(Entities::ComponentRenderable* Renderable, uint RequestIndex);
       void queueForRendering(Entities::ComponentLight* Light);
       void clearRenderingQueues();
