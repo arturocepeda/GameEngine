@@ -55,8 +55,9 @@ const ObjectName ComponentParticleSystem::ClassName = ObjectName("ParticleSystem
 ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    : ComponentRenderable(Owner)
    , iMaxParticles(256)
-   , bVertexDataReallocationPending(true)
    , fElapsedTimeSinceLastEmission(0.0f)
+   , bVertexDataReallocationPending(true)
+   , mBurstPending(false)
    , mParticleType(ParticleType::Billboard)
    , eEmitterType(ParticleEmitterType::Point)
    , fEmitterRadius(0.0f)
@@ -122,7 +123,7 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
 
    GERegisterValueProvider(ParticleTextureAtlasIndex, ParticleTextureAtlas, 0.0f);
 
-   registerAction("Burst", [this] { burst(iEmissionBurstCount); });
+   registerAction("Burst", [this] { mBurstPending = true; });
    registerAction("Prewarm", [this] { prewarm(); });
 }
 
@@ -399,6 +400,12 @@ void ComponentParticleSystem::update()
    if(GEHasFlag(mSettings, ParticleSystemSettingsBitMask::Prewarm) && bEmitterActive && lParticles.empty())
    {
       prewarm();
+   }
+
+   if(mBurstPending)
+   {
+      burst(iEmissionBurstCount);
+      mBurstPending = false;
    }
 
    const float deltaTime = cOwner->getClock()->getDelta();

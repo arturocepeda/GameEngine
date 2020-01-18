@@ -225,8 +225,9 @@ namespace GE { namespace Entities
       typedef GESTLVector(Particle) ParticleList;
       ParticleList lParticles;
       uint iMaxParticles;
-      bool bVertexDataReallocationPending;
       float fElapsedTimeSinceLastEmission;
+      bool bVertexDataReallocationPending;
+      std::atomic<bool> mBurstPending;
 
       ParticleType mParticleType;
       ParticleEmitterType eEmitterType;
