@@ -43,6 +43,7 @@ namespace GE { namespace Core
       void update() const;
       void shutdown() const;
 
+      const char* getPlatformName() const;
       const char* getUserName() const;
 
       // Achievements

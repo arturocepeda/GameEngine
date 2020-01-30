@@ -192,6 +192,12 @@ void DistributionPlatform::shutdown() const
    SteamAPI_Shutdown();
 }
 
+const char* DistributionPlatform::getPlatformName() const
+{
+   static const char* platformName = "Steam";
+   return platformName;
+}
+
 const char* DistributionPlatform::getUserName() const
 {
    return SteamFriends()->GetPersonaName();

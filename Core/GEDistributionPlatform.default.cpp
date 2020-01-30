@@ -28,6 +28,12 @@ void DistributionPlatform::shutdown() const
 {
 }
 
+const char* DistributionPlatform::getPlatformName() const
+{
+   static const char* platformName = "Default";
+   return platformName;
+}
+
 const char* DistributionPlatform::getUserName() const
 {
    static const char* defaultUserName = "Player";
