@@ -744,6 +744,13 @@ void Environment::registerTypes()
    //
    //  GE::Core
    //
+   mLua.new_simple_usertype<Device>
+   (
+      "Device"
+      , "getScreenWidth", &Device::getScreenWidth
+      , "getScreenHeight", &Device::getScreenHeight
+      , "getAspectRatio", &Device::getAspectRatio
+   );
    mLua.new_simple_usertype<ObjectName>
    (
       "ObjectName"
