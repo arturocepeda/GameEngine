@@ -176,8 +176,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
    GE::uint iWindowPositionX = (fullscreenWidth / 2) - (iWindowWidth / 2);
    GE::uint iWindowPositionY = (fullscreenHeight / 2) - (iWindowHeight / 2);
 
-   hWnd = CreateWindowExA(NULL, GE_APP_NAME, GE_APP_NAME, WS_CAPTION | WS_SYSMENU, iWindowPositionX, iWindowPositionY, 
-                        iWindowWidth, iWindowHeight, NULL, NULL, hInstance, NULL);
+   const DWORD wndStyle = gSettings.getFullscreen()
+      ? WS_EX_TOPMOST | WS_POPUP
+      : WS_CAPTION | WS_SYSMENU;
+
+   hWnd =
+      CreateWindowExA(NULL, GE_APP_NAME, GE_APP_NAME, wndStyle,
+         iWindowPositionX, iWindowPositionY, 
+         iWindowWidth, iWindowHeight,
+         NULL, NULL, hInstance, NULL);
    ShowWindow(hWnd, iCmdShow);
    UpdateWindow(hWnd);
 
