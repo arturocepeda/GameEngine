@@ -164,15 +164,18 @@ void AudioSystem::loadAudioBankFiles(AudioBank* pAudioBank)
 
       GEMutexUnlock(mMutex);
 
-      // load audio file
-      mBuffers[bufferIndexToAssign].Data = Allocator::alloc<AudioData>(1, AllocationCategory::Audio);
-      GEInvokeCtor(AudioData, mBuffers[bufferIndexToAssign].Data)();
+      if(mBuffers[bufferIndexToAssign].References == 1u)
+      {
+         // load audio file
+         mBuffers[bufferIndexToAssign].Data = Allocator::alloc<AudioData>(1, AllocationCategory::Audio);
+         GEInvokeCtor(AudioData, mBuffers[bufferIndexToAssign].Data)();
 
-      Device::readContentFile(ContentType::Audio, audioFilesSubdir,
-         audioFileNames[i].getString(), audioFilesExt, mBuffers[bufferIndexToAssign].Data);
+         Device::readContentFile(ContentType::Audio, audioFilesSubdir,
+            audioFileNames[i].getString(), audioFilesExt, mBuffers[bufferIndexToAssign].Data);
 
-      // register audio data
-      platformLoadSound(bufferIndexToAssign, mBuffers[bufferIndexToAssign].Data);
+         // register audio data
+         platformLoadSound(bufferIndexToAssign, mBuffers[bufferIndexToAssign].Data);
+      }
    }
 }
 
@@ -192,15 +195,15 @@ void AudioSystem::releaseAudioBankFiles(AudioBank* pAudioBank)
          {
             mBuffers[i].References--;
 
-            if(mBuffers[i].References == 0)
+            if(mBuffers[i].References == 0u)
             {
                platformUnloadSound(i);
 
                GEInvokeDtor(AudioData, mBuffers[i].Data);
                Allocator::free(mBuffers[i].Data);
 
-               mBuffers[i].AssignedFileID = 0;
-               mBuffers[i].Data = 0;
+               mBuffers[i].AssignedFileID = 0u;
+               mBuffers[i].Data = nullptr;
             }
 
             break;
