@@ -113,6 +113,8 @@ void AudioSystem::releaseChannel(ChannelID pChannel)
          break;
       }
    }
+
+   platformReleaseChannel(pChannel);
 }
 
 void AudioSystem::loadAudioBankFiles(AudioBank* pAudioBank)
@@ -137,18 +139,18 @@ void AudioSystem::loadAudioBankFiles(AudioBank* pAudioBank)
       uint32_t loadedFileIndex = InvalidBufferIndex;
       uint32_t firstFreeIndex = InvalidBufferIndex;
 
-      for(BufferID i = 0u; i < mBuffersCount; i++)
+      for(BufferID bufferID = 0u; bufferID < mBuffersCount; bufferID++)
       {
-         if(mBuffers[i].AssignedFileID == audioFileName.getID())
+         if(mBuffers[bufferID].AssignedFileID == audioFileName.getID())
          {
-            loadedFileIndex = i;
+            loadedFileIndex = bufferID;
             break;
          }
-         else if(mBuffers[i].References == 0u)
+         else if(mBuffers[bufferID].References == 0u)
          {
             if(firstFreeIndex == InvalidBufferIndex)
             {
-               firstFreeIndex = i;
+               firstFreeIndex = bufferID;
             }
          }
       }
@@ -171,7 +173,7 @@ void AudioSystem::loadAudioBankFiles(AudioBank* pAudioBank)
          GEInvokeCtor(AudioData, mBuffers[bufferIndexToAssign].Data)();
 
          Device::readContentFile(ContentType::Audio, audioFilesSubdir,
-            audioFileNames[i].getString(), audioFilesExt, mBuffers[bufferIndexToAssign].Data);
+            audioFileName.getString(), audioFilesExt, mBuffers[bufferIndexToAssign].Data);
 
          // register audio data
          platformLoadSound(bufferIndexToAssign, mBuffers[bufferIndexToAssign].Data);
@@ -189,21 +191,30 @@ void AudioSystem::releaseAudioBankFiles(AudioBank* pAudioBank)
    {
       const ObjectName& audioFileName = audioFileNames[i];
 
-      for(BufferID i = 0u; i < mBuffersCount; i++)
+      for(BufferID bufferID = 0u; bufferID < mBuffersCount; bufferID++)
       {
-         if(mBuffers[i].AssignedFileID == audioFileName.getID())
+         if(mBuffers[bufferID].AssignedFileID == audioFileName.getID())
          {
-            mBuffers[i].References--;
+            mBuffers[bufferID].References--;
 
-            if(mBuffers[i].References == 0u)
+            if(mBuffers[bufferID].References == 0u)
             {
-               platformUnloadSound(i);
+               for(ChannelID channelID = 0u; channelID < mChannelsCount; channelID++)
+               {
+                  if(!mChannels[channelID].Free && mChannels[channelID].AssignedBuffer == bufferID)
+                  {
+                     platformStop(channelID);
+                     releaseChannel(channelID);
+                  }
+               }
 
-               GEInvokeDtor(AudioData, mBuffers[i].Data);
-               Allocator::free(mBuffers[i].Data);
+               platformUnloadSound(bufferID);
 
-               mBuffers[i].AssignedFileID = 0u;
-               mBuffers[i].Data = nullptr;
+               GEInvokeDtor(AudioData, mBuffers[bufferID].Data);
+               Allocator::free(mBuffers[bufferID].Data);
+
+               mBuffers[bufferID].AssignedFileID = 0u;
+               mBuffers[bufferID].Data = nullptr;
             }
 
             break;

@@ -82,7 +82,12 @@ void AudioSystem::platformUnloadSound(BufferID pBuffer)
 {
    GEAssert(pBuffer < mBuffersCount);
 
-   alBufferData(alBuffers[pBuffer], 0, 0, 0, 0);
+   alBufferData(alBuffers[pBuffer], 0, nullptr, 0, 0);
+}
+
+void AudioSystem::platformReleaseChannel(ChannelID pChannel)
+{
+   alSourcei(alSources[pChannel], AL_BUFFER, 0);
 }
 
 void AudioSystem::platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool pLooping)
