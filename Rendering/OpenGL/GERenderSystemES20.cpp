@@ -94,28 +94,28 @@ void RenderSystemES20::createBuffers()
       sGPUBufferPairs[i].IndexBuffer = (void*)((uintPtrSize)iIndexBuffer);
       bindBuffers(sGPUBufferPairs[i]);
 
-      glBufferData(GL_ARRAY_BUFFER, VertexBufferSize, 0, GL_STATIC_DRAW);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexBufferSize, 0, GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, kVertexBufferSize, 0, GL_STATIC_DRAW);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, kIndexBufferSize, 0, GL_STATIC_DRAW);
    }
 
    // buffer and texture for shadow mapping
    glGenFramebuffers(1, &iFrameBuffer);
    glGenRenderbuffers(1, &iRenderBuffer);
    glBindRenderbuffer(GL_RENDERBUFFER, iRenderBuffer);
-   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, ShadowMapSize, ShadowMapSize);
+   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, kShadowMapSize, kShadowMapSize);
    glBindFramebuffer(GL_FRAMEBUFFER, iFrameBuffer);
 
    cDepthTexture = Allocator::alloc<Texture>();
    GEInvokeCtor(Texture, cDepthTexture)("Depth", "Texture");
-   cDepthTexture->setWidth(ShadowMapSize);
-   cDepthTexture->setHeight(ShadowMapSize);
+   cDepthTexture->setWidth(kShadowMapSize);
+   cDepthTexture->setHeight(kShadowMapSize);
    
    GLuint iDepthTexture;
    glGenTextures(1, &iDepthTexture);
    cDepthTexture->setHandler((void*)((uintPtrSize)iDepthTexture));
 
    glBindTexture(GL_TEXTURE_2D, iDepthTexture);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ShadowMapSize, ShadowMapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kShadowMapSize, kShadowMapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -536,7 +536,7 @@ void RenderSystem::renderShadowMap()
    glGetIntegerv(GL_VIEWPORT, glDefaultViewport);
    
    glBindFramebuffer(GL_FRAMEBUFFER, iFrameBuffer);
-   glViewport(0, 0, ShadowMapSize, ShadowMapSize);
+   glViewport(0, 0, kShadowMapSize, kShadowMapSize);
 
    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 #if defined (GE_PLATFORM_ANDROID) || defined (GE_PLATFORM_IOS)
@@ -550,7 +550,7 @@ void RenderSystem::renderShadowMap()
 
    if(!vShadowedMeshesToRender.empty())
    {
-      useShaderProgram(ShadowMapSolidProgram);
+      useShaderProgram(kShadowMapSolidProgram);
 
       GESTLVector(RenderOperation)::const_iterator it = vShadowedMeshesToRender.begin();
 
@@ -592,7 +592,7 @@ void RenderSystem::renderShadowMap()
 
    if(!vShadowedParticlesToRender.empty())
    {
-      useShaderProgram(ShadowMapAlphaProgram);
+      useShaderProgram(kShadowMapAlphaProgram);
 
       GESTLVector(RenderOperation)::const_iterator it = vShadowedParticlesToRender.begin();
 

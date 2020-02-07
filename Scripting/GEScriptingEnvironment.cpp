@@ -1225,6 +1225,7 @@ void Environment::registerTypes()
    (
       "RenderSystem"
       , "getInstance", &RenderSystem::getInstance
+      , "get3DUICanvasCount", &RenderSystem::get3DUICanvasCount
       , "getActiveCamera", &RenderSystem::getActiveCamera
       , "getFPS", &RenderSystem::getFPS
    );

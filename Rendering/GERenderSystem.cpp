@@ -33,11 +33,11 @@ using namespace GE::Core;
 using namespace GE::Entities;
 using namespace GE::Rendering;
 
-const uint RenderBatchVertexDataFloatsCount = 1024 * 1024;
-const uint RenderBatchIndicesCount = 1024 * 256;
+const uint32_t kRenderBatchVertexDataFloatsCount = 1024u * 1024u;
+const uint32_t kRenderBatchIndicesCount = 1024u * 256u;
 
-const ObjectName RenderSystem::ShadowMapSolidProgram = ObjectName("ShadowMapSolid");
-const ObjectName RenderSystem::ShadowMapAlphaProgram = ObjectName("ShadowMapAlpha");
+const ObjectName RenderSystem::kShadowMapSolidProgram = ObjectName("ShadowMapSolid");
+const ObjectName RenderSystem::kShadowMapAlphaProgram = ObjectName("ShadowMapAlpha");
 
 const ObjectName _Mesh_ = ObjectName("Mesh");
 const ObjectName _Sprite_ = ObjectName("Sprite");
@@ -240,8 +240,8 @@ void RenderSystem::loadMaterial(Material* cMaterial)
 
       renderBatch.mData = Allocator::alloc<GeometryData>();
       GEInvokeCtor(GeometryData, renderBatch.mData);
-      renderBatch.mData->VertexData = Allocator::alloc<float>(RenderBatchVertexDataFloatsCount);
-      renderBatch.mData->Indices = Allocator::alloc<ushort>(RenderBatchIndicesCount);
+      renderBatch.mData->VertexData = Allocator::alloc<float>(kRenderBatchVertexDataFloatsCount);
+      renderBatch.mData->Indices = Allocator::alloc<ushort>(kRenderBatchIndicesCount);
 
       renderBatch.mDiffuseTexture = const_cast<Texture*>(cMaterial->getDiffuseTexture());
    }
@@ -718,7 +718,7 @@ Font* RenderSystem::getFont(const ObjectName& Name)
 
 void RenderSystem::setup3DUICanvas(uint32_t pCanvasIndex, const Vector3& pWorldPosition, uint16_t pSettings)
 {
-   GEAssert(pCanvasIndex < ComponentUI3DElement::CanvasCount);
+   GEAssert(pCanvasIndex < k3DUICanvasCount);
 
    s3DUICanvasEntries[pCanvasIndex].WorldPosition = pWorldPosition;
    s3DUICanvasEntries[pCanvasIndex].Settings = pSettings;
@@ -1083,7 +1083,7 @@ void RenderSystem::queueForRendering3DUI(ComponentRenderable* pRenderable, Rende
    GEAssert(uiElement);
 
    const uint32_t canvasIndex = (uint32_t)uiElement->getCanvasIndex();
-   GEAssert(uiElement->getCanvasIndex() < ComponentUI3DElement::CanvasCount);
+   GEAssert(uiElement->getCanvasIndex() < k3DUICanvasCount);
    
    const uint16_t canvasSettings = s3DUICanvasEntries[canvasIndex].Settings;
    const bool firstPass = !GEHasFlag(canvasSettings, CanvasSettingsBitMask::RenderAfter2DElements);
@@ -1168,7 +1168,7 @@ void RenderSystem::clearRenderingQueues()
    vTransparentMeshesToRender.clear();
    vLightsToRender.clear();
 
-   for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
+   for(uint32_t i = 0u; i < k3DUICanvasCount; i++)
    {
       s3DUICanvasEntries[i].Index = (uint16_t)i;
       s3DUICanvasEntries[i].Settings = 0u;
@@ -1317,9 +1317,9 @@ void RenderSystem::renderFrame()
             }
          }
 
-         qsort(s3DUICanvasEntries, ComponentUI3DElement::CanvasCount, sizeof(_3DUICanvasEntry), canvasSortComparer);
+         qsort(s3DUICanvasEntries, k3DUICanvasCount, sizeof(_3DUICanvasEntry), canvasSortComparer);
 
-         for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
+         for(uint32_t i = 0u; i < k3DUICanvasCount; i++)
          {
             if(!GEHasFlag(s3DUICanvasEntries[i].Settings, CanvasSettingsBitMask::RenderAfter2DElements))
             {
@@ -1347,16 +1347,16 @@ void RenderSystem::renderFrame()
       iDrawCalls++;
    }
 
-   for(uint i = 0; i < ComponentUI3DElement::CanvasCount; i++)
+   for(uint32_t i = 0u; i < k3DUICanvasCount; i++)
    {
-      uint iIndex = s3DUICanvasEntries[i].Index;
+      const uint32_t index = s3DUICanvasEntries[i].Index;
 
-      while(!v3DUIElementsToRender[iIndex].empty())
+      while(!v3DUIElementsToRender[index].empty())
       {
-         const RenderOperation& sRenderOperation = v3DUIElementsToRender[iIndex].top();
+         const RenderOperation& sRenderOperation = v3DUIElementsToRender[index].top();
          useMaterial(sRenderOperation.mRenderMaterialPass->getMaterial());
          render(sRenderOperation);
-         v3DUIElementsToRender[iIndex].pop();
+         v3DUIElementsToRender[index].pop();
          iDrawCalls++;
       }
    }

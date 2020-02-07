@@ -73,12 +73,14 @@ namespace GE { namespace Rendering
    class RenderSystem : public Core::Singleton<RenderSystem>
    {
    protected:
-      static const uint VertexBufferSize = 1024 * 1024 * 16;
-      static const uint IndexBufferSize = 1024 * 1024 * 8;
-      static const uint ShadowMapSize = 1024;
+      static const uint32_t kVertexBufferSize = 1024u * 1024u * 16u;
+      static const uint32_t kIndexBufferSize = 1024u * 1024u * 8u;
 
-      static const Core::ObjectName ShadowMapSolidProgram;
-      static const Core::ObjectName ShadowMapAlphaProgram;
+      static const uint32_t k3DUICanvasCount = 32u;
+
+      static const uint32_t kShadowMapSize = 1024u;
+      static const Core::ObjectName kShadowMapSolidProgram;
+      static const Core::ObjectName kShadowMapAlphaProgram;
 
       enum class TextureSlot
       {
@@ -130,8 +132,8 @@ namespace GE { namespace Rendering
       GESTLVector(RenderOperation) vTransparentMeshesToRender;
       GESTLPriorityQueue(RenderOperation) vDebugGeometryToRender;
 
-      GESTLPriorityQueue(RenderOperation) v3DUIElementsToRender[Entities::ComponentUI3DElement::CanvasCount];
-      _3DUICanvasEntry s3DUICanvasEntries[Entities::ComponentUI3DElement::CanvasCount];
+      GESTLPriorityQueue(RenderOperation) v3DUIElementsToRender[k3DUICanvasCount];
+      _3DUICanvasEntry s3DUICanvasEntries[k3DUICanvasCount];
       bool mAny3DUIElementsToRender;
 
       GESTLVector(Entities::ComponentLight*) vLightsToRender;
@@ -186,6 +188,8 @@ namespace GE { namespace Rendering
 
       RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint ScreenHeight);
       ~RenderSystem();
+
+      static uint32_t get3DUICanvasCount() { return k3DUICanvasCount; }
 
       // content
       void registerObjectManagers();

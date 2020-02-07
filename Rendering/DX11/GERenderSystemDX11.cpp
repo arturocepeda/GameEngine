@@ -96,7 +96,7 @@ RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
 
    // create render texture for shadow mapping
    cShadowMap = Allocator::alloc<RenderTextureDX11>();
-   GEInvokeCtor(RenderTextureDX11, cShadowMap)(dxDevice.Get(), dxContext.Get(), ShadowMapSize, ShadowMapSize);
+   GEInvokeCtor(RenderTextureDX11, cShadowMap)(dxDevice.Get(), dxContext.Get(), kShadowMapSize, kShadowMapSize);
 
    // set default render target
    dxContext->OMSetRenderTargets(1, dxRenderTargetView.GetAddressOf(), dxDepthStencilView.Get());
@@ -302,7 +302,7 @@ void RenderSystemDX11::createBuffers()
       ID3D11Buffer* dxVertexBuffer = 0;
 
       CD3D11_BUFFER_DESC dxVertexBufferDesc;
-      dxVertexBufferDesc.ByteWidth = VertexBufferSize;
+      dxVertexBufferDesc.ByteWidth = kVertexBufferSize;
       dxVertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
       dxVertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
       dxVertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -318,7 +318,7 @@ void RenderSystemDX11::createBuffers()
       ID3D11Buffer* dxIndexBuffer = 0;
 
       CD3D11_BUFFER_DESC dxIndexBufferDesc;
-      dxIndexBufferDesc.ByteWidth = IndexBufferSize;
+      dxIndexBufferDesc.ByteWidth = kIndexBufferSize;
       dxIndexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
       dxIndexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
       dxIndexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -781,7 +781,7 @@ void RenderSystem::renderShadowMap()
    if(cLight->getLightType() != LightType::Directional)
       return;
 
-   CD3D11_VIEWPORT dxViewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)ShadowMapSize, (float)ShadowMapSize);
+   CD3D11_VIEWPORT dxViewport = CD3D11_VIEWPORT(0.0f, 0.0f, (float)kShadowMapSize, (float)kShadowMapSize);
    dxContext->RSSetViewports(1, &dxViewport);
 
    ID3D11ShaderResourceView* dxNullResourceView = nullptr;
@@ -795,7 +795,7 @@ void RenderSystem::renderShadowMap()
    if(!vShadowedMeshesToRender.empty())
    {
       setBlendingMode(BlendingMode::None);
-      useShaderProgram(ShadowMapSolidProgram);
+      useShaderProgram(kShadowMapSolidProgram);
 
       GESTLVector(RenderOperation)::const_iterator it = vShadowedMeshesToRender.begin();
 
@@ -834,7 +834,7 @@ void RenderSystem::renderShadowMap()
    if(!vShadowedParticlesToRender.empty())
    {
       setBlendingMode(BlendingMode::Alpha);
-      useShaderProgram(ShadowMapAlphaProgram);
+      useShaderProgram(kShadowMapAlphaProgram);
 
       GESTLVector(RenderOperation)::const_iterator it = vShadowedParticlesToRender.begin();
 
