@@ -66,56 +66,69 @@ void ComponentSkeleton::setSkeletonName(const ObjectName& SkeletonName)
 
    if(SkeletonName.isEmpty())
    {
-      cSkeleton = 0;
+      cSkeleton = nullptr;
       return;
    }
 
    cSkeleton = ResourcesManager::getInstance()->get<Skeleton>(SkeletonName);
 
    if(!cSkeleton)
+   {
       cSkeleton = ResourcesManager::getInstance()->load<Skeleton>(SkeletonName.getString());
+   }
 
    GEAssert(cSkeleton);
 
-   const uint iBonesCount = cSkeleton->getBonesCount();
+   const uint32_t bonesCount = cSkeleton->getBonesCount();
 
-   if(iBonesCount > 1)
+   if(bonesCount > 1u)
    {
-      for(uint i = 0; i < iBonesCount; i++)
+      Scene* scene = cOwner->getOwner();
+
+      for(uint32_t i = 0u; i < bonesCount; i++)
       {
-         const Bone* cCurrentBone = cSkeleton->getBone(i);
+         const Bone* currentBone = cSkeleton->getBone(i);
 
          // create entity
-         Entity* cBoneEntity = cOwner->getOwner()->addEntity(cCurrentBone->getName(), cOwner);
-         cBoneEntity->setInternalFlags((uint8_t)Entity::InternalFlags::Generated);
-         vBoneEntities.push_back(cBoneEntity);
+         Entity* parentBoneEntity = i > 0u
+            ? vBoneEntities[currentBone->getParentIndex()]
+            : cOwner;
+         Entity* boneEntity = scene->addEntity(currentBone->getName(), parentBoneEntity);
+         boneEntity->setInternalFlags((uint8_t)Entity::InternalFlags::Generated);
+         vBoneEntities.push_back(boneEntity);
 
-         Vector3 vBoneEntityPosition;
-         Rotation cBoneEntityRotation;
-         Vector3 vBoneEntityScale;
+         Matrix4 boneMatrix = currentBone->getBindMatrix();
 
-         Geometry::extractTRSFromMatrix(cCurrentBone->getBindMatrix(),
-            &vBoneEntityPosition, &cBoneEntityRotation, &vBoneEntityScale);
-
-         ComponentTransform* cBoneEntityTransform = cBoneEntity->addComponent<ComponentTransform>();
-         cBoneEntityTransform->setPosition(vBoneEntityPosition);
-         cBoneEntityTransform->setRotation(cBoneEntityRotation);
-         cBoneEntityTransform->setScale(vBoneEntityScale);
-      }
-
-      // setup the hierarchy in the bone entities
-      const Bone* cSkeletonRootBone = cSkeleton->getBone(0);
-
-      for(uint i = 0; i < iBonesCount; i++)
-      {
-         const Bone* cCurrentBone = cSkeleton->getBone(i);
-
-         if(cCurrentBone != cSkeletonRootBone)
+         if(i > 0u)
          {
-            Entity* cBoneEntityParent = vBoneEntities[cCurrentBone->getParentIndex()];
-            Scene* cScene = vBoneEntities[i]->getOwner();
-            cScene->setEntityParent(vBoneEntities[i], cBoneEntityParent);
+            Matrix4 parentInverseWorldMatrix;
+            Matrix4MakeIdentity(&parentInverseWorldMatrix);
+
+            while(parentBoneEntity != cOwner)
+            {
+               const Matrix4& parentLocalWorldMatrix =
+                  parentBoneEntity->getComponent<ComponentTransform>()->getLocalWorldMatrix();
+               const Matrix4 parentInverseWorldMatrixSoFar = parentInverseWorldMatrix;
+               Matrix4Multiply(parentInverseWorldMatrixSoFar, parentLocalWorldMatrix, &parentInverseWorldMatrix);
+
+               parentBoneEntity = parentBoneEntity->getParent();
+            }
+
+            Matrix4Invert(&parentInverseWorldMatrix);
+            Matrix4Multiply(parentInverseWorldMatrix, currentBone->getBindMatrix(), &boneMatrix);
          }
+
+         Vector3 boneEntityPosition;
+         Rotation boneEntityRotation;
+         Vector3 boneEntityScale;
+
+         Geometry::extractTRSFromMatrix(boneMatrix,
+            &boneEntityPosition, &boneEntityRotation, &boneEntityScale);
+
+         ComponentTransform* boneEntityTransform = boneEntity->addComponent<ComponentTransform>();
+         boneEntityTransform->setPosition(boneEntityPosition);
+         boneEntityTransform->setRotation(boneEntityRotation);
+         boneEntityTransform->setScale(boneEntityScale);
       }
    }
    else
@@ -124,15 +137,17 @@ void ComponentSkeleton::setSkeletonName(const ObjectName& SkeletonName)
    }
 
    // allocate memory for the bone matrices
-   sBoneMatrices = Allocator::alloc<Matrix4>(iBonesCount);
-   sBoneInverseTransposeMatrices = Allocator::alloc<Matrix4>(iBonesCount);
-   mBonePoseMatrix = Allocator::alloc<Matrix4>(iBonesCount);
+   sBoneMatrices = Allocator::alloc<Matrix4>(bonesCount);
+   sBoneInverseTransposeMatrices = Allocator::alloc<Matrix4>(bonesCount);
+   mBonePoseMatrix = Allocator::alloc<Matrix4>(bonesCount);
 
    // reload mesh
-   ComponentMesh* cMesh = cOwner->getComponent<ComponentMesh>();
+   ComponentMesh* mesh = cOwner->getComponent<ComponentMesh>();
 
-   if(cMesh && cMesh->getMesh())
-      cMesh->loadMesh(cMesh->getMesh());
+   if(mesh && mesh->getMesh())
+   {
+      mesh->loadMesh(mesh->getMesh());
+   }
 }
 
 Content::Skeleton* ComponentSkeleton::getSkeleton() const
@@ -561,25 +576,34 @@ void ComponentSkeleton::releaseSkeletonData()
    stopAllAnimations();
 
    if(sBoneMatrices)
+   {
       Allocator::free(sBoneMatrices);
+      sBoneMatrices = nullptr;
+   }
 
    if(sBoneInverseTransposeMatrices)
+   {
       Allocator::free(sBoneInverseTransposeMatrices);
+      sBoneInverseTransposeMatrices = nullptr;
+   }
 
    if(mBonePoseMatrix)
+   {
       Allocator::free(mBonePoseMatrix);
+      mBonePoseMatrix = nullptr;
+   }
 
    if(cSkeleton)
    {
       Scene* scene = cOwner->getOwner();
 
-      if(vBoneEntities.size() > 1 && !scene->isRemovingEntities())
+      if(vBoneEntities.size() > 1u && !scene->isRemovingEntities())
       {
          scene->removeEntity(vBoneEntities[0]->getFullName());
       }
 
       vBoneEntities.clear();
-      cSkeleton = 0;
+      cSkeleton = nullptr;
    }
 }
 
