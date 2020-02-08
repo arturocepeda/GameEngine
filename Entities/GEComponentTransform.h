@@ -27,22 +27,10 @@ namespace GE { namespace Entities
 
       Vector3 vPosition;
       Rotation cRotation;
-      Vector3 vEulerAngles;
       Vector3 vScale;
 
       Matrix4 mLocalWorldMatrix;
       Matrix4 mGlobalWorldMatrix;
-
-      Vector3 vForward;
-      Vector3 vUp;
-      Vector3 vRight;
-
-      inline void updateDirectionVectors()
-      {
-         Matrix4Transform(cRotation.getRotationMatrix(), Vector3::UnitZ, &vForward);
-         Matrix4Transform(cRotation.getRotationMatrix(), Vector3::UnitY, &vUp);
-         vRight = vForward.crossProduct(vUp);
-      }
 
    public:
       static ComponentType getType() { return ComponentType::Transform; }
@@ -81,10 +69,6 @@ namespace GE { namespace Entities
          cRotation = Rotation(Quaternion());
          vScale = Vector3::One;
 
-         vRight = Vector3::UnitX;
-         vUp = Vector3::UnitY;
-         vForward = -Vector3::UnitZ;
-
          updateWorldMatrix();
       }
       inline void updateWorldMatrix()
@@ -118,10 +102,9 @@ namespace GE { namespace Entities
       {
          return cRotation;
       }
-      inline Vector3& getOrientation()
+      inline Vector3 getOrientation()
       {
-         vEulerAngles = cRotation.getEulerAngles() * GE_RAD2DEG;
-         return vEulerAngles;
+         return cRotation.getEulerAngles() * GE_RAD2DEG;
       }
       inline Vector3& getScale()
       {
@@ -173,17 +156,23 @@ namespace GE { namespace Entities
          return mGlobalWorldMatrix;
       }
 
-      inline const Vector3& getForwardVector() const
+      inline Vector3 getForwardVector() const
       {
-         return vForward;
+         Vector3 forward;
+         Matrix4Transform(cRotation.getRotationMatrix(), Vector3::UnitZ, &forward);
+         return forward;
       }
-      inline const Vector3& getUpVector() const
+      inline Vector3 getUpVector() const
       {
-         return vUp;
+         Vector3 up;
+         Matrix4Transform(cRotation.getRotationMatrix(), Vector3::UnitY, &up);
+         return up;
       }
-      inline const Vector3& getRightVector() const
+      inline Vector3 getRightVector() const
       {
-         return vRight;
+         Vector3 right;
+         Matrix4Transform(cRotation.getRotationMatrix(), -Vector3::UnitX, &right);
+         return right;
       }
 
       inline void setPosition(const Vector3& Position)
@@ -198,7 +187,6 @@ namespace GE { namespace Entities
       inline void setRotation(const Rotation& R)
       {
          cRotation = R;
-         updateDirectionVectors();
          updateWorldMatrix();
       }
       inline void setOrientation(const Vector3& EulerAnglesInDegrees)
@@ -226,7 +214,6 @@ namespace GE { namespace Entities
       inline void setLocalWorldMatrix(const Matrix4& LocalWorldMatrix)
       {
          Core::Geometry::extractTRSFromMatrix(LocalWorldMatrix, &vPosition, &cRotation, &vScale);
-         updateDirectionVectors();
          updateWorldMatrix();
       }
 
@@ -258,28 +245,28 @@ namespace GE { namespace Entities
             setPosition(pWorldPosition);
          }
       }
-      inline void setForwardVector(const Vector3& Forward)
+      inline void setForwardVector(const Vector3& pForward)
       {
-         vRight = Vector3CrossProduct(Forward, Vector3::UnitY);
-         vRight.normalize();
-         vUp = Vector3CrossProduct(vRight, Forward);
-         vUp.normalize();
+         Vector3 right = Vector3CrossProduct(pForward, Vector3::UnitY);
+         right.normalize();
+         Vector3 up = Vector3CrossProduct(right, pForward);
+         up.normalize();
 
          Matrix4 matRotation;
 
-         matRotation.m[GE_M4_1_1] = -vRight.X;
-         matRotation.m[GE_M4_2_1] = -vRight.Y;
-         matRotation.m[GE_M4_3_1] = -vRight.Z;
+         matRotation.m[GE_M4_1_1] = -right.X;
+         matRotation.m[GE_M4_2_1] = -right.Y;
+         matRotation.m[GE_M4_3_1] = -right.Z;
          matRotation.m[GE_M4_4_1] = 0.0f;
 
-         matRotation.m[GE_M4_1_2] = vUp.X;
-         matRotation.m[GE_M4_2_2] = vUp.Y;
-         matRotation.m[GE_M4_3_2] = vUp.Z;
+         matRotation.m[GE_M4_1_2] = up.X;
+         matRotation.m[GE_M4_2_2] = up.Y;
+         matRotation.m[GE_M4_3_2] = up.Z;
          matRotation.m[GE_M4_4_2] = 0.0f;
 
-         matRotation.m[GE_M4_1_3] = Forward.X;
-         matRotation.m[GE_M4_2_3] = Forward.Y;
-         matRotation.m[GE_M4_3_3] = Forward.Z;
+         matRotation.m[GE_M4_1_3] = pForward.X;
+         matRotation.m[GE_M4_2_3] = pForward.Y;
+         matRotation.m[GE_M4_3_3] = pForward.Z;
          matRotation.m[GE_M4_4_3] = 0.0f;
 
          matRotation.m[GE_M4_1_4] = 0.0f;

@@ -22,8 +22,6 @@ ComponentTransform::ComponentTransform(Entity* Owner)
    : Component(Owner)
    , vPosition(Vector3::Zero)
    , vScale(Vector3::One)
-   , vForward(Vector3::UnitZ)
-   , vUp(Vector3::UnitY)
 {
    mClassNames.push_back(ObjectName("Transform"));
 
