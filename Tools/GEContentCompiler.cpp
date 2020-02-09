@@ -1208,10 +1208,10 @@ void ContentCompiler::packPrefabs()
          xmlDerived.append_copy(xmlPrefab);
          pugi::xml_node xmlDerivedRoot = xmlDerived.child("Prefab");
 
-         xml.remove_child(xmlPrefab);
-
          const char* prefabBaseName = xmlPrefabBase.value();
          sprintf(sInputPath, "%s\\Prefabs\\%s.prefab.xml", ContentXmlDirName, prefabBaseName);
+
+         xml.remove_child(xmlPrefab);
 
          xml.load_file(sInputPath);
          xmlPrefab = xml.child("Prefab");
