@@ -1196,6 +1196,7 @@ void Environment::registerTypes()
    (
       "ComponentAudioSource"
       , "playAudioEvent", &ComponentAudioSource::playAudioEvent
+      , "stopAllAudioEvents", &ComponentAudioSource::stopAllAudioEvents
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
    mLua.new_simple_usertype<ComponentScript>
