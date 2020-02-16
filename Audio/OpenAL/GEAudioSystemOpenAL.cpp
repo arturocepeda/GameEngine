@@ -113,7 +113,10 @@ void AudioSystem::platformPause(ChannelID pChannel)
 
 void AudioSystem::platformResume(ChannelID pChannel)
 {
-   alSourcePlay(alSources[pChannel]);
+   if(platformIsPaused(pChannel))
+   {
+      alSourcePlay(alSources[pChannel]);
+   }
 }
 
 bool AudioSystem::platformIsPlaying(ChannelID pChannel) const
