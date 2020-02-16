@@ -612,6 +612,22 @@ void AudioSystem::setMaxDistance(AudioEventInstance* pAudioEventInstance, float 
    platformSetMaxDistance(pAudioEventInstance->Channel, pDistance);
 }
 
+void AudioSystem::pauseAll()
+{
+   for(size_t i = 0u; i < mActiveAudioEventInstances.size(); i++)
+   {
+      platformPause(mActiveAudioEventInstances[i]->Channel);
+   }
+}
+
+void AudioSystem::resumeAll()
+{
+   for(size_t i = 0u; i < mActiveAudioEventInstances.size(); i++)
+   {
+      platformResume(mActiveAudioEventInstances[i]->Channel);
+   }
+}
+
 void AudioSystem::setListenerPosition(const Vector3& pPosition)
 {
    if(!mListenerPosition.equals(pPosition))

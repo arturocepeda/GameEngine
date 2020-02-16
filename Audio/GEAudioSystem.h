@@ -237,6 +237,9 @@ namespace GE { namespace Audio
       void setMinDistance(AudioEventInstance* pAudioEventInstance, float pDistance);
       void setMaxDistance(AudioEventInstance* pAudioEventInstance, float pDistance);
 
+      void pauseAll();
+      void resumeAll();
+
       void setListenerPosition(const Vector3& pPosition);
       void setListenerOrientation(const Rotation& pOrientation);
 
