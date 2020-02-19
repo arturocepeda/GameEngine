@@ -44,6 +44,7 @@ namespace GE { namespace Audio
    {
    private:
       AudioEventPlayMode mPlayMode;
+      float mGain;
       float mFadeInTime;
       float mFadeOutTime;
       Vector2 mPitchRange;
@@ -57,11 +58,13 @@ namespace GE { namespace Audio
       ~AudioEvent();
 
       GEDefaultGetter(AudioEventPlayMode, PlayMode, m)
+      GEDefaultGetter(float, Gain, m)
       GEDefaultGetter(float, FadeInTime, m)
       GEDefaultGetter(float, FadeOutTime, m)
       GEDefaultGetter(const Vector2&, PitchRange, m)
 
       GEDefaultSetter(AudioEventPlayMode, PlayMode, m)
+      GEDefaultSetter(float, Gain, m)
       GEDefaultSetter(float, FadeInTime, m)
       GEDefaultSetter(float, FadeOutTime, m)
       GEDefaultSetter(const Vector2&, PitchRange, m)

@@ -119,7 +119,8 @@ namespace GE { namespace Audio
 
       float getVolume() const
       {
-         return VolumeBase * VolumeFactorFade * (Bus ? Bus->getDerivedVolume() : 1.0f);
+         const float busVolume = Bus ? Bus->getDerivedVolume() : 1.0f;
+         return Event->getGain() * VolumeBase * VolumeFactorFade * busVolume;
       }
    };
 

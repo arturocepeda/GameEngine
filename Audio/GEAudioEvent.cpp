@@ -45,11 +45,13 @@ const char* AudioEvent::Extension = "events";
 AudioEvent::AudioEvent(const ObjectName& pName, const ObjectName& pGroupName)
    : Resource(pName, pGroupName, TypeName)
    , mPlayMode(AudioEventPlayMode::OneShot)
+   , mGain(1.0f)
    , mFadeInTime(0.0f)
    , mFadeOutTime(0.0f)
    , mPitchRange(1.0f, 1.0f)
 {
    GERegisterPropertyEnum(AudioEventPlayMode, PlayMode);
+   GERegisterProperty(Float, Gain);
    GERegisterProperty(Float, FadeInTime);
    GERegisterProperty(Float, FadeOutTime);
    GERegisterProperty(Vector2, PitchRange);
