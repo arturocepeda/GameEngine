@@ -39,9 +39,7 @@ namespace GE { namespace Core
    {
    private:
       uint iID;
-#if defined (GE_EDITOR_SUPPORT)
       char* sString;
-#endif
 
    public:
       static const ObjectName Empty;

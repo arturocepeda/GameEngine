@@ -67,17 +67,13 @@ const ObjectName ObjectName::Empty;
 
 ObjectName::ObjectName()
    : iID(0)
-#if defined (GE_EDITOR_SUPPORT)
    , sString(0)
-#endif
 {
 }
 
 ObjectName::ObjectName(uint ID)
    : iID(ID)
-#if defined (GE_EDITOR_SUPPORT)
    , sString(0)
-#endif
 {
 }
 
@@ -85,15 +81,11 @@ ObjectName::ObjectName(const char* Name)
 {
    iID = hash(Name);
    ObjectNameRegistry::registerString(iID, Name);
-#if defined (GE_EDITOR_SUPPORT)
    sString = (char*)ObjectNameRegistry::retrieveString(iID);
-#endif
 }
 
 ObjectName::ObjectName(void* Ptr)
-#if defined (GE_EDITOR_SUPPORT)
    : sString(0)
-#endif
 {
    char sBuffer[32];
    sprintf(sBuffer, "0x%p", Ptr);
