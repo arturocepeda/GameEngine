@@ -36,7 +36,7 @@ const char* DistributionPlatform::getPlatformName() const
 
 const char* DistributionPlatform::getUserName() const
 {
-   static const char* defaultUserName = "Player";
+   static const char* defaultUserName = "";
    return defaultUserName;
 }
 
@@ -44,7 +44,7 @@ void DistributionPlatform::unlockAchievement(const ObjectName&)
 {
 }
 
-void DistributionPlatform::updateLeaderboardScore(const ObjectName&, uint32_t)
+void DistributionPlatform::updateLeaderboardScore(const ObjectName&, uint32_t, uint32_t)
 {
 }
 

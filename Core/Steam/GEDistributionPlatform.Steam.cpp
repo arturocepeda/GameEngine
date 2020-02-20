@@ -215,11 +215,11 @@ void DistributionPlatform::unlockAchievement(const ObjectName& pAchievementName)
    }
 }
 
-void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore)
+void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore, uint32_t pScoreDetail)
 {
    SteamAPICall_t apiCall = SteamUserStats()->FindLeaderboard(pLeaderboardName.getString());
 
-   gCallResultFindLeaderboard.Set(apiCall, [pScore](LeaderboardFindResult_t* pResult, bool pIOFailure)
+   gCallResultFindLeaderboard.Set(apiCall, [pScore, pScoreDetail](LeaderboardFindResult_t* pResult, bool pIOFailure)
    {
       if(!pIOFailure && pResult->m_bLeaderboardFound)
       {
@@ -227,7 +227,7 @@ void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboard
          (
             pResult->m_hSteamLeaderboard,
             k_ELeaderboardUploadScoreMethodKeepBest,
-            (int32_t)pScore, nullptr, 0
+            (int32_t)pScore, (const int32_t*)&pScoreDetail, 1
          );
       }
    });
@@ -271,13 +271,15 @@ void DistributionPlatform::requestLeaderboardScores(const ObjectName& pLeaderboa
                for(int i = 0; i < pResult->m_cEntryCount; i++)
                {
                   LeaderboardEntry_t steamLeaderboardEntry;
-                  SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, i, &steamLeaderboardEntry, nullptr, 0);                  
+                  int32_t scoreDetail = 0;
+                  SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, i, &steamLeaderboardEntry, &scoreDetail, 1);
                   const char* userName = SteamFriends()->GetFriendPersonaName(steamLeaderboardEntry.m_steamIDUser);
 
                   LeaderboardEntry leaderboardEntry;
                   leaderboardEntry.mUserName.assign(userName);
                   leaderboardEntry.mPosition = (uint16_t)steamLeaderboardEntry.m_nGlobalRank;
                   leaderboardEntry.mScore = (uint32_t)steamLeaderboardEntry.m_nScore;
+                  leaderboardEntry.mScoreDetail = (uint32_t)scoreDetail;
                   addLeaderboardEntry(leaderboardIndex, leaderboardEntry);
                }
 
@@ -333,13 +335,15 @@ void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName& 
                for(int i = 0; i < pResult->m_cEntryCount; i++)
                {
                   LeaderboardEntry_t steamLeaderboardEntry;
-                  SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, i, &steamLeaderboardEntry, nullptr, 0);                  
+                  int32_t scoreDetail = 0;
+                  SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, i, &steamLeaderboardEntry, &scoreDetail, 1);
                   const char* userName = SteamFriends()->GetFriendPersonaName(steamLeaderboardEntry.m_steamIDUser);
 
                   LeaderboardEntry leaderboardEntry;
                   leaderboardEntry.mUserName.assign(userName);
                   leaderboardEntry.mPosition = (uint16_t)steamLeaderboardEntry.m_nGlobalRank;
                   leaderboardEntry.mScore = (uint32_t)steamLeaderboardEntry.m_nScore;
+                  leaderboardEntry.mScoreDetail = (uint32_t)scoreDetail;
                   addLeaderboardEntry(leaderboardIndex, leaderboardEntry);
                }
 

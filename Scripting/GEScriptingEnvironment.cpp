@@ -935,6 +935,7 @@ void Environment::registerTypes()
       "LeaderboardEntry"
       , "mPosition", &DistributionPlatform::LeaderboardEntry::mPosition
       , "mScore", &DistributionPlatform::LeaderboardEntry::mScore
+      , "mScoreDetail", &DistributionPlatform::LeaderboardEntry::mScoreDetail
       , "getUserName", &DistributionPlatform::LeaderboardEntry::getUserName
    );
    mLua.new_simple_usertype<DistributionPlatform>

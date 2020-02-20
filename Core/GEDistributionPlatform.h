@@ -24,6 +24,7 @@ namespace GE { namespace Core
       {
          uint16_t mPosition;
          uint32_t mScore;
+         uint32_t mScoreDetail;
          GESTLString mUserName;
          const char* getUserName() const { return mUserName.c_str(); }
       };
@@ -50,7 +51,7 @@ namespace GE { namespace Core
       void unlockAchievement(const ObjectName& pAchievementName);
 
       // Leaderboards
-      void updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore);
+      void updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore, uint32_t pScoreDetail);
       void resetLeaderboard(const ObjectName& pLeaderboardName);
       void requestLeaderboardScores(const ObjectName& pLeaderboardName, uint16_t pFirstPosition, uint16_t pLastPosition);
       void requestLeaderboardScoresAroundUser(const ObjectName& pLeaderboardName, uint16_t pPositionsCount);
