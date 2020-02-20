@@ -487,13 +487,6 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
    }
    while(audioEventInstance->State != AudioEventInstanceState::Free);
 
-   mActiveAudioEventInstances.push_back(audioEventInstance);
-
-   GEMutexUnlock(mMutex);
-
-   audioEventInstance->Event = audioEvent;
-   audioEventInstance->Channel = selectedChannel;
-
    if(audioEvent->getFadeInTime() < GE_EPSILON)
    {
       audioEventInstance->State = AudioEventInstanceState::Playing;
@@ -503,18 +496,26 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
       audioEventInstance->State = AudioEventInstanceState::FadingIn;
       audioEventInstance->VolumeFactorFade = 0.0f;
    }
+   
+   mActiveAudioEventInstances.push_back(audioEventInstance);
+
+   audioEventInstance->Event = audioEvent;
+   audioEventInstance->Channel = selectedChannel;
 
    // play the sound
    const bool looping = audioEvent->getPlayMode() == AudioEventPlayMode::Loop;
+   platformPlaySound(selectedChannel, bufferID, looping);
+   
+   GEMutexUnlock(mMutex);
+   
    float pitch = audioEvent->getPitchRange().X;
-
+   
    if(!GEFloatEquals(audioEvent->getPitchRange().X, audioEvent->getPitchRange().Y))
    {
       RandFloat rand(audioEvent->getPitchRange().X, audioEvent->getPitchRange().Y);
       pitch = rand.generate();
    }
-
-   platformPlaySound(selectedChannel, bufferID, looping);
+   
    platformSetVolume(selectedChannel, audioEventInstance->getVolume());
    platformSetPitch(selectedChannel, pitch);
 
