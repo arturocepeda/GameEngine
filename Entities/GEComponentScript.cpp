@@ -63,9 +63,7 @@ ScriptInstance::ScriptInstance()
    , mNamespace(0)
    , mScriptSettings((uint8_t)ScriptSettingsBitMask::Active)
    , mInitialized(false)
-#if defined (GE_EDITOR_SUPPORT)
    , mDebugBreakpointLine(0)
-#endif
 {
    char namespaceNameBuffer[32];
    sprintf(namespaceNameBuffer, "si%p", this);
@@ -73,6 +71,7 @@ ScriptInstance::ScriptInstance()
 
    GERegisterPropertyBitMask(ScriptSettingsBitMask, ScriptSettings);
    GERegisterProperty(ObjectName, ScriptName);
+   GERegisterProperty(UInt, DebugBreakpointLine);
 
    registerAction(cRestartActionName, [this]
    {
@@ -84,9 +83,6 @@ ScriptInstance::ScriptInstance()
    {
       setScriptName(getScriptName());
    });
-
-   GERegisterProperty(UInt, DebugBreakpointLine);
-
    registerAction(cDebugActionName, [this]
    {
       //TODO: cEnv->enableDebugger();
@@ -180,7 +176,6 @@ uint8_t ScriptInstance::getScriptSettings() const
    return mScriptSettings;
 }
 
-#if defined (GE_EDITOR_SUPPORT)
 void ScriptInstance::setDebugBreakpointLine(uint Line)
 {
    mDebugBreakpointLine = Line;
@@ -191,7 +186,6 @@ uint ScriptInstance::getDebugBreakpointLine() const
 {
    return mDebugBreakpointLine;
 }
-#endif
 
 void ScriptInstance::setActive(bool Value)
 {

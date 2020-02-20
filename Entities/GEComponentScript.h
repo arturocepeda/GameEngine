@@ -55,8 +55,8 @@ namespace GE { namespace Entities
          CachedPropertyValue() : PropertyValue(0) {}
       };
       GESTLVector(CachedPropertyValue) mCachedPropertyValues;
-      uint mDebugBreakpointLine;
 #endif
+      uint mDebugBreakpointLine;
 
       void registerScriptProperties();
       void registerScriptActions();
@@ -76,10 +76,8 @@ namespace GE { namespace Entities
       void setScriptSettings(uint8_t pBitMask);
       uint8_t getScriptSettings() const;
 
-#if defined (GE_EDITOR_SUPPORT)
       void setDebugBreakpointLine(uint pLine);
       uint getDebugBreakpointLine() const;
-#endif
 
       void setActive(bool pValue);
       bool getActive() const;

@@ -282,8 +282,8 @@ void Namespace::collectSymbols()
       }
    }
 
-#if defined (GE_EDITOR_SUPPORT)
    std::sort(mGlobalVariableNames.begin(), mGlobalVariableNames.end(), alphabeticalComparison);
+#if defined (GE_EDITOR_SUPPORT)
    std::sort(mGlobalFunctionNames.begin(), mGlobalFunctionNames.end(), alphabeticalComparison);
 #endif
 }
