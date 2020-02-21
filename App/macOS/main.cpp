@@ -10,9 +10,6 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <vector>
-
 #include "main.h"
 #include "config.h"
 
