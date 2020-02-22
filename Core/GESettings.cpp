@@ -27,12 +27,19 @@ Settings::Settings()
    , mVSync(false)
    , mWindowSizeX(1024u)
    , mWindowSizeY(600u)
+   , mErrorPopUps(false)
 {
+   // General
    GERegisterProperty(UInt, TargetFPS);
+
+   // Video
    GERegisterProperty(Bool, Fullscreen);
    GERegisterProperty(Bool, VSync);
    GERegisterProperty(UInt, WindowSizeX);
    GERegisterProperty(UInt, WindowSizeY);
+
+   // Development
+   GERegisterProperty(Bool, ErrorPopUps);
 }
 
 Settings::~Settings()
