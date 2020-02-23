@@ -767,13 +767,19 @@ void ComponentLabel::setText(const char* Text)
 
    for(uint32_t i = 0; i < iStrLength; i++)
    {
-      // UTF-8 Latin character
-      if((unsigned char)Text[i] == 0xc3)
+      // UTF-8 2-byte character
+      if((uint8_t)Text[i] == 0xc2)
       {
-         unsigned char cFontCharIndex = Text[++i] - 0x80 + 0xc0;
-         sText.push_back(cFontCharIndex);
+         const uint8_t fontCharIndex = Text[++i];
+         sText.push_back(fontCharIndex);
       }
-      // standard character
+      // UTF-8 2-byte character
+      else if((uint8_t)Text[i] == 0xc3)
+      {
+         const uint8_t fontCharIndex = Text[++i] - 0x80 + 0xc0;
+         sText.push_back(fontCharIndex);
+      }
+      // ASCII character
       else
       {
          sText.push_back(Text[i]);
