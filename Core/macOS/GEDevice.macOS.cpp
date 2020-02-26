@@ -39,7 +39,7 @@ int Device::getTouchPadHeight()
    return ScreenHeight;
 }
 
-GESTLString getFullPath(const char* Filename)
+static GESTLString getFullPath(const char* Filename)
 {
    char sBuffer[kMaxPath];
    getcwd(sBuffer, kMaxPath);
@@ -48,7 +48,7 @@ GESTLString getFullPath(const char* Filename)
    return GESTLString(sBuffer);
 }
 
-bool hasExtension(const char* sFilename, const char* sExtension)
+static bool hasExtension(const char* sFilename, const char* sExtension)
 {
    size_t iFilenameLength = strlen(sFilename);
    size_t iExtensionLength = strlen(sExtension);
@@ -56,6 +56,11 @@ bool hasExtension(const char* sFilename, const char* sExtension)
    const char* sExtInFilename = strstr(sFilename, sExtension);
    
    return sExtInFilename == (sFilename + iFilenameLength - iExtensionLength);
+}
+
+static const char* getUserName()
+{
+   return getenv("USER");
 }
 
 uint Device::getContentFilesCount(const char* pSubDir, const char* pExtension)
@@ -222,7 +227,7 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
 bool Device::userFileExists(const char* SubDir, const char* Name, const char* Extension)
 {
    char sFileName[kMaxPath];
-   sprintf(sFileName, "%s/%s.%s", SubDir, Name, Extension);
+   sprintf(sFileName, "Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
    
    return getFileLength(sFileName) > 0;
 }
@@ -230,7 +235,7 @@ bool Device::userFileExists(const char* SubDir, const char* Name, const char* Ex
 void Device::readUserFile(const char* SubDir, const char* Name, const char* Extension, ContentData* ContentData)
 {
    char sFileName[kMaxPath];
-   sprintf(sFileName, "%s/%s.%s", SubDir, Name, Extension);
+   sprintf(sFileName, "Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
    
    uint iFileLength = getFileLength(sFileName);
    GEAssert(iFileLength > 0);
@@ -243,15 +248,36 @@ void Device::readUserFile(const char* SubDir, const char* Name, const char* Exte
 
 void Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension, const ContentData* ContentData)
 {
-   DIR* dp = opendir(SubDir);
+   static const mode_t mkdirMode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+   
+   DIR* dp = opendir("Users");
    
    if(!dp)
    {
-      mkdir(SubDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      mkdir("Users", mkdirMode);
+   }
+   
+   char sSubDir[kMaxPath];
+   sprintf(sSubDir, "Users/%s", getUserName());
+   
+   dp = opendir(sSubDir);
+   
+   if(!dp)
+   {
+      mkdir(sSubDir, mkdirMode);
+   }
+   
+   sprintf(sSubDir, "Users/%s/%s", getUserName(), SubDir);
+   
+   dp = opendir(sSubDir);
+   
+   if(!dp)
+   {
+      mkdir(sSubDir, mkdirMode);
    }
    
    char sFileName[kMaxPath];
-   sprintf(sFileName, "%s/%s.%s", SubDir, Name, Extension);
+   sprintf(sFileName, "Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
    GESTLString sFullPath = getFullPath(sFileName);
    
    std::ofstream file(sFullPath.c_str(), std::ios::out | std::ios::binary);
@@ -263,7 +289,10 @@ void Device::writeUserFile(const char* SubDir, const char* Name, const char* Ext
 
 uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
 {
-   DIR* dp = opendir(SubDir);
+   char sSubDir[kMaxPath];
+   sprintf(sSubDir, "Users/%s/%s", getUserName(), SubDir);
+   
+   DIR* dp = opendir(sSubDir);
    
    if(!dp)
    {
@@ -288,7 +317,10 @@ uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
 
 bool Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
-   DIR* dp = opendir(SubDir);
+   char sSubDir[kMaxPath];
+   sprintf(sSubDir, "Users/%s/%s", getUserName(), SubDir);
+   
+   DIR* dp = opendir(sSubDir);
    
    if(!dp)
    {
@@ -323,7 +355,7 @@ bool Device::getUserFileName(const char* SubDir, const char* Extension, uint Ind
 void Device::deleteUserFile(const char* SubDir, const char* Name, const char* Extension)
 {
    char sFileName[kMaxPath];
-   sprintf(sFileName, "%s/%s.%s", SubDir, Name, Extension);
+   sprintf(sFileName, "Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
    GESTLString sFullPath = getFullPath(sFileName);
    remove(sFullPath.c_str());
 }
