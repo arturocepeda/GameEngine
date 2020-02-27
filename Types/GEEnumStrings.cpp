@@ -86,9 +86,9 @@ namespace GE { namespace Core
 
    const char* strSystemLanguage[] =
    {
-      "en", // English
-      "es", // Spanish
-      "de", // German
+      "English",
+      "Spanish",
+      "German"
    };
 }}
 

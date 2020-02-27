@@ -46,7 +46,14 @@ const char* LocalizedString::getString() const
 //
 //  LocalizedStringsManager
 //
-const ObjectName LocalizedStringName = ObjectName("LocalizedString");
+const ObjectName LocalizedStringName("LocalizedString");
+
+static const char* kLanguageExtensions[] =
+{
+   "en", // English
+   "es", // Spanish
+   "de", // German
+};
 
 LocalizedStringsManager::LocalizedStringsManager()
 {
@@ -60,11 +67,11 @@ void LocalizedStringsManager::getStringSetNames(FileNamesList* pOutFileNames)
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      sprintf(extension, "%s.xml", strSystemLanguage[(uint)Device::Language]);
+      sprintf(extension, "%s.xml", kLanguageExtensions[(uint)Device::Language]);
    }
    else
    {
-      sprintf(extension, "%s.ge", strSystemLanguage[(uint)Device::Language]);
+      sprintf(extension, "%s.ge", kLanguageExtensions[(uint)Device::Language]);
    }   
 
    Device::getContentFileNames("Strings", extension, pOutFileNames);
@@ -72,17 +79,13 @@ void LocalizedStringsManager::getStringSetNames(FileNamesList* pOutFileNames)
 
 void LocalizedStringsManager::loadStringsSet(const char* Name)
 {
-   char sFileName[64];
-   sprintf(sFileName, "%s.%s", Name, strSystemLanguage[(uint)Device::Language]);
-
+   char extension[32];
    ContentData cStringsSetData;
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      if(!Device::contentFileExists("Strings", sFileName, "xml"))
-         sprintf(sFileName, "%s.en", Name);
-
-      Device::readContentFile(ContentType::GenericTextData, "Strings", sFileName, "xml", &cStringsSetData);
+      sprintf(extension, "%s.xml", kLanguageExtensions[(uint)Device::Language]);
+      Device::readContentFile(ContentType::GenericTextData, "Strings", Name, extension, &cStringsSetData);
 
       pugi::xml_document xml;
       xml.load_buffer(cStringsSetData.getData(), cStringsSetData.getDataSize());
@@ -104,12 +107,8 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
    }
    else
    {
-      if(!Device::contentFileExists("Strings", sFileName, "ge"))
-      {
-         sprintf(sFileName, "%s.en", Name);
-      }
-
-      Device::readContentFile(ContentType::GenericBinaryData, "Strings", sFileName, "ge", &cStringsSetData);
+      sprintf(extension, "%s.ge", kLanguageExtensions[(uint)Device::Language]);
+      Device::readContentFile(ContentType::GenericBinaryData, "Strings", Name, extension, &cStringsSetData);
       ContentDataMemoryBuffer sMemoryBuffer(cStringsSetData);
       std::istream sStream(&sMemoryBuffer);
 
@@ -123,7 +122,7 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
 
          const size_t stringLength = (size_t)Value::fromStream(ValueType::Short, sStream).getAsShort();
          stringBuffer.resize(stringLength);
-         sStream.read(const_cast<char*>(stringBuffer.c_str()), stringLength); 
+         sStream.read(const_cast<char*>(stringBuffer.c_str()), stringLength);
 
          LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
          GEInvokeCtor(LocalizedString, cLocaString)(stringID, stringBuffer.c_str());
@@ -135,14 +134,13 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
 
 void LocalizedStringsManager::unloadStringsSet(const char* Name)
 {
-   char sFileName[64];
-   sprintf(sFileName, "%s.%s", Name, strSystemLanguage[(uint)Device::Language]);
-
+   char extension[32];
    ContentData cStringsSetData;
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      Device::readContentFile(ContentType::GenericTextData, "Strings", sFileName, "xml", &cStringsSetData);
+      sprintf(extension, "%s.xml", kLanguageExtensions[(uint32_t)Device::Language]);
+      Device::readContentFile(ContentType::GenericTextData, "Strings", Name, extension, &cStringsSetData);
 
       pugi::xml_document xml;
       xml.load_buffer(cStringsSetData.getData(), cStringsSetData.getDataSize());
@@ -158,17 +156,21 @@ void LocalizedStringsManager::unloadStringsSet(const char* Name)
    }
    else
    {
-      Device::readContentFile(ContentType::GenericBinaryData, "Strings", sFileName, "ge", &cStringsSetData);
+      sprintf(extension, "%s.ge", kLanguageExtensions[(uint32_t)Device::Language]);
+      Device::readContentFile(ContentType::GenericBinaryData, "Strings", Name, extension, &cStringsSetData);
       ContentDataMemoryBuffer sMemoryBuffer(cStringsSetData);
       std::istream sStream(&sMemoryBuffer);
 
-      uint iStringsCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      const uint32_t iStringsCount = (uint32_t)Value::fromStream(ValueType::Short, sStream).getAsShort();
 
-      for(uint i = 0; i < iStringsCount; i++)
+      for(uint32_t i = 0u; i < iStringsCount; i++)
       {
-         ObjectName cStringID = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+         const ObjectName cStringID = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
          GEAssert(get(cStringID));
          remove(cStringID);
+
+         const size_t stringLength = (size_t)Value::fromStream(ValueType::Short, sStream).getAsShort();
+         sStream.ignore(stringLength);
       }
    }
 }
