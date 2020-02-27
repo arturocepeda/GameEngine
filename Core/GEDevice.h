@@ -77,6 +77,7 @@ namespace GE { namespace Core
       static int getTouchPadHeight();
 
       static int getNumberOfCPUCores();
+      static SystemLanguage requestOSLanguage();
 
       static bool contentFileExists(const char* SubDir, const char* Name, const char* Extension);
       static void readContentFile(Content::ContentType Type, const char* SubDir, const char* Name, const char* Extension, Content::ContentData* ContentData);

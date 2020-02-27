@@ -22,6 +22,7 @@ namespace GE { namespace Core
    private:
       // General
       uint32_t mTargetFPS;
+      char mLanguage[32];
 
       // Video
       bool mFullscreen;
@@ -41,6 +42,9 @@ namespace GE { namespace Core
       // General
       GEDefaultSetter(uint32_t, TargetFPS, m)
       GEDefaultGetter(uint32_t, TargetFPS, m)
+
+      GEDefaultSetterString(const char*, Language, m)
+      GEDefaultGetter(const char*, Language, m)
 
       // Video
       GEDefaultSetter(bool, Fullscreen, m)

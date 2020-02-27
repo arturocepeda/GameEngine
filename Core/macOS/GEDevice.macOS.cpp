@@ -399,3 +399,8 @@ int Device::getNumberOfCPUCores()
 {
    return (int)sysconf(_SC_NPROCESSORS_ONLN);
 }
+
+SystemLanguage Device::requestOSLanguage()
+{
+   return SystemLanguage::English;
+}

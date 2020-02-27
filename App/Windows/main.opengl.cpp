@@ -146,24 +146,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
    int iWindowWidth = Device::ScreenWidth;
    int iWindowHeight = Device::ScreenHeight;
 
-   // system language
-   char sLanguageName[32];
-   LCID lcidUserDefault = GetUserDefaultLCID();
-   GetLocaleInfoA(lcidUserDefault, LOCALE_SENGLISHLANGUAGENAME, sLanguageName, sizeof(sLanguageName) / sizeof(TCHAR));
-
-   if(strcmp(sLanguageName, "English") == 0)
-   {
-      Device::Language = SystemLanguage::English;
-   }
-   else if(strcmp(sLanguageName, "Spanish") == 0)
-   {
-      Device::Language = SystemLanguage::Spanish;
-   }
-   else if(strcmp(sLanguageName, "German") == 0)
-   {
-      Device::Language = SystemLanguage::German;
-   }
-
    // create the main window
    GE::uint iWindowPositionX = (iFullscreenWidth / 2) - (iWindowWidth / 2);
    GE::uint iWindowPositionY = (iFullscreenHeight / 2) - (iWindowHeight / 2);

@@ -76,6 +76,25 @@ void Application::startUp(void (*pInitAppModuleFunction)())
 
    Device::ContentHashPath = ContentType == ApplicationContentType::Bin;
 
+   const char* language = Settings::getInstance()->getLanguage();
+
+   if(strcmp(language, "Default") == 0)
+   {
+      Device::Language = Device::requestOSLanguage();
+   }
+   else if(strcmp(language, "English") == 0)
+   {
+      Device::Language = SystemLanguage::English;
+   }
+   else if(strcmp(language, "Spanish") == 0)
+   {
+      Device::Language = SystemLanguage::Spanish;
+   }
+   else if(strcmp(language, "German") == 0)
+   {
+      Device::Language = SystemLanguage::German;
+   }
+
    InputSystem* cInputSystem = Allocator::alloc<InputSystem>();
    GEInvokeCtor(InputSystem, cInputSystem);
 

@@ -13,7 +13,6 @@
 #include "GELocalizedString.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEApplication.h"
-#include "Core/GEDevice.h"
 #include "Core/GEValue.h"
 #include "Content/GEResourcesManager.h"
 
@@ -52,6 +51,23 @@ const ObjectName LocalizedStringName = ObjectName("LocalizedString");
 LocalizedStringsManager::LocalizedStringsManager()
 {
    ResourcesManager::getInstance()->registerObjectManager<LocalizedString>(LocalizedStringName, this);
+   loadStrings();
+}
+
+void LocalizedStringsManager::getStringSetNames(FileNamesList* pOutFileNames)
+{
+   char extension[32];
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      sprintf(extension, "%s.xml", strSystemLanguage[(uint)Device::Language]);
+   }
+   else
+   {
+      sprintf(extension, "%s.ge", strSystemLanguage[(uint)Device::Language]);
+   }   
+
+   Device::getContentFileNames("Strings", extension, pOutFileNames);
 }
 
 void LocalizedStringsManager::loadStringsSet(const char* Name)
@@ -157,6 +173,35 @@ void LocalizedStringsManager::unloadStringsSet(const char* Name)
    }
 }
 
+void LocalizedStringsManager::loadStrings()
+{
+   FileNamesList fileNames;
+   getStringSetNames(&fileNames);
+
+   if(fileNames.empty())
+   {
+      Device::Language = SystemLanguage::English;
+      getStringSetNames(&fileNames);
+      GEAssert(!fileNames.empty());
+   }
+
+   for(size_t i = 0u; i < fileNames.size(); i++)
+   {
+      LocalizedStringsManager::getInstance()->loadStringsSet(fileNames[i].c_str());
+   }
+}
+
+void LocalizedStringsManager::unloadStrings()
+{
+   FileNamesList fileNames;
+   getStringSetNames(&fileNames);
+
+   for(size_t i = 0u; i < fileNames.size(); i++)
+   {
+      LocalizedStringsManager::getInstance()->unloadStringsSet(fileNames[i].c_str());
+   }
+}
+
 void LocalizedStringsManager::setVariable(const ObjectName& VariableName, const char* VariableValue)
 {
    GESTLString sVariableValue(VariableValue);
@@ -166,9 +211,5 @@ void LocalizedStringsManager::setVariable(const ObjectName& VariableName, const 
 const char* LocalizedStringsManager::getVariable(const ObjectName& VariableName)
 {
    GESTLMap(uint32_t, GESTLString)::const_iterator it = mVariables.find(VariableName.getID());
-
-   if(it == mVariables.end())
-      return 0;
-
-   return it->second.c_str();
+   return it != mVariables.end() ? it->second.c_str() : nullptr;
 }

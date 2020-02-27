@@ -476,3 +476,25 @@ int Device::getNumberOfCPUCores()
    GetNativeSystemInfo(&sInfo);
    return sInfo.dwNumberOfProcessors;
 }
+
+SystemLanguage Device::requestOSLanguage()
+{
+   char sLanguageName[32];
+   LCID lcidUserDefault = GetUserDefaultLCID();
+   GetLocaleInfo(lcidUserDefault, LOCALE_SENGLISHLANGUAGENAME, sLanguageName, sizeof(sLanguageName) / sizeof(TCHAR));
+
+   if(strcmp(sLanguageName, "English") == 0)
+   {
+      return SystemLanguage::English;
+   }
+   else if(strcmp(sLanguageName, "Spanish") == 0)
+   {
+      return SystemLanguage::Spanish;
+   }
+   else if(strcmp(sLanguageName, "German") == 0)
+   {
+      return SystemLanguage::German;
+   }
+
+   return SystemLanguage::English;
+}

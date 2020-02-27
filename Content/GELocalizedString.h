@@ -15,6 +15,7 @@
 #include "Types/GETypes.h"
 #include "Core/GEObjectManager.h"
 #include "Core/GESingleton.h"
+#include "Core/GEDevice.h"
 #include "Content/GEResource.h"
 
 namespace GE { namespace Content
@@ -37,11 +38,16 @@ namespace GE { namespace Content
    private:
       GESTLMap(uint32_t, GESTLString) mVariables;
 
-   public:
-      LocalizedStringsManager();
+      void getStringSetNames(Core::FileNamesList* pOutFileNames);
 
       void loadStringsSet(const char* Name);
       void unloadStringsSet(const char* Name);
+
+   public:
+      LocalizedStringsManager();
+
+      void loadStrings();
+      void unloadStrings();
 
       void setVariable(const Core::ObjectName& VariableName, const char* VariableValue);
       const char* getVariable(const Core::ObjectName& VariableName);

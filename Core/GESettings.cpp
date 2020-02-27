@@ -29,8 +29,11 @@ Settings::Settings()
    , mWindowSizeY(600u)
    , mErrorPopUps(false)
 {
+   strcpy(mLanguage, "Default");
+
    // General
    GERegisterProperty(UInt, TargetFPS);
+   GERegisterProperty(String, Language);
 
    // Video
    GERegisterProperty(Bool, Fullscreen);

@@ -142,18 +142,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
       iWindowHeight += iWindowCaptionSize + (iWindowBorderSize * 2);
    }
 
-   // system language
-   char sLanguageName[32];
-   LCID lcidUserDefault = GetUserDefaultLCID();
-   GetLocaleInfo(lcidUserDefault, LOCALE_SENGLISHLANGUAGENAME, sLanguageName, sizeof(sLanguageName) / sizeof(TCHAR));
-
-   if(strcmp(sLanguageName, "English") == 0)
-      Device::Language = SystemLanguage::English;
-   else if(strcmp(sLanguageName, "Spanish") == 0)
-      Device::Language = SystemLanguage::Spanish;
-   else if(strcmp(sLanguageName, "German") == 0)
-      Device::Language = SystemLanguage::German;
-
    // class properties
    WNDCLASSEX wndClass;
    wndClass.cbSize = sizeof(wndClass);
