@@ -65,18 +65,39 @@ int main(int argc, char* argv[])
     Application::ExecutablePath = (const char*)argv[0];
 
     for(int i = 1; i < argc; i++)
+    {
        Application::Arguments.push_back(argv[i]);
-
+    }
+        
 #if defined (GE_BINARY_CONTENT)
     Application::ContentType = ApplicationContentType::Bin;
 #endif
+    
+    // set the working directory for the application bundle
+    char workingDirectory[1024];
+    strcpy(workingDirectory, Application::ExecutablePath);
+    
+    char bundleContentsDir[64];
+    sprintf(bundleContentsDir, "/%s.app/Contents", Application::Name);
+    
+    char* bundlePtr = strstr(workingDirectory, bundleContentsDir);
+    
+    if(bundlePtr)
+    {
+       bundlePtr += strlen(bundleContentsDir);
+       *bundlePtr = '\0';
+       strcat(workingDirectory, "/Resources");
+       chdir(workingDirectory);
+    }
 
     // initialize the distribution platform
     DistributionPlatform distributionPlatform;
    
     if(!distributionPlatform.init())
+    {
        return 1;
-   
+    }
+    
     // initialize the application
     StateManager cStateManager;
     Application::startUp(initAppModule);

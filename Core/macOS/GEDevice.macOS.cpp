@@ -227,7 +227,7 @@ void Device::readContentFile(ContentType Type, const char* SubDir, const char* N
 bool Device::userFileExists(const char* SubDir, const char* Name, const char* Extension)
 {
    char sFileName[kMaxPath];
-   sprintf(sFileName, "Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
+   sprintf(sFileName, "../Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
    
    return getFileLength(sFileName) > 0;
 }
@@ -235,7 +235,7 @@ bool Device::userFileExists(const char* SubDir, const char* Name, const char* Ex
 void Device::readUserFile(const char* SubDir, const char* Name, const char* Extension, ContentData* ContentData)
 {
    char sFileName[kMaxPath];
-   sprintf(sFileName, "Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
+   sprintf(sFileName, "../Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
    
    uint iFileLength = getFileLength(sFileName);
    GEAssert(iFileLength > 0);
@@ -250,15 +250,15 @@ void Device::writeUserFile(const char* SubDir, const char* Name, const char* Ext
 {
    static const mode_t mkdirMode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
    
-   DIR* dp = opendir("Users");
+   DIR* dp = opendir("../Users");
    
    if(!dp)
    {
-      mkdir("Users", mkdirMode);
+      mkdir("../Users", mkdirMode);
    }
    
    char sSubDir[kMaxPath];
-   sprintf(sSubDir, "Users/%s", getUserName());
+   sprintf(sSubDir, "../Users/%s", getUserName());
    
    dp = opendir(sSubDir);
    
@@ -267,7 +267,7 @@ void Device::writeUserFile(const char* SubDir, const char* Name, const char* Ext
       mkdir(sSubDir, mkdirMode);
    }
    
-   sprintf(sSubDir, "Users/%s/%s", getUserName(), SubDir);
+   sprintf(sSubDir, "../Users/%s/%s", getUserName(), SubDir);
    
    dp = opendir(sSubDir);
    
@@ -277,7 +277,7 @@ void Device::writeUserFile(const char* SubDir, const char* Name, const char* Ext
    }
    
    char sFileName[kMaxPath];
-   sprintf(sFileName, "Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
+   sprintf(sFileName, "../Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
    GESTLString sFullPath = getFullPath(sFileName);
    
    std::ofstream file(sFullPath.c_str(), std::ios::out | std::ios::binary);
@@ -290,7 +290,7 @@ void Device::writeUserFile(const char* SubDir, const char* Name, const char* Ext
 uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
 {
    char sSubDir[kMaxPath];
-   sprintf(sSubDir, "Users/%s/%s", getUserName(), SubDir);
+   sprintf(sSubDir, "../Users/%s/%s", getUserName(), SubDir);
    
    DIR* dp = opendir(sSubDir);
    
@@ -318,7 +318,7 @@ uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
 bool Device::getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
 {
    char sSubDir[kMaxPath];
-   sprintf(sSubDir, "Users/%s/%s", getUserName(), SubDir);
+   sprintf(sSubDir, "../Users/%s/%s", getUserName(), SubDir);
    
    DIR* dp = opendir(sSubDir);
    
@@ -355,7 +355,7 @@ bool Device::getUserFileName(const char* SubDir, const char* Extension, uint Ind
 void Device::deleteUserFile(const char* SubDir, const char* Name, const char* Extension)
 {
    char sFileName[kMaxPath];
-   sprintf(sFileName, "Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
+   sprintf(sFileName, "../Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
    GESTLString sFullPath = getFullPath(sFileName);
    remove(sFullPath.c_str());
 }
