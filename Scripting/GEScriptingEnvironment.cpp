@@ -18,6 +18,7 @@
 
 #include "Core/GEPlatform.h"
 #include "Core/GEApplication.h"
+#include "Core/GESettings.h"
 #include "Core/GELog.h"
 #include "Core/GEDevice.h"
 #include "Core/GEInterpolator.h"
@@ -794,6 +795,14 @@ void Environment::registerTypes()
       , "get", &Serializable::get
       , "set", &Serializable::set
       , "executeAction", &Serializable::executeAction
+   );
+   mLua.new_simple_usertype<Settings>
+   (
+      "Settings"
+      , "getInstance", &Settings::getInstance
+      , "load", &Settings::load
+      , "save", &Settings::save
+      , sol::base_classes, sol::bases<Serializable>()
    );
    mLua.new_simple_usertype<Clock>
    (

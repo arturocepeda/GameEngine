@@ -38,6 +38,7 @@ namespace GE { namespace Core
       ~Settings();
 
       void load();
+      void save();
 
       // General
       GEDefaultSetter(uint32_t, TargetFPS, m)

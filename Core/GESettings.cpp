@@ -18,18 +18,16 @@ using namespace GE;
 using namespace GE::Core;
 using namespace GE::Content;
 
-const ObjectName ClassName("Settings");
-
 Settings::Settings()
-   : Serializable(ClassName)
-   , mTargetFPS(60u)
+   : Serializable("Settings")
+   , mTargetFPS(0u)
    , mFullscreen(false)
    , mVSync(false)
-   , mWindowSizeX(1024u)
-   , mWindowSizeY(600u)
+   , mWindowSizeX(0u)
+   , mWindowSizeY(0u)
    , mErrorPopUps(false)
 {
-   strcpy(mLanguage, "Default");
+   mLanguage[0] = '\0';
 
    // General
    GERegisterProperty(UInt, TargetFPS);
@@ -51,12 +49,23 @@ Settings::~Settings()
 
 void Settings::load()
 {
-   ContentData settingsData;
-   Device::readContentFile(ContentType::GenericTextData, ".", "settings", "xml", &settingsData);
+   const bool userSettingsLoaded = SerializableIO::loadFromXmlFile(this, ".", "settings");
 
-   pugi::xml_document xml;
-   xml.load_buffer(settingsData.getData(), settingsData.getDataSize());
-   pugi::xml_node xmlSettings = xml.child("Settings");
+   if(!userSettingsLoaded)
+   {
+      ContentData settingsData;
+      Device::readContentFile(ContentType::GenericTextData, ".", "settings", "xml", &settingsData);
 
-   loadFromXml(xmlSettings);
+      pugi::xml_document xml;
+      xml.load_buffer(settingsData.getData(), settingsData.getDataSize());
+      pugi::xml_node xmlSettings = xml.child("Settings");
+
+      loadFromXml(xmlSettings);
+      save();
+   }
+}
+
+void Settings::save()
+{
+   SerializableIO::saveToXmlFile(this, ".", "settings");
 }
