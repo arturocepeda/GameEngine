@@ -1286,6 +1286,11 @@ void Environment::registerTypes()
       , "loadAudioBank", &AudioSystem::loadAudioBank
       , "unloadAudioBank", &AudioSystem::unloadAudioBank
       , "playAudioEvent", &AudioSystem::playAudioEvent
+      , "stop", &AudioSystem::stop
+      , "pause", &AudioSystem::pause
+      , "resume", &AudioSystem::resume
+      , "isPlaying", &AudioSystem::isPlaying
+      , "isPaused", &AudioSystem::isPaused
       , "setPosition", &AudioSystem::setPosition
    );
 
