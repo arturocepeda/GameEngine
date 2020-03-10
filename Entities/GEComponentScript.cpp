@@ -38,6 +38,8 @@ const ObjectName cEntityVariableName = ObjectName("entity");
 
 const ObjectName cInitFunctionName = ObjectName("init");
 const ObjectName cUpdateFunctionName = ObjectName("update");
+const ObjectName cShutdownFunctionName = ObjectName("shutdown");
+
 const ObjectName cInputMouseFunctionName = ObjectName("inputMouse");
 const ObjectName cInputMouseWheelFunctionName = ObjectName("inputMouseWheel");
 const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
@@ -97,6 +99,11 @@ ScriptInstance::~ScriptInstance()
 {
    if(mNamespace)
    {
+      if(mNamespace->isFunctionDefined(cShutdownFunctionName))
+      {
+         mNamespace->runFunction<void>(cShutdownFunctionName);
+      }
+
       mNamespace->getParent()->removeNamespace(mNamespaceName);
       mNamespace = 0;
    }
