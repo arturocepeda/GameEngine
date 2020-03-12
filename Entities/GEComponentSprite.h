@@ -67,7 +67,7 @@ namespace GE { namespace Entities
       CenterMode mCenterMode;
       SizeMode mSizeMode;
       FullScreenSizeMode eFullScreenSizeMode;
-      bool bVertexDataDirty;
+      std::atomic<bool> bVertexDataDirty;
 
       void updateVertexData();
 
