@@ -40,6 +40,11 @@ const char* DistributionPlatform::getUserName() const
    return defaultUserName;
 }
 
+SystemLanguage DistributionPlatform::getLanguage() const
+{
+   return SystemLanguage::Count;
+}
+
 void DistributionPlatform::unlockAchievement(const ObjectName&)
 {
 }

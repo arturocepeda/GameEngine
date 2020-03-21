@@ -80,7 +80,12 @@ void Application::startUp(void (*pInitAppModuleFunction)())
 
    if(strcmp(language, "Default") == 0)
    {
-      Device::Language = Device::requestOSLanguage();
+      Device::Language = DistributionPlatform::getInstance()->getLanguage();
+
+      if(Device::Language == SystemLanguage::Count)
+      {
+         Device::Language = Device::requestOSLanguage();
+      }
    }
    else if(strcmp(language, "English") == 0)
    {

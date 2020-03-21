@@ -14,6 +14,7 @@
 
 #include "GESingleton.h"
 #include "GEObject.h"
+#include "GEDevice.h"
 
 namespace GE { namespace Core
 {
@@ -46,6 +47,8 @@ namespace GE { namespace Core
 
       const char* getPlatformName() const;
       const char* getUserName() const;
+
+      SystemLanguage getLanguage() const;
 
       // Achievements
       void unlockAchievement(const ObjectName& pAchievementName);

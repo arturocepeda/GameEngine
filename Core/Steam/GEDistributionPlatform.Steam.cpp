@@ -203,6 +203,26 @@ const char* DistributionPlatform::getUserName() const
    return SteamFriends()->GetPersonaName();
 }
 
+SystemLanguage DistributionPlatform::getLanguage() const
+{
+   const char* gameLanguage = SteamApps()->GetCurrentGameLanguage();
+
+   if(strcmp(gameLanguage, "english") == 0)
+   {
+      return SystemLanguage::English;
+   }
+   if(strcmp(gameLanguage, "spanish") == 0)
+   {
+      return SystemLanguage::Spanish;
+   }
+   if(strcmp(gameLanguage, "german") == 0)
+   {
+      return SystemLanguage::German;
+   }
+
+   return SystemLanguage::Count;
+}
+
 void DistributionPlatform::unlockAchievement(const ObjectName& pAchievementName)
 {
    bool achievementUnlocked = false;
