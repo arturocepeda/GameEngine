@@ -99,7 +99,7 @@ ScriptInstance::~ScriptInstance()
 {
    if(mNamespace)
    {
-      if(mNamespace->isFunctionDefined(cShutdownFunctionName))
+      if(mInitialized && mNamespace->isFunctionDefined(cShutdownFunctionName))
       {
          mNamespace->runFunction<void>(cShutdownFunctionName);
       }
