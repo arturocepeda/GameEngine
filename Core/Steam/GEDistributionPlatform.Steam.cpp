@@ -22,6 +22,8 @@
 using namespace GE;
 using namespace GE::Core;
 
+static const size_t kPathBufferSize = 256u;
+
 //
 //  SteamCallback
 //
@@ -153,6 +155,8 @@ public:
    }
 };
 
+SteamCallResult<RemoteStorageFileReadAsyncComplete_t> gCallResultRemoteFileRead;
+SteamCallResult<RemoteStorageFileWriteAsyncComplete_t> gCallResultRemoteFileWritten;
 SteamCallResult<LeaderboardFindResult_t> gCallResultFindLeaderboard;
 SteamCallResult<LeaderboardScoresDownloaded_t> gCallResultDownloadLeaderboardEntries;
 
@@ -221,6 +225,68 @@ SystemLanguage DistributionPlatform::getLanguage() const
    }
 
    return SystemLanguage::Count;
+}
+
+bool DistributionPlatform::remoteFileExists(const char* pSubDir, const char* pName, const char* pExtension)
+{
+   char fileName[kPathBufferSize];
+   sprintf(fileName, "%s/%s.%s", pSubDir, pName, pExtension);
+
+   return SteamRemoteStorage()->FileExists(fileName);
+}
+
+void DistributionPlatform::readRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
+   Content::ContentData* pContentData, std::function<void()> pOnFinished)
+{
+   char fileName[kPathBufferSize];
+   sprintf(fileName, "%s/%s.%s", pSubDir, pName, pExtension);
+
+   const int32_t fileSize = SteamRemoteStorage()->GetFileSize(fileName);
+   SteamAPICall_t apiCall = SteamRemoteStorage()->FileReadAsync(fileName, 0u, fileSize);
+
+   gCallResultRemoteFileRead.Set(apiCall, [fileSize, pContentData, pOnFinished](RemoteStorageFileReadAsyncComplete_t* pResult, bool pIOFailure)
+   {
+      if(!pIOFailure)
+      {
+         char* buffer = Allocator::alloc<char>(fileSize);
+         SteamRemoteStorage()->FileReadAsyncComplete(pResult->m_hFileReadAsync, buffer, fileSize);      
+         pContentData->load(fileSize, buffer);
+         Allocator::free(buffer);
+      }
+
+      if(pOnFinished)
+      {
+         pOnFinished();
+      }
+   });
+}
+
+void DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
+   const Content::ContentData* pContentData, std::function<void(bool pSuccess)> pOnFinished)
+{
+   char fileName[kPathBufferSize];
+   sprintf(fileName, "%s/%s.%s", pSubDir, pName, pExtension);
+
+   const int32_t fileSize = SteamRemoteStorage()->GetFileSize(fileName);
+   SteamAPICall_t apiCall = SteamRemoteStorage()->FileWriteAsync(fileName, pContentData->getData(), pContentData->getDataSize());
+
+   gCallResultRemoteFileWritten.Set(apiCall, [pOnFinished](RemoteStorageFileWriteAsyncComplete_t* pResult, bool pIOFailure)
+   {
+      (void)pIOFailure;
+
+      if(pOnFinished)
+      {
+         pOnFinished(pResult->m_eResult == k_EResultOK);
+      }
+   });
+}
+
+void DistributionPlatform::deleteRemoteFile(const char* pSubDir, const char* pName, const char* pExtension)
+{
+   char fileName[kPathBufferSize];
+   sprintf(fileName, "%s/%s.%s", pSubDir, pName, pExtension);
+
+   SteamRemoteStorage()->FileDelete(fileName);
 }
 
 void DistributionPlatform::unlockAchievement(const ObjectName& pAchievementName)

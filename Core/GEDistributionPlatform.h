@@ -50,6 +50,14 @@ namespace GE { namespace Core
 
       SystemLanguage getLanguage() const;
 
+      // Data storage
+      bool remoteFileExists(const char* pSubDir, const char* pName, const char* pExtension);
+      void readRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
+        Content::ContentData* pContentData, std::function<void()> pOnFinished = nullptr);
+      void writeRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
+        const Content::ContentData* pContentData, std::function<void(bool pSuccess)> pOnFinished = nullptr);
+      void deleteRemoteFile(const char* pSubDir, const char* pName, const char* pExtension);
+
       // Achievements
       void unlockAchievement(const ObjectName& pAchievementName);
 
