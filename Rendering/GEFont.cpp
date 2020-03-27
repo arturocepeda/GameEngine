@@ -191,7 +191,7 @@ void Font::loadFontData(uint32_t pCharSetIndex, const pugi::xml_node& pXmlFontDa
 
    for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
    {
-      byte iCharId = static_cast<byte>(Parser::parseUInt(xmlChar.attribute("id").value()));
+      uint16_t iCharId = static_cast<uint16_t>(Parser::parseUInt(xmlChar.attribute("id").value()));
 
       Glyph sGlyph;
       sGlyph.Width = Parser::parseFloat(xmlChar.attribute("width").value());
@@ -217,8 +217,8 @@ void Font::loadFontData(uint32_t pCharSetIndex, const pugi::xml_node& pXmlFontDa
 
    for(const pugi::xml_node& xmlKerning : xmlKernings.children("kerning"))
    {
-       byte iKerningFirstCharId = (byte)Parser::parseUInt(xmlKerning.attribute("first").value());
-       byte iKerningSecondCharId = (byte)Parser::parseUInt(xmlKerning.attribute("second").value());
+       uint16_t iKerningFirstCharId = (uint16_t)Parser::parseUInt(xmlKerning.attribute("first").value());
+       uint16_t iKerningSecondCharId = (uint16_t)Parser::parseUInt(xmlKerning.attribute("second").value());
        int iKerningAmount = Parser::parseInt(xmlKerning.attribute("amount").value());
 
        KerningsMap::iterator it = mKernings[pCharSetIndex].find(iKerningFirstCharId);
@@ -238,8 +238,8 @@ void Font::loadFontData(uint32_t pCharSetIndex, std::istream& pStream)
 {
    FontCharacterSet* charSet = getFontCharacterSet(pCharSetIndex);
 
-   const float textureWidth = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
-   const float textureHeight = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+   const float textureWidth = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+   const float textureHeight = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
 
    const float base = Value::fromStream(ValueType::Float, pStream).getAsFloat();
    const float lineHeight = Value::fromStream(ValueType::Float, pStream).getAsFloat();
@@ -248,21 +248,21 @@ void Font::loadFontData(uint32_t pCharSetIndex, std::istream& pStream)
    fOffsetYMin = 0.0f;
    fOffsetYMax = 0.0f;
 
-   uint iCharsCount = (uint)Value::fromStream(ValueType::Short, pStream).getAsShort();
+   uint iCharsCount = (uint)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
 
    for(uint i = 0; i < iCharsCount; i++)
    {
-      byte iCharId = Value::fromStream(ValueType::Byte, pStream).getAsByte();
+      const uint16_t iCharId = Value::fromStream(ValueType::UShort, pStream).getAsUShort();
 
-      const float x = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
-      const float y = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      const float x = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      const float y = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
 
       Glyph sGlyph;
-      sGlyph.Width = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
-      sGlyph.Height = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
-      sGlyph.OffsetX = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
-      sGlyph.OffsetY = base - (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
-      sGlyph.AdvanceX = (float)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      sGlyph.Width = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      sGlyph.Height = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      sGlyph.OffsetX = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      sGlyph.OffsetY = base - (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      sGlyph.AdvanceX = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
 
       sGlyph.UV.U0 = x / textureWidth;
       sGlyph.UV.U1 = sGlyph.UV.U0 + (sGlyph.Width / textureWidth);
@@ -277,13 +277,13 @@ void Font::loadFontData(uint32_t pCharSetIndex, std::istream& pStream)
       mGlyphs[pCharSetIndex][iCharId] = sGlyph;
    }
 
-   uint iKerningsCount = (uint)Value::fromStream(ValueType::Short, pStream).getAsShort();
+   uint iKerningsCount = (uint)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
 
    for(uint i = 0; i < iKerningsCount; i++)
    {
-      byte iKerningFirstCharId = Value::fromStream(ValueType::Byte, pStream).getAsByte();
-      byte iKerningSecondCharId = Value::fromStream(ValueType::Byte, pStream).getAsByte();
-      int iKerningAmount = (int)Value::fromStream(ValueType::Short, pStream).getAsShort();
+      const uint16_t iKerningFirstCharId = Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      const uint16_t iKerningSecondCharId = Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      const int iKerningAmount = (int)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
 
       KerningsMap::iterator it = mKernings[pCharSetIndex].find(iKerningFirstCharId);
 
@@ -334,13 +334,13 @@ float Font::getLineHeight(uint32_t pCharSetIndex)
    return getFontCharacterSet(pCharSetIndex)->getLineHeight();
 }
 
-const Glyph& Font::getGlyph(uint32_t pCharSetIndex, GE::byte pCharacter)
+const Glyph& Font::getGlyph(uint32_t pCharSetIndex, uint16_t pCharacter)
 {
    GEAssert(pCharSetIndex < (uint32_t)mGlyphs.size());
    return mGlyphs[pCharSetIndex][pCharacter];
 }
 
-float Font::getKerning(uint32_t pCharSetIndex, GE::byte pChar1, GE::byte pChar2) const
+float Font::getKerning(uint32_t pCharSetIndex, uint16_t pChar1, uint16_t pChar2) const
 {
    GEAssert(pCharSetIndex < (uint32_t)mCharSets.count());
 

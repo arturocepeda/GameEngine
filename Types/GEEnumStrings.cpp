@@ -57,7 +57,7 @@ namespace GE { namespace Core
       "Float",
       "Bool",
       "Byte",
-      "Short",
+      "UShort",
       "String",
       "ObjectName",
       "Vector2",

@@ -73,7 +73,7 @@ void packEntity(const ObjectName& cName, const pugi::xml_node& xmlNode, std::ofs
    cEntity->xmlToStream(xmlNode, sOutputFile);
 
    xml_object_range<xml_named_node_iterator> xmlComponents = xmlNode.children("Component");
-   GE::byte iComponentsCount = 0;
+   GE::byte iComponentsCount = 0u;
 
    for(const pugi::xml_node& xmlComponent : xmlComponents)
    {
@@ -94,7 +94,7 @@ void packEntity(const ObjectName& cName, const pugi::xml_node& xmlNode, std::ofs
    }
 
    xml_object_range<xml_named_node_iterator> xmlChildren = xmlNode.children("Entity");
-   GE::byte iChildrenCount = 0;
+   GE::byte iChildrenCount = 0u;
 
    for(const pugi::xml_node& xmlChild : xmlChildren)
    {
@@ -390,7 +390,7 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
    pugi::xml_document xml;
    xml.load_file(sInputPath);
    const pugi::xml_node& xmlTextures = xml.child("TextureList");
-   short iTexturesCount = 0;
+   uint16_t iTexturesCount = 0u;
 
    for(const pugi::xml_node& xmlTexture : xmlTextures.children("Texture"))
    {
@@ -451,7 +451,7 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
          xmlAtlas.load_file(sTextureAtlasFilePath.c_str());
          const pugi::xml_node& xmlChars = xmlAtlas.child("TextureAtlas");
 
-         GE::byte iAtlasEntriesCount = 0;
+         GE::byte iAtlasEntriesCount = 0u;
 
          for(const pugi::xml_node& xmlChar : xmlChars.children("sprite"))
          {
@@ -463,10 +463,10 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
          for(const pugi::xml_node& xmlChar : xmlChars.children("sprite"))
          {
             Value(ObjectName(xmlChar.attribute("n").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("x").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("y").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("w").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("h").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseInt(xmlChar.attribute("x").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseInt(xmlChar.attribute("y").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseInt(xmlChar.attribute("w").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseInt(xmlChar.attribute("h").value())).writeToStream(sOutputFile);
          }
       }
 
@@ -528,7 +528,7 @@ void ContentCompiler::packMaterials()
       pugi::xml_document xml;
       xml.load_file(sInputPath);
       const pugi::xml_node& xmlMaterials = xml.child("MaterialList");
-      GE::byte iMaterialsCount = 0;
+      GE::byte iMaterialsCount = 0u;
 
       for(const pugi::xml_node& xmlMaterial : xmlMaterials.children("Material"))
       {
@@ -610,7 +610,7 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
    pugi::xml_document xml;
    xml.load_file(sInputPath);
    const pugi::xml_node& xmlFonts = xml.child("FontList");
-   GE::byte iFontsCount = 0;
+   GE::byte iFontsCount = 0u;
 
    for(const pugi::xml_node& xmlFont : xmlFonts.children("Font"))
    {
@@ -667,13 +667,13 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
          const pugi::xml_node& xmlFontDescRoot = xmlFontDesc.child("font");
 
          const pugi::xml_node& xmlCommon = xmlFontDescRoot.child("common");
-         Value((short)Parser::parseInt(xmlCommon.attribute("scaleW").value())).writeToStream(sOutputFile);
-         Value((short)Parser::parseInt(xmlCommon.attribute("scaleH").value())).writeToStream(sOutputFile);
+         Value((uint16_t)Parser::parseUInt(xmlCommon.attribute("scaleW").value())).writeToStream(sOutputFile);
+         Value((uint16_t)Parser::parseUInt(xmlCommon.attribute("scaleH").value())).writeToStream(sOutputFile);
          Value(Parser::parseFloat(xmlCommon.attribute("base").value())).writeToStream(sOutputFile);
          Value(Parser::parseFloat(xmlCommon.attribute("lineHeight").value())).writeToStream(sOutputFile);
 
          const pugi::xml_node& xmlChars = xmlFontDescRoot.child("chars");
-         short iFontCharsCount = 0;
+         uint16_t iFontCharsCount = 0u;
 
          for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
          {
@@ -684,29 +684,29 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
 
          for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
          {
-            Value((GE::byte)Parser::parseInt(xmlChar.attribute("id").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("x").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("y").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("width").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("height").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("xoffset").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("yoffset").value())).writeToStream(sOutputFile);
-            Value((short)Parser::parseInt(xmlChar.attribute("xadvance").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("id").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("x").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("y").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("width").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("height").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("xoffset").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("yoffset").value())).writeToStream(sOutputFile);
+            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("xadvance").value())).writeToStream(sOutputFile);
          }
 
          const pugi::xml_node& xmlKernings = xmlFontDescRoot.child("kernings");
-         short iFontKerningsCount = (short)Parser::parseUInt(xmlKernings.attribute("count").value());
+         uint16_t iFontKerningsCount = (uint16_t)Parser::parseUInt(xmlKernings.attribute("count").value());
          Value(iFontKerningsCount).writeToStream(sOutputFile);
 
          for(const pugi::xml_node& xmlKerning : xmlKernings.children("kerning"))
          {
-            GE::byte iKerningFirstCharId = (GE::byte)Parser::parseUInt(xmlKerning.attribute("first").value());
-            GE::byte iKerningSecondCharId = (GE::byte)Parser::parseUInt(xmlKerning.attribute("second").value());
+            uint16_t iKerningFirstCharId = (uint16_t)Parser::parseUInt(xmlKerning.attribute("first").value());
+            uint16_t iKerningSecondCharId = (uint16_t)Parser::parseUInt(xmlKerning.attribute("second").value());
             int iKerningAmount = Parser::parseInt(xmlKerning.attribute("amount").value());
 
             Value(iKerningFirstCharId).writeToStream(sOutputFile);
             Value(iKerningSecondCharId).writeToStream(sOutputFile);
-            Value((short)iKerningAmount).writeToStream(sOutputFile);
+            Value((uint16_t)iKerningAmount).writeToStream(sOutputFile);
          }
       }
 
@@ -780,7 +780,7 @@ void ContentCompiler::packStrings()
       pugi::xml_document xml;
       xml.load_file(sInputPath);
       const pugi::xml_node& xmlStrings = xml.child("Strings");
-      short iStringsCount = 0;
+      uint16_t iStringsCount = 0u;
 
       for(const pugi::xml_node& xmlString : xmlStrings.children("String"))
       {
@@ -796,7 +796,7 @@ void ContentCompiler::packStrings()
 
          const char* stringText = xmlString.attribute("text").value();
 
-         const short stringLength = (short)strlen(stringText);
+         const uint16_t stringLength = (uint16_t)strlen(stringText);
          Value(stringLength).writeToStream(sOutputFile);
 
          sOutputFile.write(stringText, stringLength);
@@ -863,7 +863,7 @@ void ContentCompiler::packMeshFile(const char* XmlFileName)
    pugi::xml_document xml;
    xml.load_file(sInputPath);
    const pugi::xml_node& xmlMeshes = xml.child("MeshList");
-   short iMeshesCount = 0;
+   uint16_t iMeshesCount = 0u;
 
    for(const pugi::xml_node& xmlMesh : xmlMeshes.children("Mesh"))
    {
@@ -986,7 +986,7 @@ void ContentCompiler::packSkeletons()
          for(pugi::xml_node_iterator it2 = xmlBoneChildren.begin(); it2 != xmlBoneChildren.end(); it2++)
          {
             const pugi::xml_node& xmlBoneChild = *it2;
-            Value((GE::byte)Parser::parseInt(xmlBoneChild.attribute("index").value())).writeToStream(sOutputFile);
+            Value((GE::byte)Parser::parseUInt(xmlBoneChild.attribute("index").value())).writeToStream(sOutputFile);
          }
       }
 
@@ -1044,7 +1044,7 @@ void ContentCompiler::packAnimations()
       pugi::xml_document xml;
       xml.load_file(sInputPath);
       const pugi::xml_node& xmlAnimationSet = xml.child("AnimationSet");
-      GE::byte iAnimationsCount = 0;
+      GE::byte iAnimationsCount = 0u;
 
       for(const pugi::xml_node& xmlAnimation : xmlAnimationSet.children("Animation"))
       {
@@ -1280,7 +1280,7 @@ void ContentCompiler::packScenes()
       cDummyScene.xmlToStream(xmlScene, sOutputFile);
       
       xml_object_range<xml_named_node_iterator> xmlRootEntities = xmlScene.children("Entity");
-      GE::byte iRootEntitiesCount = 0;
+      GE::byte iRootEntitiesCount = 0u;
 
       for(const pugi::xml_node& xmlRootEntity : xmlRootEntities)
       {

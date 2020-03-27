@@ -359,7 +359,7 @@ void RenderSystem::preloadTextures(const char* FileName)
       ContentDataMemoryBuffer sMemoryBuffer(cTexturesData);
       std::istream sStream(&sMemoryBuffer);
       
-      uint iTexturesCount = (uint)Value::fromStream(ValueType::Short, sStream).getAsShort();
+      uint iTexturesCount = (uint)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
 
       for(uint i = 0; i < iTexturesCount; i++)
       {
@@ -394,10 +394,10 @@ void RenderSystem::preloadTextures(const char* FileName)
             {
                ObjectName cAtlasEntryName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
 
-               float x = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
-               float y = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
-               float w = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
-               float h = (float)Value::fromStream(ValueType::Short, sStream).getAsShort();
+               float x = (float)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
+               float y = (float)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
+               float w = (float)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
+               float h = (float)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
 
                TextureCoordinates sUV;
                sUV.U0 = x / fWidth;

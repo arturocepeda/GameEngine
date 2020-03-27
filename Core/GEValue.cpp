@@ -21,11 +21,11 @@ using namespace GE::Core;
 const Value Value::DefaultValues[(uint)ValueType::Count] =
 {
    Value((int)0),
-   Value((uint)0),
+   Value((uint)0u),
    Value(0.0f),
    Value(false),
-   Value((GE::byte)0),
-   Value((short)0),
+   Value((GE::byte)0u),
+   Value((uint16_t)0u),
    Value(""),
    Value(ObjectName::Empty),
    Value(Vector2()),
@@ -96,10 +96,10 @@ Value::Value(GE::byte ByteValue)
    setAsByte(ByteValue);
 }
 
-Value::Value(short ShortValue)
-   : eType(ValueType::Short)
+Value::Value(uint16_t ShortValue)
+   : eType(ValueType::UShort)
 {
-   setAsShort(ShortValue);
+   setAsUShort(ShortValue);
 }
 
 Value::Value(const char* StringValue)
@@ -158,8 +158,8 @@ Value::Value(ValueType Type, const char* ValueAsString)
    case ValueType::Byte:
       setAsByte((byte)Parser::parseUInt(ValueAsString));
       break;
-   case ValueType::Short:
-      setAsShort((short)Parser::parseInt(ValueAsString));
+   case ValueType::UShort:
+      setAsUShort((uint16_t)Parser::parseInt(ValueAsString));
       break;
    case ValueType::String:
       setAsString(ValueAsString);
@@ -200,8 +200,8 @@ uint Value::getSize() const
       return (uint)sizeof(bool);
    case ValueType::Byte:
       return (uint)sizeof(byte);
-   case ValueType::Short:
-      return (uint)sizeof(short);
+   case ValueType::UShort:
+      return (uint)sizeof(uint16_t);
    case ValueType::String:
    case ValueType::ObjectName:
       return (uint)strlen(sBuffer);
@@ -246,9 +246,9 @@ void Value::setAsByte(GE::byte ByteValue)
    sBuffer[0] = ByteValue;
 }
 
-void Value::setAsShort(short ShortValue)
+void Value::setAsUShort(uint16_t ShortValue)
 {
-   memcpy(sBuffer, &ShortValue, sizeof(short));
+   memcpy(sBuffer, &ShortValue, sizeof(uint16_t));
 }
 
 void Value::setAsString(const char* StringValue)
@@ -318,10 +318,10 @@ GE::byte Value::getAsByte() const
    return (GE::byte)sBuffer[0];
 }
 
-short Value::getAsShort() const
+uint16_t Value::getAsUShort() const
 {
-   GEAssert(eType == ValueType::Short);
-   return *(reinterpret_cast<const short*>(sBuffer));
+   GEAssert(eType == ValueType::UShort);
+   return *(reinterpret_cast<const uint16_t*>(sBuffer));
 }
 
 const char* Value::getAsString() const
@@ -423,8 +423,8 @@ bool Value::operator==(const Value& Other) const
    case ValueType::Byte:
       iLengthToCheck = sizeof(byte);
       break;
-   case ValueType::Short:
-      iLengthToCheck = sizeof(short);
+   case ValueType::UShort:
+      iLengthToCheck = sizeof(uint16_t);
       break;
    case ValueType::String:
    case ValueType::ObjectName:
@@ -486,9 +486,9 @@ void Value::writeToStream(std::ostream& Stream) const
          Stream.write(sBuffer, sizeof(byte));
       }
       break;
-   case ValueType::Short:
+   case ValueType::UShort:
       {
-         Stream.write(sBuffer, sizeof(short));
+         Stream.write(sBuffer, sizeof(uint16_t));
       }
       break;
    case ValueType::String:
@@ -555,9 +555,9 @@ Value Value::fromStream(ValueType Type, std::istream& Stream)
          Stream.read(cValue.sBuffer, sizeof(byte));
       }
       break;
-   case ValueType::Short:
+   case ValueType::UShort:
       {
-         Stream.read(cValue.sBuffer, sizeof(short));
+         Stream.read(cValue.sBuffer, sizeof(uint16_t));
       }
       break;
    case ValueType::String:

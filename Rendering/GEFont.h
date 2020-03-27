@@ -69,11 +69,11 @@ namespace GE { namespace Rendering
 
       Core::ObjectManager<FontCharacterSet> mCharSets;
 
-      typedef GESTLMap(byte, Glyph) GlyphsMap;
+      typedef GESTLMap(uint16_t, Glyph) GlyphsMap;
       GESTLVector(GlyphsMap) mGlyphs;
 
-      typedef GESTLMap(byte, int) CharKerningsMap;
-      typedef GESTLMap(byte, CharKerningsMap) KerningsMap;
+      typedef GESTLMap(uint16_t, int) CharKerningsMap;
+      typedef GESTLMap(uint16_t, CharKerningsMap) KerningsMap;
       GESTLVector(KerningsMap) mKernings;
 
       float fOffsetYMin;
@@ -101,8 +101,8 @@ namespace GE { namespace Rendering
       uint32_t getCharacterSetIndex(const Core::ObjectName& pCharacterSetName) const;
 
       float getLineHeight(uint32_t pCharSetIndex);
-      const Glyph& getGlyph(uint32_t pCharSetIndex, byte pCharacter);
-      float getKerning(uint32_t pCharSetIndex, byte pChar1, byte pChar2) const;
+      const Glyph& getGlyph(uint32_t pCharSetIndex, uint16_t pCharacter);
+      float getKerning(uint32_t pCharSetIndex, uint16_t pChar1, uint16_t pChar2) const;
 
       GEPropertyArray(FontCharacterSet, FontCharacterSet)
    };

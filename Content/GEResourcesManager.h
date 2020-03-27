@@ -269,7 +269,7 @@ namespace GE { namespace Content
             SerializableResourceManagerObjects* objects =
                SerializableResourcesManager::getInstance()->getEntry(T::TypeName.getString());
 
-            const uint32_t entriesCount = (uint32_t)Core::Value::fromStream(Core::ValueType::Short, stream).getAsShort();
+            const uint32_t entriesCount = (uint32_t)Core::Value::fromStream(Core::ValueType::UShort, stream).getAsUShort();
 
             for(uint32_t i = 0u; i < entriesCount; i++)
             {

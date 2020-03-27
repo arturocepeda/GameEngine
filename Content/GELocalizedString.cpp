@@ -112,7 +112,7 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
       ContentDataMemoryBuffer sMemoryBuffer(cStringsSetData);
       std::istream sStream(&sMemoryBuffer);
 
-      const uint32_t stringsCount = (uint32_t)Value::fromStream(ValueType::Short, sStream).getAsShort();
+      const uint32_t stringsCount = (uint32_t)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
       GESTLString stringBuffer;
 
       for(uint32_t i = 0u; i < stringsCount; i++)
@@ -120,7 +120,7 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
          const ObjectName stringID = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
          GEAssert(!get(stringID));
 
-         const size_t stringLength = (size_t)Value::fromStream(ValueType::Short, sStream).getAsShort();
+         const size_t stringLength = (size_t)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
          stringBuffer.resize(stringLength);
          sStream.read(const_cast<char*>(stringBuffer.c_str()), stringLength);
 
@@ -161,7 +161,7 @@ void LocalizedStringsManager::unloadStringsSet(const char* Name)
       ContentDataMemoryBuffer sMemoryBuffer(cStringsSetData);
       std::istream sStream(&sMemoryBuffer);
 
-      const uint32_t iStringsCount = (uint32_t)Value::fromStream(ValueType::Short, sStream).getAsShort();
+      const uint32_t iStringsCount = (uint32_t)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
 
       for(uint32_t i = 0u; i < iStringsCount; i++)
       {
@@ -169,7 +169,7 @@ void LocalizedStringsManager::unloadStringsSet(const char* Name)
          GEAssert(get(cStringID));
          remove(cStringID);
 
-         const size_t stringLength = (size_t)Value::fromStream(ValueType::Short, sStream).getAsShort();
+         const size_t stringLength = (size_t)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
          sStream.ignore(stringLength);
       }
    }

@@ -26,7 +26,7 @@ namespace GE { namespace Core
       Float,
       Bool,
       Byte,
-      Short,
+      UShort,
       String,
       ObjectName,
       Vector2,
@@ -61,7 +61,7 @@ namespace GE { namespace Core
       Value(float FloatValue);
       Value(bool BoolValue);
       Value(byte ByteValue);
-      Value(short ShortValue);
+      Value(uint16_t ShortValue);
       Value(const char* StringValue);
       Value(const ObjectName& ObjectNameValue);
       Value(const GE::Vector2& Vector2Value);
@@ -80,7 +80,7 @@ namespace GE { namespace Core
       void setAsFloat(float Val);
       void setAsBool(bool Val);
       void setAsByte(byte Val);
-      void setAsShort(short Val);
+      void setAsUShort(uint16_t Val);
       void setAsString(const char* Val);
       void setAsObjectName(const ObjectName& Val);
       void setAsVector2(const GE::Vector2& Val);
@@ -92,7 +92,7 @@ namespace GE { namespace Core
       float getAsFloat() const;
       bool getAsBool() const;
       byte getAsByte() const;
-      short getAsShort() const;
+      uint16_t getAsUShort() const;
       const char* getAsString() const;
       ObjectName getAsObjectName() const;
       GE::Vector2 getAsVector2() const;
@@ -116,7 +116,7 @@ namespace GE { namespace Core
    template<> inline float Value::getAs<float>() const { return getAsFloat(); }
    template<> inline bool Value::getAs<bool>() const { return getAsBool(); }
    template<> inline byte Value::getAs<byte>() const { return getAsByte(); }
-   template<> inline short Value::getAs<short>() const { return getAsShort(); }
+   template<> inline uint16_t Value::getAs<uint16_t>() const { return getAsUShort(); }
    template<> inline const char* Value::getAs<const char*>() const { return getAsString(); }
    template<> inline ObjectName Value::getAs<ObjectName>() const { return getAsObjectName(); }
    template<> inline GE::Vector2 Value::getAs<GE::Vector2>() const { return getAsVector2(); }
