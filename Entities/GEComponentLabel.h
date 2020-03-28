@@ -50,6 +50,7 @@ namespace GE { namespace Entities
       uint8_t eSettings;
       Core::ObjectName cStringID;
       GESTLString sText;
+      GESTLString sTextExtension;
 
       float fHorizontalSpacing;
       float fVerticalSpacing;
@@ -65,6 +66,8 @@ namespace GE { namespace Entities
 
       GESTLVector(float) vVertexData;
       GESTLVector(ushort) vIndices;
+
+      uint16_t getGlyphIndex(size_t pCharIndex);
 
       void evaluateRichTextTag(Pen* pPen);
       void processVariables();
