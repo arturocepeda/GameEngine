@@ -710,13 +710,19 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
          }
       }
 
+#if defined (GE_PLATFORM_DESKTOP)
+      const char* sTextureExtension = ".dds";
+#else
+      const char* sTextureExtension = ".png";
+#endif
+
       std::string sFontFilePath;
       sFontFilePath.append(ContentXmlDirName);
       sFontFilePath.append("\\Fonts\\");
       sFontFilePath.append(sSetName);
       sFontFilePath.append("\\");
       sFontFilePath.append(sFontName);
-      sFontFilePath.append(".png");
+      sFontFilePath.append(sTextureExtension);
 
       std::ifstream sFontTextureFile(sFontFilePath, std::ios::in | std::ios::binary);
       GEAssert(sFontTextureFile.is_open());

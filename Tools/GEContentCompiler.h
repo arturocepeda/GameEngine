@@ -98,7 +98,7 @@ namespace GE { namespace Tools
             pugi::xml_document xml;
             xml.load_buffer(contentData.getData(), contentData.getDataSize());
             pugi::xml_node xmlEntries = xml.child(sRootNode);
-            short entriesCount = 0;
+            uint16_t entriesCount = 0u;
 
             for(const pugi::xml_node& xmlEntry : xmlEntries.children(T::TypeName.getString()))
             {
