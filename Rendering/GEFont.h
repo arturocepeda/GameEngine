@@ -76,9 +76,6 @@ namespace GE { namespace Rendering
       typedef GESTLMap(uint16_t, CharKerningsMap) KerningsMap;
       GESTLVector(KerningsMap) mKernings;
 
-      float fOffsetYMin;
-      float fOffsetYMax;
-
       void loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData);
       void loadFontData(uint32_t pCharSet, std::istream& pStream);
 

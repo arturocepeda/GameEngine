@@ -55,10 +55,8 @@ const ObjectName Font::TypeName = ObjectName("Font");
 
 Font::Font(const ObjectName& Name, const ObjectName& GroupName)
    : Resource(Name, GroupName, TypeName)
-   , pRenderDevice(0)
-   , cTexture(0)
-   , fOffsetYMin(0.0f)
-   , fOffsetYMax(0.0f) 
+   , pRenderDevice(nullptr)
+   , cTexture(nullptr)
 {
    GERegisterPropertyArray(FontCharacterSet);
 }
@@ -245,24 +243,21 @@ void Font::loadFontData(uint32_t pCharSetIndex, std::istream& pStream)
    const float lineHeight = Value::fromStream(ValueType::Float, pStream).getAsFloat();
    charSet->setLineHeight(lineHeight);
 
-   fOffsetYMin = 0.0f;
-   fOffsetYMax = 0.0f;
-
    uint iCharsCount = (uint)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
 
    for(uint i = 0; i < iCharsCount; i++)
    {
       const uint16_t iCharId = Value::fromStream(ValueType::UShort, pStream).getAsUShort();
 
-      const float x = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
-      const float y = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      const float x = Value::fromStream(ValueType::Float, pStream).getAsFloat();
+      const float y = Value::fromStream(ValueType::Float, pStream).getAsFloat();
 
       Glyph sGlyph;
-      sGlyph.Width = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
-      sGlyph.Height = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
-      sGlyph.OffsetX = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
-      sGlyph.OffsetY = base - (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
-      sGlyph.AdvanceX = (float)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      sGlyph.Width = Value::fromStream(ValueType::Float, pStream).getAsFloat();
+      sGlyph.Height = Value::fromStream(ValueType::Float, pStream).getAsFloat();
+      sGlyph.OffsetX = Value::fromStream(ValueType::Float, pStream).getAsFloat();
+      sGlyph.OffsetY = base - Value::fromStream(ValueType::Float, pStream).getAsFloat();
+      sGlyph.AdvanceX = Value::fromStream(ValueType::Float, pStream).getAsFloat();
 
       sGlyph.UV.U0 = x / textureWidth;
       sGlyph.UV.U1 = sGlyph.UV.U0 + (sGlyph.Width / textureWidth);

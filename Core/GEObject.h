@@ -53,6 +53,7 @@ namespace GE { namespace Core
       uint getID() const;
       const char* getString() const;
 
+      bool isValid() const;
       bool isEmpty() const;
 
       bool operator==(const ObjectName& Other) const;

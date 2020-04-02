@@ -88,7 +88,15 @@ namespace GE { namespace Core
    {
       "English",
       "Spanish",
-      "German"
+      "German",
+      "French",
+      "Italian",
+      "Portuguese",
+      "Russian",
+      "ChineseSimplified",
+      "ChineseTraditional",
+      "Japanese",
+      "Korean"
    };
 }}
 

@@ -23,6 +23,15 @@ namespace GE { namespace Core
       English,
       Spanish,
       German,
+      French,
+      Italian,
+      Portuguese,
+
+      Russian,
+      ChineseSimplified,
+      ChineseTraditional,
+      Japanese,
+      Korean,
 
       Count
    };

@@ -107,6 +107,11 @@ const char* ObjectName::getString() const
    return ObjectNameRegistry::retrieveString(iID);
 }
 
+bool ObjectName::isValid() const
+{
+   return iID != 0;
+}
+
 bool ObjectName::isEmpty() const
 {
    return iID == 0;

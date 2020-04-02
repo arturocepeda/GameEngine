@@ -53,6 +53,14 @@ static const char* kLanguageExtensions[] =
    "en", // English
    "es", // Spanish
    "de", // German
+   "fr", // French
+   "it", // Italian
+   "pt", // Portuguese
+   "ru", // Russian
+   "zh-CN", // ChineseSimplified
+   "zh-TW", // ChineseTraditional
+   "ja", // Japanese
+   "ko", // Korean
 };
 
 LocalizedStringsManager::LocalizedStringsManager()
