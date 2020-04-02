@@ -6,7 +6,7 @@
 //
 //  Audio System (OpenAL)
 //
-//  --- GEAudioSystemOpenAL.mm ---
+//  --- GEAudioSystemOpenAL.cpp ---
 //
 //////////////////////////////////////////////////////////////////
 
@@ -145,7 +145,11 @@ bool AudioSystem::platformIsInUse(ChannelID pChannel) const
 
 void AudioSystem::platformSetVolume(ChannelID pChannel, float pVolume)
 {
-   alSourcef(alSources[pChannel], AL_GAIN, pVolume);
+   // Using the x^2 function as an approximation to the exponential curve that
+   // represents the human perception of loudness
+   const float adjustedVolume = pVolume * pVolume;
+
+   alSourcef(alSources[pChannel], AL_GAIN, adjustedVolume);
 }
 
 void AudioSystem::platformSetPitch(ChannelID pChannel, float pPitch)
