@@ -122,12 +122,12 @@ void ComponentAudioSource::setAudioBusName(const ObjectName& pName)
 AudioEventInstance* ComponentAudioSource::playAudioEvent(const ObjectName& pAudioEventName)
 {
    AudioSystem* audioSystem = AudioSystem::getInstance();
-   AudioEventInstance* audioEventInstance = audioSystem->playAudioEvent(mAudioBankName, pAudioEventName);
+   AudioEventInstance* audioEventInstance =
+      audioSystem->playAudioEvent(mAudioBankName, pAudioEventName, mAudioBus);
 
    if(!audioEventInstance)
       return nullptr;
 
-   audioEventInstance->Bus = mAudioBus;
    mAudioEventInstances.push_back(audioEventInstance);
 
    onAudioEventPlayed(audioEventInstance);

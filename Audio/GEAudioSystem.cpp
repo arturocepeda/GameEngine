@@ -385,7 +385,8 @@ AudioBus* AudioSystem::getAudioBus(const ObjectName& pAudioBusName) const
    return mAudioBuses.get(pAudioBusName);
 }
 
-AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName, const ObjectName& pAudioEventName)
+AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName,
+   const ObjectName& pAudioEventName, AudioBus* pAudioBus)
 {
    AudioBank* audioBank = mAudioBanks.get(pAudioBankName);
 
@@ -501,12 +502,11 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
 
    audioEventInstance->Event = audioEvent;
    audioEventInstance->Channel = selectedChannel;
+   audioEventInstance->Bus = pAudioBus;
 
    // play the sound
    const bool looping = audioEvent->getPlayMode() == AudioEventPlayMode::Loop;
    platformPlaySound(selectedChannel, bufferID, looping);
-   
-   GEMutexUnlock(mMutex);
    
    float pitch = audioEvent->getPitchRange().X;
    
@@ -518,6 +518,8 @@ AudioEventInstance* AudioSystem::playAudioEvent(const ObjectName& pAudioBankName
    
    platformSetVolume(selectedChannel, audioEventInstance->getVolume());
    platformSetPitch(selectedChannel, pitch);
+
+   GEMutexUnlock(mMutex);
 
    // return the event instance
    return audioEventInstance;

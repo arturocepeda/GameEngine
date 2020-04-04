@@ -224,7 +224,8 @@ namespace GE { namespace Audio
 
       AudioBus* getAudioBus(const Core::ObjectName& pAudioBusName) const;
 
-      AudioEventInstance* playAudioEvent(const Core::ObjectName& pAudioBankName, const Core::ObjectName& pAudioEventName);
+      AudioEventInstance* playAudioEvent(const Core::ObjectName& pAudioBankName,
+         const Core::ObjectName& pAudioEventName, AudioBus* pAudioBus = nullptr);
       void stop(AudioEventInstance* pAudioEventInstance);
       void pause(AudioEventInstance* pAudioEventInstance);
       void resume(AudioEventInstance* pAudioEventInstance);
