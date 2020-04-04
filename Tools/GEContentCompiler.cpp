@@ -685,13 +685,13 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
          for(const pugi::xml_node& xmlChar : xmlChars.children("char"))
          {
             Value((uint16_t)Parser::parseUInt(xmlChar.attribute("id").value())).writeToStream(sOutputFile);
-            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("x").value())).writeToStream(sOutputFile);
-            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("y").value())).writeToStream(sOutputFile);
-            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("width").value())).writeToStream(sOutputFile);
-            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("height").value())).writeToStream(sOutputFile);
-            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("xoffset").value())).writeToStream(sOutputFile);
-            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("yoffset").value())).writeToStream(sOutputFile);
-            Value((uint16_t)Parser::parseUInt(xmlChar.attribute("xadvance").value())).writeToStream(sOutputFile);
+            Value(Parser::parseFloat(xmlChar.attribute("x").value())).writeToStream(sOutputFile);
+            Value(Parser::parseFloat(xmlChar.attribute("y").value())).writeToStream(sOutputFile);
+            Value(Parser::parseFloat(xmlChar.attribute("width").value())).writeToStream(sOutputFile);
+            Value(Parser::parseFloat(xmlChar.attribute("height").value())).writeToStream(sOutputFile);
+            Value(Parser::parseFloat(xmlChar.attribute("xoffset").value())).writeToStream(sOutputFile);
+            Value(Parser::parseFloat(xmlChar.attribute("yoffset").value())).writeToStream(sOutputFile);
+            Value(Parser::parseFloat(xmlChar.attribute("xadvance").value())).writeToStream(sOutputFile);
          }
 
          const pugi::xml_node& xmlKernings = xmlFontDescRoot.child("kernings");
