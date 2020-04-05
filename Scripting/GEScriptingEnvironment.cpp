@@ -1118,6 +1118,7 @@ void Environment::registerTypes()
       , "getStringID", &ComponentLabel::getStringID
       , "getCharacterCountLimit", &ComponentLabel::getCharacterCountLimit
       , "getTextLength", &ComponentLabel::getTextLength
+      , "getTextWidth", &ComponentLabel::getTextWidth
       , "setText", &ComponentLabel::setText
       , "setStringID", &ComponentLabel::setStringID
       , "setCharacterCountLimit", &ComponentLabel::setCharacterCountLimit

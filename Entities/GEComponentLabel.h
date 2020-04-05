@@ -55,6 +55,7 @@ namespace GE { namespace Entities
       float fHorizontalSpacing;
       float fVerticalSpacing;
       float fLineWidth;
+      float mTextWidth;
       uint32_t mTextLength;
       uint32_t mCharacterCountLimit;
 
@@ -92,6 +93,7 @@ namespace GE { namespace Entities
       float getHorizontalSpacing() const;
       float getVerticalSpacing() const;
       float getLineWidth() const;
+      float getTextWidth() const;
       uint32_t getTextLength() const;
       uint32_t getCharacterCountLimit() const;
       SpriteLayer getLayer() const;

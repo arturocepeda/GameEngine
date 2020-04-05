@@ -64,15 +64,16 @@ const ObjectName ComponentLabel::ClassName = ObjectName("Label");
 
 ComponentLabel::ComponentLabel(Entity* Owner)
    : ComponentRenderable(Owner)
-   , cFont(0)
-   , mFontCharSetIndex(0)
+   , cFont(nullptr)
+   , mFontCharSetIndex(0u)
    , fFontSize(12.0f)
    , iAlignment(Alignment::MiddleCenter)
    , mLayer(SpriteLayer::GUI)
-   , eSettings(0)
+   , eSettings(0u)
    , fHorizontalSpacing(0.0f)
    , fVerticalSpacing(0.0f)
    , fLineWidth(0.0f)
+   , mTextWidth(0.0f)
    , mTextLength(0u)
    , mCharacterCountLimit(0u)
    , mFontResizeFactor(1.0f)
@@ -114,6 +115,7 @@ ComponentLabel::ComponentLabel(Entity* Owner)
    GERegisterProperty(String, Text);
    GERegisterProperty(ObjectName, StringID);
    GERegisterPropertyReadonly(UInt, TextLength);
+   GERegisterPropertyReadonly(Float, TextWidth);
 }
 
 ComponentLabel::~ComponentLabel()
@@ -170,7 +172,9 @@ void ComponentLabel::evaluateRichTextTag(Pen* pPen)
       }
 
       if(i == sText.length())
+      {
          return;
+      }
 
       tag[tagLength] = '\0';
       value[valueLength] = '\0';
@@ -280,9 +284,12 @@ void ComponentLabel::processVariables()
 void ComponentLabel::generateVertexData()
 {
    mTextLength = 0u;
+   mTextWidth = 0.0f;
 
    if(!cFont)
+   {
       return;
+   }
 
    Pen sPen;
    sPen.mColor = cColor;
@@ -314,7 +321,9 @@ void ComponentLabel::generateVertexData()
          evaluateRichTextTag(&sPen);
 
          if(sPen.mCharIndex >= iTextLength)
+         {
             break;
+         }
       }
 
       const uint8_t cChar = sText[sPen.mCharIndex];
@@ -391,30 +400,31 @@ void ComponentLabel::generateVertexData()
 
    vLineWidths.push_back(fCurrentLineWidth);
    vLineFeedIndices.push_back(iTextLength);
-   vLineJustifySpaces.push_back(0);
+   vLineJustifySpaces.push_back(0u);
 
    mFontResizeFactor = 1.0f;
 
+   for(size_t i = 0u; i < vLineWidths.size(); i++)
+   {
+      if(vLineWidths[i] > mTextWidth)
+      {
+         mTextWidth = vLineWidths[i];
+      }
+   }
+
    if(fLineWidth > GE_EPSILON && bFixSizeToLineWidth)
    {
-      float maxLineWidth = 0.0f;
-
-      for(size_t i = 0; i < vLineWidths.size(); i++)
+      for(size_t i = 0u; i < vLineWidths.size(); i++)
       {
-         if(vLineWidths[i] > maxLineWidth)
-         {
-            maxLineWidth = vLineWidths[i];
-         }
-
          if(vLineWidths[i] > fLineWidth)
          {
             vLineWidths[i] = fLineWidth;
          }
       }
 
-      if(maxLineWidth > fLineWidth)
+      if(mTextWidth > fLineWidth)
       {
-         mFontResizeFactor = fLineWidth / maxLineWidth;
+         mFontResizeFactor = fLineWidth / mTextWidth;
          sPen.mFontSize *= mFontResizeFactor;
       }
    }
@@ -424,9 +434,10 @@ void ComponentLabel::generateVertexData()
 
    float fExtraLineWidth = 0.0f;
 
-   if(bJustifyText && fLineWidth > GE_EPSILON && vLineJustifySpaces[0] > 0)
+   if(bJustifyText && fLineWidth > GE_EPSILON && vLineJustifySpaces[0] > 0u)
    {
       fExtraLineWidth = fLineWidth - vLineWidths[0];
+      mTextWidth = fLineWidth;
    }
 
    switch(iAlignment)
@@ -498,7 +509,9 @@ void ComponentLabel::generateVertexData()
          evaluateRichTextTag(&sPen);
 
          if(sPen.mCharIndex >= iTextLength)
+         {
             break;
+         }
       }
 
       if(sPen.mCharIndex == vLineFeedIndices[iCurrentLineIndex])
@@ -713,6 +726,11 @@ float ComponentLabel::getLineWidth() const
    return fLineWidth;
 }
 
+float ComponentLabel::getTextWidth() const
+{
+   return mTextWidth;
+}
+
 uint32_t ComponentLabel::getCharacterCountLimit() const
 {
    return mCharacterCountLimit;
@@ -768,7 +786,9 @@ void ComponentLabel::setFontName(const Core::ObjectName& FontName)
 void ComponentLabel::setFontCharacterSet(const ObjectName& pCharSetName)
 {
    if(pCharSetName == getFontCharacterSet())
+   {
       return;
+   }
 
    mFontCharSetIndex = 0;
 
