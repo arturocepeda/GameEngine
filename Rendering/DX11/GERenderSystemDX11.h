@@ -58,6 +58,8 @@ namespace GE { namespace Rendering
    class RenderSystemDX11 : public RenderSystem
    {
    private:
+      void createDeviceResources();
+      void createWindowSizeDependentResources();
       void createBuffers();
       void createStates();
 
@@ -68,16 +70,5 @@ namespace GE { namespace Rendering
    public:
       RenderSystemDX11(HWND WindowHandle, bool Windowed);
       ~RenderSystemDX11();
-   };
-
-
-   class RenderSystemDX11Helper
-   {
-   public:
-      static void createDeviceResources();
-      static void updateForWindowSizeChange();
-      static void handleDeviceLost();
-      static void createWindowSizeDependentResources();
-      static void releaseResourcesForSuspending();
    };
 }}

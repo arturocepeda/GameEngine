@@ -72,8 +72,8 @@ const ObjectName _ParticleSystem_ = ObjectName("ParticleSystem");
 RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
    : RenderSystem(WindowHandle, Windowed)
 {
-   RenderSystemDX11Helper::createDeviceResources();
-   RenderSystemDX11Helper::createWindowSizeDependentResources();
+   createDeviceResources();
+   createWindowSizeDependentResources();
 
    pDevice = dxDevice.Get();
 
@@ -107,7 +107,7 @@ RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
       dxRenderTargetView = nullptr;
       dxDepthStencilView = nullptr;
       dxContext->Flush();
-      RenderSystemDX11Helper::createWindowSizeDependentResources();
+      createWindowSizeDependentResources();
 
       dxContext->OMSetRenderTargets(1, dxRenderTargetView.GetAddressOf(), dxDepthStencilView.Get());
 
@@ -254,7 +254,7 @@ void RenderSystem::loadRenderingData(const GeometryData* pData, GPUBufferPair& p
    pBuffers.CurrentIndexBufferOffset += iIndicesSize;
 }
 
-void RenderSystemDX11Helper::createDeviceResources()
+void RenderSystemDX11::createDeviceResources()
 {
    UINT dxDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
@@ -471,15 +471,12 @@ void RenderSystemDX11::createStates()
    dxContext->RSSetState(dxRasterizerStateSolidCullBack);
 }
 
-void RenderSystemDX11Helper::createWindowSizeDependentResources()
+void RenderSystemDX11::createWindowSizeDependentResources()
 {
-   float fRenderTargetWidth = (float)Device::ScreenWidth;
-   float fRenderTargetHeight = (float)Device::ScreenHeight;
-
    DXGI_SWAP_CHAIN_DESC1 dxSwapChainDesc;
    ZeroMemory(&dxSwapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC1));
-   dxSwapChainDesc.Width = static_cast<UINT>(fRenderTargetWidth);
-   dxSwapChainDesc.Height = static_cast<UINT>(fRenderTargetHeight);
+   dxSwapChainDesc.Width = (UINT)Device::ScreenWidth;
+   dxSwapChainDesc.Height = (UINT)Device::ScreenHeight;
    dxSwapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
    dxSwapChainDesc.Stereo = false;
    dxSwapChainDesc.SampleDesc.Count = 1;
@@ -515,7 +512,7 @@ void RenderSystemDX11Helper::createWindowSizeDependentResources()
    dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), &pBackBuffer);
    dxDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &dxRenderTargetView);
 
-   CD3D11_TEXTURE2D_DESC dxDepthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, (UINT)fRenderTargetWidth, (UINT)fRenderTargetHeight,
+   CD3D11_TEXTURE2D_DESC dxDepthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, (UINT)Device::ScreenWidth, (UINT)Device::ScreenHeight,
       1, 1, D3D11_BIND_DEPTH_STENCIL);
 
    ComPtr<ID3D11Texture2D> pDepthStencil;
@@ -523,10 +520,6 @@ void RenderSystemDX11Helper::createWindowSizeDependentResources()
 
    CD3D11_DEPTH_STENCIL_VIEW_DESC dxDepthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
    dxDevice->CreateDepthStencilView(pDepthStencil.Get(), &dxDepthStencilViewDesc, &dxDepthStencilView);
-}
-
-void RenderSystemDX11Helper::updateForWindowSizeChange()
-{
 }
 
 void RenderSystem::loadShaders()
@@ -978,10 +971,6 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    }
 }
 
-void RenderSystemDX11Helper::handleDeviceLost()
-{
-}
-
 void RenderSystem::renderEnd()
 {
    GEProfilerMarker("RenderSystem::renderEnd()");
@@ -993,12 +982,6 @@ void RenderSystem::renderEnd()
 
    CD3D11_VIEWPORT dxViewport(0.0f, 0.0f, (float)Device::ScreenWidth, (float)Device::ScreenHeight);
    dxContext->RSSetViewports(1, &dxViewport);
-
-   if(hr == DXGI_ERROR_DEVICE_REMOVED)
-   {
-      RenderSystemDX11Helper::handleDeviceLost();
-      pDevice = dxDevice.Get();
-   }
 }
 
 void RenderSystem::setBlendingMode(BlendingMode Mode)
@@ -1077,11 +1060,4 @@ void RenderSystem::setCullingMode(CullingMode Mode)
    default:
       break;
    }
-}
-
-void RenderSystemDX11Helper::releaseResourcesForSuspending()
-{
-   dxSwapChain = nullptr;
-   dxRenderTargetView = nullptr;
-   dxDepthStencilView = nullptr;
 }
