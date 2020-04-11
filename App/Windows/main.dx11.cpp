@@ -114,8 +114,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
    // screen size
    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
 
-   const int fullscreenWidth = GetSystemMetrics(SM_CXSCREEN);
-   const int fullscreenHeight = GetSystemMetrics(SM_CYSCREEN);
+   const int systemScreenWidth = GetSystemMetrics(SM_CXSCREEN);
+   const int systemScreenHeight = GetSystemMetrics(SM_CYSCREEN);
 
    if(gSettings.getFullscreen())
    {
@@ -133,14 +133,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
       }
       else
       {
-         Device::ScreenWidth = fullscreenWidth;
-         Device::ScreenHeight = fullscreenHeight;
+         Device::ScreenWidth = systemScreenWidth;
+         Device::ScreenHeight = systemScreenHeight;
       }
+
+      Device::AspectRatio = (float)systemScreenHeight / (float)systemScreenWidth;
    }
    else
    {
       Device::ScreenWidth = (int)gSettings.getWindowSizeX();
       Device::ScreenHeight = (int)gSettings.getWindowSizeY();
+      Device::AspectRatio = (float)Device::ScreenHeight / (float)Device::ScreenWidth;
    }
 
    cPixelToScreenX = Allocator::alloc<Scaler>();
@@ -180,8 +183,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
    RegisterClassExA(&wndClass);
 
    // create the main window
-   GE::uint iWindowPositionX = (fullscreenWidth / 2) - (iWindowWidth / 2);
-   GE::uint iWindowPositionY = (fullscreenHeight / 2) - (iWindowHeight / 2);
+   GE::uint iWindowPositionX = (systemScreenWidth / 2) - (iWindowWidth / 2);
+   GE::uint iWindowPositionY = (systemScreenHeight / 2) - (iWindowHeight / 2);
 
    const DWORD wndStyle = gSettings.getFullscreen()
       ? WS_EX_TOPMOST | WS_POPUP

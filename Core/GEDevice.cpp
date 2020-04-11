@@ -21,6 +21,7 @@ Device::IOBuffersMap* Device::mIOBuffers = 0;
 
 int Device::ScreenWidth = 0;
 int Device::ScreenHeight = 0;
+float Device::AspectRatio = 0.0f;
 
 SystemLanguage Device::Language = SystemLanguage::English;
 DeviceOrientation Device::Orientation = DeviceOrientation::Portrait;
@@ -86,7 +87,7 @@ int Device::getScreenHeight()
 
 float Device::getAspectRatio()
 {
-   return (float)ScreenHeight / ScreenWidth;
+   return AspectRatio;
 }
 
 void Device::getContentFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames)

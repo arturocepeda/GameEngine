@@ -64,6 +64,7 @@ namespace GE { namespace Core
    public:
       static int ScreenWidth;
       static int ScreenHeight;
+      static float AspectRatio;
 
       static SystemLanguage Language;
 

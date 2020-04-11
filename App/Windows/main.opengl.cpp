@@ -58,8 +58,6 @@ using namespace GE::Rendering;
 using namespace GE::Audio;
 using namespace GE::Input;
 
-int iFullscreenWidth;
-int iFullscreenHeight;
 bool bMousePositionSet;
 
 Timer cTimer;
@@ -128,8 +126,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
    // screen size
    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
 
-   const int fullscreenWidth = GetSystemMetrics(SM_CXSCREEN);
-   const int fullscreenHeight = GetSystemMetrics(SM_CYSCREEN);
+   const int systemScreenWidth = GetSystemMetrics(SM_CXSCREEN);
+   const int systemScreenHeight = GetSystemMetrics(SM_CYSCREEN);
 
    if(gSettings.getFullscreen())
    {
@@ -147,14 +145,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
       }
       else
       {
-         Device::ScreenWidth = fullscreenWidth;
-         Device::ScreenHeight = fullscreenHeight;
+         Device::ScreenWidth = systemScreenWidth;
+         Device::ScreenHeight = systemScreenHeight;
       }
+
+      Device::AspectRatio = (float)systemScreenHeight / (float)systemScreenWidth;
    }
    else
    {
       Device::ScreenWidth = (int)gSettings.getWindowSizeX();
       Device::ScreenHeight = (int)gSettings.getWindowSizeY();
+      Device::AspectRatio = (float)Device::ScreenHeight / (float)Device::ScreenWidth;
    }
 
    cPixelToScreenX = Allocator::alloc<Scaler>();
@@ -166,8 +167,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
    int iWindowHeight = Device::ScreenHeight;
 
    // create the main window
-   GE::uint iWindowPositionX = (iFullscreenWidth / 2) - (iWindowWidth / 2);
-   GE::uint iWindowPositionY = (iFullscreenHeight / 2) - (iWindowHeight / 2);
+   GE::uint iWindowPositionX = (systemScreenWidth / 2) - (iWindowWidth / 2);
+   GE::uint iWindowPositionY = (systemScreenHeight / 2) - (iWindowHeight / 2);
 
    // initialize rendering and sound systems
    glutInit(&__argc, __argv);
