@@ -14,12 +14,8 @@
 
 #include "Core/GEPlatform.h"
 
-#if defined(GE_PLATFORM_WP8)
-# include <agile.h>
-#else
-# include <windows.h>
-# include <wrl.h>
-#endif
+#include <windows.h>
+#include <wrl.h>
 
 #include "Rendering/GERenderSystem.h"
 #include "Rendering/GERenderingObjects.h"
@@ -70,11 +66,7 @@ namespace GE { namespace Rendering
       void releaseBuffers();
 
    public:
-#if defined(GE_PLATFORM_WP8)
-      RenderSystemDX11(Windows::UI::Core::CoreWindow^ window);
-#else
       RenderSystemDX11(HWND WindowHandle, bool Windowed);
-#endif
       ~RenderSystemDX11();
    };
 

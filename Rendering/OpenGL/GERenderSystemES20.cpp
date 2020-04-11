@@ -48,7 +48,7 @@ const ObjectName _Label_ = ObjectName("Label");
 const ObjectName _ParticleSystem_ = ObjectName("ParticleSystem");
 
 RenderSystemES20::RenderSystemES20()
-   : RenderSystem(nullptr, false, Device::getTouchPadWidth(), Device::getTouchPadHeight())
+   : RenderSystem(nullptr, false)
 {  
    // enable face culling
    glEnable(GL_CULL_FACE);

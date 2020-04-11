@@ -117,25 +117,44 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
    DistributionPlatform distributionPlatform;
 
    if(!distributionPlatform.init())
+   {
       return 1;
+   }
 
    // initialize the application
    StateManager cStateManager;
    Application::startUp(initAppModule);
 
    // screen size
-   iFullscreenWidth = GetSystemMetrics(SM_CXSCREEN);
-   iFullscreenHeight = GetSystemMetrics(SM_CYSCREEN);
+   SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+
+   const int fullscreenWidth = GetSystemMetrics(SM_CXSCREEN);
+   const int fullscreenHeight = GetSystemMetrics(SM_CYSCREEN);
 
    if(gSettings.getFullscreen())
    {
-      Device::ScreenWidth = iFullscreenWidth;
-      Device::ScreenHeight = iFullscreenHeight;
+      Device::ScreenWidth = (int)gSettings.getFullscreenSizeX();
+      Device::ScreenHeight = (int)gSettings.getFullscreenSizeY();
+
+      if(Device::ScreenWidth > 0 && Device::ScreenHeight > 0)
+      {
+         DEVMODE devMode = { 0 };
+         devMode.dmSize = sizeof(DEVMODE);
+         devMode.dmPelsWidth = Device::ScreenWidth;
+         devMode.dmPelsHeight = Device::ScreenHeight;
+         devMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+         ChangeDisplaySettings(&devMode, CDS_FULLSCREEN);
+      }
+      else
+      {
+         Device::ScreenWidth = fullscreenWidth;
+         Device::ScreenHeight = fullscreenHeight;
+      }
    }
    else
    {
-      Device::ScreenWidth = gSettings.getWindowSizeX();
-      Device::ScreenHeight = gSettings.getWindowSizeY();
+      Device::ScreenWidth = (int)gSettings.getWindowSizeX();
+      Device::ScreenHeight = (int)gSettings.getWindowSizeY();
    }
 
    cPixelToScreenX = Allocator::alloc<Scaler>();

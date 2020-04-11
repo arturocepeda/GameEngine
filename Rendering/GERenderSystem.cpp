@@ -44,11 +44,9 @@ const ObjectName _Sprite_ = ObjectName("Sprite");
 const ObjectName _Label_ = ObjectName("Label");
 const ObjectName _ParticleSystem_ = ObjectName("ParticleSystem");
 
-RenderSystem::RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint ScreenHeight)
+RenderSystem::RenderSystem(void* Window, bool Windowed)
    : pWindow(Window)
    , bWindowed(Windowed)
-   , iScreenWidth(ScreenWidth)
-   , iScreenHeight(ScreenHeight)
    , cBackgroundColor(Color(0.0f, 0.0f, 0.0f))
    , cAmbientLightColor(Color(1.0f, 1.0f, 1.0f))
    , bClearGeometryRenderInfoEntriesPending(false)

@@ -35,11 +35,6 @@ ComPtr<ID3D11DepthStencilView> dxDepthStencilView;
 
 D3D_FEATURE_LEVEL dxFeatureLevel;
 
-#if defined(GE_PLATFORM_WP8)
-Windows::Foundation::Rect cWindowBounds;
-Platform::Agile<Windows::UI::Core::CoreWindow> cWindow;
-#endif
-
 // states
 ID3D11BlendState* dxBlendStateNone = 0;
 ID3D11BlendState* dxBlendStateAlpha = 0;
@@ -74,16 +69,9 @@ const ObjectName _Mesh_ = ObjectName("Mesh");
 const ObjectName _Label_ = ObjectName("Label");
 const ObjectName _ParticleSystem_ = ObjectName("ParticleSystem");
 
-#if defined(GE_PLATFORM_WP8)
-RenderSystemDX11::RenderSystemDX11(Windows::UI::Core::CoreWindow^ window)
-   : RenderSystem(nullptr, false, Device::getScreenWidth(), Device::getScreenHeight())
-{
-   cWindow = window;
-#else
 RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
-   : RenderSystem(WindowHandle, Windowed, Device::getScreenWidth(), Device::getScreenHeight())
+   : RenderSystem(WindowHandle, Windowed)
 {
-#endif
    RenderSystemDX11Helper::createDeviceResources();
    RenderSystemDX11Helper::createWindowSizeDependentResources();
 
@@ -483,25 +471,10 @@ void RenderSystemDX11::createStates()
    dxContext->RSSetState(dxRasterizerStateSolidCullBack);
 }
 
-#if defined(GE_PLATFORM_WP8)
-float dipsToPixels(float fDips)
-{
-   static const float DipsPerInch = 96.0f;
-   return floor(fDips * Windows::Graphics::Display::DisplayProperties::LogicalDpi / DipsPerInch + 0.5f);
-}
-#endif
-
 void RenderSystemDX11Helper::createWindowSizeDependentResources()
 {
    float fRenderTargetWidth = (float)Device::ScreenWidth;
    float fRenderTargetHeight = (float)Device::ScreenHeight;
-
-#if defined(GE_PLATFORM_WP8)
-   cWindowBounds = cWindow->Bounds;
-
-   fRenderTargetWidth = dipsToPixels(cWindowBounds.Width);
-   fRenderTargetHeight = dipsToPixels(cWindowBounds.Height);
-#endif
 
    DXGI_SWAP_CHAIN_DESC1 dxSwapChainDesc;
    ZeroMemory(&dxSwapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC1));
@@ -526,10 +499,6 @@ void RenderSystemDX11Helper::createWindowSizeDependentResources()
    ComPtr<IDXGIFactory2> dxgiFactory;
    dxgiAdapter->GetParent(__uuidof(IDXGIFactory2), &dxgiFactory);
 
-#if defined(GE_PLATFORM_WP8)
-   Windows::UI::Core::CoreWindow^ pWindow = cWindow.Get();
-   dxgiFactory->CreateSwapChainForCoreWindow(dxDevice.Get(), reinterpret_cast<IUnknown*>(pWindow), &dxSwapChainDesc, nullptr, &dxSwapChain);
-#else
    DXGI_SWAP_CHAIN_FULLSCREEN_DESC dxSwapChainFullScreenDesc;
    ZeroMemory(&dxSwapChainFullScreenDesc, sizeof(DXGI_SWAP_CHAIN_FULLSCREEN_DESC));
    DXGI_RATIONAL sRefreshRate = { 60, 1 };
@@ -538,7 +507,6 @@ void RenderSystemDX11Helper::createWindowSizeDependentResources()
 
    const void* pWindow = RenderSystem::getInstance()->getWindowHandler();
    dxgiFactory->CreateSwapChainForHwnd(dxDevice.Get(), (HWND)pWindow, &dxSwapChainDesc, &dxSwapChainFullScreenDesc, nullptr, &dxSwapChain);
-#endif
       
    // only render after each VSync
    dxgiDevice->SetMaximumFrameLatency(1);
@@ -559,17 +527,6 @@ void RenderSystemDX11Helper::createWindowSizeDependentResources()
 
 void RenderSystemDX11Helper::updateForWindowSizeChange()
 {
-#if defined(GE_PLATFORM_WP8)
-   if(cWindow->Bounds.Width != cWindowBounds.Width || cWindow->Bounds.Height != cWindowBounds.Height)
-   {
-      ID3D11RenderTargetView* nullViews[] = {nullptr};
-      dxContext->OMSetRenderTargets(ARRAYSIZE(nullViews), nullViews, nullptr);
-      dxRenderTargetView = nullptr;
-      dxDepthStencilView = nullptr;
-      dxContext->Flush();
-      createWindowSizeDependentResources();
-   }
-#endif
 }
 
 void RenderSystem::loadShaders()
@@ -1023,14 +980,6 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
 void RenderSystemDX11Helper::handleDeviceLost()
 {
-#if defined(GE_PLATFORM_WP8)
-   cWindowBounds.Width = 0;
-   cWindowBounds.Height = 0;
-   dxSwapChain = nullptr;
-
-   createDeviceResources();
-   updateForWindowSizeChange();
-#endif
 }
 
 void RenderSystem::renderEnd()

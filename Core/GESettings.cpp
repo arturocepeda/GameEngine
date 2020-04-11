@@ -23,6 +23,8 @@ Settings::Settings()
    , mTargetFPS(0u)
    , mFullscreen(false)
    , mVSync(false)
+   , mFullscreenSizeX(0u)
+   , mFullscreenSizeY(0u)
    , mWindowSizeX(0u)
    , mWindowSizeY(0u)
    , mErrorPopUps(false)
@@ -36,6 +38,8 @@ Settings::Settings()
    // Video
    GERegisterProperty(Bool, Fullscreen);
    GERegisterProperty(Bool, VSync);
+   GERegisterProperty(UInt, FullscreenSizeX);
+   GERegisterProperty(UInt, FullscreenSizeY);
    GERegisterProperty(UInt, WindowSizeX);
    GERegisterProperty(UInt, WindowSizeY);
 

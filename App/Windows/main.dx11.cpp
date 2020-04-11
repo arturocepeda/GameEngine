@@ -103,20 +103,39 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
    DistributionPlatform distributionPlatform;
 
    if(!distributionPlatform.init())
+   {
       return 1;
+   }
 
    // initialize the application
    StateManager cStateManager;
    Application::startUp(initAppModule);
 
    // screen size
+   SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+
    const int fullscreenWidth = GetSystemMetrics(SM_CXSCREEN);
    const int fullscreenHeight = GetSystemMetrics(SM_CYSCREEN);
-    
+
    if(gSettings.getFullscreen())
    {
-      Device::ScreenWidth = fullscreenWidth;
-      Device::ScreenHeight = fullscreenHeight;
+      Device::ScreenWidth = (int)gSettings.getFullscreenSizeX();
+      Device::ScreenHeight = (int)gSettings.getFullscreenSizeY();
+
+      if(Device::ScreenWidth > 0 && Device::ScreenHeight > 0)
+      {
+         DEVMODE devMode = { 0 };
+         devMode.dmSize = sizeof(DEVMODE);
+         devMode.dmPelsWidth = Device::ScreenWidth;
+         devMode.dmPelsHeight = Device::ScreenHeight;
+         devMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+         ChangeDisplaySettings(&devMode, CDS_FULLSCREEN);
+      }
+      else
+      {
+         Device::ScreenWidth = fullscreenWidth;
+         Device::ScreenHeight = fullscreenHeight;
+      }
    }
    else
    {
@@ -203,10 +222,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
 
    MSG iMsg;
 
-#if defined (GE_MOUSE_INFINITY)
-   bool bMousePositionSet;
-#endif
-
    // create task manager
    TaskManager* cTaskManager = Allocator::alloc<TaskManager>();
    GEInvokeCtor(TaskManager, cTaskManager);
@@ -219,47 +234,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
       {
          if(iMsg.message == WM_CLOSE || iMsg.message == WM_QUIT) 
          {
-               bEnd = true;
+            bEnd = true;
          }
          else 
          {
-               TranslateMessage(&iMsg);
-               DispatchMessage(&iMsg);
+            TranslateMessage(&iMsg);
+            DispatchMessage(&iMsg);
          }
       }
 
       GetCursorPos(&pMouse);
-
-#if defined (GE_MOUSE_INFINITY)
-      bMousePositionSet = false;
-
-      if(pMouse.x < GE_MOUSE_CHECK_MARGIN)
-      {
-         pMouse.x = iFullscreenWidth - GE_MOUSE_SET_MARGIN;
-         bMousePositionSet = true;
-      }
-      else if(pMouse.x >= (iFullscreenWidth - GE_MOUSE_CHECK_MARGIN))
-      {
-         pMouse.x = GE_MOUSE_SET_MARGIN;
-         bMousePositionSet = true;
-      }
-      if(pMouse.y < GE_MOUSE_CHECK_MARGIN)
-      {
-         pMouse.y = iFullscreenHeight - GE_MOUSE_SET_MARGIN;
-         bMousePositionSet = true;
-      }
-      else if(pMouse.y >= (iFullscreenHeight - GE_MOUSE_CHECK_MARGIN))
-      {
-         pMouse.y = GE_MOUSE_SET_MARGIN;
-         bMousePositionSet = true;
-      }          
-
-      if(bMousePositionSet)
-      {
-         SetCursorPos(pMouse.x, pMouse.y);
-         InputSystem::getInstance()->inputMouse(pMouse.x, pMouse.y);
-      }
-#endif
 
       GE::Vector2 vMouseCurrentPosition = GetMouseScreenPosition();
 

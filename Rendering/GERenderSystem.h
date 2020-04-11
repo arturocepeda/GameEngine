@@ -94,9 +94,6 @@ namespace GE { namespace Rendering
       void* pWindow;
       bool bWindowed;
 
-      uint iScreenWidth;
-      uint iScreenHeight;
-
       GraphicsDevice* cDevice;
       Color cBackgroundColor;
    
@@ -186,7 +183,7 @@ namespace GE { namespace Rendering
    public:
       std::function<bool(const _3DUICanvasEntry*, const _3DUICanvasEntry*)> _3DUICanvasSortFunction;
 
-      RenderSystem(void* Window, bool Windowed, uint ScreenWidth, uint ScreenHeight);
+      RenderSystem(void* Window, bool Windowed);
       ~RenderSystem();
 
       static uint32_t get3DUICanvasCount() { return k3DUICanvasCount; }

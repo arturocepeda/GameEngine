@@ -27,6 +27,8 @@ namespace GE { namespace Core
       // Video
       bool mFullscreen;
       bool mVSync;
+      uint32_t mFullscreenSizeX;
+      uint32_t mFullscreenSizeY;
       uint32_t mWindowSizeX;
       uint32_t mWindowSizeY;
 
@@ -53,6 +55,12 @@ namespace GE { namespace Core
 
       GEDefaultSetter(bool, VSync, m)
       GEDefaultGetter(bool, VSync, m)
+
+      GEDefaultSetter(uint32_t, FullscreenSizeX, m)
+      GEDefaultGetter(uint32_t, FullscreenSizeX, m)
+
+      GEDefaultSetter(uint32_t, FullscreenSizeY, m)
+      GEDefaultGetter(uint32_t, FullscreenSizeY, m)
 
       GEDefaultSetter(uint32_t, WindowSizeX, m)
       GEDefaultGetter(uint32_t, WindowSizeX, m)
