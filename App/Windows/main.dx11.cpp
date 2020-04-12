@@ -10,9 +10,6 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <vector>
-
 #include "main.dx11.h"
 #include "config.h"
 
@@ -112,7 +109,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
    Application::startUp(initAppModule);
 
    // screen size
-   SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+   SetProcessDPIAware();
 
    const int systemScreenWidth = GetSystemMetrics(SM_CXSCREEN);
    const int systemScreenHeight = GetSystemMetrics(SM_CYSCREEN);

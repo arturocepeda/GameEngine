@@ -10,9 +10,6 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <vector>
-
 #include "main.opengl.h"
 #include "config.h"
 
@@ -124,7 +121,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
    Application::startUp(initAppModule);
 
    // screen size
-   SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+   SetProcessDPIAware();
 
    const int systemScreenWidth = GetSystemMetrics(SM_CXSCREEN);
    const int systemScreenHeight = GetSystemMetrics(SM_CYSCREEN);
