@@ -28,6 +28,25 @@ namespace GE
    typedef unsigned char tristate;
 
 
+   struct Point
+   {
+      int X;
+      int Y;
+
+      Point()
+         : X(0)
+         , Y(0)
+      {
+      }
+
+      Point(int pX, int pY)
+         : X(pX)
+         , Y(pY)
+      {
+      }
+   };
+
+
    GESerializableEnum(InterpolationMode)
    {
       Linear,

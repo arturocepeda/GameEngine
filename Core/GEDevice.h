@@ -88,6 +88,7 @@ namespace GE { namespace Core
 
       static int getNumberOfCPUCores();
       static SystemLanguage requestOSLanguage();
+      static void requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutions);
 
       static bool contentFileExists(const char* SubDir, const char* Name, const char* Extension);
       static void readContentFile(Content::ContentType Type, const char* SubDir, const char* Name, const char* Extension, Content::ContentData* ContentData);

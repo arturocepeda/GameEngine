@@ -498,3 +498,27 @@ SystemLanguage Device::requestOSLanguage()
 
    return SystemLanguage::English;
 }
+
+void Device::requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutions)
+{
+   GEAssert(pOutResolutions);
+   pOutResolutions->clear();
+
+   int modeNum = 0;
+   int modeWidth = 0;
+   int modeHeight = 0;
+
+   DEVMODE devMode = { 0 };
+   devMode.dmSize = sizeof(DEVMODE);
+
+   while(EnumDisplaySettings(nullptr, modeNum++, &devMode))
+   {
+      if(devMode.dmPelsWidth >= 800 &&
+         (devMode.dmPelsWidth != modeWidth || devMode.dmPelsHeight != modeHeight))
+      {
+         modeWidth = devMode.dmPelsWidth;
+         modeHeight = devMode.dmPelsHeight;
+         pOutResolutions->emplace(pOutResolutions->begin(), modeWidth, modeHeight);
+      }
+   }
+}
