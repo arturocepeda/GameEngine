@@ -1334,7 +1334,7 @@ void ContentCompiler::compileScripts()
    if(hFile == INVALID_HANDLE_VALUE)
       return;
 
-   const size_t bufferSize = 65536u;
+   const size_t bufferSize = 128u * 1024u;
 
    char codeBuffer[bufferSize];
    char byteCodeBuffer[bufferSize];
