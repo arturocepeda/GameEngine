@@ -51,9 +51,9 @@ namespace GE { namespace Entities
       float getNearZ() const;
       float getFarZ() const;
       
-      const Matrix4 getViewMatrix() const;
-      const Matrix4 getProjectionMatrix() const;
-      const Matrix4 getViewProjectionMatrix() const;
+      const Matrix4& getViewMatrix() const;
+      const Matrix4& getProjectionMatrix() const;
+      const Matrix4& getViewProjectionMatrix() const;
 
       void setFOV(float FOV);
       void setNearZ(float NearZ);

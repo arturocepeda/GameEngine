@@ -75,19 +75,14 @@ void ComponentCamera::update()
 
 void ComponentCamera::calculateProjectionMatrix()
 {
-#if defined (GE_PLATFORM_WP8)
-   float fAspect = Device::Orientation == DeviceOrientation::Portrait
-      ? 1.0f / Device::getAspectRatio()
-      : Device::getAspectRatio();
-#else
-   float fAspect = 1.0f / Device::getAspectRatio();
-#endif
-
-   Matrix4MakePerspective(fFOV * GE_DEG2RAD, fAspect, fNearZ, fFarZ, &matProjection);
+   const float aspect = 1.0f / Device::getAspectRatio();
+   Matrix4MakePerspective(fFOV * GE_DEG2RAD, aspect, fNearZ, fFarZ, &matProjection);
 
 #if defined (GE_RENDERING_API_DIRECTX)
    if(Device::Orientation == DeviceOrientation::Landscape)
+   {
       Matrix4RotateZ(&matProjection, -GE_HALFPI);
+   }
 #endif
 }
 
@@ -117,17 +112,17 @@ float ComponentCamera::getFarZ() const
    return fFarZ;
 }
 
-const Matrix4 ComponentCamera::getViewMatrix() const
+const Matrix4& ComponentCamera::getViewMatrix() const
 {
    return matView;
 }
 
-const Matrix4 ComponentCamera::getProjectionMatrix() const
+const Matrix4& ComponentCamera::getProjectionMatrix() const
 {
    return matProjection;
 }
 
-const Matrix4 ComponentCamera::getViewProjectionMatrix() const
+const Matrix4& ComponentCamera::getViewProjectionMatrix() const
 {
    return matViewProjection;
 }
