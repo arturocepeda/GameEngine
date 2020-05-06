@@ -49,6 +49,12 @@
     <Filter Include="Tools">
       <UniqueIdentifier>{2e47a76e-69f0-46ea-9910-a5229044d2cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Externals\freetype2">
+      <UniqueIdentifier>{13263bc2-a42b-44a7-a72b-84c1a5a99507}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\freetype2\modules">
+      <UniqueIdentifier>{735a53fd-9a7f-4906-a052-a68786ae212a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
@@ -374,6 +380,72 @@
     </ClCompile>
     <ClCompile Include="Core\GESettings.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\base\ftinit.c">
+      <Filter>Externals\freetype2</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\autofit\autofit.c">
+      <Filter>Externals\freetype2</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\truetype\truetype.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\type1\type1.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\type42\type42.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\winfonts\winfnt.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\cff\cff.c">
+      <Filter>Externals\freetype2</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\cid\type1cid.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\pcf\pcf.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\pfr\pfr.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\psaux\psaux.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\pshinter\pshinter.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\psnames\psmodule.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\raster\raster.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\sfnt\sfnt.c">
+      <Filter>Externals\freetype2\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\smooth\smooth.c">
+      <Filter>Externals\freetype2</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\bdf\bdf.c">
+      <Filter>Externals\freetype2</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\base\ftbase.c">
+      <Filter>Externals\freetype2</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\base\ftbitmap.c">
+      <Filter>Externals\freetype2</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\base\ftsystem.c">
+      <Filter>Externals\freetype2</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\gzip\ftgzip.c">
+      <Filter>Externals\freetype2</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\freetype2\src\lzw\ftlzw.c">
+      <Filter>Externals\freetype2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

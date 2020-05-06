@@ -73,6 +73,28 @@
     <ClCompile Include="Entities\GEComponentUIElement.cpp" />
     <ClCompile Include="Entities\GEEntity.cpp" />
     <ClCompile Include="Entities\GEScene.cpp" />
+    <ClCompile Include="Externals\freetype2\src\autofit\autofit.c" />
+    <ClCompile Include="Externals\freetype2\src\base\ftbase.c" />
+    <ClCompile Include="Externals\freetype2\src\base\ftbitmap.c" />
+    <ClCompile Include="Externals\freetype2\src\base\ftinit.c" />
+    <ClCompile Include="Externals\freetype2\src\base\ftsystem.c" />
+    <ClCompile Include="Externals\freetype2\src\bdf\bdf.c" />
+    <ClCompile Include="Externals\freetype2\src\cff\cff.c" />
+    <ClCompile Include="Externals\freetype2\src\cid\type1cid.c" />
+    <ClCompile Include="Externals\freetype2\src\gzip\ftgzip.c" />
+    <ClCompile Include="Externals\freetype2\src\lzw\ftlzw.c" />
+    <ClCompile Include="Externals\freetype2\src\pcf\pcf.c" />
+    <ClCompile Include="Externals\freetype2\src\pfr\pfr.c" />
+    <ClCompile Include="Externals\freetype2\src\psaux\psaux.c" />
+    <ClCompile Include="Externals\freetype2\src\pshinter\pshinter.c" />
+    <ClCompile Include="Externals\freetype2\src\psnames\psmodule.c" />
+    <ClCompile Include="Externals\freetype2\src\raster\raster.c" />
+    <ClCompile Include="Externals\freetype2\src\sfnt\sfnt.c" />
+    <ClCompile Include="Externals\freetype2\src\smooth\smooth.c" />
+    <ClCompile Include="Externals\freetype2\src\truetype\truetype.c" />
+    <ClCompile Include="Externals\freetype2\src\type1\type1.c" />
+    <ClCompile Include="Externals\freetype2\src\type42\type42.c" />
+    <ClCompile Include="Externals\freetype2\src\winfonts\winfnt.c" />
     <ClCompile Include="Externals\lua\src\lapi.c" />
     <ClCompile Include="Externals\lua\src\lauxlib.c" />
     <ClCompile Include="Externals\lua\src\lbaselib.c" />
@@ -322,8 +344,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals;$(ProjectDir)Externals\freetype2\include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsWinRT>false</CompileAsWinRT>
@@ -341,8 +363,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals;$(ProjectDir)Externals\freetype2\include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>
@@ -363,8 +385,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals;$(ProjectDir)Externals\freetype2\include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsWinRT>false</CompileAsWinRT>
@@ -387,8 +409,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GE_WINDOWS_OPENGL;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals;$(ProjectDir)Externals\freetype2\include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>
