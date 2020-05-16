@@ -31,6 +31,7 @@ using namespace GE::Content;
 
 
 #define GERegisterValueProvider(pPropertyBaseName, pCategoryName, pDefaultValue) \
+   m##pPropertyBaseName##Type = ValueProviderType::Constant; \
    m##pPropertyBaseName##Value = pDefaultValue; \
    m##pPropertyBaseName##ValueMax = pDefaultValue; \
    m##pPropertyBaseName##Curve = nullptr; \
