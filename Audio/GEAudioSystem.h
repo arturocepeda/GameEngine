@@ -20,8 +20,8 @@
 
 #include <fstream>
 
-#define GE_AUDIO_CHANNELS    32
-#define GE_AUDIO_BUFFERS    256
+#define GE_AUDIO_CHANNELS    32u
+#define GE_AUDIO_BUFFERS    512u
 
 namespace GE { namespace Content
 {
