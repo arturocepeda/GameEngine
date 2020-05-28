@@ -808,6 +808,17 @@ void Environment::registerTypes()
    (
       "Clock"
       , "getDelta", &Clock::getDelta
+      , "setDelta", &Clock::setDelta
+      , "getTimeFactor", &Clock::getTimeFactor
+      , "setTimeFactor", &Clock::setTimeFactor
+   );
+   mLua.new_simple_usertype<Time>
+   (
+      "Time"
+      , "getDefaultClock", &Time::getDefaultClock
+      , "getClock", &Time::getClock
+      , "getDelta", &Time::getDelta
+      , "getElapsed", &Time::getElapsed
    );
    mLua.new_enum
    (
