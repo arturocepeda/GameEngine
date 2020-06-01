@@ -56,7 +56,8 @@ RenderSystem::RenderSystem(void* Window, bool Windowed)
    , eBlendingMode(BlendingMode::None)
    , eDepthBufferMode(DepthBufferMode::NoDepth)
    , eCullingMode(CullingMode::Back)
-   , cActiveCamera(0)
+   , cActiveCamera(nullptr)
+   , mTextRasterizer(Device::getScreenWidth(), Device::getScreenHeight())
    , mAny3DUIElementsToRender(false)
    , fFrameTime(Time::getElapsed())
    , fFramesPerSecond(0.0f)
@@ -129,6 +130,11 @@ float RenderSystem::getFPS() const
 uint RenderSystem::getDrawCalls() const
 {
    return iDrawCalls;
+}
+
+const Matrix4& RenderSystem::get2DViewProjectionMatrix() const
+{
+   return mat2DViewProjection;
 }
 
 void RenderSystem::setBackgroundColor(const Color& Color)
@@ -217,6 +223,11 @@ void RenderSystem::calculateLightViewProjectionMatrix(ComponentLight* Light)
    Matrix4MakeOrtho(-fShadowsDistance, fShadowsDistance, -fShadowsDistance, fShadowsDistance, -fShadowsDistance, fShadowsDistance, &matLightProjection);
 
    Matrix4Multiply(matLightProjection, matLightView, &matLightViewProjection);
+}
+
+void RenderSystem::reloadTextRasterizer()
+{
+   mTextRasterizer.resizeCanvas((uint32_t)Device::getScreenWidth(), (uint32_t)Device::getScreenHeight());
 }
 
 void RenderSystem::loadMaterial(Material* cMaterial)
@@ -712,6 +723,11 @@ void RenderSystem::unloadFonts(const char* FileName)
 Font* RenderSystem::getFont(const ObjectName& Name)
 {
    return mFonts.get(Name);
+}
+
+TextRasterizer* RenderSystem::getTextRasterizer()
+{
+   return &mTextRasterizer;
 }
 
 void RenderSystem::setup3DUICanvas(uint32_t pCanvasIndex, const Vector3& pWorldPosition, uint16_t pSettings)

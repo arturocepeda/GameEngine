@@ -141,6 +141,7 @@
     <ClCompile Include="Rendering\GEPrimitives.cpp" />
     <ClCompile Include="Rendering\GERenderSystem.cpp" />
     <ClCompile Include="Rendering\GEShaderProgram.cpp" />
+    <ClCompile Include="Rendering\GETextRasterizer.cpp" />
     <ClCompile Include="Rendering\GETexture.cpp" />
     <ClCompile Include="Scripting\GEScriptingEnvironment.cpp">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
@@ -262,6 +263,7 @@
     <ClInclude Include="Rendering\GERenderingObjects.h" />
     <ClInclude Include="Rendering\GERenderSystem.h" />
     <ClInclude Include="Rendering\GEShaderProgram.h" />
+    <ClInclude Include="Rendering\GETextRasterizer.h" />
     <ClInclude Include="Rendering\GETexture.h" />
     <ClInclude Include="Scripting\GEScriptingEnvironment.h" />
     <ClInclude Include="Tools\GEContentCompiler.h" />

@@ -108,6 +108,7 @@ RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
       dxDepthStencilView = nullptr;
       dxContext->Flush();
       createWindowSizeDependentResources();
+      reloadTextRasterizer();
 
       dxContext->OMSetRenderTargets(1, dxRenderTargetView.GetAddressOf(), dxDepthStencilView.Get());
 

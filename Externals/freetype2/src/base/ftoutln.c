@@ -688,17 +688,26 @@
   FT_Vector_Transform( FT_Vector*        vector,
                        const FT_Matrix*  matrix )
   {
+    FT_Long  w;
     FT_Pos  xz, yz;
 
 
     if ( !vector || !matrix )
       return;
 
+    w = FT_MulFix( vector->x, matrix->wx ) +
+        FT_MulFix( vector->y, matrix->wy ) +
+        matrix->ww;
+
     xz = FT_MulFix( vector->x, matrix->xx ) +
-         FT_MulFix( vector->y, matrix->xy );
+         FT_MulFix( vector->y, matrix->xy ) +
+         matrix->xw;
+    xz = FT_DivFix( xz, w );
 
     yz = FT_MulFix( vector->x, matrix->yx ) +
-         FT_MulFix( vector->y, matrix->yy );
+         FT_MulFix( vector->y, matrix->yy ) +
+         matrix->yw;
+    yz = FT_DivFix( yz, w );
 
     vector->x = xz;
     vector->y = yz;

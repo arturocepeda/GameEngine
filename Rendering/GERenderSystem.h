@@ -21,6 +21,7 @@
 #include "Rendering/GERenderingObjects.h"
 #include "Rendering/GEShaderProgram.h"
 #include "Rendering/GEFont.h"
+#include "Rendering/GETextRasterizer.h"
 
 #include "Entities/GEComponentCamera.h"
 #include "Entities/GEComponentLight.h"
@@ -119,6 +120,8 @@ namespace GE { namespace Rendering
       CullingMode eCullingMode;
       Entities::ComponentCamera* cActiveCamera;
 
+      TextRasterizer mTextRasterizer;
+
       GESTLPriorityQueue(RenderOperation) vUIElementsToRender;
       GESTLPriorityQueue(RenderOperation) vPre3DSpritesToRender;
       GESTLPriorityQueue(RenderOperation) vPostUISpritesToRender;
@@ -166,6 +169,8 @@ namespace GE { namespace Rendering
 
       void calculateLightViewProjectionMatrix(Entities::ComponentLight* Light);
 
+      void reloadTextRasterizer();
+
       void loadMaterial(Material* cMaterial);
       void unloadMaterial(const Core::ObjectName& cMaterialName);
 
@@ -196,6 +201,9 @@ namespace GE { namespace Rendering
       bool getWindowedMode() const;
       float getFPS() const;
       uint getDrawCalls() const;
+
+      // internal data
+      const Matrix4& get2DViewProjectionMatrix() const;
 
       // background
       void setBackgroundColor(const Color& Color);
@@ -234,6 +242,9 @@ namespace GE { namespace Rendering
       void loadFonts(const char* FileName);
       void unloadFonts(const char* FileName);
       Font* getFont(const Core::ObjectName& Name);
+
+      // text rasterization
+      TextRasterizer* getTextRasterizer();
 
       // blend mode
       void setBlendingMode(BlendingMode Mode);
