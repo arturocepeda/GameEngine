@@ -28,9 +28,13 @@ using namespace GE::Content;
 static const FT_UInt kDPI = 96u;
 static const float kPointsPerPixel = 64.0f;
 
+static const char* kSubDir = "Fonts";
+static constexpr char* kSupportedExtensions[] = { "ttf", "otf" };
+static constexpr size_t kSupportedExtensionsCount = sizeof(kSupportedExtensions) / sizeof(const char*);
+
 TextRasterizer::TextRasterizer(uint32_t pCanvasWidth, uint32_t pCanvasHeight)
    : mBitmap(nullptr)
-   , mFTFace(nullptr)
+   , mFontStyle(nullptr)
    , mFontSize(12.0f)
    , mColor(0xffffffff)
 {
@@ -41,15 +45,85 @@ TextRasterizer::TextRasterizer(uint32_t pCanvasWidth, uint32_t pCanvasHeight)
 
 TextRasterizer::~TextRasterizer()
 {
-   for (GESTLMap(uint32_t, Font)::iterator it = mFonts.begin(); it != mFonts.end(); it++)
+   for(GESTLMap(uint32_t, Font)::iterator it = mFonts.begin(); it != mFonts.end(); it++)
    {
-      FT_Done_Face(it->second.mFTFace);
-      it->second.mContentData.unload();
+      const Font& font = it->second;
+
+      for(size_t i = 0u; i < font.mStyles.size(); i++)
+      {
+         FT_Done_Face(font.mStyles[i].mFTFace);
+      }
+   }
+
+   for(size_t i = 0u; i < mFontContentData.size(); i++)
+   {
+      mFontContentData[i].unload();
    }
 
    FT_Done_FreeType(mFTLibrary);
 
    Allocator::free(mBitmap);
+}
+
+void TextRasterizer::loadFontFiles()
+{
+   FileNamesList fileNames[kSupportedExtensionsCount];
+   size_t filesCount = 0u;
+
+   for(size_t i = 0u; i < kSupportedExtensionsCount; i++)
+   {
+      Device::getContentFileNames(kSubDir, kSupportedExtensions[i], &fileNames[i]);
+      filesCount += fileNames[i].size();
+   }
+
+   mFontContentData.reserve(filesCount);
+
+   for(size_t i = 0u; i < kSupportedExtensionsCount; i++)
+   {
+      for(size_t j = 0u; j < fileNames[i].size(); j++)
+      {
+         loadFontFile(fileNames[i][j].c_str(), kSupportedExtensions[i]);
+      }
+   }
+}
+
+void TextRasterizer::loadFontFile(const char* pFileName, const char* pFileExtension)
+{
+   mFontContentData.emplace_back();
+   ContentData& contentData = mFontContentData.back();
+   Device::readContentFile(ContentType::GenericBinaryData, kSubDir, pFileName, pFileExtension, &contentData);
+
+   FT_Face ftFace;
+   FT_New_Memory_Face(mFTLibrary, (FT_Byte*)contentData.getData(), (FT_Long)contentData.getDataSize(), -1, &ftFace);
+   FT_Long ftFacesCount = ftFace->num_faces;
+   FT_Done_Face(ftFace);
+
+   for(FT_Long ftFaceIndex = 0; ftFaceIndex < ftFacesCount; ftFaceIndex++)
+   {
+      FT_Error ftError =
+         FT_New_Memory_Face(mFTLibrary, (FT_Byte*)contentData.getData(), (FT_Long)contentData.getDataSize(), ftFaceIndex++, &ftFace);
+
+      if(ftError)
+      {
+         continue;
+      }
+
+      const ObjectName fontName(ftFace->family_name);
+      GESTLMap(uint32_t, Font)::iterator it = mFonts.find(fontName.getID());
+
+      if(it == mFonts.end())
+      {
+         mFonts[fontName.getID()] = Font();
+         it = mFonts.find(fontName.getID());
+         it->second.mName = fontName;
+      }
+
+      Font& font = it->second;
+      font.mStyles.emplace_back();
+      FontStyle& style = font.mStyles.back();
+      style.mName = ObjectName(ftFace->style_name);
+      style.mFTFace = ftFace;
+   }
 }
 
 void TextRasterizer::clearCanvas()
@@ -82,34 +156,25 @@ void TextRasterizer::setCursor(const Vector2& pScreenPosition)
    mCursor.Y = (int)(pixelPosition.Y * kPointsPerPixel);
 }
 
-bool TextRasterizer::setFont(const Core::ObjectName& pFontName)
+bool TextRasterizer::setFont(const Core::ObjectName& pFontName, const Core::ObjectName& pFontStyleName)
 {
    GESTLMap(uint32_t, Font)::iterator it = mFonts.find(pFontName.getID());
 
    if(it != mFonts.end())
    {
-      mFTFace = it->second.mFTFace;
-   }
-   else
-   {
-      mFonts[pFontName.getID()] = Font();
-      it = mFonts.find(pFontName.getID());
       Font& font = it->second;
-
-      Device::readContentFile(ContentType::GenericBinaryData, "Fonts", pFontName.getString(), "ttf", &font.mContentData);
-
-      FT_Error error =
-         FT_New_Memory_Face(mFTLibrary, (FT_Byte*)font.mContentData.getData(), (FT_Long)font.mContentData.getDataSize(), 0, &mFTFace);
-
-      if(error)
+      
+      for(size_t i = 0u; i < font.mStyles.size(); i++)
       {
-         return false;
+         if(font.mStyles[i].mName == pFontStyleName)
+         {
+            mFontStyle = &font.mStyles[i];
+            return true;
+         }
       }
-
-      font.mFTFace = mFTFace;
    }
 
-   return true;
+   return false;
 }
 
 void TextRasterizer::setFontSize(float pFontSize)
@@ -128,7 +193,7 @@ void TextRasterizer::setColor(const Color& pColor)
 bool TextRasterizer::renderGlyph(uint16_t pGlyphIndex, const Matrix4& pTransform)
 {
    FT_Error error =
-      FT_Set_Char_Size(mFTFace, (FT_F26Dot6)(mFontSize * kPointsPerPixel), (FT_F26Dot6)0, kDPI, 0u);
+      FT_Set_Char_Size(mFontStyle->mFTFace, (FT_F26Dot6)(mFontSize * kPointsPerPixel), (FT_F26Dot6)0, kDPI, 0u);
 
    if(error)
    {
@@ -150,16 +215,16 @@ bool TextRasterizer::renderGlyph(uint16_t pGlyphIndex, const Matrix4& pTransform
    cursor.x = (FT_Pos)mCursor.X;
    cursor.y = (FT_Pos)mCursor.Y;
 
-   FT_Set_Transform(mFTFace, &matrix, &cursor);
+   FT_Set_Transform(mFontStyle->mFTFace, &matrix, &cursor);
 
-   error = FT_Load_Char(mFTFace, (FT_ULong)pGlyphIndex, FT_LOAD_RENDER);
+   error = FT_Load_Char(mFontStyle->mFTFace, (FT_ULong)pGlyphIndex, FT_LOAD_RENDER);
    
    if(error)
    {
       return false;
    }
 
-   const FT_GlyphSlot slot = mFTFace->glyph;
+   const FT_GlyphSlot slot = mFontStyle->mFTFace->glyph;
 
    const FT_Int x = slot->bitmap_left;
    const FT_Int y = mCanvasHeight - slot->bitmap_top; 

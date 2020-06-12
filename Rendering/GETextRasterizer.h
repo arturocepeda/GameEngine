@@ -36,27 +36,38 @@ namespace GE { namespace Rendering
 
       FT_Library mFTLibrary;
 
+      GESTLVector(Content::ContentData) mFontContentData;
+
+      struct FontStyle
+      {
+         Core::ObjectName mName;
+         FT_Face mFTFace;
+      };
       struct Font
       {
-         Content::ContentData mContentData;
-         FT_Face mFTFace;
+         Core::ObjectName mName;
+         GESTLVector(FontStyle) mStyles;
       };
       GESTLMap(uint32_t, Font) mFonts;
 
       Point mCursor;
-      FT_Face mFTFace;
+      FontStyle* mFontStyle;
       float mFontSize;
       uint32_t mColor;
+
+      void loadFontFile(const char* pFileName, const char* pFileExtension);
 
    public:
       TextRasterizer(uint32_t pCanvasWidth, uint32_t pCanvasHeight);
       ~TextRasterizer();
 
+      void loadFontFiles();
+
       void clearCanvas();
       void resizeCanvas(uint32_t pCanvasWidth, uint32_t pCanvasHeight);
 
       void setCursor(const Vector2& pScreenPosition);
-      bool setFont(const Core::ObjectName& pFontName);
+      bool setFont(const Core::ObjectName& pFontName, const Core::ObjectName& pFontStyleName);
       void setFontSize(float pFontSize);
       void setColor(const Color& pColor);
 
