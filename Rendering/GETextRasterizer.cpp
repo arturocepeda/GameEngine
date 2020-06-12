@@ -105,6 +105,7 @@ void TextRasterizer::loadFontFile(const char* pFileName, const char* pFileExtens
 
       if(ftError)
       {
+         Log::log(LogType::Warning, "Font file could not be loaded: '%s.%s'", pFileName, pFileExtension);
          continue;
       }
 
@@ -124,6 +125,8 @@ void TextRasterizer::loadFontFile(const char* pFileName, const char* pFileExtens
       style.mName = ObjectName(ftFace->style_name);
       style.mFTFace = ftFace;
    }
+
+   Log::log(LogType::Info, "Font file loaded: '%s.%s'", pFileName, pFileExtension);
 }
 
 void TextRasterizer::clearCanvas()

@@ -30,49 +30,80 @@ namespace GE { namespace Entities
    };
 
 
-   class ComponentLabel : public ComponentRenderable
+   class ComponentLabelBase : public ComponentRenderable
    {
-   private:
+   protected:
+      ComponentLabelBase(Entity* pOwner);
+      ~ComponentLabelBase();
+
       struct Pen
       {
+         Core::ObjectName mFontName;
+         Core::ObjectName mFontStyle;
          Color mColor;
          float mFontSize;
          float mYOffset;
-         uint32_t mCharSet;
          uint32_t mCharIndex;
       };
 
-      Rendering::Font* cFont;
-      uint32_t mFontCharSetIndex;
-      float fFontSize;
-      Alignment iAlignment;
+      Core::ObjectName mFontName;
+      Core::ObjectName mFontStyle;
+      float mFontSize;
+      float mFontResizeFactor;
+      Alignment mAlignment;
       SpriteLayer mLayer;
-      uint8_t eSettings;
-      Core::ObjectName cStringID;
-      GESTLString sText;
-      GESTLString sTextExtension;
-
-      float fHorizontalSpacing;
-      float fVerticalSpacing;
-      float fLineWidth;
-      float mTextWidth;
+      uint8_t mSettings;
+      Core::ObjectName mStringID;
+      GESTLString mText;
+      GESTLString mTextExtension;
       uint32_t mTextLength;
       uint32_t mCharacterCountLimit;
-
-      float mFontResizeFactor;
-
-      GESTLVector(float) vLineWidths;
-      GESTLVector(uint) vLineFeedIndices;
-      GESTLVector(uint) vLineJustifySpaces;
-
-      GESTLVector(float) vVertexData;
-      GESTLVector(ushort) vIndices;
 
       uint16_t getGlyphIndex(size_t pCharIndex);
 
       void evaluateRichTextTag(Pen* pPen);
       void processVariables();
-      void generateVertexData();
+
+      virtual void generateText() = 0;
+
+   public:
+      float getFontSize() const;
+      Alignment getAlignment() const;
+      const char* getText() const;
+      const Core::ObjectName& getStringID() const;
+      uint32_t getTextLength() const;
+      uint32_t getCharacterCountLimit() const;
+      SpriteLayer getLayer() const;
+      uint8_t getSettings() const;
+
+      void setFontSize(float pFontSize);
+      void setAlignment(Alignment pAlignment);
+      void setText(const char* pText);
+      void setStringID(const Core::ObjectName& pStringID);
+      void setCharacterCountLimit(uint32_t pLimit);
+      void setLayer(SpriteLayer pLayer);
+      void setSettings(uint8_t pSettings);
+   };
+
+
+   class ComponentLabel : public ComponentLabelBase
+   {
+   private:
+      Rendering::Font* mFont;
+
+      float mHorizontalSpacing;
+      float mVerticalSpacing;
+      float mLineWidth;
+      float mTextWidth;
+
+      GESTLVector(float) mLineWidths;
+      GESTLVector(uint) mLineFeedIndices;
+      GESTLVector(uint) mLineJustifySpaces;
+
+      GESTLVector(float) mVertexData;
+      GESTLVector(ushort) mIndices;
+
+      virtual void generateText() override;
 
       float measureCharacter(const Pen& pPen);
       float getKerning(const Pen& pPen);
@@ -80,37 +111,22 @@ namespace GE { namespace Entities
    public:
       static const Core::ObjectName ClassName;
 
-      ComponentLabel(Entity* Owner);
+      ComponentLabel(Entity* pOwner);
       ~ComponentLabel();
 
       Rendering::Font* getFont() const;
       const Core::ObjectName& getFontName() const;
       const Core::ObjectName& getFontCharacterSet() const;
-      float getFontSize() const;
-      Alignment getAlignment() const;
-      const char* getText() const;
-      const Core::ObjectName& getStringID() const;
       float getHorizontalSpacing() const;
       float getVerticalSpacing() const;
       float getLineWidth() const;
       float getTextWidth() const;
-      uint32_t getTextLength() const;
-      uint32_t getCharacterCountLimit() const;
-      SpriteLayer getLayer() const;
-      uint8_t getSettings() const;
 
-      void setFont(Rendering::Font* TextFont);
-      void setFontName(const Core::ObjectName& FontName);
+      void setFont(Rendering::Font* pTextFont);
+      void setFontName(const Core::ObjectName& pFontName);
       void setFontCharacterSet(const Core::ObjectName& pCharSetName);
-      void setFontSize(float FontSize);
-      void setAlignment(Alignment Align);
-      void setText(const char* Text);
-      void setStringID(const Core::ObjectName& StringID);
-      void setHorizontalSpacing(float HorizontalSpacing);
-      void setVerticalSpacing(float VerticalSpacing);
-      void setLineWidth(float LineWidth);
-      void setCharacterCountLimit(uint32_t Limit);
-      void setLayer(SpriteLayer pLayer);
-      void setSettings(uint8_t Settings);
+      void setHorizontalSpacing(float pHorizontalSpacing);
+      void setVerticalSpacing(float pVerticalSpacing);
+      void setLineWidth(float pLineWidth);
    };
 }}
