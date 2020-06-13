@@ -13,6 +13,7 @@
 #include "GETextRasterizer.h"
 
 #include "Core/GEDevice.h"
+#include "Content/GEResourcesManager.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -32,12 +33,38 @@ static const char* kSubDir = "Fonts";
 static constexpr char* kSupportedExtensions[] = { "ttf", "otf" };
 static constexpr size_t kSupportedExtensionsCount = sizeof(kSupportedExtensions) / sizeof(const char*);
 
+
+//
+//  FontStyle
+//
+FontStyle::FontStyle(const ObjectName& pName)
+   : Object(pName)
+{
+}
+
+
+//
+//  FontFamily
+//
+const ObjectName FontFamily::TypeName("FontFamily");
+
+FontFamily::FontFamily(const ObjectName& pName)
+   : Object(pName)
+{
+}
+
+
+//
+//  TextRasterizer
+//
 TextRasterizer::TextRasterizer(uint32_t pCanvasWidth, uint32_t pCanvasHeight)
    : mBitmap(nullptr)
    , mFontStyle(nullptr)
    , mFontSize(12.0f)
    , mColor(0xffffffff)
 {
+   ResourcesManager::getInstance()->registerObjectManager<FontFamily>(FontFamily::TypeName, &mFonts);
+
    resizeCanvas(pCanvasWidth, pCanvasHeight);
 
    FT_Init_FreeType(&mFTLibrary);
@@ -45,15 +72,16 @@ TextRasterizer::TextRasterizer(uint32_t pCanvasWidth, uint32_t pCanvasHeight)
 
 TextRasterizer::~TextRasterizer()
 {
-   for(GESTLMap(uint32_t, Font)::iterator it = mFonts.begin(); it != mFonts.end(); it++)
+   mFonts.iterate([](FontFamily* pFontFamily)
    {
-      const Font& font = it->second;
-
-      for(size_t i = 0u; i < font.mStyles.size(); i++)
+      pFontFamily->mStyles.iterate([](FontStyle* pFontStyle)
       {
-         FT_Done_Face(font.mStyles[i].mFTFace);
-      }
-   }
+         FT_Done_Face(pFontStyle->mFTFace);
+         return true;
+      });
+
+      return true;
+   });
 
    for(size_t i = 0u; i < mFontContentData.size(); i++)
    {
@@ -109,24 +137,29 @@ void TextRasterizer::loadFontFile(const char* pFileName, const char* pFileExtens
          continue;
       }
 
-      const ObjectName fontName(ftFace->family_name);
-      GESTLMap(uint32_t, Font)::iterator it = mFonts.find(fontName.getID());
+      const ObjectName fontFamilyName(ftFace->family_name);
+      FontFamily* fontFamily = mFonts.get(fontFamilyName);
 
-      if(it == mFonts.end())
+      if(!fontFamily)
       {
-         mFonts[fontName.getID()] = Font();
-         it = mFonts.find(fontName.getID());
-         it->second.mName = fontName;
+         fontFamily = Allocator::alloc<FontFamily>();
+         GEInvokeCtor(FontFamily, fontFamily)(fontFamilyName);
+         mFonts.add(fontFamily);
       }
 
-      Font& font = it->second;
-      font.mStyles.emplace_back();
-      FontStyle& style = font.mStyles.back();
-      style.mName = ObjectName(ftFace->style_name);
-      style.mFTFace = ftFace;
+      FontStyle* fontStyle = Allocator::alloc<FontStyle>();
+      GEInvokeCtor(FontStyle, fontStyle)(ftFace->style_name);
+      fontStyle->mFTFace = ftFace;
+
+      fontFamily->mStyles.add(fontStyle);
    }
 
    Log::log(LogType::Info, "Font file loaded: '%s.%s'", pFileName, pFileExtension);
+}
+
+FontFamily* TextRasterizer::getFontFamily(const Core::ObjectName& pFontFamilyName)
+{
+   return mFonts.get(pFontFamilyName);
 }
 
 void TextRasterizer::clearCanvas()
@@ -159,21 +192,18 @@ void TextRasterizer::setCursor(const Vector2& pScreenPosition)
    mCursor.Y = (int)(pixelPosition.Y * kPointsPerPixel);
 }
 
-bool TextRasterizer::setFont(const Core::ObjectName& pFontName, const Core::ObjectName& pFontStyleName)
+bool TextRasterizer::setFont(const Core::ObjectName& pFontFamilyName, const Core::ObjectName& pFontStyleName)
 {
-   GESTLMap(uint32_t, Font)::iterator it = mFonts.find(pFontName.getID());
+   FontFamily* fontFamily = mFonts.get(pFontFamilyName);
 
-   if(it != mFonts.end())
+   if(fontFamily)
    {
-      Font& font = it->second;
+      FontStyle* fontStyle = fontFamily->mStyles.get(pFontStyleName);
       
-      for(size_t i = 0u; i < font.mStyles.size(); i++)
+      if(fontStyle)
       {
-         if(font.mStyles[i].mName == pFontStyleName)
-         {
-            mFontStyle = &font.mStyles[i];
-            return true;
-         }
+         mFontStyle = fontStyle;
+         return true;
       }
    }
 

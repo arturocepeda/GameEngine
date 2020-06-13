@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "Core/GEObject.h"
+#include "Core/GEObjectManager.h"
 #include "Content/GEContentData.h"
 
 
@@ -27,6 +27,25 @@ typedef struct FT_FaceRec_* FT_Face;
 
 namespace GE { namespace Rendering
 {
+   class FontStyle : public Core::Object
+   {
+   public:
+      FT_Face mFTFace;
+
+      FontStyle(const Core::ObjectName& pName);
+   };
+
+   class FontFamily : public Core::Object
+   {
+   public:
+      static const Core::ObjectName TypeName;
+
+      Core::ObjectManager<FontStyle> mStyles;
+
+      FontFamily(const Core::ObjectName& pName);
+   };
+
+
    class TextRasterizer
    {
    private:
@@ -37,18 +56,7 @@ namespace GE { namespace Rendering
       FT_Library mFTLibrary;
 
       GESTLVector(Content::ContentData) mFontContentData;
-
-      struct FontStyle
-      {
-         Core::ObjectName mName;
-         FT_Face mFTFace;
-      };
-      struct Font
-      {
-         Core::ObjectName mName;
-         GESTLVector(FontStyle) mStyles;
-      };
-      GESTLMap(uint32_t, Font) mFonts;
+      Core::ObjectManager<FontFamily> mFonts;
 
       Point mCursor;
       FontStyle* mFontStyle;
@@ -62,12 +70,13 @@ namespace GE { namespace Rendering
       ~TextRasterizer();
 
       void loadFontFiles();
+      FontFamily* getFontFamily(const Core::ObjectName& pFontFamilyName);
 
       void clearCanvas();
       void resizeCanvas(uint32_t pCanvasWidth, uint32_t pCanvasHeight);
 
       void setCursor(const Vector2& pScreenPosition);
-      bool setFont(const Core::ObjectName& pFontName, const Core::ObjectName& pFontStyleName);
+      bool setFont(const Core::ObjectName& pFontFamilyName, const Core::ObjectName& pFontStyleName);
       void setFontSize(float pFontSize);
       void setColor(const Color& pColor);
 
