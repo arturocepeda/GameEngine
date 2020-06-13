@@ -129,4 +129,26 @@ namespace GE { namespace Entities
       void setVerticalSpacing(float pVerticalSpacing);
       void setLineWidth(float pLineWidth);
    };
+
+
+   class ComponentLabelRaster : public ComponentLabelBase
+   {
+   private:
+      Core::ObjectName mFontFamily;
+      Core::ObjectName mFontStyle;
+
+      virtual void generateText() override;
+
+   public:
+      static const Core::ObjectName ClassName;
+
+      ComponentLabelRaster(Entity* pOwner);
+      ~ComponentLabelRaster();
+
+      GEDefaultGetter(const Core::ObjectName&, FontFamily, m)
+      GEDefaultGetter(const Core::ObjectName&, FontStyle, m)
+
+      void setFontFamily(const Core::ObjectName& pFontFamily);
+      void setFontStyle(const Core::ObjectName& pFontStyle);
+   };
 }}

@@ -931,3 +931,102 @@ void ComponentLabel::setLineWidth(float pLineWidth)
       generateText();
    }
 }
+
+
+//
+//  ComponentLabelRaster
+//
+const ObjectName ComponentLabelRaster::ClassName("LabelRaster");
+
+ComponentLabelRaster::ComponentLabelRaster(Entity* pOwner)
+   : ComponentLabelBase(pOwner)
+{
+   mClassNames.push_back(ClassName);
+
+   GERegisterProperty(ObjectName, FontFamily);
+   GERegisterProperty(ObjectName, FontStyle);
+   GERegisterProperty(Float, FontSize);
+   GERegisterPropertyEnum(Alignment, Alignment);
+   GERegisterProperty(UInt, CharacterCountLimit);
+   GERegisterPropertyEnum(SpriteLayer, Layer);
+   GERegisterPropertyBitMask(LabelSettingsBitMask, Settings);
+   GERegisterProperty(String, Text);
+   GERegisterProperty(ObjectName, StringID);
+   GERegisterPropertyReadonly(UInt, TextLength);
+}
+
+ComponentLabelRaster::~ComponentLabelRaster()
+{
+}
+
+void ComponentLabelRaster::setFontFamily(const Core::ObjectName& pFontFamily)
+{
+   const bool changed = mFontFamily != pFontFamily;
+
+   if(changed)
+   {
+      mFontFamily = pFontFamily;
+
+#if defined (GE_EDITOR_SUPPORT)
+      const ObjectName propertyName("FontStyle");
+      Property* property = const_cast<Property*>(getProperty(propertyName));
+      property->DataPtr = nullptr;
+
+      TextRasterizer* textRasterizer = RenderSystem::getInstance()->getTextRasterizer();
+      FontFamily* fontFamily = textRasterizer->getFontFamily(pFontFamily);
+
+      if(fontFamily)
+      {
+         property->DataPtr = &fontFamily->mStyles;
+
+         const ObjectRegistry* fontStylesRegistry = fontFamily->mStyles.getObjectRegistry();
+         const ObjectName firstFontStyleName = fontStylesRegistry->begin()->second->getName();
+         setFontStyle(firstFontStyleName);
+      }
+
+      EventArgs args;
+      args.Data = cOwner;
+      EventHandlingObject::triggerEventStatic(Events::PropertiesUpdated, &args);
+#endif
+
+      if(!mText.empty())
+      {
+         generateText();
+      }
+   }
+}
+
+void ComponentLabelRaster::setFontStyle(const Core::ObjectName& pFontStyle)
+{
+   const bool changed = mFontStyle != pFontStyle;
+
+   if(changed)
+   {
+      mFontStyle = pFontStyle;
+
+      if(!mText.empty())
+      {
+         generateText();
+      }
+   }
+}
+
+void ComponentLabelRaster::generateText()
+{
+   TextRasterizer* rasterizer = RenderSystem::getInstance()->getTextRasterizer();
+   rasterizer->clearCanvas();
+   rasterizer->setCursor(Vector2(0.0f, 0.0f));
+
+   rasterizer->setFont(mFontFamily, mFontStyle);
+   rasterizer->setFontSize(mFontSize);
+   rasterizer->setColor(cColor);
+
+   Matrix4 transform;
+   Matrix4MakeIdentity(&transform);
+
+   for(size_t i = 0u; i < mText.size(); i++)
+   {
+      const uint16_t glyphIndex = getGlyphIndex(i);
+      rasterizer->renderGlyph(glyphIndex, transform);
+   }
+}
