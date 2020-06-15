@@ -13,6 +13,7 @@
 #include "GETextRasterizer.h"
 
 #include "Core/GEDevice.h"
+#include "Core/GELog.h"
 #include "Content/GEResourcesManager.h"
 
 #include <ft2build.h>
@@ -62,6 +63,7 @@ TextRasterizer::TextRasterizer(uint32_t pCanvasWidth, uint32_t pCanvasHeight)
    , mFontStyle(nullptr)
    , mFontSize(12.0f)
    , mColor(0xffffffff)
+   , mLastGlyph(0u)
 {
    ResourcesManager::getInstance()->registerObjectManager<FontFamily>(FontFamily::TypeName, &mFonts);
 
@@ -223,6 +225,12 @@ void TextRasterizer::setColor(const Color& pColor)
    mColor |= (uint32_t)(pColor.Red * 255.0f) << 24;
 }
 
+void TextRasterizer::reset()
+{
+   clearCanvas();
+   mLastGlyph = 0u;
+}
+
 bool TextRasterizer::renderGlyph(uint16_t pGlyphIndex, const Matrix4& pTransform)
 {
    FT_Error error =
@@ -248,9 +256,18 @@ bool TextRasterizer::renderGlyph(uint16_t pGlyphIndex, const Matrix4& pTransform
    cursor.x = (FT_Pos)mCursor.X;
    cursor.y = (FT_Pos)mCursor.Y;
 
+   const FT_ULong glyph = (FT_ULong)pGlyphIndex;
+
+   if(FT_HAS_KERNING(mFontStyle->mFTFace))
+   {
+      FT_Vector kerning;
+      FT_Get_Kerning(mFontStyle->mFTFace, mLastGlyph, glyph, FT_KERNING_DEFAULT, &kerning);
+      cursor.x += kerning.x;
+   }
+
    FT_Set_Transform(mFontStyle->mFTFace, &matrix, &cursor);
 
-   error = FT_Load_Char(mFontStyle->mFTFace, (FT_ULong)pGlyphIndex, FT_LOAD_RENDER);
+   error = FT_Load_Char(mFontStyle->mFTFace, glyph, FT_LOAD_RENDER);
    
    if(error)
    {
@@ -284,6 +301,8 @@ bool TextRasterizer::renderGlyph(uint16_t pGlyphIndex, const Matrix4& pTransform
 
    mCursor.X += (int)slot->advance.x;
    mCursor.Y += (int)slot->advance.y;
+
+   mLastGlyph = glyph;
 
    return true;
 }

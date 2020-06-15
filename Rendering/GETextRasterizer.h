@@ -63,6 +63,8 @@ namespace GE { namespace Rendering
       float mFontSize;
       uint32_t mColor;
 
+      uint32_t mLastGlyph;
+
       void loadFontFile(const char* pFileName, const char* pFileExtension);
 
    public:
@@ -80,6 +82,7 @@ namespace GE { namespace Rendering
       void setFontSize(float pFontSize);
       void setColor(const Color& pColor);
 
+      void reset();
       bool renderGlyph(uint16_t pGlyphIndex, const Matrix4& pTransform);
 
       void writeToFile(const char* pFilePath);
