@@ -20,7 +20,6 @@
 #include "Entities/GEComponentAudio.h"
 #include "Entities/GEComponentScript.h"
 #include "Rendering/GERenderSystem.h"
-#include "Content/GEContentData.h"
 #include "Core/GEDevice.h"
 #include "Core/GEAllocator.h"
 #include "Core/GETaskManager.h"
@@ -46,10 +45,11 @@ const ObjectName BackgroundEntityName = ObjectName("Background");
 //
 //  Scene
 //
-Scene* Scene::cActiveScene = 0;
+Scene* Scene::cActiveScene = nullptr;
+Scene* Scene::cPermanentScene = nullptr;
+Scene* Scene::cDebuggingScene = nullptr;
 
-Scene* Scene::cPermanentScene = 0;
-Scene* Scene::cDebuggingScene = 0;
+GESTLMap(uint32_t, ContentData) Scene::smPrefabData;
 
 Scene::Scene(const ObjectName& Name)
    : EventHandlingObject(Name)
@@ -79,6 +79,44 @@ Scene::~Scene()
    }
 
    GEMutexDestroy(mSceneMutex);
+}
+
+void Scene::loadPrefabData()
+{
+   if(Application::ContentType == ApplicationContentType::Bin)
+   {
+      FileNamesList prefabNames;
+      Device::getContentFileNames("Prefabs", "prefab.ge", &prefabNames);
+
+      for(size_t i = 0u; i < prefabNames.size(); i++)
+      {
+         uint32_t prefabNameHash = 0u;
+
+         if(Device::ContentHashPath)
+         {
+            prefabNameHash = strtoul(prefabNames[i].c_str(), nullptr, 16);
+         }
+         else
+         {
+            prefabNameHash = hash(prefabNames[i].c_str());
+         }
+
+         smPrefabData[prefabNameHash] = ContentData();
+         ContentData& contentData = smPrefabData.find(prefabNameHash)->second;
+         Device::readContentFile(
+            ContentType::GenericBinaryData, "Prefabs", prefabNames[i].c_str(), "prefab.ge", &contentData);
+      }
+   }
+}
+
+void Scene::unloadPrefabData()
+{
+   for(GESTLMap(uint32_t, ContentData)::iterator it = smPrefabData.begin(); it != smPrefabData.end(); it++)
+   {
+      it->second.unload();
+   }
+
+   smPrefabData.clear();
 }
 
 void Scene::initStaticScenes()
@@ -545,13 +583,13 @@ void Scene::setupEntityFromPrefab(Entity* pEntity, const char* pPrefabName, bool
 
    char sFilename[64];
    sprintf(sFilename, "%s.prefab", pPrefabName);
-   ContentData cContent;
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      Device::readContentFile(ContentType::GenericTextData, "Prefabs", sFilename, "xml", &cContent);
+      ContentData content;
+      Device::readContentFile(ContentType::GenericTextData, "Prefabs", sFilename, "xml", &content);
       pugi::xml_document xml;
-      xml.load_buffer(cContent.getData(), cContent.getDataSize());
+      xml.load_buffer(content.getData(), content.getDataSize());
       pugi::xml_node xmlRoot = xml.child("Prefab");
 
       pugi::xml_attribute xmlPrefabBase = xmlRoot.attribute("base");
@@ -567,8 +605,8 @@ void Scene::setupEntityFromPrefab(Entity* pEntity, const char* pPrefabName, bool
 
          xml.remove_child(xmlRoot);
 
-         Device::readContentFile(ContentType::GenericTextData, "Prefabs", sFilename, "xml", &cContent);
-         xml.load_buffer(cContent.getData(), cContent.getDataSize());
+         Device::readContentFile(ContentType::GenericTextData, "Prefabs", sFilename, "xml", &content);
+         xml.load_buffer(content.getData(), content.getDataSize());
          xmlRoot = xml.child("Prefab");
 
          Entity::mergeXmlDescription(xmlRoot, xmlDerivedRoot);
@@ -580,11 +618,14 @@ void Scene::setupEntityFromPrefab(Entity* pEntity, const char* pPrefabName, bool
    }
    else
    {
-      Device::readContentFile(ContentType::GenericBinaryData, "Prefabs", sFilename, "ge", &cContent);
-      ContentDataMemoryBuffer sMemoryBuffer(cContent);
-      std::istream sStream(&sMemoryBuffer);
-      Value::fromStream(ValueType::ObjectName, sStream);
-      setupEntity(sStream, pEntity);
+      const uint32_t prefabNameHash = hash(pPrefabName);
+      const ContentData& content = smPrefabData.find(prefabNameHash)->second;
+
+      ContentDataMemoryBuffer memoryBuffer(content);
+      std::istream stream(&memoryBuffer);
+      Value::fromStream(ValueType::ObjectName, stream);
+
+      setupEntity(stream, pEntity);
    }
 
    if(!pIncludeRootTransform)

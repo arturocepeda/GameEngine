@@ -128,6 +128,7 @@ void Application::startUp(void (*pInitAppModuleFunction)())
       smScriptingEnvironments[i]->load();
    }
 
+   Scene::loadPrefabData();
    Scene::initStaticScenes();
 
    registerComponentFactories();
@@ -146,6 +147,7 @@ void Application::tick()
 void Application::shutDown()
 {
    Scene::releaseStaticScenes();
+   Scene::unloadPrefabData();
 
    for(uint32_t i = 0; i < ScriptingEnvironmentsCount; i++)
    {

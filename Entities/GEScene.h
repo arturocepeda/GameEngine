@@ -15,6 +15,7 @@
 #include "Core/GEObject.h"
 #include "Core/GESerializable.h"
 #include "Core/GEThreads.h"
+#include "Content/GEContentData.h"
 #include "GEComponentType.h"
 #include "Externals/pugixml/pugixml.hpp"
 
@@ -39,9 +40,10 @@ namespace GE { namespace Entities
    {
    private:
       static Scene* cActiveScene;
-
       static Scene* cPermanentScene;
       static Scene* cDebuggingScene;
+
+      static GESTLMap(uint32_t, Content::ContentData) smPrefabData;
 
       GESTLVector(Entity*) vEntities;
       GESTLMap(uint, Entity*) mRegistry;
@@ -73,6 +75,9 @@ namespace GE { namespace Entities
    public:
       Scene(const Core::ObjectName& Name);
       ~Scene();
+
+      static void loadPrefabData();
+      static void unloadPrefabData();
 
       static void initStaticScenes();
       static void releaseStaticScenes();

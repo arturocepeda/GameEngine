@@ -236,7 +236,7 @@ void GE::Core::toHashPath(char* pPath)
       {
          if(buffer[0] != '\0')
          {
-            sprintf(pPath, "%s%x", pPath, hash(buffer));
+            sprintf(pPath, "%s%08x", pPath, hash(buffer));
             while(pPath[++cursorHashPath] != '\0');
 
             memset(buffer, 0, cursorBuffer);
