@@ -287,13 +287,13 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       [this](const GE::Core::Value& v) { this->set##PropertyName((GE::byte)v.getAsByte()); }, \
       [this]()->GE::Core::Value { return GE::Core::Value((GE::byte)get##PropertyName()); }, \
-      PropertyEditor::BitMask, 0, (void*)str##EnumType, (uint)EnumType::Count)
+      PropertyEditor::BitMask, 0, (void*)str##EnumType, (uint32_t)EnumType::Count)
 
 #define GERegisterPropertyBitMaskReadonly(EnumType, PropertyName) \
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::Byte, \
       nullptr, \
       [this]()->GE::Core::Value { return GE::Core::Value((GE::byte)get##PropertyName()); }, \
-      PropertyEditor::BitMask, 0, (void*)str##EnumType, (uint)EnumType::Count)
+      PropertyEditor::BitMask, 0, (void*)str##EnumType, (uint32_t)EnumType::Count)
 
 
 //
