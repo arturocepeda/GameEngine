@@ -138,6 +138,7 @@
     <ClCompile Include="Rendering\GEPrimitives.cpp" />
     <ClCompile Include="Rendering\GERenderSystem.cpp" />
     <ClCompile Include="Rendering\GEShaderProgram.cpp" />
+    <ClCompile Include="Rendering\GETextRasterizer.cpp" />
     <ClCompile Include="Rendering\GETexture.cpp" />
     <ClCompile Include="Rendering\OpenGL\GERenderingShadersES20.cpp" />
     <ClCompile Include="Rendering\OpenGL\GERenderSystemES20.cpp" />
@@ -257,6 +258,7 @@
     <ClInclude Include="Rendering\GERenderingObjects.h" />
     <ClInclude Include="Rendering\GERenderSystem.h" />
     <ClInclude Include="Rendering\GEShaderProgram.h" />
+    <ClInclude Include="Rendering\GETextRasterizer.h" />
     <ClInclude Include="Rendering\GETexture.h" />
     <ClInclude Include="Rendering\OpenGL\GEOpenGLES20.h" />
     <ClInclude Include="Rendering\OpenGL\GERenderingShadersES20.h" />

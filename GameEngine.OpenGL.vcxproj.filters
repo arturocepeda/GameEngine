@@ -444,6 +444,9 @@
     <ClCompile Include="Externals\freetype2\src\cid\type1cid.c">
       <Filter>Externals\freetype2\modules</Filter>
     </ClCompile>
+    <ClCompile Include="Rendering\GETextRasterizer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\GEAudioSystem.h">
@@ -799,6 +802,9 @@
     </ClInclude>
     <ClInclude Include="Core\GESettings.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\GETextRasterizer.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
