@@ -33,11 +33,16 @@ TaskManager::TaskManager()
    cAudio = Audio::AudioSystem::getInstance();
    cStateManager = StateManager::getInstance();
 
+   const int numberOfCores = Device::getNumberOfCPUCores();
+   const int numberOfThreads = numberOfCores > 1
+      ? numberOfCores - 1
+      : 1;
+
    cFrameThreadPool = Allocator::alloc<ThreadPoolSync>();
-   GEInvokeCtor(ThreadPoolSync, cFrameThreadPool)(Device::getNumberOfCPUCores() - 2);
+   GEInvokeCtor(ThreadPoolSync, cFrameThreadPool)(numberOfThreads);
 
    cGeneralThreadPool = Allocator::alloc<ThreadPoolAsync>();
-   GEInvokeCtor(ThreadPoolAsync, cGeneralThreadPool)(Device::getNumberOfCPUCores() - 2);
+   GEInvokeCtor(ThreadPoolAsync, cGeneralThreadPool)(numberOfThreads);
 }
 
 TaskManager::~TaskManager()
