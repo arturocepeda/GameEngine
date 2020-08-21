@@ -57,7 +57,13 @@ Font::Font(const ObjectName& Name, const ObjectName& GroupName)
    : Resource(Name, GroupName, TypeName)
    , pRenderDevice(nullptr)
    , cTexture(nullptr)
+   , mNonLatinSizeFactor(1.0f)
+   , mNonLatinVerticalOffset(0.0f)
 {
+   GERegisterProperty(ObjectName, NonLatinFontName);
+   GERegisterProperty(Float, NonLatinSizeFactor);
+   GERegisterProperty(Float, NonLatinVerticalOffset);
+
    GERegisterPropertyArray(FontCharacterSet);
 }
 

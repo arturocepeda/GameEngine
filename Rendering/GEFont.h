@@ -76,6 +76,10 @@ namespace GE { namespace Rendering
       typedef GESTLMap(uint16_t, CharKerningsMap) KerningsMap;
       GESTLVector(KerningsMap) mKernings;
 
+      Core::ObjectName mNonLatinFontName;
+      float mNonLatinSizeFactor;
+      float mNonLatinVerticalOffset;
+
       void loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData);
       void loadFontData(uint32_t pCharSet, std::istream& pStream);
 
@@ -100,6 +104,14 @@ namespace GE { namespace Rendering
       float getLineHeight(uint32_t pCharSetIndex);
       const Glyph& getGlyph(uint32_t pCharSetIndex, uint16_t pCharacter);
       float getKerning(uint32_t pCharSetIndex, uint16_t pChar1, uint16_t pChar2) const;
+
+      GEDefaultGetter(const Core::ObjectName&, NonLatinFontName, m)
+      GEDefaultGetter(float, NonLatinSizeFactor, m)
+      GEDefaultGetter(float, NonLatinVerticalOffset, m)
+
+      GEDefaultSetter(const Core::ObjectName&, NonLatinFontName, m)
+      GEDefaultSetter(float, NonLatinSizeFactor, m)
+      GEDefaultSetter(float, NonLatinVerticalOffset, m)
 
       GEPropertyArray(FontCharacterSet, FontCharacterSet)
    };

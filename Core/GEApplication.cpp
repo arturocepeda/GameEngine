@@ -201,7 +201,6 @@ void Application::registerComponentFactories()
    Entity::registerComponentFactory<ComponentUI3DCanvas>("UI3DCanvas", ComponentType::UIElement);
    Entity::registerComponentFactory<ComponentSprite>("Sprite", ComponentType::Renderable);
    Entity::registerComponentFactory<ComponentLabel>("Label", ComponentType::Renderable);
-   Entity::registerComponentFactory<ComponentLabelRaster>("LabelRaster", ComponentType::Renderable);
    Entity::registerComponentFactory<ComponentMesh>("Mesh", ComponentType::Renderable);
    Entity::registerComponentFactory<ComponentParticleSystem>("ParticleSystem", ComponentType::Renderable);
    Entity::registerComponentFactory<ComponentSkeleton>("Skeleton", ComponentType::Skeleton);

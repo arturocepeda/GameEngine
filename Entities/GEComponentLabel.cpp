@@ -15,6 +15,8 @@
 #include "Core/GEAllocator.h"
 #include "Core/GELog.h"
 #include "Core/GEEvents.h"
+#include "Core/GEProfiler.h"
+#include "Core/GETaskManager.h"
 #include "Content/GELocalizedString.h"
 #include "Content/GEResourcesManager.h"
 
@@ -103,6 +105,11 @@ uint16_t ComponentLabelBase::getGlyphIndex(size_t pCharIndex)
       (((uint16_t)mTextExtension[pCharIndex] & 0x00ff) << 8);
 }
 
+float ComponentLabelBase::getDefaultVerticalOffset()
+{
+   return 0.0f;
+}
+
 void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
 {
    unsigned char character = mText[pPen->mCharIndex];
@@ -176,7 +183,7 @@ void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
       {
          if(tagClosing)
          {
-            pPen->mFontSize = mFontSize * mFontResizeFactor;
+            pPen->mFontSize = getFontSize() * mFontResizeFactor;
          }
          else
          {
@@ -200,11 +207,11 @@ void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
       {
          if(tagClosing)
          {
-            pPen->mYOffset = 0.0f;
+            pPen->mYOffset = getDefaultVerticalOffset();
          }
          else
          {
-            pPen->mYOffset = (float)strtod(value, 0);
+            pPen->mYOffset = getDefaultVerticalOffset() + (float)strtod(value, 0);
          }
       }
 
@@ -384,7 +391,7 @@ void ComponentLabelBase::setSettings(uint8_t pSettings)
 const float kFontSizeScale = 0.0001f;
 const unsigned char kLineFeedChar = '~';
 
-const ObjectName ComponentLabel::ClassName = ObjectName("Label");
+const ObjectName ComponentLabel::ClassName("Label");
 
 ComponentLabel::ComponentLabel(Entity* pOwner)
    : ComponentLabelBase(pOwner)
@@ -421,20 +428,43 @@ ComponentLabel::~ComponentLabel()
    EventHandlingObject::disconnectStaticEventCallback(Events::LocalizedStringsReloaded, this);
 }
 
+float ComponentLabel::getDefaultVerticalOffset()
+{
+   float verticalOffset = 0.0f;
+   Font* font = getFont();
+
+   if(font)
+   {
+      const bool nonLatinFont = font->getName() != mFont->getName();
+
+      if(nonLatinFont)
+      {
+         verticalOffset = mFont->getNonLatinVerticalOffset();
+      }
+   }
+
+   return verticalOffset;
+}
+
 void ComponentLabel::generateText()
 {
    mTextLength = 0u;
    mTextWidth = 0.0f;
 
-   if(!mFont)
+   Font* font = getFont();
+
+   if(!font)
    {
       return;
    }
 
+   const float fontSize = getFontSize();
+   const float defaultVerticalOffset = getDefaultVerticalOffset();
+
    Pen sPen;
    sPen.mColor = cColor;
-   sPen.mFontSize = mFontSize;
-   sPen.mYOffset = 0.0f;
+   sPen.mFontSize = fontSize;
+   sPen.mYOffset = defaultVerticalOffset;
    sPen.mFontStyle = mFontStyle;
    sPen.mCharIndex = 0;
 
@@ -602,9 +632,9 @@ void ComponentLabel::generateText()
       break;
    }
 
-   const uint32_t fontCharSetIndex = mFont->getCharacterSetIndex(mFontStyle);
+   const uint32_t fontCharSetIndex = font->getCharacterSetIndex(mFontStyle);
    const float fFontOffsetY =
-      mFont->getLineHeight(fontCharSetIndex) * mFontSize * kFontSizeScale * mFontResizeFactor;
+      font->getLineHeight(fontCharSetIndex) * fontSize * kFontSizeScale * mFontResizeFactor;
    const float fHalfFontOffsetY = fFontOffsetY * 0.5f;
    const float fLineHeight = fFontOffsetY + mVerticalSpacing;
 
@@ -635,8 +665,8 @@ void ComponentLabel::generateText()
 
    sPen.mFontStyle = mFontStyle;
    sPen.mColor = cColor;
-   sPen.mFontSize = mFontSize * mFontResizeFactor;
-   sPen.mYOffset = 0.0f;
+   sPen.mFontSize = fontSize * mFontResizeFactor;
+   sPen.mYOffset = defaultVerticalOffset;
    sPen.mCharIndex = 0u;
 
    mVertexData.clear();
@@ -698,8 +728,8 @@ void ComponentLabel::generateText()
       if(mText[sPen.mCharIndex] != ' ')
       {
          const uint16_t iGlyphIndex = getGlyphIndex((size_t)sPen.mCharIndex);
-         const uint32_t penCharSetIndex = mFont->getCharacterSetIndex(sPen.mFontStyle);
-         const Glyph& sGlyph = mFont->getGlyph(penCharSetIndex, iGlyphIndex);
+         const uint32_t penCharSetIndex = font->getCharacterSetIndex(sPen.mFontStyle);
+         const Glyph& sGlyph = font->getGlyph(penCharSetIndex, iGlyphIndex);
          const float fCharacterSize = sPen.mFontSize * kFontSizeScale;
 
          fPosX += getKerning(sPen);
@@ -711,7 +741,7 @@ void ComponentLabel::generateText()
          const float glyphOffsetY = sGlyph.OffsetY * fCharacterSize;
 
          mVertexData.push_back(fPosX + glyphOffsetX);
-         mVertexData.push_back(fPosY + glyphOffsetY - glyphHeight);
+         mVertexData.push_back(fPosY + glyphOffsetY - glyphHeight + sPen.mYOffset);
          mVertexData.push_back(0.0f);
          mVertexData.push_back(sPen.mColor.Red);
          mVertexData.push_back(sPen.mColor.Green);
@@ -720,7 +750,7 @@ void ComponentLabel::generateText()
          mVertexData.push_back(sGlyph.UV.U0); mVertexData.push_back(sGlyph.UV.V1);
 
          mVertexData.push_back(fPosX + glyphOffsetX + glyphWidth);
-         mVertexData.push_back(fPosY + glyphOffsetY - glyphHeight);
+         mVertexData.push_back(fPosY + glyphOffsetY - glyphHeight + sPen.mYOffset);
          mVertexData.push_back(0.0f);
          mVertexData.push_back(sPen.mColor.Red);
          mVertexData.push_back(sPen.mColor.Green);
@@ -729,7 +759,7 @@ void ComponentLabel::generateText()
          mVertexData.push_back(sGlyph.UV.U1); mVertexData.push_back(sGlyph.UV.V1);
 
          mVertexData.push_back(fPosX + glyphOffsetX);
-         mVertexData.push_back(fPosY + glyphOffsetY);
+         mVertexData.push_back(fPosY + glyphOffsetY + sPen.mYOffset);
          mVertexData.push_back(0.0f);
          mVertexData.push_back(sPen.mColor.Red);
          mVertexData.push_back(sPen.mColor.Green);
@@ -738,7 +768,7 @@ void ComponentLabel::generateText()
          mVertexData.push_back(sGlyph.UV.U0); mVertexData.push_back(sGlyph.UV.V0);
 
          mVertexData.push_back(fPosX + glyphOffsetX + glyphWidth);
-         mVertexData.push_back(fPosY + glyphOffsetY);
+         mVertexData.push_back(fPosY + glyphOffsetY + sPen.mYOffset);
          mVertexData.push_back(0.0f);
          mVertexData.push_back(sPen.mColor.Red);
          mVertexData.push_back(sPen.mColor.Green);
@@ -791,9 +821,11 @@ float ComponentLabel::measureCharacter(const Pen& pPen)
 {
    GEAssert(pPen.mCharIndex < mText.length());
 
+   Font* font = getFont();
+
    const uint16_t glyphIndex = getGlyphIndex(pPen.mCharIndex);
-   const uint32_t charSetIndex = mFont->getCharacterSetIndex(pPen.mFontStyle);
-   const Glyph& glyph = mFont->getGlyph(charSetIndex, glyphIndex);
+   const uint32_t charSetIndex = font->getCharacterSetIndex(pPen.mFontStyle);
+   const Glyph& glyph = font->getGlyph(charSetIndex, glyphIndex);
    const float characterSize = pPen.mFontSize * kFontSizeScale;
 
    return (glyph.AdvanceX * characterSize) + mHorizontalSpacing;
@@ -808,10 +840,12 @@ float ComponentLabel::getKerning(const Pen& pPen)
 
    if(cChar != ' ' && pPen.mCharIndex > 0u)
    {
+      Font* font = getFont();
+
       const uint16_t previousGlyphIndex = getGlyphIndex(pPen.mCharIndex - 1u);
       const uint16_t currentGlyphIndex = getGlyphIndex(pPen.mCharIndex);
-      const uint32_t charSetIndex = mFont->getCharacterSetIndex(pPen.mFontStyle);
-      kerning = mFont->getKerning(charSetIndex, previousGlyphIndex, currentGlyphIndex);
+      const uint32_t charSetIndex = font->getCharacterSetIndex(pPen.mFontStyle);
+      kerning = font->getKerning(charSetIndex, previousGlyphIndex, currentGlyphIndex);
 
       const float characterSize = pPen.mFontSize * kFontSizeScale;
       kerning *= characterSize;
@@ -820,9 +854,42 @@ float ComponentLabel::getKerning(const Pen& pPen)
    return kerning;
 }
 
+float ComponentLabel::getFontSize() const
+{
+   float fontSize = mFontSize;
+   Font* font = getFont();
+
+   if(font)
+   {
+      const bool nonLatinFont = font->getName() != mFont->getName();
+
+      if(nonLatinFont)
+      {
+         fontSize *= mFont->getNonLatinSizeFactor();
+      }
+   }
+
+   return fontSize;
+}
+
 Font* ComponentLabel::getFont() const
 {
-   return mFont;
+   Font* font = mFont;
+
+   if(font)
+   {
+      if(Device::Language >= SystemLanguage::Russian && mStringID.isValid())
+      {
+         Font* nonLatinFont = RenderSystem::getInstance()->getFont(font->getNonLatinFontName());
+
+         if(nonLatinFont)
+         {
+            font = nonLatinFont;
+         }
+      }
+   }
+
+   return font;
 }
 
 const ObjectName& ComponentLabel::getFontName() const
@@ -1013,8 +1080,10 @@ void ComponentLabelRaster::setFontStyle(const Core::ObjectName& pFontStyle)
 
 void ComponentLabelRaster::generateText()
 {
+   GEProfilerMarker("ComponentLabelRaster::generateText()");
+
    TextRasterizer* rasterizer = RenderSystem::getInstance()->getTextRasterizer();
-   rasterizer->clearCanvas();
+   rasterizer->reset();
    rasterizer->setCursor(Vector2(0.0f, 0.0f));
 
    rasterizer->setFont(mFontFamily, mFontStyle);
