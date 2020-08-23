@@ -96,7 +96,7 @@ ComponentLabelBase::~ComponentLabelBase()
 {
 }
 
-uint16_t ComponentLabelBase::getGlyphIndex(size_t pCharIndex)
+uint16_t ComponentLabelBase::getGlyphIndex(size_t pCharIndex) const
 {
    GEAssert(pCharIndex < mText.length());
 
@@ -105,7 +105,34 @@ uint16_t ComponentLabelBase::getGlyphIndex(size_t pCharIndex)
       (((uint16_t)mTextExtension[pCharIndex] & 0x00ff) << 8);
 }
 
-float ComponentLabelBase::getDefaultVerticalOffset()
+bool ComponentLabelBase::canBreakLine(const Pen& pPen) const
+{
+   if(mText[pPen.mCharIndex] == ' ')
+   {
+      return true;
+   }
+
+   if(Device::Language >= SystemLanguage::ChineseSimplified &&
+      Device::Language <= SystemLanguage::Korean)
+   {
+      const uint16_t glyphIndex = getGlyphIndex((size_t)pPen.mCharIndex);
+
+      if(glyphIndex >= 0x0250 && !(glyphIndex >= 0x3000 && glyphIndex <= 0x303a))
+      {
+         const size_t nextCharIndex = pPen.mCharIndex + 1u;
+
+         if(nextCharIndex < mText.length())
+         {
+            const uint16_t nextGlyphIndex = getGlyphIndex(nextCharIndex);
+            return !(nextGlyphIndex >= 0x3000 && nextGlyphIndex <= 0x303a);
+         }
+      }
+   }
+
+   return false;
+}
+
+float ComponentLabelBase::getDefaultVerticalOffset() const
 {
    return 0.0f;
 }
@@ -428,7 +455,7 @@ ComponentLabel::~ComponentLabel()
    EventHandlingObject::disconnectStaticEventCallback(Events::LocalizedStringsReloaded, this);
 }
 
-float ComponentLabel::getDefaultVerticalOffset()
+float ComponentLabel::getDefaultVerticalOffset() const
 {
    float verticalOffset = 0.0f;
    Font* font = getFont();
@@ -496,9 +523,7 @@ void ComponentLabel::generateText()
          }
       }
 
-      const uint8_t cChar = mText[sPen.mCharIndex];
-
-      if(cChar == kLineFeedChar)
+      if(mText[sPen.mCharIndex] == kLineFeedChar)
       {
          mLineWidths.push_back(fCurrentLineWidth);
          mLineFeedIndices.push_back(sPen.mCharIndex);
@@ -510,9 +535,9 @@ void ComponentLabel::generateText()
          continue;
       }
 
-      float fCharWidth = measureCharacter(sPen) + getKerning(sPen);
+      const float fCharWidth = measureCharacter(sPen) + getKerning(sPen);
 
-      if(cChar == ' ')
+      if(canBreakLine(sPen))
       {
          iLastSpaceIndex = (int)sPen.mCharIndex;
          fLineWidthAtLastSpace = fCurrentLineWidth;

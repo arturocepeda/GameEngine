@@ -59,9 +59,10 @@ namespace GE { namespace Entities
       uint32_t mTextLength;
       uint32_t mCharacterCountLimit;
 
-      uint16_t getGlyphIndex(size_t pCharIndex);
+      uint16_t getGlyphIndex(size_t pCharIndex) const;
+      bool canBreakLine(const Pen& pPen) const;
 
-      virtual float getDefaultVerticalOffset();
+      virtual float getDefaultVerticalOffset() const;
 
       void evaluateRichTextTag(Pen* pPen);
       void processVariables();
@@ -105,7 +106,7 @@ namespace GE { namespace Entities
       GESTLVector(float) mVertexData;
       GESTLVector(ushort) mIndices;
 
-      virtual float getDefaultVerticalOffset() override;
+      virtual float getDefaultVerticalOffset() const override;
 
       virtual void generateText() override;
 
