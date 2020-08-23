@@ -107,7 +107,7 @@ uint16_t ComponentLabelBase::getGlyphIndex(size_t pCharIndex) const
 
 bool ComponentLabelBase::canBreakLine(const Pen& pPen) const
 {
-   if(mText[pPen.mCharIndex] == ' ')
+   if(mText[pPen.mCharIndex] == ' ' && mTextExtension[pPen.mCharIndex] == 0)
    {
       return true;
    }
@@ -750,7 +750,7 @@ void ComponentLabel::generateText()
 
       float fAdvanceX = measureCharacter(sPen);
 
-      if(mText[sPen.mCharIndex] != ' ')
+      if(mText[sPen.mCharIndex] != ' ' || mTextExtension[sPen.mCharIndex] != 0)
       {
          const uint16_t iGlyphIndex = getGlyphIndex((size_t)sPen.mCharIndex);
          const uint32_t penCharSetIndex = font->getCharacterSetIndex(sPen.mFontStyle);
