@@ -132,6 +132,11 @@ bool ComponentLabelBase::canBreakLine(const Pen& pPen) const
    return false;
 }
 
+float ComponentLabelBase::getInternalFontSize() const
+{
+   return mFontSize;
+}
+
 float ComponentLabelBase::getDefaultVerticalOffset() const
 {
    return 0.0f;
@@ -210,7 +215,7 @@ void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
       {
          if(tagClosing)
          {
-            pPen->mFontSize = getFontSize() * mFontResizeFactor;
+            pPen->mFontSize = getInternalFontSize() * mFontResizeFactor;
          }
          else
          {
@@ -455,6 +460,24 @@ ComponentLabel::~ComponentLabel()
    EventHandlingObject::disconnectStaticEventCallback(Events::LocalizedStringsReloaded, this);
 }
 
+float ComponentLabel::getInternalFontSize() const
+{
+   float fontSize = mFontSize;
+   Font* font = getFont();
+
+   if(font)
+   {
+      const bool nonLatinFont = font->getName() != mFont->getName();
+
+      if(nonLatinFont)
+      {
+         fontSize *= mFont->getNonLatinSizeFactor();
+      }
+   }
+
+   return fontSize;
+}
+
 float ComponentLabel::getDefaultVerticalOffset() const
 {
    float verticalOffset = 0.0f;
@@ -485,7 +508,7 @@ void ComponentLabel::generateText()
       return;
    }
 
-   const float fontSize = getFontSize();
+   const float fontSize = getInternalFontSize();
    const float defaultVerticalOffset = getDefaultVerticalOffset();
 
    Pen sPen;
@@ -877,24 +900,6 @@ float ComponentLabel::getKerning(const Pen& pPen)
    }
 
    return kerning;
-}
-
-float ComponentLabel::getFontSize() const
-{
-   float fontSize = mFontSize;
-   Font* font = getFont();
-
-   if(font)
-   {
-      const bool nonLatinFont = font->getName() != mFont->getName();
-
-      if(nonLatinFont)
-      {
-         fontSize *= mFont->getNonLatinSizeFactor();
-      }
-   }
-
-   return fontSize;
 }
 
 Font* ComponentLabel::getFont() const

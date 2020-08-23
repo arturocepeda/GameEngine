@@ -62,6 +62,7 @@ namespace GE { namespace Entities
       uint16_t getGlyphIndex(size_t pCharIndex) const;
       bool canBreakLine(const Pen& pPen) const;
 
+      virtual float getInternalFontSize() const;
       virtual float getDefaultVerticalOffset() const;
 
       void evaluateRichTextTag(Pen* pPen);
@@ -70,7 +71,7 @@ namespace GE { namespace Entities
       virtual void generateText() = 0;
 
    public:
-      virtual float getFontSize() const;
+      float getFontSize() const;
       Alignment getAlignment() const;
       const char* getText() const;
       const Core::ObjectName& getStringID() const;
@@ -106,6 +107,7 @@ namespace GE { namespace Entities
       GESTLVector(float) mVertexData;
       GESTLVector(ushort) mIndices;
 
+      virtual float getInternalFontSize() const override;
       virtual float getDefaultVerticalOffset() const override;
 
       virtual void generateText() override;
@@ -118,8 +120,6 @@ namespace GE { namespace Entities
 
       ComponentLabel(Entity* pOwner);
       ~ComponentLabel();
-
-      virtual float getFontSize() const override;
 
       Rendering::Font* getFont() const;
       const Core::ObjectName& getFontName() const;
