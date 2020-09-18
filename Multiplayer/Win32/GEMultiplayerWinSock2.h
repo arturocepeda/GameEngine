@@ -23,39 +23,42 @@ namespace GE { namespace Multiplayer
    class WinSock2
    {
    protected:
-      SOCKET hSocket;
-      int iStatus;
+      SOCKET mSocket;
 
-      void init();
+      void init(Protocol pProtocol);
       void release();
    };
 
-   class ClientWinSock2 : public Client, public WinSock2
-   {
-   private:
-      sockaddr_in sServerAddress;
-
-   public:
-      ClientWinSock2();
-      ~ClientWinSock2();
-
-      void connectToServer(const char* IP, unsigned int Port) override;
-
-      void sendMessage(const char* Message, unsigned int Size) override;
-      int receiveMessage(char* Buffer, unsigned int MaxSize) override;
-   };
 
    class ServerWinSock2 : public Server, public WinSock2
    {
    public:
-      ServerWinSock2();
-      ~ServerWinSock2();
+      ServerWinSock2(Protocol pProtocol);
+      virtual ~ServerWinSock2();
 
-      void activeServer(unsigned int Port) override;
+      virtual void activateServer(uint32_t pPort) override;
 
-      void sendMessage(const SRemoteAddress& ClientAddress, const char* Message, unsigned int Size) override;
-      int receiveMessage(SRemoteAddress* ClientAddress, char* Buffer, unsigned int MaxSize) override;
+      virtual void sendMessage(const RemoteAddress& pClientAddress,
+         const char* pMessage, uint32_t pSize) override;
+      virtual int receiveMessage(RemoteAddress* pClientAddress,
+         char* pBuffer, uint32_t pMaxSize) override;
 
-      char* getClientIP(unsigned int Client) override;
+      virtual char* getClientIP(uint32_t pClient) override;
+   };
+
+
+   class ClientWinSock2 : public Client, public WinSock2
+   {
+   private:
+      sockaddr_in mServerAddress;
+
+   public:
+      ClientWinSock2(Protocol pProtocol);
+      virtual ~ClientWinSock2();
+
+      virtual void connectToServer(const char* pIP, uint32_t pPort) override;
+
+      virtual void sendMessage(const char* pMessage, uint32_t pSize) override;
+      virtual int receiveMessage(char* pBuffer, uint32_t pMaxSize) override;
    };
 }}

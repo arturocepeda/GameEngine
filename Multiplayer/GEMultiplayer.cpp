@@ -14,17 +14,39 @@
 
 using namespace GE::Multiplayer;
 
-//
-//  Client
-//
-Client::~Client()
-{
-}
-
 
 //
 //  Server
 //
+Server::Server(Protocol)
+   : mActive(false)
+{
+}
+
 Server::~Server()
 {
 }
+
+bool Server::active() const
+{
+   return mActive;
+}
+
+
+//
+//  Client
+//
+Client::Client(Protocol)
+   : mConnected(false)
+{
+}
+
+Client::~Client()
+{
+}
+
+bool Client::connected() const
+{
+   return mConnected;
+}
+

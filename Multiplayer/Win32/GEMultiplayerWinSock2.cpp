@@ -19,83 +19,41 @@ using namespace GE::Multiplayer;
 //
 //  WinSock2
 //
-void WinSock2::init()
+void WinSock2::init(Protocol pProtocol)
 {
    // initialize winsock
    WSADATA wsaData;
    WSAStartup(MAKEWORD(2, 2), &wsaData);
 
    // create socket
-   hSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+   mSocket = pProtocol == Protocol::TCP
+      ? socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+      : socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-   if(hSocket == INVALID_SOCKET)
+   if(mSocket == INVALID_SOCKET)
    {
-      iStatus = -1;
       return;
    }
 
    // set non-blocking mode
-   u_long iMode = 1;
-   ioctlsocket(hSocket, FIONBIO, &iMode);
+   u_long iMode = 1u;
+   ioctlsocket(mSocket, FIONBIO, &iMode);
 }
 
 void WinSock2::release()
 {
-   closesocket(hSocket);
+   closesocket(mSocket);
    WSACleanup();
-}
-
-
-//
-//  ClientWinSock2
-//
-ClientWinSock2::ClientWinSock2()
-{
-   memset(&sServerAddress, 0, sizeof(sServerAddress));
-   init();
-}
-
-ClientWinSock2::~ClientWinSock2()
-{
-   release();
-}
-
-void ClientWinSock2::connectToServer(const char* IP, unsigned int Port)
-{
-   sServerAddress.sin_family = AF_INET;
-   sServerAddress.sin_addr.s_addr = inet_addr(IP);
-   sServerAddress.sin_port = htons(Port);
-
-   if(connect(hSocket, (sockaddr*)&sServerAddress, sizeof(sServerAddress)) != 0)
-      iStatus = -1;
-}
-
-void ClientWinSock2::sendMessage(const char* Message, unsigned int Size)
-{
-   sendto(hSocket, Message, Size, 0, (sockaddr*)&sServerAddress, sizeof(sServerAddress));
-}
-
-int ClientWinSock2::receiveMessage(char* Buffer, unsigned int MaxSize)
-{
-   int iBytes;
-   sockaddr_in sRemoteAddress;
-   int iFromLen = sizeof(sRemoteAddress);
-
-   iBytes = recvfrom(hSocket, Buffer, MaxSize, 0, (sockaddr*)&sRemoteAddress, &iFromLen);
-
-   if(sRemoteAddress.sin_addr.s_addr == sServerAddress.sin_addr.s_addr)
-      return iBytes;
-   else
-      return 0;
 }
 
 
 //
 //  ServerWinSock2
 //
-ServerWinSock2::ServerWinSock2()
+ServerWinSock2::ServerWinSock2(Protocol pProtocol)
+   : Server(pProtocol)
 {
-   init();
+   init(pProtocol);
 }
 
 ServerWinSock2::~ServerWinSock2()
@@ -103,52 +61,110 @@ ServerWinSock2::~ServerWinSock2()
    release();
 }
 
-void ServerWinSock2::activeServer(unsigned int Port)
+void ServerWinSock2::activateServer(uint32_t pPort)
 {
+   mActive = false;
+
    sockaddr_in sServerAddress;
    memset(&sServerAddress, 0, sizeof(sServerAddress));
 
    sServerAddress.sin_family = AF_INET;
    sServerAddress.sin_addr.s_addr = INADDR_ANY;
-   sServerAddress.sin_port = htons(Port);
+   sServerAddress.sin_port = htons(pPort);
 
-   if(bind(hSocket, (sockaddr*)&sServerAddress, sizeof(sServerAddress)) != 0)
-      iStatus = -1;
+   mActive = bind(mSocket, (sockaddr*)&sServerAddress, sizeof(sServerAddress)) == 0;
 }
 
-void ServerWinSock2::sendMessage(const SRemoteAddress& ClientAddress, const char* Message, unsigned int Size)
+void ServerWinSock2::sendMessage(const RemoteAddress& pClientAddress,
+   const char* pMessage, uint32_t pSize)
 {
    sockaddr_in sClientAddress;
    memset(&sClientAddress, 0, sizeof(sClientAddress));
 
    sClientAddress.sin_family = AF_INET;
-   sClientAddress.sin_addr.s_addr = ClientAddress.IP;
-   sClientAddress.sin_port = htons(ClientAddress.Port);
+   sClientAddress.sin_addr.s_addr = pClientAddress.mIP;
+   sClientAddress.sin_port = htons(pClientAddress.mPort);
 
-   sendto(hSocket, Message, Size, 0, (sockaddr*)&sClientAddress, sizeof(sClientAddress));
+   sendto(mSocket, pMessage, (int)pSize, 0, (sockaddr*)&sClientAddress, sizeof(sClientAddress));
 }
 
-int ServerWinSock2::receiveMessage(SRemoteAddress* ClientAddress, char* Buffer, unsigned int MaxSize)
+int ServerWinSock2::receiveMessage(RemoteAddress* pClientAddress,
+   char* pBuffer, uint32_t pMaxSize)
 {
-   int iBytes;
-   sockaddr_in sClientAddress;
-   int iFromLen = sizeof(sClientAddress);
+   sockaddr_in clientAddress;
+   int fromLen = sizeof(clientAddress);
 
-   iBytes = recvfrom(hSocket, Buffer, MaxSize, 0, (sockaddr*)&sClientAddress, &iFromLen);    
+   const int bytes =
+      recvfrom(mSocket, pBuffer, (int)pMaxSize, 0, (sockaddr*)&clientAddress, &fromLen);
 
-   if(iBytes > 0)
+   if(bytes > 0)
    {
-      ClientAddress->IP = sClientAddress.sin_addr.s_addr;
-      ClientAddress->Port = htons(sClientAddress.sin_port);
+      pClientAddress->mIP = clientAddress.sin_addr.s_addr;
+      pClientAddress->mPort = htons(clientAddress.sin_port);
    }
 
-   return iBytes;
+   return bytes;
 }
 
-char* ServerWinSock2::getClientIP(unsigned int Client)
+char* ServerWinSock2::getClientIP(uint32_t pClient)
 {
-   in_addr sAddress;
-   sAddress.s_addr = Client;
+   static const size_t kBufferSize = 64u;
+   static char ipString[kBufferSize];
 
-   return inet_ntoa(sAddress);
+   inet_ntop(AF_INET, &pClient, ipString, kBufferSize);
+
+   return ipString;
+}
+
+
+//
+//  ClientWinSock2
+//
+ClientWinSock2::ClientWinSock2(Protocol pProtocol)
+   : Client(pProtocol)
+{
+   memset(&mServerAddress, 0, sizeof(mServerAddress));
+   init(pProtocol);
+}
+
+ClientWinSock2::~ClientWinSock2()
+{
+   release();
+}
+
+void ClientWinSock2::connectToServer(const char* pIP, uint32_t pPort)
+{
+   mConnected = false;
+
+   uint32_t binaryIP;
+
+   if(inet_pton(AF_INET, pIP, &binaryIP))
+   {
+      mServerAddress.sin_family = AF_INET;
+      mServerAddress.sin_addr.s_addr = binaryIP;
+      mServerAddress.sin_port = htons(pPort);
+
+      mConnected = connect(mSocket, (sockaddr*)&mServerAddress, sizeof(mServerAddress)) == 0;
+   }
+}
+
+void ClientWinSock2::sendMessage(const char* pMessage, uint32_t pSize)
+{
+   sendto(mSocket, pMessage, (int)pSize, 0, (sockaddr*)&mServerAddress, sizeof(mServerAddress));
+}
+
+int ClientWinSock2::receiveMessage(char* pBuffer, uint32_t pMaxSize)
+{
+   sockaddr_in remoteAddress;
+   int fromLen = sizeof(remoteAddress);
+
+   const int bytes =
+      recvfrom(mSocket, pBuffer, (int)pMaxSize, 0, (sockaddr*)&remoteAddress, &fromLen);
+
+   if(remoteAddress.sin_addr.s_addr == mServerAddress.sin_addr.s_addr)
+   {
+      return bytes;
+   }
+
+   return 0;
 }

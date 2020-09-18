@@ -132,6 +132,8 @@
     <ClCompile Include="Externals\stblib\stb_image.c" />
     <ClCompile Include="Externals\tlsf\tlsf.c" />
     <ClCompile Include="Input\GEInputSystem.cpp" />
+    <ClCompile Include="Multiplayer\GEMultiplayer.cpp" />
+    <ClCompile Include="Multiplayer\Win32\GEMultiplayerWinSock2.cpp" />
     <ClCompile Include="Rendering\DX11\GERenderingShadersDX11.cpp" />
     <ClCompile Include="Rendering\DX11\GERenderSystemDX11.cpp" />
     <ClCompile Include="Rendering\DX11\GERenderTextureDX11.cpp" />
@@ -253,6 +255,8 @@
     <ClInclude Include="Externals\stblib\stb_perlin.h" />
     <ClInclude Include="Externals\tlsf\tlsf.h" />
     <ClInclude Include="Input\GEInputSystem.h" />
+    <ClInclude Include="Multiplayer\GEMultiplayer.h" />
+    <ClInclude Include="Multiplayer\Win32\GEMultiplayerWinSock2.h" />
     <ClInclude Include="Rendering\DX11\GERenderingShadersDX11.h" />
     <ClInclude Include="Rendering\DX11\GERenderSystemDX11.h" />
     <ClInclude Include="Rendering\DX11\GERenderTextureDX11.h" />
