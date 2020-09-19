@@ -48,6 +48,7 @@ namespace GE { namespace Multiplayer
       RemoteConnection();
 
       bool valid() const;
+      const char* getIP() const;
    };
 
 
@@ -81,8 +82,6 @@ namespace GE { namespace Multiplayer
 
       void sendMessage(const RemoteConnection& pClient, const char* pMessage, size_t pSize);
       int receiveMessage(RemoteConnection* pClient, char* pBuffer, size_t pMaxSize);
-
-      char* getClientIP(uint32_t pClient);
    };
 
 

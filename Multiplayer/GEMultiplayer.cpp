@@ -38,6 +38,16 @@ bool RemoteConnection::valid() const
    return mSocket > 0 || mIP > 0u;
 }
 
+const char* RemoteConnection::getIP() const
+{
+   static const size_t kBufferSize = 64u;
+   static char ipString[kBufferSize];
+
+   inet_ntop(AF_INET, &mIP, ipString, kBufferSize);
+
+   return ipString;
+}
+
 
 //
 //  Host
@@ -137,12 +147,12 @@ void Server::acceptClientConnection()
       {
          RemoteConnection connection;
          connection.mSocket = socket;
+         connection.mIP = remoteAddress.sin_addr.s_addr;
+         connection.mPort = htons(remoteAddress.sin_port);
          mConnectedClients.push_back(connection);
-      }
-      else
-      {
-         const int errorCode = WSAGetLastError();
-         int foo = 0;
+
+         Log::log(LogType::Info, "[Server] Established connection with client %s:%u",
+            connection.getIP(), connection.mPort);
       }
    }
 }
@@ -220,6 +230,9 @@ int Server::receiveMessage(RemoteConnection* pClient, char* pBuffer, size_t pMax
          {
             mConnectedClients.push_back(*pClient);
             pClient = &mConnectedClients.back();
+
+            Log::log(LogType::Info, "[Server] Established connection with client %s:%u",
+               pClient->getIP(), pClient->mPort);
          }
 
          return bytes;
@@ -227,16 +240,6 @@ int Server::receiveMessage(RemoteConnection* pClient, char* pBuffer, size_t pMax
    }
 
    return 0;
-}
-
-char* Server::getClientIP(uint32_t pClient)
-{
-   static const size_t kBufferSize = 64u;
-   static char ipString[kBufferSize];
-
-   inet_ntop(AF_INET, &pClient, ipString, kBufferSize);
-
-   return ipString;
 }
 
 
