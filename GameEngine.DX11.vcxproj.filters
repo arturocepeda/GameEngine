@@ -58,9 +58,6 @@
     <Filter Include="Multiplayer">
       <UniqueIdentifier>{fd96b272-f31c-4384-b345-b70bb79118f2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Multiplayer.Win32">
-      <UniqueIdentifier>{a32c5db4-06d0-4722-b365-cc360047b2e9}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
@@ -459,9 +456,6 @@
     <ClCompile Include="Multiplayer\GEMultiplayer.cpp">
       <Filter>Multiplayer</Filter>
     </ClCompile>
-    <ClCompile Include="Multiplayer\Win32\GEMultiplayerWinSock2.cpp">
-      <Filter>Multiplayer.Win32</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\GEAudioSystem.h">
@@ -826,9 +820,6 @@
     </ClInclude>
     <ClInclude Include="Multiplayer\GEMultiplayer.h">
       <Filter>Multiplayer</Filter>
-    </ClInclude>
-    <ClInclude Include="Multiplayer\Win32\GEMultiplayerWinSock2.h">
-      <Filter>Multiplayer.Win32</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
