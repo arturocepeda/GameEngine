@@ -21,6 +21,9 @@
 #if defined(GE_PLATFORM_WINDOWS)
 
 
+# if !defined (_WINSOCKAPI_)
+#  define _WINSOCKAPI_
+# endif
 # include <windows.h>
 
 

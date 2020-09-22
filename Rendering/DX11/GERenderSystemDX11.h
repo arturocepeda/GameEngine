@@ -14,6 +14,10 @@
 
 #include "Core/GEPlatform.h"
 
+#if !defined (_WINSOCKAPI_)
+# define _WINSOCKAPI_
+#endif
+
 #include <windows.h>
 #include <wrl.h>
 

@@ -12,7 +12,10 @@
 
 #pragma once
 
-#ifdef WIN32
+#if defined (WIN32)
+# if !defined (_WINSOCKAPI_)
+#  define _WINSOCKAPI_
+# endif
 # include <windows.h>
 #else
 # include <sys/time.h>

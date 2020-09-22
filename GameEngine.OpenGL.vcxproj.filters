@@ -55,6 +55,9 @@
     <Filter Include="Externals\freetype2\modules">
       <UniqueIdentifier>{ce4b3ec0-86fd-4ba3-bb3e-dc65bb9e088a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Multiplayer">
+      <UniqueIdentifier>{a4288e61-949f-4bb7-8b05-6b3cf95d25d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
@@ -447,6 +450,9 @@
     <ClCompile Include="Rendering\GETextRasterizer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Multiplayer\GEMultiplayer.cpp">
+      <Filter>Multiplayer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\GEAudioSystem.h">
@@ -805,6 +811,9 @@
     </ClInclude>
     <ClInclude Include="Rendering\GETextRasterizer.h">
       <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Multiplayer\GEMultiplayer.h">
+      <Filter>Multiplayer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
