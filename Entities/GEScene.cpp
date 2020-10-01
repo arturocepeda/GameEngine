@@ -532,26 +532,66 @@ Entity* Scene::getEntityByIndex(uint Index) const
    return vEntities[Index];
 }
 
-void Scene::registerComponent(ComponentType eType, Component* cComponent)
+void Scene::registerComponent(ComponentType pType, Component* pComponent)
 {
-   GEAssert(cComponent);
+   GEAssert(pComponent);
    GEMutexLock(mSceneMutex);
-   vComponents[(uint)eType].push_back(cComponent);
+   vComponents[(uint32_t)pType].push_back(pComponent);
    GEMutexUnlock(mSceneMutex);
 }
 
-void Scene::removeComponent(ComponentType eType, Component* cComponent)
+void Scene::removeComponent(ComponentType pType, Component* pComponent)
 {
-   GEAssert(cComponent);
+   GEAssert(pComponent);
    GEMutexLock(mSceneMutex);
 
-   GESTLVector(Component*)& vComponentList = vComponents[(uint)eType];
+   GESTLVector(Component*)& vComponentList = vComponents[(uint32_t)pType];
 
-   for(uint i = 0; i < vComponentList.size(); i++)
+   for(uint32_t i = 0u; i < vComponentList.size(); i++)
    {
-      if(vComponentList[i] == cComponent)
+      if(vComponentList[i] == pComponent)
       {
          vComponentList.erase(vComponentList.begin() + i);
+         break;
+      }
+   }
+
+   GEMutexUnlock(mSceneMutex);
+}
+
+void Scene::bringComponentToFront(ComponentType pType, Component* pComponent)
+{
+   GEAssert(pComponent);
+   GEMutexLock(mSceneMutex);
+
+   GESTLVector(Component*)& vComponentList = vComponents[(uint)pType];
+
+   for(uint32_t i = 0u; i < vComponentList.size(); i++)
+   {
+      if(vComponentList[i] == pComponent)
+      {
+         vComponentList.erase(vComponentList.begin() + i);
+         vComponentList.insert(vComponentList.begin(), pComponent);
+         break;
+      }
+   }
+
+   GEMutexUnlock(mSceneMutex);
+}
+
+void Scene::sendComponentToBack(ComponentType pType, Component* pComponent)
+{
+   GEAssert(pComponent);
+   GEMutexLock(mSceneMutex);
+
+   GESTLVector(Component*)& vComponentList = vComponents[(uint)pType];
+
+   for(uint32_t i = 0u; i < vComponentList.size(); i++)
+   {
+      if(vComponentList[i] == pComponent)
+      {
+         vComponentList.erase(vComponentList.begin() + i);
+         vComponentList.push_back(pComponent);
          break;
       }
    }

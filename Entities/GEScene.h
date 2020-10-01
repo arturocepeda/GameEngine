@@ -112,8 +112,10 @@ namespace GE { namespace Entities
          GEMutexUnlock(mSceneMutex);
       }
 
-      void registerComponent(ComponentType eType, Component* cComponent);
-      void removeComponent(ComponentType eType, Component* cComponent);
+      void registerComponent(ComponentType pType, Component* pComponent);
+      void removeComponent(ComponentType pType, Component* pComponent);
+      void bringComponentToFront(ComponentType pType, Component* pComponent);
+      void sendComponentToBack(ComponentType pType, Component* pComponent);
 
       template<typename T>
       const GESTLVector(Component*)& getComponents()

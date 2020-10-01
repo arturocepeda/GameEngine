@@ -1020,6 +1020,8 @@ void Environment::registerTypes()
       , "cloneEntity", &Scene::cloneEntity
       , "removeEntity", (bool (Scene::*)(const ObjectName&))&Scene::removeEntity
       , "renameEntity", &Scene::renameEntity
+      , "setEntityParent", &Scene::setEntityParent
+      , "sendComponentToBack", &Scene::sendComponentToBack
       , "setupEntityFromPrefab", &Scene::setupEntityFromPrefab
       , sol::base_classes, sol::bases<Serializable>()
    );
