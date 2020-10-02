@@ -523,7 +523,7 @@ void Environment::setDebugBreakpointLine(uint32_t pLine)
 
 void Environment::enableDebugger()
 {
-   mLua["debugger"] = [this](int pEvent, int pLine)
+   mLua["debugger"] = [this](const char* pEvent, int pLine)
    {
       if(!mDebuggerActive)
       {
@@ -537,60 +537,65 @@ void Environment::enableDebugger()
          }
       }
 
-      std::string sCodeStr = mLua.script("return debug.getinfo(3).source");
-      size_t iCodeLength = sCodeStr.length();
+      const std::string scriptFileName = mLua.script("return debug.getinfo(3).source");
 
-      char sCodeLine[256];
-      int iCurrentLine = 1;
+      ContentData scriptData;
+      Device::readContentFile(
+         ContentType::GenericTextData, "Scripts", scriptFileName.c_str(), "lua", &scriptData);
+      const char* code = scriptData.getData();
+      const size_t codeLength = (size_t)scriptData.getDataSize();
 
-      size_t iCodeGlobalCharIndex = 0;
-      size_t iCodeLineCharIndex = 0;
+      char codeLine[256];
+      int currentLine = 1;
+
+      size_t codeGlobalCharIndex = 0u;
+      size_t codeLineCharIndex = 0u;
 
       printf("\n");
 
-      while(iCodeGlobalCharIndex < iCodeLength)
+      while(codeGlobalCharIndex < codeLength)
       {
-         while(sCodeStr[iCodeGlobalCharIndex] != '\n' && sCodeStr[iCodeGlobalCharIndex] != '\0')
+         while(code[codeGlobalCharIndex] != '\n' && code[codeGlobalCharIndex] != '\0')
          {
-            sCodeLine[iCodeLineCharIndex++] = sCodeStr[iCodeGlobalCharIndex++];
+            codeLine[codeLineCharIndex++] = code[codeGlobalCharIndex++];
          }
 
-         sCodeLine[iCodeLineCharIndex] = '\0';
-         iCodeLineCharIndex = 0;
+         codeLine[codeLineCharIndex] = '\0';
+         codeLineCharIndex = 0;
 
-         if(abs(iCurrentLine - pLine) < 10)
+         if(abs(currentLine - pLine) < 10)
          {
-            printf("%c%4d: %s\n", iCurrentLine == pLine ? '>' : ' ', iCurrentLine, sCodeLine);
+            printf("%c%4d: %s\n", currentLine == pLine ? '>' : ' ', currentLine, codeLine);
          }
 
-         iCurrentLine++;
-         iCodeGlobalCharIndex++;
+         currentLine++;
+         codeGlobalCharIndex++;
       }
 
-      std::string sCommandBuffer;
-      bool bContinue = false;
+      std::string commandBuffer;
+      bool continueExecution = false;
 
       do
       {
          printf("\nDebugger> ");
-         std::getline(std::cin, sCommandBuffer);
+         std::getline(std::cin, commandBuffer);
 
-         if(strcmp(sCommandBuffer.c_str(), "exit") == 0)
+         if(strcmp(commandBuffer.c_str(), "exit") == 0)
          {
             disableDebugger();
-            bContinue = true;
+            continueExecution = true;
          }
-         else if(strcmp(sCommandBuffer.c_str(), "s") == 0)
+         else if(strcmp(commandBuffer.c_str(), "s") == 0)
          {
-            bContinue = true;
+            continueExecution = true;
          }
          else
          {
-            mLua.script(sCommandBuffer);
-            bContinue = false;
+            mLua.script(commandBuffer);
+            continueExecution = false;
          }
       }
-      while(!bContinue);
+      while(!continueExecution);
    };
    mLua.script("debug.sethook(debugger, \"l\")");
 }

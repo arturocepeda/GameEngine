@@ -87,7 +87,8 @@ ScriptInstance::ScriptInstance()
    });
    registerAction(cDebugActionName, [this]
    {
-      //TODO: cEnv->enableDebugger();
+      Environment* env = getEnvironment();
+      env->enableDebugger();
    });
 #endif
 
@@ -136,9 +137,7 @@ void ScriptInstance::setScriptName(const ObjectName& pName)
    }
    
    ComponentScript* owner = static_cast<ComponentScript*>(cOwner);
-   const uint32_t envIndex = getThreadSafe() ? owner->getJobIndex() : 0u;
-
-   Environment* env = Application::getScriptingEnvironment(envIndex);
+   Environment* env = getEnvironment();
    Namespace* globalNS = env->getGlobalNamespace();
    mNamespace = globalNS->addNamespaceFromModule(mNamespaceName, pName.getString());
 
@@ -183,10 +182,12 @@ uint8_t ScriptInstance::getScriptSettings() const
    return mScriptSettings;
 }
 
-void ScriptInstance::setDebugBreakpointLine(uint Line)
+void ScriptInstance::setDebugBreakpointLine(uint pLine)
 {
-   mDebugBreakpointLine = Line;
-   //TODO: cEnv->setDebugBreakpointLine(Line);
+   mDebugBreakpointLine = pLine;
+
+   Environment* env = getEnvironment();
+   env->setDebugBreakpointLine(pLine);
 }
 
 uint ScriptInstance::getDebugBreakpointLine() const
@@ -214,6 +215,13 @@ bool ScriptInstance::getActive() const
 bool ScriptInstance::getThreadSafe() const
 {
    return GEHasFlag(mScriptSettings, ScriptSettingsBitMask::ThreadSafe);
+}
+
+Environment* ScriptInstance::getEnvironment() const
+{
+   ComponentScript* owner = static_cast<ComponentScript*>(cOwner);
+   const uint32_t envIndex = getThreadSafe() ? owner->getJobIndex() : 0u;
+   return Application::getScriptingEnvironment(envIndex);
 }
 
 void ScriptInstance::registerScriptProperties()

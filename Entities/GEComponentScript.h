@@ -58,6 +58,8 @@ namespace GE { namespace Entities
 #endif
       uint mDebugBreakpointLine;
 
+      Scripting::Environment* getEnvironment() const;
+
       void registerScriptProperties();
       void registerScriptActions();
 
