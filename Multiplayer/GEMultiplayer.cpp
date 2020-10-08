@@ -52,7 +52,6 @@ namespace GE { namespace Multiplayer
    {
    protected:
       GESocket mSocket;
-      Protocol mProtocol;
 
       Host(Protocol pProtocol);
       ~Host();
@@ -170,7 +169,6 @@ const char* RemoteConnectionSocket::getID() const
 //  Host
 //
 Host::Host(Protocol pProtocol)
-   : mProtocol(pProtocol)
 {
 #if defined (GE_PLATFORM_WINDOWS)
    // initialize winsock

@@ -132,7 +132,6 @@
     <ClCompile Include="Externals\stblib\stb_image.c" />
     <ClCompile Include="Externals\tlsf\tlsf.c" />
     <ClCompile Include="Input\GEInputSystem.cpp" />
-    <ClCompile Include="Multiplayer\GEMultiplayer.cpp" />
     <ClCompile Include="Rendering\DX11\GERenderingShadersDX11.cpp" />
     <ClCompile Include="Rendering\DX11\GERenderSystemDX11.cpp" />
     <ClCompile Include="Rendering\DX11\GERenderTextureDX11.cpp" />

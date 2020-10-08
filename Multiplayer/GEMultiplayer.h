@@ -42,7 +42,9 @@ namespace GE { namespace Multiplayer
       static void release(Server* pServer);
 
    protected:
-      Server(Protocol pProtocol) {}
+      Protocol mProtocol;
+
+      Server(Protocol pProtocol) : mProtocol(pProtocol) {}
       virtual ~Server() {}
 
    public:
@@ -64,7 +66,9 @@ namespace GE { namespace Multiplayer
       static void release(Client* pClient);
 
    protected:
-      Client(Protocol pProtocol) {}
+      Protocol mProtocol;
+
+      Client(Protocol pProtocol) : mProtocol(pProtocol) {}
       virtual ~Client() {}
 
    public:
