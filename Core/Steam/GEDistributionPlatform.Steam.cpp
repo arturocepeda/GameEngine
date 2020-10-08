@@ -31,46 +31,46 @@ template<typename T>
 class SteamCallback : private CCallbackBase
 {
 public:
-	typedef std::function<void(T*, bool)> func_t;
+  typedef std::function<void(T*, bool)> func_t;
 
 private:
-	func_t mFunc;
+  func_t mFunc;
 
-	virtual void Run(void* pParam) override
+  virtual void Run(void* pParam) override
    {
-	   mFunc((T*)pParam, false);
+     mFunc((T*)pParam, false);
    }
-	virtual void Run(void* pParam, bool pIOFailure, SteamAPICall_t) override
+  virtual void Run(void* pParam, bool pIOFailure, SteamAPICall_t) override
    {
       mFunc((T*)pParam, pIOFailure);
    }
-	virtual int GetCallbackSizeBytes() override
+  virtual int GetCallbackSizeBytes() override
    {
       return sizeof(T);
    }
 
 public:
-	SteamCallback()
+  SteamCallback()
       : mFunc(nullptr)
    {
-	   m_iCallback = T::k_iCallback;
+     m_iCallback = T::k_iCallback;
    }
-	~SteamCallback()
+  ~SteamCallback()
    {
       Cancel();
    }
-	
-	void Set(func_t pFunc)
+  
+  void Set(func_t pFunc)
    {
       SteamAPI_UnregisterCallback(this);
 
-	   mFunc = pFunc;
+     mFunc = pFunc;
 
       SteamAPI_RegisterCallback(this, m_iCallback);
    }
-	void Cancel()
+  void Cancel()
    {
-		SteamAPI_UnregisterCallback(this);
+    SteamAPI_UnregisterCallback(this);
       mFunc = nullptr;
    }
 };
@@ -85,71 +85,71 @@ template<typename T>
 class SteamCallResult : private CCallbackBase
 {
 public:
-	typedef std::function<void(T*, bool)> func_t;
+  typedef std::function<void(T*, bool)> func_t;
 
 private:
-	SteamAPICall_t mAPICall;
-	func_t mFunc;
+  SteamAPICall_t mAPICall;
+  func_t mFunc;
 
-	virtual void Run(void* pParam) override
+  virtual void Run(void* pParam) override
    {
-	   mAPICall = k_uAPICallInvalid;
-	   mFunc((T*)pParam, false);
+     mAPICall = k_uAPICallInvalid;
+     mFunc((T*)pParam, false);
    }
-	virtual void Run(void* pParam, bool pIOFailure, SteamAPICall_t pAPICall) override
+  virtual void Run(void* pParam, bool pIOFailure, SteamAPICall_t pAPICall) override
    {
-	   if(mAPICall == pAPICall)
-	   {
-		   mAPICall = k_uAPICallInvalid;
-		   mFunc((T*)pParam, pIOFailure);
-	   }
+     if(mAPICall == pAPICall)
+     {
+       mAPICall = k_uAPICallInvalid;
+       mFunc((T*)pParam, pIOFailure);
+     }
    }
-	virtual int GetCallbackSizeBytes() override
+  virtual int GetCallbackSizeBytes() override
    {
       return sizeof(T);
    }
 
 public:
-	SteamCallResult()
+  SteamCallResult()
       : mAPICall(k_uAPICallInvalid)
       , mFunc(nullptr)
    {
-	   m_iCallback = T::k_iCallback;
+     m_iCallback = T::k_iCallback;
    }
-	~SteamCallResult()
+  ~SteamCallResult()
    {
       Cancel();
    }
-	
-	void Set(SteamAPICall_t pAPICall, func_t pFunc)
+  
+  void Set(SteamAPICall_t pAPICall, func_t pFunc)
    {
-	   if(mAPICall)
+     if(mAPICall)
       {
-		   SteamAPI_UnregisterCallResult(this, mAPICall);
+       SteamAPI_UnregisterCallResult(this, mAPICall);
       }
 
-	   mAPICall = pAPICall;
-	   mFunc = pFunc;
+     mAPICall = pAPICall;
+     mFunc = pFunc;
 
-	   if(mAPICall)
+     if(mAPICall)
       {
-		   SteamAPI_RegisterCallResult(this, mAPICall);
+       SteamAPI_RegisterCallResult(this, mAPICall);
       }
    }
-	bool IsActive() const
+  bool IsActive() const
    {
       return mAPICall != k_uAPICallInvalid;
    }
-	void Cancel()
+  void Cancel()
    {
-	   if(mAPICall != k_uAPICallInvalid)
-	   {
-		   SteamAPI_UnregisterCallResult(this, mAPICall);
-		   mAPICall = k_uAPICallInvalid;
+     if(mAPICall != k_uAPICallInvalid)
+     {
+       SteamAPI_UnregisterCallResult(this, mAPICall);
+       mAPICall = k_uAPICallInvalid;
          mFunc = nullptr;
-	   }
+     }
    }
-	void SetGameserverFlag()
+  void SetGameserverFlag()
    {
       m_nCallbackFlags |= k_ECallbackFlagsGameServer;
    }
@@ -177,6 +177,7 @@ bool DistributionPlatform::init() const
       });
 
       SteamUserStats()->RequestCurrentStats();
+      SteamNetworkingUtils()->InitRelayNetworkAccess();
    }
    else
    {

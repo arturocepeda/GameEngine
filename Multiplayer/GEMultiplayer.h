@@ -12,23 +12,7 @@
 
 #pragma once
 
-#include "Types/GESTLTypes.h"
-#include "Core/GEPlatform.h"
-
 #include <cstdint>
-
-#if defined (GE_PLATFORM_WINDOWS)
-# include <winsock2.h>
-#else
-# include <sys/socket.h>
-# include <arpa/inet.h>
-#endif
-
-#if defined (GE_PLATFORM_WINDOWS)
-# define GESocket SOCKET
-#else
-# define GESocket int
-#endif
 
 namespace GE { namespace Multiplayer
 {
@@ -39,65 +23,55 @@ namespace GE { namespace Multiplayer
    };
 
 
-   struct RemoteConnection
-   {
-      GESocket mSocket;
-      uint32_t mIP;
-      uint16_t mPort;
-
-      RemoteConnection();
-
-      bool valid() const;
-      const char* getIP() const;
-   };
-
-
-   class Host
+   class RemoteConnection
    {
    protected:
-      GESocket mSocket;
-      Protocol mProtocol;
+      RemoteConnection() {}
+      virtual ~RemoteConnection() {}
 
-      Host(Protocol pProtocol);
-
-      void init();
-      void release();
+   public:
+      virtual bool valid() const = 0;
+      virtual const char* getID() const = 0;
    };
 
 
-   class Server : public Host
+   class Server
    {
-   private:
-      GESTLVector(RemoteConnection) mConnectedClients;
+   public:
+      static Server* request(Protocol pProtocol);
+      static void release(Server* pServer);
+
+   protected:
+      Server(Protocol pProtocol) {}
+      virtual ~Server() {}
 
    public:
-      Server(Protocol pProtocol);
-      virtual ~Server();
+      virtual void activateServer(uint16_t pPort) = 0;
 
-      void activateServer(uint16_t pPort);
+      virtual void acceptClientConnection() = 0;
+      virtual size_t getConnectedClientsCount() const = 0;
+      virtual const RemoteConnection* getConnectedClient(size_t pIndex) const = 0;
 
-      void acceptClientConnection();
-      size_t getConnectedClientsCount() const;
-      const RemoteConnection& getConnectedClient(size_t pIndex) const;
-
-      void sendMessage(const RemoteConnection& pClient, const char* pMessage, size_t pSize);
-      int receiveMessage(RemoteConnection* pClient, char* pBuffer, size_t pMaxSize);
+      virtual void sendMessage(const RemoteConnection* pClient, const char* pMessage, size_t pSize) = 0;
+      virtual size_t receiveMessage(RemoteConnection** pOutClient, char* pBuffer, size_t pMaxSize) = 0;
    };
 
 
-   class Client : public Host
+   class Client
    {
-   private:
-      sockaddr_in mServerAddress;
+   public:
+      static Client* request(Protocol pProtocol);
+      static void release(Client* pClient);
+
+   protected:
+      Client(Protocol pProtocol) {}
+      virtual ~Client() {}
 
    public:
-      Client(Protocol pProtocol);
-      virtual ~Client();
+      virtual void connectToServer(const char* pID, uint16_t pPort) = 0;
+      virtual bool connected() const = 0;
 
-      void connectToServer(const char* pIP, uint16_t pPort);
-      bool connected() const;
-
-      void sendMessage(const char* pMessage, size_t pSize);
-      int receiveMessage(char* pBuffer, size_t pMaxSize);
+      virtual void sendMessage(const char* pMessage, size_t pSize) = 0;
+      virtual size_t receiveMessage(char* pBuffer, size_t pMaxSize) = 0;
    };
 }}

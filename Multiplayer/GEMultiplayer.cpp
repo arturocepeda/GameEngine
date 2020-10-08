@@ -12,33 +12,150 @@
 
 #include "GEMultiplayer.h"
 
+#include "Types/GESTLTypes.h"
+#include "Core/GEPlatform.h"
 #include "Core/GELog.h"
 
 #if defined (GE_PLATFORM_WINDOWS)
+# include <winsock2.h>
 # include <WS2tcpip.h>
+
 # pragma comment(lib, "ws2_32.lib")
+
+# define GESocket SOCKET
+#else
+# include <sys/socket.h>
+# include <arpa/inet.h>
+
+# define GESocket int
 #endif
+
+
+namespace GE { namespace Multiplayer
+{
+   class RemoteConnectionSocket : public RemoteConnection
+   {
+   public:
+      GESocket mSocket;
+      uint32_t mIP;
+      uint16_t mPort;
+
+      RemoteConnectionSocket();
+      virtual ~RemoteConnectionSocket();
+
+      virtual bool valid() const override;
+      virtual const char* getID() const override;
+   };
+
+
+   class Host
+   {
+   protected:
+      GESocket mSocket;
+      Protocol mProtocol;
+
+      Host(Protocol pProtocol);
+      ~Host();
+   };
+
+
+   class ServerSocket : public Server, protected Host
+   {
+   private:
+      GESTLVector(RemoteConnectionSocket) mConnectedClients;
+
+   public:
+      ServerSocket(Protocol pProtocol);
+      virtual ~ServerSocket();
+
+      virtual void activateServer(uint16_t pPort) override;
+
+      virtual void acceptClientConnection() override;
+      virtual size_t getConnectedClientsCount() const override;
+      virtual const RemoteConnection* getConnectedClient(size_t pIndex) const override;
+
+      virtual void sendMessage(const RemoteConnection* pClient, const char* pMessage, size_t pSize) override;
+      virtual size_t receiveMessage(RemoteConnection** pOutClient, char* pBuffer, size_t pMaxSize) override;
+   };
+
+
+   class ClientSocket : public Client, protected Host
+   {
+   private:
+      sockaddr_in mServerAddress;
+
+   public:
+      ClientSocket(Protocol pProtocol);
+      virtual ~ClientSocket();
+
+      virtual void connectToServer(const char* pID, uint16_t pPort) override;
+      virtual bool connected() const override;
+
+      virtual void sendMessage(const char* pMessage, size_t pSize) override;
+      virtual size_t receiveMessage(char* pBuffer, size_t pMaxSize) override;
+   };
+}}
+
+
 
 using namespace GE::Core;
 using namespace GE::Multiplayer;
 
 
 //
-//  RemoteConnection
+//  Server
 //
-RemoteConnection::RemoteConnection()
+Server* Server::request(Protocol pProtocol)
+{
+   ServerSocket* server = Allocator::alloc<ServerSocket>();
+   GEInvokeCtor(ServerSocket, server)(pProtocol);
+   return server;
+}
+
+void Server::release(Server* pServer)
+{
+   GEInvokeDtor(Server, pServer);
+   Allocator::free(pServer);
+}
+
+
+//
+//  Client
+//
+Client* Client::request(Protocol pProtocol)
+{
+   ClientSocket* client = Allocator::alloc<ClientSocket>();
+   GEInvokeCtor(ClientSocket, client)(pProtocol);
+   return client;
+}
+
+void Client::release(Client* pClient)
+{
+   GEInvokeDtor(Client, pClient);
+   Allocator::free(pClient);
+}
+
+
+//
+//  RemoteConnectionSocket
+//
+RemoteConnectionSocket::RemoteConnectionSocket()
    : mSocket(0)
    , mIP(0u)
    , mPort(0u)
 {
 }
 
-bool RemoteConnection::valid() const
+RemoteConnectionSocket::~RemoteConnectionSocket()
+{
+}
+
+bool RemoteConnectionSocket::valid() const
 {
    return mSocket > 0 || mIP > 0u;
 }
 
-const char* RemoteConnection::getIP() const
+const char* RemoteConnectionSocket::getID() const
 {
    static const size_t kBufferSize = 64u;
    static char ipString[kBufferSize];
@@ -55,10 +172,6 @@ const char* RemoteConnection::getIP() const
 Host::Host(Protocol pProtocol)
    : mProtocol(pProtocol)
 {
-}
-
-void Host::init()
-{
 #if defined (GE_PLATFORM_WINDOWS)
    // initialize winsock
    WSADATA wsaData;
@@ -66,22 +179,23 @@ void Host::init()
 #endif
 
    // create socket
-   const int socketType = mProtocol == Protocol::TCP ? SOCK_STREAM : SOCK_DGRAM;
+   const int socketType = pProtocol == Protocol::TCP ? SOCK_STREAM : SOCK_DGRAM;
    mSocket = socket(AF_INET, socketType, 0);
 
-   if(mSocket == INVALID_SOCKET)
+   if(mSocket != INVALID_SOCKET)
    {
-      return;
+      // set non-blocking mode
+      u_long mode = 1u;
+      ioctlsocket(mSocket, FIONBIO, &mode);
    }
-
-   // set non-blocking mode
-   u_long iMode = 1u;
-   ioctlsocket(mSocket, FIONBIO, &iMode);
 }
 
-void Host::release()
+Host::~Host()
 {
-   closesocket(mSocket);
+   if(mSocket != INVALID_SOCKET)
+   {
+      closesocket(mSocket);
+   }
 
 #if defined (GE_PLATFORM_WINDOWS)
    WSACleanup();
@@ -90,20 +204,19 @@ void Host::release()
 
 
 //
-//  Server
+//  ServerSocket
 //
-Server::Server(Protocol pProtocol)
-   : Host(pProtocol)
+ServerSocket::ServerSocket(Protocol pProtocol)
+   : Server(pProtocol)
+   , Host(pProtocol)
 {
-   init();
 }
 
-Server::~Server()
+ServerSocket::~ServerSocket()
 {
-   release();
 }
 
-void Server::activateServer(uint16_t pPort)
+void ServerSocket::activateServer(uint16_t pPort)
 {
    sockaddr_in address;
    memset(&address, 0, sizeof(address));
@@ -134,7 +247,7 @@ void Server::activateServer(uint16_t pPort)
    }
 }
 
-void Server::acceptClientConnection()
+void ServerSocket::acceptClientConnection()
 {
    if(mProtocol == Protocol::TCP)
    {
@@ -145,34 +258,36 @@ void Server::acceptClientConnection()
 
       if(socket != INVALID_SOCKET)
       {
-         RemoteConnection connection;
+         RemoteConnectionSocket connection;
          connection.mSocket = socket;
          connection.mIP = remoteAddress.sin_addr.s_addr;
          connection.mPort = htons(remoteAddress.sin_port);
          mConnectedClients.push_back(connection);
 
          Log::log(LogType::Info, "[Server] Established connection with client %s:%u",
-            connection.getIP(), connection.mPort);
+            connection.getID(), connection.mPort);
       }
    }
 }
 
-size_t Server::getConnectedClientsCount() const
+size_t ServerSocket::getConnectedClientsCount() const
 {
    return mConnectedClients.size();
 }
 
-const RemoteConnection& Server::getConnectedClient(size_t pIndex) const
+const RemoteConnection* ServerSocket::getConnectedClient(size_t pIndex) const
 {
    GEAssert(pIndex < mConnectedClients.size());
-   return mConnectedClients[pIndex];
+   return &mConnectedClients[pIndex];
 }
 
-void Server::sendMessage(const RemoteConnection& pClient, const char* pMessage, size_t pSize)
+void ServerSocket::sendMessage(const RemoteConnection* pClient, const char* pMessage, size_t pSize)
 {
+   const RemoteConnectionSocket* client = static_cast<const RemoteConnectionSocket*>(pClient);
+
    if(mProtocol == Protocol::TCP)
    {
-      send(pClient.mSocket, pMessage, (int)pSize, 0);
+      send(client->mSocket, pMessage, (int)pSize, 0);
    }
    else
    {
@@ -180,14 +295,14 @@ void Server::sendMessage(const RemoteConnection& pClient, const char* pMessage, 
       memset(&clientAddress, 0, sizeof(clientAddress));
 
       clientAddress.sin_family = AF_INET;
-      clientAddress.sin_addr.s_addr = pClient.mIP;
-      clientAddress.sin_port = htons(pClient.mPort);
+      clientAddress.sin_addr.s_addr = client->mIP;
+      clientAddress.sin_port = htons(client->mPort);
 
       sendto(mSocket, pMessage, (int)pSize, 0, (sockaddr*)&clientAddress, sizeof(clientAddress));
    }
 }
 
-int Server::receiveMessage(RemoteConnection* pClient, char* pBuffer, size_t pMaxSize)
+size_t ServerSocket::receiveMessage(RemoteConnection** pOutClient, char* pBuffer, size_t pMaxSize)
 {
    if(mProtocol == Protocol::TCP)
    {
@@ -197,8 +312,8 @@ int Server::receiveMessage(RemoteConnection* pClient, char* pBuffer, size_t pMax
 
          if(bytes > 0)
          {
-            pClient = &mConnectedClients[i];
-            return bytes;
+            *pOutClient = &mConnectedClients[i];
+            return (size_t)bytes;
          }
       }
    }
@@ -212,14 +327,14 @@ int Server::receiveMessage(RemoteConnection* pClient, char* pBuffer, size_t pMax
 
       if(bytes > 0)
       {
-         pClient->mIP = clientAddress.sin_addr.s_addr;
-         pClient->mPort = htons(clientAddress.sin_port);
+         const uint32_t ip = clientAddress.sin_addr.s_addr;
+         const uint16_t port = htons(clientAddress.sin_port);
 
          bool clientRegistered = false;
 
          for(size_t i = 0u; i < mConnectedClients.size(); i++)
          {
-            if(mConnectedClients[i].mIP == pClient->mIP)
+            if(mConnectedClients[i].mIP == ip)
             {
                clientRegistered = true;
                break;
@@ -228,41 +343,43 @@ int Server::receiveMessage(RemoteConnection* pClient, char* pBuffer, size_t pMax
 
          if(!clientRegistered)
          {
-            mConnectedClients.push_back(*pClient);
-            pClient = &mConnectedClients.back();
+            RemoteConnectionSocket connection;
+            connection.mIP = ip;
+            connection.mPort = port;
+            mConnectedClients.push_back(connection);
 
-            Log::log(LogType::Info, "[Server] Established connection with client %s:%u",
-               pClient->getIP(), pClient->mPort);
+            *pOutClient = &mConnectedClients.back();
+
+            Log::log(LogType::Info, "[Server] Established connection with client %s:%u", ip, port);
          }
 
-         return bytes;
+         return (size_t)bytes;
       }
    }
 
-   return 0;
+   return 0u;
 }
 
 
 //
-//  Client
+//  ClientSocket
 //
-Client::Client(Protocol pProtocol)
-   : Host(pProtocol)
+ClientSocket::ClientSocket(Protocol pProtocol)
+   : Client(pProtocol)
+   , Host(pProtocol)
 {
    memset(&mServerAddress, 0, sizeof(mServerAddress));
-   init();
 }
 
-Client::~Client()
+ClientSocket::~ClientSocket()
 {
-   release();
 }
 
-void Client::connectToServer(const char* pIP, uint16_t pPort)
+void ClientSocket::connectToServer(const char* pID, uint16_t pPort)
 {
    uint32_t binaryIP;
 
-   if(inet_pton(AF_INET, pIP, &binaryIP))
+   if(inet_pton(AF_INET, pID, &binaryIP))
    {
       mServerAddress.sin_family = AF_INET;
       mServerAddress.sin_addr.s_addr = binaryIP;
@@ -270,11 +387,11 @@ void Client::connectToServer(const char* pIP, uint16_t pPort)
 
       connect(mSocket, (sockaddr*)&mServerAddress, sizeof(mServerAddress));
 
-      Log::log(LogType::Info, "[Client] Attempting to connect to %s:%u...", pIP, pPort);
+      Log::log(LogType::Info, "[Client] Attempting to connect to %s:%u...", pID, pPort);
    }
 }
 
-bool Client::connected() const
+bool ClientSocket::connected() const
 {
    fd_set set;
    set.fd_array[0] = mSocket;
@@ -287,7 +404,7 @@ bool Client::connected() const
    return select(1, nullptr, &set, nullptr, &timeout) == 1;
 }
 
-void Client::sendMessage(const char* pMessage, size_t pSize)
+void ClientSocket::sendMessage(const char* pMessage, size_t pSize)
 {
    if(mProtocol == Protocol::TCP)
    {
@@ -299,7 +416,7 @@ void Client::sendMessage(const char* pMessage, size_t pSize)
    }
 }
 
-int Client::receiveMessage(char* pBuffer, size_t pMaxSize)
+size_t ClientSocket::receiveMessage(char* pBuffer, size_t pMaxSize)
 {
    if(mProtocol == Protocol::TCP)
    {
@@ -307,7 +424,7 @@ int Client::receiveMessage(char* pBuffer, size_t pMaxSize)
 
       if(bytes > 0)
       {
-         return bytes;
+         return (size_t)bytes;
       }
    }
    else
@@ -320,10 +437,10 @@ int Client::receiveMessage(char* pBuffer, size_t pMaxSize)
 
       if(remoteAddress.sin_addr.s_addr == mServerAddress.sin_addr.s_addr)
       {
-         return bytes;
+         return (size_t)bytes;
       }
    }
 
-   return 0;
+   return 0u;
 }
 
