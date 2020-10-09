@@ -23,6 +23,8 @@ namespace GE { namespace Multiplayer
    class RemoteConnectionSteam : public RemoteConnection
    {
    public:
+      HSteamNetConnection mConnection;
+
       RemoteConnectionSteam();
       virtual ~RemoteConnectionSteam();
 
@@ -33,14 +35,27 @@ namespace GE { namespace Multiplayer
 
    class ServerSteam : public Server
    {
+   public:
+      struct ConnectionRequest
+      {
+         HSteamNetConnection mConnection;
+      };
+
    private:
+      HSteamListenSocket mListenSocket;
+      GESTLVector(ConnectionRequest) mConnectionRequests;
       GESTLVector(RemoteConnectionSteam) mConnectedClients;
+
+      static ServerSteam* smInstance;
+      static void onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* pData);
 
    public:
       ServerSteam(Protocol pProtocol);
       virtual ~ServerSteam();
 
       virtual void activateServer(uint16_t pPort) override;
+
+      void addConnectionRequest(const ConnectionRequest& pConnectionRequest);
 
       virtual void acceptClientConnection() override;
       virtual size_t getConnectedClientsCount() const override;
@@ -53,6 +68,9 @@ namespace GE { namespace Multiplayer
 
    class ClientSteam : public Client
    {
+   private:
+      HSteamNetConnection mServerConnection;
+
    public:
       ClientSteam(Protocol pProtocol);
       virtual ~ClientSteam();
@@ -63,12 +81,44 @@ namespace GE { namespace Multiplayer
       virtual void sendMessage(const char* pMessage, size_t pSize) override;
       virtual size_t receiveMessage(char* pBuffer, size_t pMaxSize) override;
    };
+
+
+   static size_t receiveMessageOnConnection(HSteamNetConnection pConnection, char* pBuffer, size_t pMaxSize)
+   {
+      static const int kMaxMessages = 64;
+      SteamNetworkingMessage_t* messages[kMaxMessages];
+
+      const int messagesCount = SteamNetworkingSockets()->ReceiveMessagesOnConnection(pConnection, messages, kMaxMessages);
+
+      if(messagesCount > 0)
+      {
+         char* cursor = pBuffer;
+
+         for(int i = 0; i < messagesCount; i++)
+         {
+            const void* messageData = messages[i]->GetData();
+            const size_t messageSize = (size_t)messages[i]->GetSize();
+
+            GEAssert(((size_t)(cursor - pBuffer) + messageSize) < pMaxSize);
+
+            memcpy(cursor, messageData, messageSize);
+            cursor += messageSize;
+
+            messages[i]->Release();
+         }
+
+         return (size_t)(cursor - pBuffer);
+      }
+
+      return 0u;
+   }
 }}
 
 
 
 using namespace GE::Core;
 using namespace GE::Multiplayer;
+
 
 
 //
@@ -109,6 +159,7 @@ void Client::release(Client* pClient)
 //  RemoteConnectionSteam
 //
 RemoteConnectionSteam::RemoteConnectionSteam()
+   : mConnection(k_HSteamNetConnection_Invalid)
 {
 }
 
@@ -118,7 +169,7 @@ RemoteConnectionSteam::~RemoteConnectionSteam()
 
 bool RemoteConnectionSteam::valid() const
 {
-   return false;
+   return mConnection != k_HSteamNetConnection_Invalid;
 }
 
 const char* RemoteConnectionSteam::getID() const
@@ -130,22 +181,62 @@ const char* RemoteConnectionSteam::getID() const
 //
 //  ServerSteam
 //
+ServerSteam* ServerSteam::smInstance = nullptr;
+
 ServerSteam::ServerSteam(Protocol pProtocol)
    : Server(pProtocol)
+   , mListenSocket(k_HSteamListenSocket_Invalid)
 {
+   smInstance = this;
 }
 
 ServerSteam::~ServerSteam()
 {
+   if(mListenSocket)
+   {
+      SteamNetworkingSockets()->CloseListenSocket(mListenSocket);
+   }
+
+   smInstance = nullptr;
 }
 
-void ServerSteam::activateServer(uint16_t pPort)
+void ServerSteam::onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* pData)
 {
-   (void)pPort;
+   if(pData->m_info.m_eState == k_ESteamNetworkingConnectionState_Connecting)
+   {
+      ConnectionRequest connectionRequest;
+      connectionRequest.mConnection = pData->m_hConn;
+      smInstance->addConnectionRequest(connectionRequest);
+   }
+}
+
+void ServerSteam::activateServer(uint16_t)
+{
+   SteamNetworkingConfigValue_t options;
+   options.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)onSteamNetConnectionStatusChanged);
+   mListenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 0, &options);
+}
+
+void ServerSteam::addConnectionRequest(const ConnectionRequest& pConnectionRequest)
+{
+   mConnectionRequests.push_back(pConnectionRequest);
 }
 
 void ServerSteam::acceptClientConnection()
 {
+   while(!mConnectionRequests.empty())
+   {
+      const ConnectionRequest& connectionRequest = mConnectionRequests.front();
+
+      if(SteamNetworkingSockets()->AcceptConnection(connectionRequest.mConnection) == k_EResultOK)
+      {
+         RemoteConnectionSteam remoteConnection;
+         remoteConnection.mConnection = connectionRequest.mConnection;
+         mConnectedClients.push_back(remoteConnection);
+      }
+
+      mConnectionRequests.erase(mConnectionRequests.begin());
+   }
 }
 
 size_t ServerSteam::getConnectedClientsCount() const
@@ -161,16 +252,24 @@ const RemoteConnection* ServerSteam::getConnectedClient(size_t pIndex) const
 
 void ServerSteam::sendMessage(const RemoteConnection* pClient, const char* pMessage, size_t pSize)
 {
-   (void)pClient;
-   (void)pMessage;
-   (void)pSize;
+   const RemoteConnectionSteam* client = static_cast<const RemoteConnectionSteam*>(pClient);
+   const int sendFlags = mProtocol == Protocol::TCP ? k_nSteamNetworkingSend_Reliable : k_nSteamNetworkingSend_Unreliable;
+   SteamNetworkingSockets()->SendMessageToConnection(client->mConnection, pMessage, (uint32_t)pSize, 0, nullptr);
 }
 
 size_t ServerSteam::receiveMessage(RemoteConnection** pOutClient, char* pBuffer, size_t pMaxSize)
 {
-   (void)pOutClient;
-   (void)pBuffer;
-   (void)pMaxSize;
+   for(size_t i = 0u; i < mConnectedClients.size(); i++)
+   {
+      const RemoteConnectionSteam* client = static_cast<const RemoteConnectionSteam*>(&mConnectedClients[i]);
+      const size_t bytes = receiveMessageOnConnection(client->mConnection, pBuffer, pMaxSize);
+
+      if(bytes > 0u)
+      {
+         *pOutClient = &mConnectedClients[i];
+         return bytes;
+      }
+   }
 
    return 0u;
 }
@@ -188,28 +287,31 @@ ClientSteam::~ClientSteam()
 {
 }
 
-void ClientSteam::connectToServer(const char* pID, uint16_t pPort)
+void ClientSteam::connectToServer(const char* pID, uint16_t)
 {
+   //TODO: get the SteamID from a lobby
    (void)pID;
-   (void)pPort;
+   CSteamID steamID = SteamUser()->GetSteamID();
+
+   SteamNetworkingIdentity serverIdentity;
+   serverIdentity.SetSteamID(steamID);
+
+   mServerConnection = SteamNetworkingSockets()->ConnectP2P(serverIdentity, 0, 0, nullptr);
 }
 
 bool ClientSteam::connected() const
 {
-   return false;
+   return mServerConnection != k_HSteamNetConnection_Invalid;
 }
 
 void ClientSteam::sendMessage(const char* pMessage, size_t pSize)
 {
-   (void)pMessage;
-   (void)pSize;
+   const int sendFlags = mProtocol == Protocol::TCP ? k_nSteamNetworkingSend_Reliable : k_nSteamNetworkingSend_Unreliable;
+   SteamNetworkingSockets()->SendMessageToConnection(mServerConnection, pMessage, (uint32_t)pSize, 0, nullptr);
 }
 
 size_t ClientSteam::receiveMessage(char* pBuffer, size_t pMaxSize)
 {
-   (void)pBuffer;
-   (void)pMaxSize;
-
-   return 0u;
+   return receiveMessageOnConnection(mServerConnection, pBuffer, pMaxSize);
 }
 
