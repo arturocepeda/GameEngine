@@ -46,8 +46,7 @@ namespace GE { namespace Multiplayer
       GESTLVector(ConnectionRequest) mConnectionRequests;
       GESTLVector(RemoteConnectionSteam) mConnectedClients;
 
-      static ServerSteam* smInstance;
-      static void onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* pData);
+      STEAM_CALLBACK(ServerSteam, onSteamNetConnectionStatusChanged, SteamNetConnectionStatusChangedCallback_t);
 
    public:
       ServerSteam(Protocol pProtocol);
@@ -71,8 +70,7 @@ namespace GE { namespace Multiplayer
    private:
       HSteamNetConnection mServerConnection;
 
-      static ClientSteam* smInstance;
-      static void onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* pData);
+      STEAM_CALLBACK(ClientSteam, onSteamNetConnectionStatusChanged, SteamNetConnectionStatusChangedCallback_t);
 
    public:
       ClientSteam(Protocol pProtocol);
@@ -184,13 +182,10 @@ const char* RemoteConnectionSteam::getID() const
 //
 //  ServerSteam
 //
-ServerSteam* ServerSteam::smInstance = nullptr;
-
 ServerSteam::ServerSteam(Protocol pProtocol)
    : Server(pProtocol)
    , mListenSocket(k_HSteamListenSocket_Invalid)
 {
-   smInstance = this;
 }
 
 ServerSteam::~ServerSteam()
@@ -199,8 +194,6 @@ ServerSteam::~ServerSteam()
    {
       SteamNetworkingSockets()->CloseListenSocket(mListenSocket);
    }
-
-   smInstance = nullptr;
 }
 
 void ServerSteam::onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* pData)
@@ -209,15 +202,13 @@ void ServerSteam::onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChan
    {
       ConnectionRequest connectionRequest;
       connectionRequest.mConnection = pData->m_hConn;
-      smInstance->addConnectionRequest(connectionRequest);
+      addConnectionRequest(connectionRequest);
    }
 }
 
 void ServerSteam::activateServer(uint16_t)
 {
-   SteamNetworkingConfigValue_t options;
-   options.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)onSteamNetConnectionStatusChanged);
-   mListenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 1, &options);
+   mListenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 0, nullptr);
 }
 
 void ServerSteam::addConnectionRequest(const ConnectionRequest& pConnectionRequest)
@@ -281,18 +272,14 @@ size_t ServerSteam::receiveMessage(RemoteConnection** pOutClient, char* pBuffer,
 //
 //  ClientSteam
 //
-ClientSteam* ClientSteam::smInstance = nullptr;
-
 ClientSteam::ClientSteam(Protocol pProtocol)
    : Client(pProtocol)
    , mServerConnection(k_HSteamNetConnection_Invalid)
 {
-   smInstance = this;
 }
 
 ClientSteam::~ClientSteam()
 {
-   smInstance = nullptr;
 }
 
 void ClientSteam::onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* pData)
@@ -310,9 +297,7 @@ void ClientSteam::connectToServer(const char* pID, uint16_t)
    SteamNetworkingIdentity serverIdentity;
    serverIdentity.SetSteamID(serverSteamID);
 
-   SteamNetworkingConfigValue_t options;
-   options.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)onSteamNetConnectionStatusChanged);
-   mServerConnection = SteamNetworkingSockets()->ConnectP2P(serverIdentity, 0, 1, &options);
+   mServerConnection = SteamNetworkingSockets()->ConnectP2P(serverIdentity, 0, 0, nullptr);
 }
 
 bool ClientSteam::connected() const
