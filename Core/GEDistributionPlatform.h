@@ -35,8 +35,15 @@ namespace GE { namespace Core
          GESTLVector(LeaderboardEntry) mLeaderboardEntries;
       };
 
+      struct Lobby
+      {
+         uint64_t mID;
+         uint64_t mOwnerID;
+      };
+
    private:
       GESTLVector(Leaderboard) mLeaderboards;
+      GESTLVector(Lobby) mLobbies;
 
       void addLeaderboardEntry(size_t pLeaderboardIndex, const LeaderboardEntry& pEntry);
 
@@ -69,5 +76,12 @@ namespace GE { namespace Core
 
       size_t getLeaderboardEntriesCount(const ObjectName& pLeaderboardName) const;
       const LeaderboardEntry* getLeaderboardEntry(const ObjectName& pLeaderboardName, size_t pEntryIndex) const;
+
+      // Matchmaking
+      void findLobbies();
+      void createLobby();
+
+      size_t getLobbiesCount() const;
+      const Lobby* getLobby(size_t pIndex) const;
    };
 }}

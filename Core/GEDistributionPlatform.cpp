@@ -73,3 +73,14 @@ const DistributionPlatform::LeaderboardEntry* DistributionPlatform::getLeaderboa
 
    return nullptr;
 }
+
+ size_t DistributionPlatform::getLobbiesCount() const
+ {
+    return mLobbies.size();
+ }
+
+ const DistributionPlatform::Lobby* DistributionPlatform::getLobby(size_t pIndex) const
+ {
+    GEAssert(pIndex < mLobbies.size());
+    return &mLobbies[pIndex];
+ }

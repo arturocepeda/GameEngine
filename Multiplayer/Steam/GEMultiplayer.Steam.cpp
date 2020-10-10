@@ -214,7 +214,7 @@ void ServerSteam::activateServer(uint16_t)
 {
    SteamNetworkingConfigValue_t options;
    options.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)onSteamNetConnectionStatusChanged);
-   mListenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 0, &options);
+   mListenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(1, 0, &options);
 }
 
 void ServerSteam::addConnectionRequest(const ConnectionRequest& pConnectionRequest)
@@ -280,6 +280,7 @@ size_t ServerSteam::receiveMessage(RemoteConnection** pOutClient, char* pBuffer,
 //
 ClientSteam::ClientSteam(Protocol pProtocol)
    : Client(pProtocol)
+   , mServerConnection(k_HSteamNetConnection_Invalid)
 {
 }
 
@@ -289,14 +290,13 @@ ClientSteam::~ClientSteam()
 
 void ClientSteam::connectToServer(const char* pID, uint16_t)
 {
-   //TODO: get the SteamID from a lobby
-   (void)pID;
-   CSteamID steamID = SteamUser()->GetSteamID();
+   CSteamID serverSteamID;
+   serverSteamID.SetFromUint64(*reinterpret_cast<const uint64_t*>(pID));
 
    SteamNetworkingIdentity serverIdentity;
-   serverIdentity.SetSteamID(steamID);
+   serverIdentity.SetSteamID(serverSteamID);
 
-   mServerConnection = SteamNetworkingSockets()->ConnectP2P(serverIdentity, 0, 0, nullptr);
+   mServerConnection = SteamNetworkingSockets()->ConnectP2P(serverIdentity, 1, 0, nullptr);
 }
 
 bool ClientSteam::connected() const

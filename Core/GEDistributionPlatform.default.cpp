@@ -92,3 +92,11 @@ void DistributionPlatform::requestLeaderboardScores(const ObjectName&, uint16_t,
 void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName&, uint16_t)
 {
 }
+
+void DistributionPlatform::findLobbies()
+{
+}
+
+void DistributionPlatform::createLobby()
+{
+}
