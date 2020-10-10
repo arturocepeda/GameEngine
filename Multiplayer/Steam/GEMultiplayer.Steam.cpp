@@ -71,6 +71,9 @@ namespace GE { namespace Multiplayer
    private:
       HSteamNetConnection mServerConnection;
 
+      static ClientSteam* smInstance;
+      static void onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* pData);
+
    public:
       ClientSteam(Protocol pProtocol);
       virtual ~ClientSteam();
@@ -214,7 +217,7 @@ void ServerSteam::activateServer(uint16_t)
 {
    SteamNetworkingConfigValue_t options;
    options.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)onSteamNetConnectionStatusChanged);
-   mListenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(1, 0, &options);
+   mListenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 1, &options);
 }
 
 void ServerSteam::addConnectionRequest(const ConnectionRequest& pConnectionRequest)
@@ -278,14 +281,25 @@ size_t ServerSteam::receiveMessage(RemoteConnection** pOutClient, char* pBuffer,
 //
 //  ClientSteam
 //
+ClientSteam* ClientSteam::smInstance = nullptr;
+
 ClientSteam::ClientSteam(Protocol pProtocol)
    : Client(pProtocol)
    , mServerConnection(k_HSteamNetConnection_Invalid)
 {
+   smInstance = this;
 }
 
 ClientSteam::~ClientSteam()
 {
+   smInstance = nullptr;
+}
+
+void ClientSteam::onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* pData)
+{
+   if(pData->m_info.m_eState == k_ESteamNetworkingConnectionState_Connecting)
+   {
+   }
 }
 
 void ClientSteam::connectToServer(const char* pID, uint16_t)
@@ -296,7 +310,9 @@ void ClientSteam::connectToServer(const char* pID, uint16_t)
    SteamNetworkingIdentity serverIdentity;
    serverIdentity.SetSteamID(serverSteamID);
 
-   mServerConnection = SteamNetworkingSockets()->ConnectP2P(serverIdentity, 1, 0, nullptr);
+   SteamNetworkingConfigValue_t options;
+   options.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)onSteamNetConnectionStatusChanged);
+   mServerConnection = SteamNetworkingSockets()->ConnectP2P(serverIdentity, 0, 1, &options);
 }
 
 bool ClientSteam::connected() const

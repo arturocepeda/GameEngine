@@ -161,6 +161,7 @@ SteamCallResult<LeaderboardFindResult_t> gCallResultFindLeaderboard;
 SteamCallResult<LeaderboardScoresDownloaded_t> gCallResultDownloadLeaderboardEntries;
 SteamCallResult<LobbyCreated_t> gCallResultCreateLobby;
 SteamCallResult<LobbyMatchList_t> gCallResultFindLobbies;
+SteamCallResult<LobbyEnter_t> gCallResultJoinLobby;
 
 
 //
@@ -458,11 +459,11 @@ void DistributionPlatform::findLobbies()
          for(uint32_t i = 0u; i < pResult->m_nLobbiesMatching; i++)
          {
             CSteamID lobbyID = SteamMatchmaking()->GetLobbyByIndex((int)i);
-            CSteamID lobbyOwnerID = SteamMatchmaking()->GetLobbyOwner(lobbyID);
 
             Lobby lobby;
             lobby.mID = lobbyID.ConvertToUint64();
-            lobby.mOwnerID = lobbyOwnerID.ConvertToUint64();
+            lobby.mOwnerID = 0u;
+            lobby.mMember = false;
             mLobbies.push_back(lobby);
          }
       }
@@ -480,7 +481,38 @@ void DistributionPlatform::createLobby()
          Lobby lobby;
          lobby.mID = pResult->m_ulSteamIDLobby;
          lobby.mOwnerID = SteamUser()->GetSteamID().ConvertToUint64();
+         lobby.mMember = true;
          mLobbies.push_back(lobby);
+      }
+   });
+}
+
+void DistributionPlatform::joinLobby(const Lobby* pLobby)
+{
+   CSteamID lobbyID;
+   lobbyID.SetFromUint64(pLobby->mID);
+
+   SteamAPICall_t apiCall = SteamMatchmaking()->JoinLobby(lobbyID);
+
+   gCallResultJoinLobby.Set(apiCall, [this](LobbyEnter_t* pResult, bool pIOFailure)
+   {
+      if(!pIOFailure)
+      {
+         for(size_t i = 0u; i < mLobbies.size(); i++)
+         {
+            if(mLobbies[i].mID == pResult->m_ulSteamIDLobby)
+            {
+               CSteamID lobbyID;
+               lobbyID.SetFromUint64(pResult->m_ulSteamIDLobby);
+
+               CSteamID lobbyOwnerID = SteamMatchmaking()->GetLobbyOwner(lobbyID);
+
+               mLobbies[i].mOwnerID = lobbyOwnerID.ConvertToUint64();
+               mLobbies[i].mMember = true;
+
+               break;
+            }
+         }
       }
    });
 }

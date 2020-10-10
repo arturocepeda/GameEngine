@@ -39,6 +39,7 @@ namespace GE { namespace Core
       {
          uint64_t mID;
          uint64_t mOwnerID;
+         bool mMember;
       };
 
    private:
@@ -80,6 +81,7 @@ namespace GE { namespace Core
       // Matchmaking
       void findLobbies();
       void createLobby();
+      void joinLobby(const Lobby* pLobby);
 
       size_t getLobbiesCount() const;
       const Lobby* getLobby(size_t pIndex) const;

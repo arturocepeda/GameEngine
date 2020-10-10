@@ -100,3 +100,7 @@ void DistributionPlatform::findLobbies()
 void DistributionPlatform::createLobby()
 {
 }
+
+void DistributionPlatform::joinLobby(const Lobby* pLobby)
+{
+}
