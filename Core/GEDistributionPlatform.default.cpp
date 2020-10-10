@@ -104,3 +104,7 @@ void DistributionPlatform::createLobby()
 void DistributionPlatform::joinLobby(const Lobby* pLobby)
 {
 }
+
+void DistributionPlatform::leaveLobby(const Lobby* pLobby)
+{
+}

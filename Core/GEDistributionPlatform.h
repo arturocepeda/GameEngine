@@ -82,6 +82,7 @@ namespace GE { namespace Core
       void findLobbies();
       void createLobby();
       void joinLobby(const Lobby* pLobby);
+      void leaveLobby(const Lobby* pLobby);
 
       size_t getLobbiesCount() const;
       const Lobby* getLobby(size_t pIndex) const;
