@@ -41,6 +41,11 @@ namespace GE { namespace Core
          uint64_t mOwnerID;
          bool mMember;
       };
+      struct LobbyMember
+      {
+         uint64_t mID;
+         GESTLString mUserName;
+      };
 
    private:
       GESTLVector(Leaderboard) mLeaderboards;
@@ -83,6 +88,9 @@ namespace GE { namespace Core
       void createLobby();
       void joinLobby(const Lobby* pLobby);
       void leaveLobby(const Lobby* pLobby);
+
+      size_t getLobbyMembersCount(const Lobby* pLobby) const;
+      void getLobbyMember(const Lobby* pLobby, size_t pIndex, LobbyMember* pOutMember);
 
       size_t getLobbiesCount() const;
       const Lobby* getLobby(size_t pIndex) const;

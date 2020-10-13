@@ -529,3 +529,21 @@ void DistributionPlatform::leaveLobby(const Lobby* pLobby)
       SteamMatchmaking()->LeaveLobby(lobbyID);
    }
 }
+
+size_t DistributionPlatform::getLobbyMembersCount(const Lobby* pLobby) const
+{
+   CSteamID lobbyID;
+   lobbyID.SetFromUint64(pLobby->mID);
+
+   return (size_t)SteamMatchmaking()->GetNumLobbyMembers(lobbyID);
+}
+
+void DistributionPlatform::getLobbyMember(const Lobby* pLobby, size_t pIndex, LobbyMember* pOutMember)
+{
+   CSteamID lobbyID;
+   lobbyID.SetFromUint64(pLobby->mID);
+
+   const CSteamID memberID = SteamMatchmaking()->GetLobbyMemberByIndex(lobbyID, (int)pIndex);
+   pOutMember->mID = memberID.ConvertToUint64();
+   pOutMember->mUserName.assign(SteamFriends()->GetFriendPersonaName(memberID));
+}

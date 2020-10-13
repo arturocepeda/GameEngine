@@ -108,3 +108,12 @@ void DistributionPlatform::joinLobby(const Lobby* pLobby)
 void DistributionPlatform::leaveLobby(const Lobby* pLobby)
 {
 }
+
+size_t DistributionPlatform::getLobbyMembersCount(const Lobby* pLobby) const
+{
+   return 0u;
+}
+
+void DistributionPlatform::getLobbyMember(const Lobby* pLobby, size_t pIndex, LobbyMember* pOutMember)
+{
+}

@@ -86,6 +86,8 @@ namespace GE { namespace Multiplayer
 
    static size_t receiveMessageOnConnection(HSteamNetConnection pConnection, char* pBuffer, size_t pMaxSize)
    {
+      (void)pMaxSize;
+
       static const int kMaxMessages = 64;
       SteamNetworkingMessage_t* messages[kMaxMessages];
 
