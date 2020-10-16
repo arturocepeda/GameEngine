@@ -17,6 +17,8 @@
 
 #include "Externals/steamworks_sdk/public/steam/steam_api.h"
 
+#include <sstream>
+
 
 namespace GE { namespace Multiplayer
 {
@@ -293,8 +295,12 @@ void ClientSteam::onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChan
 
 void ClientSteam::connectToServer(const char* pID, uint16_t)
 {
+   uint64_t id;
+   std::istringstream iss(pID);
+   iss >> id;
+
    CSteamID serverSteamID;
-   serverSteamID.SetFromUint64(*reinterpret_cast<const uint64_t*>(pID));
+   serverSteamID.SetFromUint64(id);
 
    SteamNetworkingIdentity serverIdentity;
    serverIdentity.SetSteamID(serverSteamID);
