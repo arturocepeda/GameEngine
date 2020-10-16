@@ -451,6 +451,7 @@ void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName& 
 void DistributionPlatform::findLobbies()
 {
    mLobbies.clear();
+   mSearchingForLobbies = true;
 
    SteamAPICall_t apiCall = SteamMatchmaking()->RequestLobbyList();
 
@@ -469,12 +470,14 @@ void DistributionPlatform::findLobbies()
             mLobbies.push_back(lobby);
          }
       }
+
+      mSearchingForLobbies = false;
    });
 }
 
-void DistributionPlatform::createLobby()
+void DistributionPlatform::createLobby(uint32_t pMaxMembers)
 {
-   SteamAPICall_t apiCall = SteamMatchmaking()->CreateLobby(k_ELobbyTypePublic, 2);
+   SteamAPICall_t apiCall = SteamMatchmaking()->CreateLobby(k_ELobbyTypePublic, (int)pMaxMembers);
 
    gCallResultCreateLobby.Set(apiCall, [this](LobbyCreated_t* pResult, bool pIOFailure)
    {

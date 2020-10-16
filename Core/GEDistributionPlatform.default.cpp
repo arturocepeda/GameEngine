@@ -97,23 +97,23 @@ void DistributionPlatform::findLobbies()
 {
 }
 
-void DistributionPlatform::createLobby()
+void DistributionPlatform::createLobby(uint32_t)
 {
 }
 
-void DistributionPlatform::joinLobby(const Lobby* pLobby)
+void DistributionPlatform::joinLobby(const Lobby*)
 {
 }
 
-void DistributionPlatform::leaveLobby(const Lobby* pLobby)
+void DistributionPlatform::leaveLobby(const Lobby*)
 {
 }
 
-size_t DistributionPlatform::getLobbyMembersCount(const Lobby* pLobby) const
+size_t DistributionPlatform::getLobbyMembersCount(const Lobby*) const
 {
    return 0u;
 }
 
-void DistributionPlatform::getLobbyMember(const Lobby* pLobby, size_t pIndex, LobbyMember* pOutMember)
+void DistributionPlatform::getLobbyMember(const Lobby*, size_t, LobbyMember*)
 {
 }

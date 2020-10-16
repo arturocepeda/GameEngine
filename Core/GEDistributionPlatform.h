@@ -50,10 +50,14 @@ namespace GE { namespace Core
    private:
       GESTLVector(Leaderboard) mLeaderboards;
       GESTLVector(Lobby) mLobbies;
+      bool mSearchingForLobbies;
 
       void addLeaderboardEntry(size_t pLeaderboardIndex, const LeaderboardEntry& pEntry);
 
    public:
+      DistributionPlatform();
+      ~DistributionPlatform();
+
       bool init() const;
       void update() const;
       void shutdown() const;
@@ -85,7 +89,9 @@ namespace GE { namespace Core
 
       // Matchmaking
       void findLobbies();
-      void createLobby();
+      bool searchingForLobbies() const;
+
+      void createLobby(uint32_t pMaxMembers);
       void joinLobby(const Lobby* pLobby);
       void leaveLobby(const Lobby* pLobby);
 

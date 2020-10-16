@@ -963,6 +963,19 @@ void Environment::registerTypes()
       , "mScoreDetail", &DistributionPlatform::LeaderboardEntry::mScoreDetail
       , "getUserName", &DistributionPlatform::LeaderboardEntry::getUserName
    );
+   mLua.new_simple_usertype<DistributionPlatform::LobbyMember>
+   (
+      "LobbyMember"
+      , "mID", &DistributionPlatform::LobbyMember::mID
+      , "mUserName", &DistributionPlatform::LobbyMember::mUserName
+   );
+   mLua.new_simple_usertype<DistributionPlatform::Lobby>
+   (
+      "Lobby"
+      , "mID", &DistributionPlatform::Lobby::mID
+      , "mMember", &DistributionPlatform::Lobby::mMember
+      , "mOwnerID", &DistributionPlatform::Lobby::mOwnerID
+   );
    mLua.new_simple_usertype<DistributionPlatform>
    (
       "DistributionPlatform"
@@ -976,6 +989,15 @@ void Environment::registerTypes()
       , "requestLeaderboardScoresAroundUser", &DistributionPlatform::requestLeaderboardScoresAroundUser
       , "getLeaderboardEntriesCount", &DistributionPlatform::getLeaderboardEntriesCount
       , "getLeaderboardEntry", &DistributionPlatform::getLeaderboardEntry
+      , "findLobbies", &DistributionPlatform::findLobbies
+      , "searchingForLobbies", &DistributionPlatform::searchingForLobbies
+      , "createLobby", &DistributionPlatform::createLobby
+      , "joinLobby", &DistributionPlatform::joinLobby
+      , "leaveLobby", &DistributionPlatform::leaveLobby
+      , "getLobbyMembersCount", &DistributionPlatform::getLobbyMembersCount
+      , "getLobbyMember", &DistributionPlatform::getLobbyMember
+      , "getLobbiesCount", &DistributionPlatform::getLobbiesCount
+      , "getLobby", &DistributionPlatform::getLobby
    );
 
    //

@@ -15,6 +15,15 @@
 using namespace GE;
 using namespace GE::Core;
 
+DistributionPlatform::DistributionPlatform()
+   : mSearchingForLobbies(false)
+{
+}
+
+DistributionPlatform::~DistributionPlatform()
+{
+}
+
 void DistributionPlatform::addLeaderboardEntry(size_t pLeaderboardIndex, const LeaderboardEntry& pEntry)
 {
    bool addNewEntry = true;
@@ -74,13 +83,18 @@ const DistributionPlatform::LeaderboardEntry* DistributionPlatform::getLeaderboa
    return nullptr;
 }
 
- size_t DistributionPlatform::getLobbiesCount() const
- {
-    return mLobbies.size();
- }
+bool DistributionPlatform::searchingForLobbies() const
+{
+   return mSearchingForLobbies;
+}
 
- const DistributionPlatform::Lobby* DistributionPlatform::getLobby(size_t pIndex) const
- {
-    GEAssert(pIndex < mLobbies.size());
-    return &mLobbies[pIndex];
- }
+size_t DistributionPlatform::getLobbiesCount() const
+{
+   return mLobbies.size();
+}
+
+const DistributionPlatform::Lobby* DistributionPlatform::getLobby(size_t pIndex) const
+{
+   GEAssert(pIndex < mLobbies.size());
+   return &mLobbies[pIndex];
+}
