@@ -208,6 +208,18 @@ void ServerSteam::onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChan
       connectionRequest.mConnection = pData->m_hConn;
       addConnectionRequest(connectionRequest);
    }
+   else if(pData->m_info.m_eState == k_ESteamNetworkingConnectionState_ClosedByPeer)
+   {
+      for(size_t i = 0u; i < mConnectedClients.size(); i++)
+      {
+         if(pData->m_hConn == mConnectedClients[i].mConnection)
+         {
+            SteamNetworkingSockets()->CloseConnection(mConnectedClients[i].mConnection, 0, nullptr, false);
+            mConnectedClients.erase(mConnectedClients.begin() + i);
+            break;
+         }
+      }
+   }
 }
 
 void ServerSteam::activateServer(uint16_t)
@@ -284,12 +296,18 @@ ClientSteam::ClientSteam(Protocol pProtocol)
 
 ClientSteam::~ClientSteam()
 {
+   if(connected())
+   {
+      SteamNetworkingSockets()->CloseConnection(mServerConnection, 0, nullptr, false);
+   }
 }
 
 void ClientSteam::onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* pData)
 {
-   if(pData->m_info.m_eState == k_ESteamNetworkingConnectionState_Connecting)
+   if(pData->m_info.m_eState == k_ESteamNetworkingConnectionState_ClosedByPeer)
    {
+      SteamNetworkingSockets()->CloseConnection(mServerConnection, 0, nullptr, false);
+      mServerConnection = k_HSteamNetConnection_Invalid;
    }
 }
 
