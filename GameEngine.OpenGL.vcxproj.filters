@@ -450,9 +450,6 @@
     <ClCompile Include="Rendering\GETextRasterizer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Multiplayer\GEMultiplayer.cpp">
-      <Filter>Multiplayer</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\GEAudioSystem.h">
