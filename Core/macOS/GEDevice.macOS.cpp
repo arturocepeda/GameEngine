@@ -23,6 +23,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#include <CoreGraphics/CGDisplayConfiguration.h>
+
 using namespace GE;
 using namespace GE::Core;
 using namespace GE::Content;
@@ -403,4 +405,18 @@ int Device::getNumberOfCPUCores()
 SystemLanguage Device::requestOSLanguage()
 {
    return SystemLanguage::English;
+}
+
+void Device::requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutions)
+{
+   GEAssert(pOutResolutions);
+   pOutResolutions->clear();
+   
+   Point resolution;
+   
+   CGDirectDisplayID mainDisplayId = CGMainDisplayID();
+   resolution.X = (int)CGDisplayPixelsWide(mainDisplayId);
+   resolution.Y = (int)CGDisplayPixelsHigh(mainDisplayId);
+   
+   pOutResolutions->push_back(resolution);
 }

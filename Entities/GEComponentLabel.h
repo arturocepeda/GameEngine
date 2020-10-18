@@ -137,7 +137,7 @@ namespace GE { namespace Entities
       void setLineWidth(float pLineWidth);
    };
 
-
+#if defined (GE_TEXT_RASTERIZER_SUPPORT)
    class ComponentLabelRaster : public ComponentLabelBase
    {
    private:
@@ -158,4 +158,5 @@ namespace GE { namespace Entities
       void setFontFamily(const Core::ObjectName& pFontFamily);
       void setFontStyle(const Core::ObjectName& pFontStyle);
    };
+#endif
 }}

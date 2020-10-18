@@ -1030,6 +1030,7 @@ void ComponentLabel::setLineWidth(float pLineWidth)
 }
 
 
+#if defined (GE_TEXT_RASTERIZER_SUPPORT)
 //
 //  ComponentLabelRaster
 //
@@ -1129,3 +1130,4 @@ void ComponentLabelRaster::generateText()
       rasterizer->renderGlyph(glyphIndex, transform);
    }
 }
+#endif

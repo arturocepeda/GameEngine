@@ -120,7 +120,9 @@ namespace GE { namespace Rendering
       CullingMode eCullingMode;
       Entities::ComponentCamera* cActiveCamera;
 
+#if defined (GE_TEXT_RASTERIZER_SUPPORT)
       TextRasterizer mTextRasterizer;
+#endif
 
       GESTLPriorityQueue(RenderOperation) vUIElementsToRender;
       GESTLPriorityQueue(RenderOperation) vPre3DSpritesToRender;

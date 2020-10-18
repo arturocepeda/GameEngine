@@ -57,7 +57,9 @@ RenderSystem::RenderSystem(void* Window, bool Windowed)
    , eDepthBufferMode(DepthBufferMode::NoDepth)
    , eCullingMode(CullingMode::Back)
    , cActiveCamera(nullptr)
+#if defined (GE_TEXT_RASTERIZER_SUPPORT)
    , mTextRasterizer(Device::getScreenWidth(), Device::getScreenHeight())
+#endif
    , mAny3DUIElementsToRender(false)
    , fFrameTime(Time::getElapsed())
    , fFramesPerSecond(0.0f)
@@ -227,7 +229,9 @@ void RenderSystem::calculateLightViewProjectionMatrix(ComponentLight* Light)
 
 void RenderSystem::reloadTextRasterizer()
 {
+#if defined (GE_TEXT_RASTERIZER_SUPPORT)
    mTextRasterizer.resizeCanvas((uint32_t)Device::getScreenWidth(), (uint32_t)Device::getScreenHeight());
+#endif
 }
 
 void RenderSystem::loadMaterial(Material* cMaterial)
@@ -727,7 +731,11 @@ Font* RenderSystem::getFont(const ObjectName& Name)
 
 TextRasterizer* RenderSystem::getTextRasterizer()
 {
+#if defined (GE_TEXT_RASTERIZER_SUPPORT)
    return &mTextRasterizer;
+#else
+   return nullptr;
+#endif
 }
 
 void RenderSystem::setup3DUICanvas(uint32_t pCanvasIndex, const Vector3& pWorldPosition, uint16_t pSettings)
