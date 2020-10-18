@@ -55,9 +55,9 @@ namespace GE { namespace Entities
          CachedPropertyValue() : PropertyValue(0) {}
       };
       GESTLVector(CachedPropertyValue) mCachedPropertyValues;
-#endif
+       
       uint mDebugBreakpointLine;
-
+#endif
       Scripting::Environment* getEnvironment() const;
 
       void registerScriptProperties();

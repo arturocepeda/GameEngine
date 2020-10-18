@@ -17,17 +17,28 @@
 #include "Core/GELog.h"
 
 #if defined (GE_PLATFORM_WINDOWS)
+
 # include <winsock2.h>
 # include <WS2tcpip.h>
 
 # pragma comment(lib, "ws2_32.lib")
 
-# define GESocket SOCKET
+# define GESocket  SOCKET
+# define GESocketInvalid  INVALID_SOCKET
+# define GESocketLength  int
+# define GESocketClose  closesocket
+
 #else
+
 # include <sys/socket.h>
 # include <arpa/inet.h>
+# include <fcntl.h>
 
-# define GESocket int
+# define GESocket  int
+# define GESocketInvalid  -1
+# define GESocketLength  socklen_t
+# define GESocketClose  close
+
 #endif
 
 
@@ -139,7 +150,7 @@ void Client::release(Client* pClient)
 //  RemoteConnectionSocket
 //
 RemoteConnectionSocket::RemoteConnectionSocket()
-   : mSocket(0)
+   : mSocket(GESocketInvalid)
    , mIP(0u)
    , mPort(0u)
 {
@@ -180,19 +191,24 @@ Host::Host(Protocol pProtocol)
    const int socketType = pProtocol == Protocol::TCP ? SOCK_STREAM : SOCK_DGRAM;
    mSocket = socket(AF_INET, socketType, 0);
 
-   if(mSocket != INVALID_SOCKET)
+   if(mSocket != GESocketInvalid)
    {
       // set non-blocking mode
+#if defined (GE_PLATFORM_WINDOWS)
       u_long mode = 1u;
       ioctlsocket(mSocket, FIONBIO, &mode);
+#else
+      const int flags = fcntl(mSocket, F_GETFL, 0);
+      fcntl(mSocket, F_SETFL, flags | O_NONBLOCK);
+#endif
    }
 }
 
 Host::~Host()
 {
-   if(mSocket != INVALID_SOCKET)
+   if(mSocket != GESocketInvalid)
    {
-      closesocket(mSocket);
+      GESocketClose(mSocket);
    }
 
 #if defined (GE_PLATFORM_WINDOWS)
@@ -251,10 +267,10 @@ void ServerSocket::acceptClientConnection()
    {
       sockaddr_in remoteAddress;
       memset(&remoteAddress, 0, sizeof(sockaddr_in));
-      int remoteAddressLength = (int)sizeof(remoteAddress);
+      GESocketLength remoteAddressLength = (GESocketLength)sizeof(remoteAddress);
       GESocket socket = accept(mSocket, (sockaddr*)&remoteAddress, &remoteAddressLength);
 
-      if(socket != INVALID_SOCKET)
+      if(socket != GESocketInvalid)
       {
          RemoteConnectionSocket connection;
          connection.mSocket = socket;
@@ -306,24 +322,24 @@ size_t ServerSocket::receiveMessage(RemoteConnection** pOutClient, char* pBuffer
    {
       for(size_t i = 0u; i < mConnectedClients.size(); i++)
       {
-         const int bytes = recv(mConnectedClients[i].mSocket, pBuffer, (int)pMaxSize, 0);
+         const size_t bytes = (size_t)recv(mConnectedClients[i].mSocket, pBuffer, (int)pMaxSize, 0);
 
-         if(bytes > 0)
+         if(bytes > 0u)
          {
             *pOutClient = &mConnectedClients[i];
-            return (size_t)bytes;
+            return bytes;
          }
       }
    }
    else
    {
       sockaddr_in clientAddress;
-      int addressLength = (int)sizeof(clientAddress);
+      GESocketLength addressLength = (GESocketLength)sizeof(clientAddress);
 
-      const int bytes =
-         recvfrom(mSocket, pBuffer, (int)pMaxSize, 0, (sockaddr*)&clientAddress, &addressLength);
+      const size_t bytes =
+         (size_t)recvfrom(mSocket, pBuffer, (int)pMaxSize, 0, (sockaddr*)&clientAddress, &addressLength);
 
-      if(bytes > 0)
+      if(bytes > 0u)
       {
          const uint32_t ip = clientAddress.sin_addr.s_addr;
          const uint16_t port = htons(clientAddress.sin_port);
@@ -351,7 +367,7 @@ size_t ServerSocket::receiveMessage(RemoteConnection** pOutClient, char* pBuffer
             Log::log(LogType::Info, "[Server] Established connection with client %s:%u", ip, port);
          }
 
-         return (size_t)bytes;
+         return bytes;
       }
    }
 
@@ -392,8 +408,15 @@ void ClientSocket::connectToServer(const char* pID, uint16_t pPort)
 bool ClientSocket::connected() const
 {
    fd_set set;
+    
+#if defined (GE_PLATFORM_WINDOWS)
    set.fd_array[0] = mSocket;
    set.fd_count = 1u;
+#else
+   FD_ZERO(&set);
+   FD_SET(STDIN_FILENO, &set);
+   FD_SET(mSocket, &set);
+#endif
 
    timeval timeout;
    timeout.tv_sec = 0;
@@ -418,24 +441,24 @@ size_t ClientSocket::receiveMessage(char* pBuffer, size_t pMaxSize)
 {
    if(mProtocol == Protocol::TCP)
    {
-      const int bytes = recv(mSocket, pBuffer, (int)pMaxSize, 0);
+      const size_t bytes = (size_t)recv(mSocket, pBuffer, (int)pMaxSize, 0);
 
-      if(bytes > 0)
+      if(bytes > 0u)
       {
-         return (size_t)bytes;
+         return bytes;
       }
    }
    else
    {
       sockaddr_in remoteAddress;
-      int fromLen = sizeof(remoteAddress);
+      GESocketLength fromLen = (GESocketLength)sizeof(remoteAddress);
 
-      const int bytes =
-         recvfrom(mSocket, pBuffer, (int)pMaxSize, 0, (sockaddr*)&remoteAddress, &fromLen);
+      const size_t bytes =
+         (size_t)recvfrom(mSocket, pBuffer, (int)pMaxSize, 0, (sockaddr*)&remoteAddress, &fromLen);
 
       if(remoteAddress.sin_addr.s_addr == mServerAddress.sin_addr.s_addr)
       {
-         return (size_t)bytes;
+         return bytes;
       }
    }
 

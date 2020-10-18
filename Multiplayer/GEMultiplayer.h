@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <cstdint>
 
 namespace GE { namespace Multiplayer
