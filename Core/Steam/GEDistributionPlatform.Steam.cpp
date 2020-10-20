@@ -539,6 +539,15 @@ void DistributionPlatform::leaveLobby(const Lobby* pLobby)
 
       SteamMatchmaking()->LeaveLobby(lobbyID);
    }
+
+   for(size_t i = 0u; i < mLobbies.size(); i++)
+   {
+      if(mLobbies[i].mID == pLobby->mID)
+      {
+         mLobbies.erase(mLobbies.begin() + i);
+         break;
+      }
+   }
 }
 
 size_t DistributionPlatform::getLobbyMembersCount(const Lobby* pLobby) const
