@@ -973,8 +973,9 @@ void Environment::registerTypes()
    (
       "Lobby"
       , "mID", &DistributionPlatform::Lobby::mID
-      , "mMember", &DistributionPlatform::Lobby::mMember
       , "mOwnerID", &DistributionPlatform::Lobby::mOwnerID
+      , "mName", &DistributionPlatform::Lobby::mName
+      , "mMember", &DistributionPlatform::Lobby::mMember
    );
    mLua.new_simple_usertype<DistributionPlatform>
    (

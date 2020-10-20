@@ -462,10 +462,13 @@ void DistributionPlatform::findLobbies()
          for(uint32_t i = 0u; i < pResult->m_nLobbiesMatching; i++)
          {
             CSteamID lobbyID = SteamMatchmaking()->GetLobbyByIndex((int)i);
+            SteamMatchmaking()->RequestLobbyData(lobbyID);
+            const char* lobbyName = SteamMatchmaking()->GetLobbyData(lobbyID, "name");
 
             Lobby lobby;
             lobby.mID = lobbyID.ConvertToUint64();
             lobby.mOwnerID = 0u;
+            lobby.mName = lobbyName;
             lobby.mMember = false;
             mLobbies.push_back(lobby);
          }
@@ -483,9 +486,14 @@ void DistributionPlatform::createLobby(uint32_t pMaxMembers)
    {
       if(!pIOFailure && pResult->m_eResult == k_EResultOK)
       {
+         const CSteamID lobbyID = pResult->m_ulSteamIDLobby;
+         const char* lobbyName = getUserName();
+         SteamMatchmaking()->SetLobbyData(lobbyID, "name", lobbyName);
+
          Lobby lobby;
-         lobby.mID = pResult->m_ulSteamIDLobby;
+         lobby.mID = lobbyID.ConvertToUint64();
          lobby.mOwnerID = SteamUser()->GetSteamID().ConvertToUint64();
+         lobby.mName = lobbyName;
          lobby.mMember = true;
          mLobbies.push_back(lobby);
       }
