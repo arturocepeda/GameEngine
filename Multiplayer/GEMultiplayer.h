@@ -14,6 +14,7 @@
 
 #include <stddef.h>
 #include <cstdint>
+#include <functional>
 
 namespace GE { namespace Multiplayer
 {
@@ -45,10 +46,20 @@ namespace GE { namespace Multiplayer
    protected:
       Protocol mProtocol;
 
-      Server(Protocol pProtocol) : mProtocol(pProtocol) {}
-      virtual ~Server() {}
+      Server(Protocol pProtocol)
+         : mProtocol(pProtocol)
+      {
+      }
+      virtual ~Server()
+      {
+         onLocalDisconnection = nullptr;
+         onRemoteDisconnection = nullptr;
+      }
 
    public:
+      std::function<void()> onLocalDisconnection;
+      std::function<void(const RemoteConnection*)> onRemoteDisconnection;
+
       virtual void activateServer(uint16_t pPort) = 0;
 
       virtual void acceptClientConnection() = 0;
@@ -69,10 +80,20 @@ namespace GE { namespace Multiplayer
    protected:
       Protocol mProtocol;
 
-      Client(Protocol pProtocol) : mProtocol(pProtocol) {}
-      virtual ~Client() {}
+      Client(Protocol pProtocol)
+         : mProtocol(pProtocol)
+      {
+      }
+      virtual ~Client()
+      {
+         onLocalDisconnection = nullptr;
+         onRemoteDisconnection = nullptr;
+      }
 
    public:
+      std::function<void()> onLocalDisconnection;
+      std::function<void()> onRemoteDisconnection;
+
       virtual void connectToServer(const char* pID, uint16_t pPort) = 0;
       virtual bool connected() const = 0;
 

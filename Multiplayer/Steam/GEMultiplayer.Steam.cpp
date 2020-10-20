@@ -214,11 +214,30 @@ void ServerSteam::onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChan
       {
          if(pData->m_hConn == mConnectedClients[i].mConnection)
          {
+            if(onRemoteDisconnection)
+            {
+               onRemoteDisconnection(&mConnectedClients[i]);
+            }
+
             SteamNetworkingSockets()->CloseConnection(mConnectedClients[i].mConnection, 0, nullptr, false);
             mConnectedClients.erase(mConnectedClients.begin() + i);
             break;
          }
       }
+   }
+   else if(pData->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
+   {
+      if(onLocalDisconnection)
+      {
+         onLocalDisconnection();
+      }
+
+      for(size_t i = 0u; i < mConnectedClients.size(); i++)
+      {
+         SteamNetworkingSockets()->CloseConnection(mConnectedClients[i].mConnection, 0, nullptr, false);
+      }
+
+      mConnectedClients.clear();
    }
 }
 
@@ -306,6 +325,21 @@ void ClientSteam::onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChan
 {
    if(pData->m_info.m_eState == k_ESteamNetworkingConnectionState_ClosedByPeer)
    {
+      if(onRemoteDisconnection)
+      {
+         onRemoteDisconnection();
+      }
+
+      SteamNetworkingSockets()->CloseConnection(mServerConnection, 0, nullptr, false);
+      mServerConnection = k_HSteamNetConnection_Invalid;
+   }
+   else if(pData->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
+   {
+      if(onLocalDisconnection)
+      {
+         onLocalDisconnection();
+      }
+
       SteamNetworkingSockets()->CloseConnection(mServerConnection, 0, nullptr, false);
       mServerConnection = k_HSteamNetConnection_Invalid;
    }
