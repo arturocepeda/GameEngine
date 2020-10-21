@@ -282,8 +282,8 @@ const RemoteConnection* ServerSteam::getConnectedClient(size_t pIndex) const
 void ServerSteam::sendMessage(const RemoteConnection* pClient, const char* pMessage, size_t pSize)
 {
    const RemoteConnectionSteam* client = static_cast<const RemoteConnectionSteam*>(pClient);
-   const int sendFlags = mProtocol == Protocol::TCP ? k_nSteamNetworkingSend_Reliable : k_nSteamNetworkingSend_Unreliable;
-   SteamNetworkingSockets()->SendMessageToConnection(client->mConnection, pMessage, (uint32_t)pSize, 0, nullptr);
+   const int sendFlags = mProtocol == Protocol::TCP ? k_nSteamNetworkingSend_ReliableNoNagle : k_nSteamNetworkingSend_Unreliable;
+   SteamNetworkingSockets()->SendMessageToConnection(client->mConnection, pMessage, (uint32_t)pSize, sendFlags, nullptr);
 }
 
 size_t ServerSteam::receiveMessage(RemoteConnection** pOutClient, char* pBuffer, size_t pMaxSize)
@@ -367,8 +367,8 @@ bool ClientSteam::connected() const
 
 void ClientSteam::sendMessage(const char* pMessage, size_t pSize)
 {
-   const int sendFlags = mProtocol == Protocol::TCP ? k_nSteamNetworkingSend_Reliable : k_nSteamNetworkingSend_Unreliable;
-   SteamNetworkingSockets()->SendMessageToConnection(mServerConnection, pMessage, (uint32_t)pSize, 0, nullptr);
+   const int sendFlags = mProtocol == Protocol::TCP ? k_nSteamNetworkingSend_ReliableNoNagle : k_nSteamNetworkingSend_Unreliable;
+   SteamNetworkingSockets()->SendMessageToConnection(mServerConnection, pMessage, (uint32_t)pSize, sendFlags, nullptr);
 }
 
 size_t ClientSteam::receiveMessage(char* pBuffer, size_t pMaxSize)
