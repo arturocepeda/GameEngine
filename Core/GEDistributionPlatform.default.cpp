@@ -97,7 +97,7 @@ void DistributionPlatform::findLobbies()
 {
 }
 
-void DistributionPlatform::createLobby(uint32_t)
+void DistributionPlatform::createLobby(const char*, uint32_t)
 {
 }
 

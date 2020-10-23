@@ -478,17 +478,19 @@ void DistributionPlatform::findLobbies()
    });
 }
 
-void DistributionPlatform::createLobby(uint32_t pMaxMembers)
+void DistributionPlatform::createLobby(const char* pName, uint32_t pMaxMembers)
 {
+   static GESTLString lobbyName;
+
    SteamAPICall_t apiCall = SteamMatchmaking()->CreateLobby(k_ELobbyTypePublic, (int)pMaxMembers);
+   lobbyName = pName;
 
    gCallResultCreateLobby.Set(apiCall, [this](LobbyCreated_t* pResult, bool pIOFailure)
    {
       if(!pIOFailure && pResult->m_eResult == k_EResultOK)
       {
          const CSteamID lobbyID = pResult->m_ulSteamIDLobby;
-         const char* lobbyName = getUserName();
-         SteamMatchmaking()->SetLobbyData(lobbyID, "name", lobbyName);
+         SteamMatchmaking()->SetLobbyData(lobbyID, "name", lobbyName.c_str());
 
          Lobby lobby;
          lobby.mID = lobbyID.ConvertToUint64();

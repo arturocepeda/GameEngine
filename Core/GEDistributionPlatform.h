@@ -92,7 +92,7 @@ namespace GE { namespace Core
       void findLobbies();
       bool searchingForLobbies() const;
 
-      void createLobby(uint32_t pMaxMembers);
+      void createLobby(const char* pName, uint32_t pMaxMembers);
       void joinLobby(const Lobby* pLobby);
       void leaveLobby(const Lobby* pLobby);
 
