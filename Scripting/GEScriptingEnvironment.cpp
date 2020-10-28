@@ -983,8 +983,11 @@ void Environment::registerTypes()
       , "getInstance", &DistributionPlatform::getInstance
       , "getPlatformName", &DistributionPlatform::getPlatformName
       , "getUserName", &DistributionPlatform::getUserName
+      , "setStat", &DistributionPlatform::setStat
+      , "getStat", &DistributionPlatform::getStat
       , "unlockAchievement", &DistributionPlatform::unlockAchievement
       , "updateLeaderboardScore", &DistributionPlatform::updateLeaderboardScore
+      , "updatingLeaderboardScore", &DistributionPlatform::updatingLeaderboardScore
       , "resetLeaderboard", &DistributionPlatform::resetLeaderboard
       , "requestLeaderboardScores", &DistributionPlatform::requestLeaderboardScores
       , "requestLeaderboardScoresAroundUser", &DistributionPlatform::requestLeaderboardScoresAroundUser

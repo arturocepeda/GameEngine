@@ -16,7 +16,8 @@ using namespace GE;
 using namespace GE::Core;
 
 DistributionPlatform::DistributionPlatform()
-   : mSearchingForLobbies(false)
+   : mUpdatingLeaderboardScore(false)
+   , mSearchingForLobbies(false)
 {
 }
 
@@ -41,6 +42,11 @@ void DistributionPlatform::addLeaderboardEntry(size_t pLeaderboardIndex, const L
    {
       mLeaderboards[pLeaderboardIndex].mLeaderboardEntries.push_back(pEntry);
    }
+}
+
+bool DistributionPlatform::updatingLeaderboardScore() const
+{
+   return mUpdatingLeaderboardScore;
 }
 
 void DistributionPlatform::resetLeaderboard(const ObjectName& pLeaderboardName)

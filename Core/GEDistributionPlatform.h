@@ -51,6 +51,8 @@ namespace GE { namespace Core
    private:
       GESTLVector(Leaderboard) mLeaderboards;
       GESTLVector(Lobby) mLobbies;
+
+      bool mUpdatingLeaderboardScore;
       bool mSearchingForLobbies;
 
       void addLeaderboardEntry(size_t pLeaderboardIndex, const LeaderboardEntry& pEntry);
@@ -76,11 +78,16 @@ namespace GE { namespace Core
         const Content::ContentData* pContentData, std::function<void(bool pSuccess)> pOnFinished = nullptr);
       void deleteRemoteFile(const char* pSubDir, const char* pName, const char* pExtension);
 
+      // Stats
+      void setStat(const ObjectName& pStatName, float pValue);
+      float getStat(const ObjectName& pStatName);
+
       // Achievements
       void unlockAchievement(const ObjectName& pAchievementName);
 
       // Leaderboards
       void updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore, uint32_t pScoreDetail);
+      bool updatingLeaderboardScore() const;
       void resetLeaderboard(const ObjectName& pLeaderboardName);
       void requestLeaderboardScores(const ObjectName& pLeaderboardName, uint16_t pFirstPosition, uint16_t pLastPosition);
       void requestLeaderboardScoresAroundUser(const ObjectName& pLeaderboardName, uint16_t pPositionsCount);

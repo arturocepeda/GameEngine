@@ -77,6 +77,15 @@ void DistributionPlatform::deleteRemoteFile(const char* pSubDir, const char* pNa
    Device::deleteUserFile(pSubDir, pName, pExtension);
 }
 
+void DistributionPlatform::setStat(const ObjectName&, float)
+{
+}
+
+float DistributionPlatform::getStat(const ObjectName&)
+{
+   return 0.0f;
+}
+
 void DistributionPlatform::unlockAchievement(const ObjectName&)
 {
 }

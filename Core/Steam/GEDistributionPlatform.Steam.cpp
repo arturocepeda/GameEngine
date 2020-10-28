@@ -158,6 +158,7 @@ public:
 SteamCallResult<RemoteStorageFileReadAsyncComplete_t> gCallResultRemoteFileRead;
 SteamCallResult<RemoteStorageFileWriteAsyncComplete_t> gCallResultRemoteFileWritten;
 SteamCallResult<LeaderboardFindResult_t> gCallResultFindLeaderboard;
+SteamCallResult<LeaderboardScoreUploaded_t> gCallResultUpdateLeaderboardScore;
 SteamCallResult<LeaderboardScoresDownloaded_t> gCallResultDownloadLeaderboardEntries;
 SteamCallResult<LobbyCreated_t> gCallResultCreateLobby;
 SteamCallResult<LobbyMatchList_t> gCallResultFindLobbies;
@@ -167,6 +168,8 @@ SteamCallResult<LobbyEnter_t> gCallResultJoinLobby;
 //
 //  DistributionPlatform
 //
+static bool gStoreStatsPending = false;
+
 bool DistributionPlatform::init() const
 {
    const bool success = SteamAPI_Init();
@@ -192,6 +195,12 @@ bool DistributionPlatform::init() const
 
 void DistributionPlatform::update() const
 {
+   if(gStoreStatsPending)
+   {
+      SteamUserStats()->StoreStats();
+      gStoreStatsPending = false;
+   }
+
    SteamAPI_RunCallbacks();
 }
 
@@ -293,6 +302,19 @@ void DistributionPlatform::deleteRemoteFile(const char* pSubDir, const char* pNa
    SteamRemoteStorage()->FileDelete(fileName);
 }
 
+void DistributionPlatform::setStat(const ObjectName& pStatName, float pValue)
+{
+   SteamUserStats()->SetStat(pStatName.getString(), pValue);
+   gStoreStatsPending = true;
+}
+
+float DistributionPlatform::getStat(const ObjectName& pStatName)
+{
+   float value = 0.0f;
+   SteamUserStats()->GetStat(pStatName.getString(), &value);
+   return value;
+}
+
 void DistributionPlatform::unlockAchievement(const ObjectName& pAchievementName)
 {
    bool achievementUnlocked = false;
@@ -301,24 +323,34 @@ void DistributionPlatform::unlockAchievement(const ObjectName& pAchievementName)
    if(!achievementUnlocked)
    {
       SteamUserStats()->SetAchievement(pAchievementName.getString());
-      SteamUserStats()->StoreStats();
+      gStoreStatsPending = true;
    }
 }
 
 void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore, uint32_t pScoreDetail)
 {
    SteamAPICall_t apiCall = SteamUserStats()->FindLeaderboard(pLeaderboardName.getString());
+   mUpdatingLeaderboardScore = true;
 
-   gCallResultFindLeaderboard.Set(apiCall, [pScore, pScoreDetail](LeaderboardFindResult_t* pResult, bool pIOFailure)
+   gCallResultFindLeaderboard.Set(apiCall, [this, pScore, pScoreDetail](LeaderboardFindResult_t* pResult, bool pIOFailure)
    {
       if(!pIOFailure && pResult->m_bLeaderboardFound)
       {
-         SteamUserStats()->UploadLeaderboardScore
+         SteamAPICall_t apiCall = SteamUserStats()->UploadLeaderboardScore
          (
             pResult->m_hSteamLeaderboard,
             k_ELeaderboardUploadScoreMethodKeepBest,
             (int32_t)pScore, (const int32_t*)&pScoreDetail, 1
          );
+
+         gCallResultUpdateLeaderboardScore.Set(apiCall, [this](LeaderboardScoreUploaded_t*, bool)
+         {
+            mUpdatingLeaderboardScore = false;
+         });
+      }
+      else
+      {
+         mUpdatingLeaderboardScore = false;
       }
    });
 }
