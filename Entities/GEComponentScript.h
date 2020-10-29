@@ -89,6 +89,7 @@ namespace GE { namespace Entities
 
       bool inputKeyPress(char pKey);
       bool inputKeyRelease(char pKey);
+      bool inputKeyText(uint16_t pUnicode);
 
       bool inputMouse(const Vector2& pPoint);
       bool inputMouseWheel(int pDelta);
@@ -119,6 +120,7 @@ namespace GE { namespace Entities
 
       virtual bool inputKeyPress(char pKey) override;
       virtual bool inputKeyRelease(char pKey) override;
+      virtual bool inputKeyText(uint16_t pUnicode) override;
 
       virtual bool inputMouse(const Vector2& pPoint) override;
       virtual bool inputMouseWheel(int pDelta) override;

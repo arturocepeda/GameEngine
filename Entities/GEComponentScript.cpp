@@ -42,6 +42,7 @@ const ObjectName cShutdownFunctionName = ObjectName("shutdown");
 
 const ObjectName cInputKeyPressFunctionName = ObjectName("inputKeyPress");
 const ObjectName cInputKeyReleaseFunctionName = ObjectName("inputKeyRelease");
+const ObjectName cInputKeyTextFunctionName = ObjectName("inputKeyText");
 const ObjectName cInputMouseFunctionName = ObjectName("inputMouse");
 const ObjectName cInputMouseWheelFunctionName = ObjectName("inputMouseWheel");
 const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
@@ -54,6 +55,7 @@ const ObjectName* cInternalFunctionNames[] =
    &cUpdateFunctionName,
    &cInputKeyPressFunctionName,
    &cInputKeyReleaseFunctionName,
+   &cInputKeyTextFunctionName,
    &cInputMouseFunctionName,
    &cInputTouchBeginFunctionName,
    &cInputTouchMoveFunctionName,
@@ -455,6 +457,20 @@ bool ScriptInstance::inputKeyRelease(char pKey)
    return false;
 }
 
+bool ScriptInstance::inputKeyText(uint16_t pUnicode)
+{
+   if(!getActive() || !mNamespace)
+      return false;
+
+   if(mNamespace->isFunctionDefined(cInputKeyTextFunctionName))
+   {
+      if(mNamespace->runFunction<bool>(cInputKeyTextFunctionName, pUnicode))
+         return true;
+   }
+
+   return false;
+}
+
 bool ScriptInstance::inputMouse(const Vector2& pPoint)
 {
    if(!getActive() || !mNamespace)
@@ -600,6 +616,20 @@ bool ComponentScript::inputKeyRelease(char pKey)
    for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
    {
       if(getScriptInstance(i)->inputKeyRelease(pKey))
+         return true;
+   }
+
+   return false;
+}
+
+bool ComponentScript::inputKeyText(uint16_t pUnicode)
+{
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
+   {
+      if(getScriptInstance(i)->inputKeyText(pUnicode))
          return true;
    }
 

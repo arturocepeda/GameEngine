@@ -35,6 +35,10 @@ bool InputListener::inputKeyRelease(char)
 {
    return false;
 }
+bool InputListener::inputKeyText(uint16_t)
+{
+   return false;
+}
 
 bool InputListener::inputMouse(const Vector2&)
 {
@@ -134,6 +138,13 @@ void InputSystem::processEvents()
                break;
          }
          break;
+      case InputEventType::KeyText:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputKeyText((uint16_t)event.mID))
+               break;
+         }
+         break;
       case InputEventType::MouseMoved:
          for(size_t j = 0; j < mListeners.size(); j++)
          {
@@ -220,6 +231,20 @@ void InputSystem::inputKeyRelease(char pKey)
    InputEvent event;
    event.mType = InputEventType::KeyReleased;
    event.mID = (int16_t)pKey;
+
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
+}
+
+void InputSystem::inputKeyText(uint16_t pUnicode)
+{
+   if(!mInputEnabled)
+      return;
+
+   InputEvent event;
+   event.mType = InputEventType::KeyText;
+   event.mID = (int16_t)pUnicode;
 
    GEMutexLock(mEventsMutex);
    mEvents.push_back(event);

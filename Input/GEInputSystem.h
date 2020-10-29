@@ -29,6 +29,7 @@ namespace GE { namespace Input
 
       virtual bool inputKeyPress(char pKey);
       virtual bool inputKeyRelease(char pKey);
+      virtual bool inputKeyText(uint16_t pUnicode);
 
       virtual bool inputMouse(const Vector2& pPoint);
       virtual bool inputMouseLeftButton();
@@ -50,6 +51,7 @@ namespace GE { namespace Input
 
          KeyPressed,
          KeyReleased,
+         KeyText,
 
          MouseMoved,
          MouseLeftButton,
@@ -98,6 +100,7 @@ namespace GE { namespace Input
 
       void inputKeyPress(char pKey);
       void inputKeyRelease(char pKey);
+      void inputKeyText(uint16_t pUnicode);
 
       void inputMouse(const Vector2& pPoint);
       void inputMouseLeftButton();
