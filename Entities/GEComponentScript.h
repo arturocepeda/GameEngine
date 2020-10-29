@@ -87,6 +87,9 @@ namespace GE { namespace Entities
 
       void update();
 
+      bool inputKeyPress(char pKey);
+      bool inputKeyRelease(char pKey);
+
       bool inputMouse(const Vector2& pPoint);
       bool inputMouseWheel(int pDelta);
 
@@ -114,14 +117,17 @@ namespace GE { namespace Entities
 
       void update();
 
-      virtual bool inputMouse(const Vector2& Point) override;
+      virtual bool inputKeyPress(char pKey) override;
+      virtual bool inputKeyRelease(char pKey) override;
+
+      virtual bool inputMouse(const Vector2& pPoint) override;
       virtual bool inputMouseWheel(int pDelta) override;
 
-      virtual bool inputTouchBegin(int ID, const Vector2& Point) override;
-      virtual bool inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint) override;
-      virtual bool inputTouchEnd(int ID, const Vector2& Point) override;
+      virtual bool inputTouchBegin(int pID, const Vector2& pPoint) override;
+      virtual bool inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint) override;
+      virtual bool inputTouchEnd(int pID, const Vector2& pPoint) override;
 
-      ScriptInstance* getScriptInstanceByName(const Core::ObjectName& ScriptName);
+      ScriptInstance* getScriptInstanceByName(const Core::ObjectName& pScriptName);
 
       GEPropertyArray(ScriptInstance, ScriptInstance)
    };

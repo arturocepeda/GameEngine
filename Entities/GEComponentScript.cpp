@@ -40,6 +40,8 @@ const ObjectName cInitFunctionName = ObjectName("init");
 const ObjectName cUpdateFunctionName = ObjectName("update");
 const ObjectName cShutdownFunctionName = ObjectName("shutdown");
 
+const ObjectName cInputKeyPressFunctionName = ObjectName("inputKeyPress");
+const ObjectName cInputKeyReleaseFunctionName = ObjectName("inputKeyRelease");
 const ObjectName cInputMouseFunctionName = ObjectName("inputMouse");
 const ObjectName cInputMouseWheelFunctionName = ObjectName("inputMouseWheel");
 const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
@@ -50,6 +52,8 @@ const ObjectName* cInternalFunctionNames[] =
 {
    &cInitFunctionName,
    &cUpdateFunctionName,
+   &cInputKeyPressFunctionName,
+   &cInputKeyReleaseFunctionName,
    &cInputMouseFunctionName,
    &cInputTouchBeginFunctionName,
    &cInputTouchMoveFunctionName,
@@ -423,14 +427,42 @@ void ScriptInstance::update()
    }
 }
 
-bool ScriptInstance::inputMouse(const Vector2& Point)
+bool ScriptInstance::inputKeyPress(char pKey)
+{
+   if(!getActive() || !mNamespace)
+      return false;
+
+   if(mNamespace->isFunctionDefined(cInputKeyPressFunctionName))
+   {
+      if(mNamespace->runFunction<bool>(cInputKeyPressFunctionName, pKey))
+         return true;
+   }
+
+   return false;
+}
+
+bool ScriptInstance::inputKeyRelease(char pKey)
+{
+   if(!getActive() || !mNamespace)
+      return false;
+
+   if(mNamespace->isFunctionDefined(cInputKeyReleaseFunctionName))
+   {
+      if(mNamespace->runFunction<bool>(cInputKeyReleaseFunctionName, pKey))
+         return true;
+   }
+
+   return false;
+}
+
+bool ScriptInstance::inputMouse(const Vector2& pPoint)
 {
    if(!getActive() || !mNamespace)
       return false;
 
    if(mNamespace->isFunctionDefined(cInputMouseFunctionName))
    {
-      if(mNamespace->runFunction<bool>(cInputMouseFunctionName, Point))
+      if(mNamespace->runFunction<bool>(cInputMouseFunctionName, pPoint))
          return true;
    }
 
@@ -451,42 +483,42 @@ bool ScriptInstance::inputMouseWheel(int pDelta)
    return false;
 }
 
-bool ScriptInstance::inputTouchBegin(int ID, const Vector2& Point)
+bool ScriptInstance::inputTouchBegin(int pID, const Vector2& pPoint)
 {
    if(!getActive() || !mNamespace)
       return false;
 
    if(mNamespace->isFunctionDefined(cInputTouchBeginFunctionName))
    {
-      if(mNamespace->runFunction<bool>(cInputTouchBeginFunctionName, ID, Point))
+      if(mNamespace->runFunction<bool>(cInputTouchBeginFunctionName, pID, pPoint))
          return true;
    }
 
    return false;
 }
 
-bool ScriptInstance::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
+bool ScriptInstance::inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint)
 {
    if(!getActive() || !mNamespace)
       return false;
 
    if(mNamespace->isFunctionDefined(cInputTouchMoveFunctionName))
    {
-      if(mNamespace->runFunction<bool>(cInputTouchMoveFunctionName, ID, PreviousPoint, CurrentPoint))
+      if(mNamespace->runFunction<bool>(cInputTouchMoveFunctionName, pID, pPreviousPoint, pCurrentPoint))
          return true;
    }
 
    return false;
 }
 
-bool ScriptInstance::inputTouchEnd(int ID, const Vector2& Point)
+bool ScriptInstance::inputTouchEnd(int pID, const Vector2& pPoint)
 {
    if(!getActive() || !mNamespace)
       return false;
 
    if(mNamespace->isFunctionDefined(cInputTouchEndFunctionName))
    {
-      if(mNamespace->runFunction<bool>(cInputTouchEndFunctionName, ID, Point))
+      if(mNamespace->runFunction<bool>(cInputTouchEndFunctionName, pID, pPoint))
          return true;
    }
 
@@ -540,20 +572,48 @@ void ComponentScript::update()
    if(cOwner->getClock()->getDelta() < GE_EPSILON)
       return;
 
-   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
    {
       getScriptInstance(i)->update();
    }
 }
 
-bool ComponentScript::inputMouse(const Vector2& Point)
+bool ComponentScript::inputKeyPress(char pKey)
 {
    if(!cOwner->isActiveInHierarchy())
       return false;
 
-   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
    {
-      if(getScriptInstance(i)->inputMouse(Point))
+      if(getScriptInstance(i)->inputKeyPress(pKey))
+         return true;
+   }
+
+   return false;
+}
+
+bool ComponentScript::inputKeyRelease(char pKey)
+{
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
+   {
+      if(getScriptInstance(i)->inputKeyRelease(pKey))
+         return true;
+   }
+
+   return false;
+}
+
+bool ComponentScript::inputMouse(const Vector2& pPoint)
+{
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
+   {
+      if(getScriptInstance(i)->inputMouse(pPoint))
          return true;
    }
 
@@ -565,7 +625,7 @@ bool ComponentScript::inputMouseWheel(int pDelta)
    if(!cOwner->isActiveInHierarchy())
       return false;
 
-   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
    {
       if(getScriptInstance(i)->inputMouseWheel(pDelta))
          return true;
@@ -574,55 +634,55 @@ bool ComponentScript::inputMouseWheel(int pDelta)
    return false;
 }
 
-bool ComponentScript::inputTouchBegin(int ID, const Vector2& Point)
+bool ComponentScript::inputTouchBegin(int pID, const Vector2& pPoint)
 {
    if(!cOwner->isActiveInHierarchy())
       return false;
 
-   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
    {
-      if(getScriptInstance(i)->inputTouchBegin(ID, Point))
+      if(getScriptInstance(i)->inputTouchBegin(pID, pPoint))
          return true;
    }
 
    return false;
 }
 
-bool ComponentScript::inputTouchMove(int ID, const Vector2& PreviousPoint, const Vector2& CurrentPoint)
+bool ComponentScript::inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint)
 {
    if(!cOwner->isActiveInHierarchy())
       return false;
 
-   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
    {
-      if(getScriptInstance(i)->inputTouchMove(ID, PreviousPoint, CurrentPoint))
+      if(getScriptInstance(i)->inputTouchMove(pID, pPreviousPoint, pCurrentPoint))
          return true;
    }
 
    return false;
 }
 
-bool ComponentScript::inputTouchEnd(int ID, const Vector2& Point)
+bool ComponentScript::inputTouchEnd(int pID, const Vector2& pPoint)
 {
    if(!cOwner->isActiveInHierarchy())
       return false;
 
-   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
    {
-      if(getScriptInstance(i)->inputTouchEnd(ID, Point))
+      if(getScriptInstance(i)->inputTouchEnd(pID, pPoint))
          return true;
    }
 
    return false;
 }
 
-ScriptInstance* ComponentScript::getScriptInstanceByName(const ObjectName& ScriptName)
+ScriptInstance* ComponentScript::getScriptInstanceByName(const ObjectName& pScriptName)
 {
-   for(uint i = 0; i < vScriptInstanceList.size(); i++)
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
    {
       ScriptInstance* cScriptInstance = getScriptInstance(i);
 
-      if(cScriptInstance->getScriptName() == ScriptName)
+      if(cScriptInstance->getScriptName() == pScriptName)
          return cScriptInstance;
    }
 
