@@ -28,8 +28,7 @@
 #include "Audio/GEAudioSystem.h"
 #include "Input/GEInputSystem.h"
 
-#define FREEGLUT_LIB_PRAGMAS 0
-#include "Externals/freeglut/include/GL/freeglut.h"
+#include "Externals/glfw/include/GLFW/glfw3.h"
 
 #pragma comment(lib, "GameEngine.OpenGL.lib")
 #pragma comment(lib, "AppModule.lib")
@@ -37,7 +36,7 @@
 
 #if defined (_M_X64)
 # pragma comment(lib, "../../../GameEngine/Externals/glew/lib/Release/x64/glew32.lib")
-# pragma comment(lib, "../../../GameEngine/Externals/freeglut/lib/x64/freeglut.lib")
+# pragma comment(lib, "../../../GameEngine/Externals/glfw/lib-vc2017/glfw3.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/OpenAL/lib/Win64/OpenAL32.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/libogg/lib/x64/libogg_static.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/libvorbis/lib/x64/libvorbis_static.lib")
@@ -45,7 +44,7 @@
 # pragma comment(lib, "../../../GameEngine/Externals/Brofiler/ProfilerCore64.lib")
 #else
 # pragma comment(lib, "../../../GameEngine/Externals/glew/lib/Release/Win32/glew32.lib")
-# pragma comment(lib, "../../../GameEngine/Externals/freeglut/lib/freeglut.lib")
+# pragma comment(lib, "../../../GameEngine/Externals/glfw/lib-vc2017/glfw3.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/OpenAL/lib/Win32/OpenAL32.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/Brofiler/ProfilerCore32.lib")
 #endif
@@ -160,25 +159,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
    cPixelToScreenY = Allocator::alloc<Scaler>();
    GEInvokeCtor(Scaler, cPixelToScreenY)(0.0f, (float)Device::ScreenHeight, (float)Device::getAspectRatio(), (float)-Device::getAspectRatio());
 
-   int iWindowWidth = Device::ScreenWidth;
-   int iWindowHeight = Device::ScreenHeight;
-
-   // create the main window
-   GE::uint iWindowPositionX = (systemScreenWidth / 2) - (iWindowWidth / 2);
-   GE::uint iWindowPositionY = (systemScreenHeight / 2) - (iWindowHeight / 2);
-
    // initialize rendering and sound systems
-   glutInit(&__argc, __argv);
-   glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-   glutInitWindowPosition(iWindowPositionX, iWindowPositionY);
-   glutInitWindowSize(Device::ScreenWidth, Device::ScreenHeight);
-   glutCreateWindow(GE_APP_NAME);
-   glewInit();
+   glfwInit();
+
+   GLFWmonitor* monitor = nullptr;
 
    if(gSettings.getFullscreen())
    {
-      glutFullScreen();
+      monitor = glfwGetPrimaryMonitor();
    }
+
+   const int windowPositionX = (systemScreenWidth / 2) - (Device::ScreenWidth / 2);
+   const int windowPositionY = (systemScreenHeight / 2) - (Device::ScreenHeight / 2);
+
+   GLFWwindow* window = glfwCreateWindow(Device::ScreenWidth, Device::ScreenHeight, GE_APP_NAME, monitor, nullptr);
+   glfwSetWindowPos(window, windowPositionX, windowPositionY);
+   glfwMakeContextCurrent(window);
+
+   glewInit();
+
+   int framebufferWidth;
+   int framebufferHeight;
+   glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
+   glViewport(0, 0, framebufferWidth, framebufferHeight);
+   glfwSwapInterval(1);
 
    cRender = Allocator::alloc<RenderSystemES20>();
    GEInvokeCtor(RenderSystemES20, cRender)();
@@ -189,7 +193,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 
 #if !defined (_DEBUG)
    // hide the mouse pointer
-   glutSetCursor(GLUT_CURSOR_NONE);
+   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 #endif
 
    // timer
@@ -205,19 +209,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
    TaskManager* cTaskManager = Allocator::alloc<TaskManager>();
    GEInvokeCtor(TaskManager, cTaskManager);
 
-   // game loop
-   glutDisplayFunc(render);
-   glutIdleFunc(render);
+   glfwSetKeyCallback(window, keyboard);
+   glfwSetCharCallback(window, keyboardText);
+   glfwSetMouseButtonCallback(window, mouseButton);
+   glfwSetCursorPosCallback(window, mouseMove);
+   glfwSetScrollCallback(window, mouseWheel);
 
-   glutKeyboardFunc(keyboardDown);
-   glutKeyboardUpFunc(keyboardUp);
-   glutMouseFunc(mouseButton);
-   glutMotionFunc(mouseMove);
-   glutPassiveMotionFunc(mouseMove);
+   while(!TaskManager::getInstance()->getExitPending() && !glfwWindowShouldClose(window))
+   {
+     dTimeNow = cTimer.getTime();
+     dTimeDelta = dTimeNow - dTimeBefore;
 
-   glutMainLoop();
+     if(dTimeDelta >= dTimeInterval)
+     {
+        dTimeBefore = dTimeNow;
 
-   // end of the loop
+        float fTimeDelta = (float)dTimeDelta * 0.000001f;
+
+        if(fTimeDelta > 1.0f)
+        {
+           fTimeDelta = 1.0f / gSettings.getTargetFPS();
+        }
+
+        Time::setDelta(fTimeDelta);
+
+        TaskManager::getInstance()->update();
+        TaskManager::getInstance()->render();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+     }
+   }
+
    cStateManager.getActiveState()->deactivate();
    cStateManager.releaseStates();
 
@@ -228,35 +251,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 
    distributionPlatform.shutdown();
 
+   glfwDestroyWindow(window);
+   glfwTerminate();
+
    return 0;
-}
-
-void render()
-{
-   dTimeNow = cTimer.getTime();
-   dTimeDelta = dTimeNow - dTimeBefore;
-
-   if(dTimeDelta >= dTimeInterval)
-   {
-      dTimeBefore = dTimeNow;
-
-      float fTimeDelta = (float)dTimeDelta * 0.000001f;
-
-      if(fTimeDelta > 1.0f)
-         fTimeDelta = 1.0f / gSettings.getTargetFPS();
-
-      Time::setDelta(fTimeDelta);
-
-      TaskManager::getInstance()->update();
-      TaskManager::getInstance()->render();
-
-      glutSwapBuffers();
-   }
-
-   if(TaskManager::getInstance()->getExitPending())
-   {
-      glutLeaveMainLoop();
-   }
 }
 
 GE::Vector2 getMouseScreenPosition()
@@ -264,29 +262,52 @@ GE::Vector2 getMouseScreenPosition()
    return GE::Vector2(cPixelToScreenX->y((float)pMouse.x), cPixelToScreenY->y((float)pMouse.y));
 }
 
-void keyboardDown(unsigned char key, int x, int y)
+void keyboard(GLFWwindow*, int pKey, int pScancode, int pAction, int pMods)
 {
-   InputSystem::getInstance()->inputKeyPress((char)key);
-}
+   (void)pScancode; (void)pMods;
 
-void keyboardUp(unsigned char key, int x, int y)
-{
-   InputSystem::getInstance()->inputKeyRelease((char)key);
-}
-
-void mouseButton(int button, int state, int x, int y)
-{
-   // left button
-   if(button == GLUT_LEFT_BUTTON)
+   if(pAction == GLFW_PRESS)
    {
-      if(state == GLUT_DOWN)
+      InputSystem::getInstance()->inputKeyPress((char)pKey);
+   }
+   else if(pAction == GLFW_RELEASE)
+   {
+      InputSystem::getInstance()->inputKeyRelease((char)pKey);
+   }
+
+   if(pAction == GLFW_PRESS || pAction == GLFW_REPEAT)
+   {
+      if(pKey == GLFW_KEY_ENTER)
+      {
+         keyboardText(nullptr, 13u);
+      }
+      else if(pKey == GLFW_KEY_BACKSPACE)
+      {
+         keyboardText(nullptr, 8u);
+      }
+   }
+}
+
+void keyboardText(GLFWwindow*, unsigned int pCodePoint)
+{
+   InputSystem::getInstance()->inputKeyText((uint16_t)pCodePoint);
+}
+
+void mouseButton(GLFWwindow*, int pButton, int pAction, int pMods)
+{
+   (void)pMods;
+
+   // left button
+   if(pButton == GLFW_MOUSE_BUTTON_LEFT)
+   {
+      if(pAction == GLFW_PRESS)
       {
          bMouseLeftButton = true;
          vMouseLastPosition = getMouseScreenPosition();
          InputSystem::getInstance()->inputMouseLeftButton();
          InputSystem::getInstance()->inputTouchBegin(0, vMouseLastPosition);
       }
-      else
+      else if(pAction == GLFW_RELEASE)
       {
          bMouseLeftButton = false;
          vMouseLastPosition = getMouseScreenPosition();
@@ -294,29 +315,19 @@ void mouseButton(int button, int state, int x, int y)
       }
    }
    // right button
-   else if(button == GLUT_RIGHT_BUTTON)
+   else if(pButton == GLFW_MOUSE_BUTTON_RIGHT)
    {
-      if(state == GLUT_DOWN)
+      if(pAction == GLFW_PRESS)
       {
          InputSystem::getInstance()->inputMouseRightButton();
       }
    }
-   // mouse wheel forward
-   else if(button == 3)
-   {
-      InputSystem::getInstance()->inputMouseWheel(+1);
-   }
-   // mouse wheel backward
-   else if(button == 4)
-   {
-      InputSystem::getInstance()->inputMouseWheel(-1);
-   }
 }
 
-void mouseMove(int x, int y)
+void mouseMove(GLFWwindow*, double pX, double pY)
 {
-   pMouse.x = x;
-   pMouse.y = y;
+   pMouse.x = (LONG)pX;
+   pMouse.y = (LONG)pY;
 
    GE::Vector2 vMouseCurrentPosition = getMouseScreenPosition();
    InputSystem::getInstance()->inputMouse(vMouseCurrentPosition);
@@ -326,11 +337,17 @@ void mouseMove(int x, int y)
       InputSystem::getInstance()->inputTouchMove(0, vMouseLastPosition, vMouseCurrentPosition);
 
       if(!gSettings.getFullscreen() &&
-         (x < 0 || y < 0 || x >= Device::ScreenWidth || y >= Device::ScreenHeight))
+         (pMouse.x < 0 || pMouse.y < 0 || pMouse.x >= Device::ScreenWidth || pMouse.y >= Device::ScreenHeight))
       {
-         mouseButton(GLUT_LEFT_BUTTON, GLUT_UP, x, y);
+         mouseButton(nullptr, GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0);
       }
    }
 
    vMouseLastPosition = vMouseCurrentPosition;
+}
+
+void mouseWheel(GLFWwindow*, double pXOffset, double pYOffset)
+{
+   (void)pXOffset;
+   InputSystem::getInstance()->inputMouseWheel((int)pYOffset);
 }
