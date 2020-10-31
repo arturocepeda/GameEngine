@@ -320,7 +320,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
       return 0;
 
    case WM_KEYDOWN:
-      InputSystem::getInstance()->inputKeyPress((char)wParam);
+      {
+         const bool keyRepeat = (lParam & 0x40000000) > 0;
+
+         if(!keyRepeat)
+         {
+            InputSystem::getInstance()->inputKeyPress((char)wParam);
+         }
+      }
+
       return 0;
 
    case WM_KEYUP:
@@ -375,6 +383,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
             PostMessage(hWnd, WM_LBUTTONUP, 0, 0);
          }
       }
+
       return 0;
    }
     
