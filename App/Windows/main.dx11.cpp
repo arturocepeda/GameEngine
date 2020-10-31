@@ -273,7 +273,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
          float fTimeDelta = (float)dTimeDelta * 0.000001f;
 
          if(fTimeDelta > 1.0f)
+         {
             fTimeDelta = 1.0f / gSettings.getTargetFPS();
+         }
 
          Time::setDelta(fTimeDelta);
 
@@ -325,6 +327,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
       InputSystem::getInstance()->inputKeyRelease((char)wParam);
       return 0;
 
+   case WM_CHAR:
+      InputSystem::getInstance()->inputKeyText((uint16_t)wParam);
+      return 0;
+
    case WM_LBUTTONDOWN:
       bMouseLeftButton = true;
       vMouseLastPosition = GetMouseScreenPosition();
@@ -332,7 +338,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
       InputSystem::getInstance()->inputTouchBegin(0, vMouseLastPosition);
 
       if(!gSettings.getFullscreen())
+      {
          SetCapture(hWnd);
+      }
 
       return 0;
 
@@ -342,7 +350,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
       InputSystem::getInstance()->inputTouchEnd(0, vMouseLastPosition);
 
       if(!gSettings.getFullscreen())
+      {
          ReleaseCapture();
+      }
 
       return 0;
 
@@ -361,7 +371,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
          GetWindowRect(hWnd, &rWindow);
 
          if(!PtInRect(&rWindow, pMouse))
+         {
             PostMessage(hWnd, WM_LBUTTONUP, 0, 0);
+         }
       }
       return 0;
    }
