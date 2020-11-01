@@ -57,6 +57,23 @@ static void utf8ToUnicode(const char* pSequence, int* pOutUnicode, int* pOutExtr
    *pOutExtraChars = extraChars;
 }
 
+static void utf8AppendText(const char* pText, GESTLString* pString, GESTLString* pStringExtension)
+{
+   const int textLength = (int)strlen(pText);
+
+   for(int i = 0; i < textLength; i++)
+   {
+      int glyphIndex = 0;
+      int extraChars = 0;
+      utf8ToUnicode(pText + i, &glyphIndex, &extraChars);
+
+      pString->push_back(glyphIndex & 0x000000ff);
+      pStringExtension->push_back((glyphIndex & 0x0000ff00) >> 8);
+
+      i += extraChars;
+   }
+}
+
 
 //
 //  ComponentLabelBase
@@ -258,33 +275,39 @@ void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
 
 void ComponentLabelBase::processVariables()
 {
-   size_t iVariableStartPos = mText.find('$');
+   size_t variableStartPos = mText.find('$');
 
-   while(iVariableStartPos != GESTLString::npos)
+   while(variableStartPos != GESTLString::npos)
    {
-      size_t iVariableEndPos = iVariableStartPos + 1;
+      size_t variableEndPos = variableStartPos + 1u;
 
-      while(iVariableEndPos < mText.length() &&
-         (isalnum(mText[iVariableEndPos]) || mText[iVariableEndPos] == '_'))
+      while(variableEndPos < mText.length() &&
+         (isalnum(mText[variableEndPos]) || mText[variableEndPos] == '_'))
       {
-         iVariableEndPos++;
+         variableEndPos++;
       }
 
-      size_t iVariableNameLength = iVariableEndPos - iVariableStartPos - 1;
+      const size_t variableNameLength = variableEndPos - variableStartPos - 1u;
 
-      if(iVariableNameLength > 0)
+      if(variableNameLength > 0u)
       {
-         GESTLString sVariableName = mText.substr(iVariableStartPos + 1, iVariableNameLength);
-         ObjectName cVariableName = ObjectName(sVariableName.c_str());
-         const char* sVariableValue = LocalizedStringsManager::getInstance()->getVariable(cVariableName);
+         GESTLString variableNameStr = mText.substr(variableStartPos + 1u, variableNameLength);
+         const ObjectName variableName(variableNameStr.c_str());
+         const char* variableValue = LocalizedStringsManager::getInstance()->getVariable(variableName);
 
-         if(sVariableValue)
+         if(variableValue)
          {
-            mText.replace(iVariableStartPos, iVariableNameLength + 1, sVariableValue);
+            GESTLString variableValueUTF8;
+            GESTLString variableValueUTF8Ext;
+
+            utf8AppendText(variableValue, &variableValueUTF8, &variableValueUTF8Ext);
+
+            mText.replace(variableStartPos, variableNameLength + 1u, variableValueUTF8);
+            mTextExtension.replace(variableStartPos, variableNameLength + 1u, variableValueUTF8Ext);
          }
       }
 
-      iVariableStartPos = mText.find('$', iVariableStartPos + 1);
+      variableStartPos = mText.find('$', variableStartPos + 1u);
    }
 }
 
@@ -353,19 +376,7 @@ void ComponentLabelBase::setText(const char* pText)
    mText.clear();
    mTextExtension.clear();
 
-   const uint32_t iStrLength = (uint32_t)strlen(pText);
-
-   for(uint32_t i = 0u; i < iStrLength; i++)
-   {
-      int glyphIndex = 0;
-      int extraChars = 0;
-      utf8ToUnicode(pText + i, &glyphIndex, &extraChars);
-
-      mText.push_back(glyphIndex & 0x000000ff);
-      mTextExtension.push_back((glyphIndex & 0x0000ff00) >> 8);
-
-      i += (uint32_t)extraChars;
-   }
+   utf8AppendText(pText, &mText, &mTextExtension);
 
    if(GEHasFlag(mSettings, LabelSettingsBitMask::VariableReplacement))
    {
