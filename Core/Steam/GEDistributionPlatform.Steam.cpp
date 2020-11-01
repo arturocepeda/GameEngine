@@ -236,6 +236,39 @@ SystemLanguage DistributionPlatform::getLanguage() const
    {
       return SystemLanguage::German;
    }
+   if(strcmp(gameLanguage, "french") == 0)
+   {
+      return SystemLanguage::French;
+   }
+   if(strcmp(gameLanguage, "italian") == 0)
+   {
+      return SystemLanguage::Italian;
+   }
+   if(strcmp(gameLanguage, "portuguese") == 0)
+   {
+      return SystemLanguage::Portuguese;
+   }
+
+   if(strcmp(gameLanguage, "russian") == 0)
+   {
+      return SystemLanguage::Russian;
+   }
+   if(strcmp(gameLanguage, "schinese") == 0)
+   {
+      return SystemLanguage::ChineseSimplified;
+   }
+   if(strcmp(gameLanguage, "tchinese") == 0)
+   {
+      return SystemLanguage::ChineseTraditional;
+   }
+   if(strcmp(gameLanguage, "japanese") == 0)
+   {
+      return SystemLanguage::Japanese;
+   }
+   if(strcmp(gameLanguage, "koreana") == 0)
+   {
+      return SystemLanguage::Korean;
+   }
 
    return SystemLanguage::Count;
 }
