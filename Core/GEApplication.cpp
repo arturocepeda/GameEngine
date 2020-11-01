@@ -87,17 +87,16 @@ void Application::startUp(void (*pInitAppModuleFunction)())
          Device::Language = Device::requestOSLanguage();
       }
    }
-   else if(strcmp(language, "English") == 0)
+   else
    {
-      Device::Language = SystemLanguage::English;
-   }
-   else if(strcmp(language, "Spanish") == 0)
-   {
-      Device::Language = SystemLanguage::Spanish;
-   }
-   else if(strcmp(language, "German") == 0)
-   {
-      Device::Language = SystemLanguage::German;
+      for(uint32_t i = 0u; i < (uint32_t)SystemLanguage::Count; i++)
+      {
+         if(strcmp(language, strSystemLanguage[i]) == 0)
+         {
+            Device::Language = (SystemLanguage)i;
+            break;
+         }
+      }
    }
 
    InputSystem* cInputSystem = Allocator::alloc<InputSystem>();
