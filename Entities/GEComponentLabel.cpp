@@ -122,6 +122,15 @@ uint16_t ComponentLabelBase::getGlyphIndex(size_t pCharIndex) const
       (((uint16_t)mTextExtension[pCharIndex] & 0x00ff) << 8);
 }
 
+static inline bool isCJKLanguage()
+{
+   return Device::Language >= SystemLanguage::ChineseSimplified && Device::Language <= SystemLanguage::Korean;
+}
+static inline bool isCJKPunctuationCharacter(uint16_t pUnicode)
+{
+   return (pUnicode >= 0x3000 && pUnicode <= 0x303a) || pUnicode == 0xff0c || pUnicode == 0xff0e;
+}
+
 bool ComponentLabelBase::canBreakLine(const Pen& pPen) const
 {
    if(mText[pPen.mCharIndex] == ' ' && mTextExtension[pPen.mCharIndex] == 0)
@@ -129,19 +138,18 @@ bool ComponentLabelBase::canBreakLine(const Pen& pPen) const
       return true;
    }
 
-   if(Device::Language >= SystemLanguage::ChineseSimplified &&
-      Device::Language <= SystemLanguage::Korean)
+   if(isCJKLanguage())
    {
       const uint16_t glyphIndex = getGlyphIndex((size_t)pPen.mCharIndex);
 
-      if(glyphIndex >= 0x0250 && !(glyphIndex >= 0x3000 && glyphIndex <= 0x303a))
+      if(glyphIndex >= 0x0250 && !isCJKPunctuationCharacter(glyphIndex))
       {
          const size_t nextCharIndex = pPen.mCharIndex + 1u;
 
          if(nextCharIndex < mText.length())
          {
             const uint16_t nextGlyphIndex = getGlyphIndex(nextCharIndex);
-            return !(nextGlyphIndex >= 0x3000 && nextGlyphIndex <= 0x303a);
+            return !isCJKPunctuationCharacter(nextGlyphIndex);
          }
       }
    }
