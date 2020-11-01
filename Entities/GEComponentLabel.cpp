@@ -170,8 +170,9 @@ float ComponentLabelBase::getDefaultVerticalOffset() const
 void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
 {
    unsigned char character = mText[pPen->mCharIndex];
+   unsigned char extension = mTextExtension[pPen->mCharIndex];
 
-   while(character == '<')
+   while(character == '<' && extension == 0)
    {
       size_t i = (size_t)pPen->mCharIndex + 1;
 
@@ -277,6 +278,7 @@ void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
       if(pPen->mCharIndex < (uint32_t)mText.size())
       {
          character = mText[pPen->mCharIndex];
+         extension = mTextExtension[pPen->mCharIndex];
       }
    }
 }
