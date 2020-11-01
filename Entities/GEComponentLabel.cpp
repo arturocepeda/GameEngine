@@ -295,6 +295,16 @@ void ComponentLabelBase::processVariables()
          const ObjectName variableName(variableNameStr.c_str());
          const char* variableValue = LocalizedStringsManager::getInstance()->getVariable(variableName);
 
+         if(!variableValue)
+         {
+            LocalizedString* localizedString = LocalizedStringsManager::getInstance()->get(variableName);
+
+            if(localizedString)
+            {
+               variableValue = localizedString->getString();
+            }
+         }
+
          if(variableValue)
          {
             GESTLString variableValueUTF8;
