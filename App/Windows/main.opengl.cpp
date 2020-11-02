@@ -182,7 +182,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
    int framebufferHeight;
    glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
    glViewport(0, 0, framebufferWidth, framebufferHeight);
-   glfwSwapInterval(1);
+
+   bool vsync = gSettings.getVSync();
+   glfwSwapInterval((int)vsync);
 
    cRender = Allocator::alloc<RenderSystemES20>();
    GEInvokeCtor(RenderSystemES20, cRender)();
@@ -217,28 +219,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 
    while(!TaskManager::getInstance()->getExitPending() && !glfwWindowShouldClose(window))
    {
-     dTimeNow = cTimer.getTime();
-     dTimeDelta = dTimeNow - dTimeBefore;
+      dTimeNow = cTimer.getTime();
+      dTimeDelta = dTimeNow - dTimeBefore;
 
-     if(dTimeDelta >= dTimeInterval)
-     {
-        dTimeBefore = dTimeNow;
+      if(dTimeDelta >= dTimeInterval)
+      {
+         dTimeBefore = dTimeNow;
 
-        float fTimeDelta = (float)dTimeDelta * 0.000001f;
+         float fTimeDelta = (float)dTimeDelta * 0.000001f;
 
-        if(fTimeDelta > 1.0f)
-        {
-           fTimeDelta = 1.0f / gSettings.getTargetFPS();
-        }
+         if(fTimeDelta > 1.0f)
+         {
+            fTimeDelta = 1.0f / gSettings.getTargetFPS();
+         }
 
-        Time::setDelta(fTimeDelta);
+         Time::setDelta(fTimeDelta);
 
-        TaskManager::getInstance()->update();
-        TaskManager::getInstance()->render();
+         TaskManager::getInstance()->update();
+         TaskManager::getInstance()->render();
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-     }
+         glfwSwapBuffers(window);
+         glfwPollEvents();
+
+         if(gSettings.getVSync() != vsync)
+         {
+            vsync = gSettings.getVSync();
+            glfwSwapInterval((int)vsync);
+         }
+      }
    }
 
    cStateManager.getActiveState()->deactivate();
