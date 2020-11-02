@@ -219,10 +219,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 
    while(!TaskManager::getInstance()->getExitPending() && !glfwWindowShouldClose(window))
    {
+      if(gSettings.getVSync() != vsync)
+      {
+         vsync = gSettings.getVSync();
+
+         dTimeDelta = 0.0;
+         dTimeBefore = 0.0;
+
+         glfwSwapInterval((int)vsync);
+      }
+
       dTimeNow = cTimer.getTime();
       dTimeDelta = dTimeNow - dTimeBefore;
 
-      if(dTimeDelta >= dTimeInterval)
+      bool renderFrame = false;
+
+      if(vsync)
+      {
+         renderFrame = true;
+      }
+      else
+      {
+         renderFrame = dTimeDelta >= dTimeInterval;
+      }
+
+      if(renderFrame)
       {
          dTimeBefore = dTimeNow;
 
@@ -240,12 +261,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 
          glfwSwapBuffers(window);
          glfwPollEvents();
-
-         if(gSettings.getVSync() != vsync)
-         {
-            vsync = gSettings.getVSync();
-            glfwSwapInterval((int)vsync);
-         }
       }
    }
 
