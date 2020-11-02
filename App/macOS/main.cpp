@@ -117,6 +117,8 @@ int main(int argc, char* argv[])
        Device::ScreenWidth = (int)gSettings.getWindowSizeX();
        Device::ScreenHeight = (int)gSettings.getWindowSizeY();
     }
+   
+    Device::AspectRatio = (float)Device::ScreenHeight / (float)Device::ScreenWidth;
 
     cPixelToScreenX = Allocator::alloc<Scaler>();
     GEInvokeCtor(Scaler, cPixelToScreenX)(0.0f, (float)Device::ScreenWidth, -1.0f, 1.0f);
