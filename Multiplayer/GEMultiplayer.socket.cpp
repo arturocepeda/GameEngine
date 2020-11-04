@@ -322,12 +322,12 @@ size_t ServerSocket::receiveMessage(RemoteConnection** pOutClient, char* pBuffer
    {
       for(size_t i = 0u; i < mConnectedClients.size(); i++)
       {
-         const size_t bytes = (size_t)recv(mConnectedClients[i].mSocket, pBuffer, (int)pMaxSize, 0);
+         const int bytes = recv(mConnectedClients[i].mSocket, pBuffer, (int)pMaxSize, 0);
 
-         if(bytes > 0u)
+         if(bytes > 0)
          {
             *pOutClient = &mConnectedClients[i];
-            return bytes;
+            return (size_t)bytes;
          }
       }
    }
@@ -336,10 +336,10 @@ size_t ServerSocket::receiveMessage(RemoteConnection** pOutClient, char* pBuffer
       sockaddr_in clientAddress;
       GESocketLength addressLength = (GESocketLength)sizeof(clientAddress);
 
-      const size_t bytes =
-         (size_t)recvfrom(mSocket, pBuffer, (int)pMaxSize, 0, (sockaddr*)&clientAddress, &addressLength);
+      const int bytes =
+         recvfrom(mSocket, pBuffer, (int)pMaxSize, 0, (sockaddr*)&clientAddress, &addressLength);
 
-      if(bytes > 0u)
+      if(bytes > 0)
       {
          const uint32_t ip = clientAddress.sin_addr.s_addr;
          const uint16_t port = htons(clientAddress.sin_port);
@@ -367,7 +367,7 @@ size_t ServerSocket::receiveMessage(RemoteConnection** pOutClient, char* pBuffer
             Log::log(LogType::Info, "[Server] Established connection with client %s:%u", ip, port);
          }
 
-         return bytes;
+         return (size_t)bytes;
       }
    }
 
@@ -441,11 +441,11 @@ size_t ClientSocket::receiveMessage(char* pBuffer, size_t pMaxSize)
 {
    if(mProtocol == Protocol::TCP)
    {
-      const size_t bytes = (size_t)recv(mSocket, pBuffer, (int)pMaxSize, 0);
+      const int bytes = recv(mSocket, pBuffer, (int)pMaxSize, 0);
 
-      if(bytes > 0u)
+      if(bytes > 0)
       {
-         return bytes;
+         return (size_t)bytes;
       }
    }
    else
@@ -453,12 +453,12 @@ size_t ClientSocket::receiveMessage(char* pBuffer, size_t pMaxSize)
       sockaddr_in remoteAddress;
       GESocketLength fromLen = (GESocketLength)sizeof(remoteAddress);
 
-      const size_t bytes =
-         (size_t)recvfrom(mSocket, pBuffer, (int)pMaxSize, 0, (sockaddr*)&remoteAddress, &fromLen);
+      const int bytes =
+         recvfrom(mSocket, pBuffer, (int)pMaxSize, 0, (sockaddr*)&remoteAddress, &fromLen);
 
       if(remoteAddress.sin_addr.s_addr == mServerAddress.sin_addr.s_addr)
       {
-         return bytes;
+         return (size_t)bytes;
       }
    }
 
