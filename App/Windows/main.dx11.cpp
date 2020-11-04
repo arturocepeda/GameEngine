@@ -227,6 +227,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
    GEInvokeCtor(TaskManager, cTaskManager);
 
    // game loop
+   bool vsync = gSettings.getVSync();
+
    while(!bEnd)
    {
       // input
@@ -261,10 +263,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
       }
 
       // update and render
+      if(gSettings.getVSync() != vsync)
+      {
+         vsync = gSettings.getVSync();
+
+         dTimeDelta = 0.0;
+         dTimeBefore = 0.0;
+      }
+
       dTimeNow = cTimer.getTime();
       dTimeDelta = dTimeNow - dTimeBefore;
 
-      if(dTimeDelta >= dTimeInterval)
+      bool renderFrame = false;
+
+      if(vsync)
+      {
+         renderFrame = true;
+      }
+      else
+      {
+         renderFrame = dTimeDelta >= dTimeInterval;
+      }
+
+      if(renderFrame)
       {
          GEProfilerFrame("MainThread");
 
@@ -282,7 +303,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
          TaskManager::getInstance()->update();
          TaskManager::getInstance()->render();
 
-         bEnd = bEnd || TaskManager::getInstance()->getExitPending();
+         bEnd |= TaskManager::getInstance()->getExitPending();
       }
    }
 
