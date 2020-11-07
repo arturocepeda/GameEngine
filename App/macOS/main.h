@@ -10,12 +10,11 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#pragma once
+struct GLFWwindow;
 
-void render();
+void keyboard(GLFWwindow* pWindow, int pKey, int pScancode, int pAction, int pMods);
+void keyboardText(GLFWwindow* pWindow, unsigned int pCodePoint);
 
-void keyboardDown(unsigned char key, int x, int y);
-void keyboardUp(unsigned char key, int x, int y);
-
-void mouseButton(int button, int state, int x, int y);
-void mouseMove(int x, int y);
+void mouseButton(GLFWwindow* pWindow, int pButton, int pAction, int pMods);
+void mouseMove(GLFWwindow* pWindow, double pX, double pY);
+void mouseWheel(GLFWwindow* pWindow, double pXOffset, double pYOffset);
