@@ -88,8 +88,8 @@ ScriptInstance::ScriptInstance()
    });
 
 #if defined (GE_EDITOR_SUPPORT)
-   GERegisterProperty(UInt, DebugBreakpointLine);
-    
+   GERegisterProperty(UInt, DebugBreakpointLine) GEPropertyRuntime;
+
    registerAction(cReloadActionName, [this]
    {
       setScriptName(getScriptName());
@@ -275,7 +275,7 @@ void ScriptInstance::registerScriptProperties()
 #if defined (GE_EDITOR_SUPPORT)
       if(!isupper(sGlobalVariableName[0]))
       {
-         GESetFlag(cProperty->Flags, PropertyFlags::Internal);
+         GESetFlag(cProperty->Flags, PropertyFlags::Runtime);
       }
 #endif
    }

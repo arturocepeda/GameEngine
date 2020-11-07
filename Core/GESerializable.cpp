@@ -39,13 +39,13 @@ Property* Serializable::registerProperty(const ObjectName& PropertyName, ValueTy
    {
       PropertyName,
       Type,
+      Flags,
       Getter,
       Setter,
 #if defined (GE_EDITOR_SUPPORT)
       mClassNames.back(),
       Editor,
       Getter(),
-      Flags,
       PropertyDataPtr,
       PropertyDataUInt,
 #endif
@@ -340,9 +340,7 @@ void Serializable::saveToXml(pugi::xml_node& XmlNode) const
 #if defined (GE_EDITOR_SUPPORT)
       if(sProperty.Getter() == sProperty.DefaultValue)
          continue;
-      if(GEHasFlag(sProperty.Flags, PropertyFlags::Internal))
-         continue;
-      if(GEHasFlag(sProperty.Flags, PropertyFlags::EditorOnly))
+      if(GEHasFlag(sProperty.Flags, PropertyFlags::Runtime))
          continue;
 #endif
 
@@ -378,7 +376,7 @@ void Serializable::loadFromStream(std::istream& Stream)
    {
       const Property& sProperty = vProperties[i];
 
-      if(sProperty.Setter)
+      if(sProperty.Setter && !GEHasFlag(sProperty.Flags, PropertyFlags::Runtime))
       {
          Value cPropertyValue = Value::fromStream(sProperty.Type, Stream);
          sProperty.Setter(cPropertyValue);
@@ -410,7 +408,7 @@ void Serializable::saveToStream(std::ostream& Stream) const
    {
       const Property& sProperty = vProperties[i];
 
-      if(sProperty.Setter)
+      if(sProperty.Setter && !GEHasFlag(sProperty.Flags, PropertyFlags::Runtime))
       {
          sProperty.Getter().writeToStream(Stream);
       }

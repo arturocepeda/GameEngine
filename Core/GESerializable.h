@@ -45,15 +45,15 @@ namespace GE { namespace Core
 
    enum class PropertyFlags
    {
-      Hidden     = 1 << 0,
-      Internal   = 1 << 1,
-      EditorOnly = 1 << 2,
+      Runtime  = 1 << 0,
+      Hidden   = 1 << 1
    };
 
    struct Property
    {
       ObjectName Name;
       ValueType Type;
+      uint8_t Flags;
       PropertyGetter Getter;
       PropertySetter Setter;
 
@@ -61,7 +61,6 @@ namespace GE { namespace Core
       ObjectName Class;
       PropertyEditor Editor;
       Value DefaultValue;
-      uint8_t Flags;
       void* DataPtr;
       uint DataUInt;
 #endif
@@ -262,6 +261,8 @@ namespace GE { namespace Core
    registerProperty(GE::Core::ObjectName(#PropertyName), GE::Core::ValueType::PropertyType, \
       nullptr, \
       [this]()->GE::Core::Value { return GE::Core::Value(this->get##PropertyName()); })
+
+#define GEPropertyRuntime  ->Flags = (uint8_t)PropertyFlags::Runtime
 
 
 //
