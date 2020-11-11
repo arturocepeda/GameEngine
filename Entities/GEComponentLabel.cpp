@@ -576,6 +576,11 @@ void ComponentLabel::generateText()
          }
       }
 
+      if(!lineFeed)
+      {
+         lineFeed = mText[sPen.mCharIndex] == '\n' && mTextExtension[sPen.mCharIndex] == 0;
+      }
+
       if(lineFeed)
       {
          mLineWidths.push_back(fCurrentLineWidth);
