@@ -65,7 +65,7 @@ namespace GE { namespace Entities
       virtual float getInternalFontSize() const;
       virtual float getDefaultVerticalOffset() const;
 
-      void evaluateRichTextTag(Pen* pPen);
+      bool evaluateRichTextTag(Pen* pPen);
       void processVariables();
 
       virtual void generateText() = 0;

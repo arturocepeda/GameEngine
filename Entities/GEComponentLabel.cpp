@@ -167,7 +167,7 @@ float ComponentLabelBase::getDefaultVerticalOffset() const
    return 0.0f;
 }
 
-void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
+bool ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
 {
    unsigned char character = mText[pPen->mCharIndex];
    unsigned char extension = mTextExtension[pPen->mCharIndex];
@@ -207,7 +207,7 @@ void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
 
       if(i == mText.length())
       {
-         return;
+         return false;
       }
 
       tag[tagLength] = '\0';
@@ -272,6 +272,12 @@ void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
             pPen->mYOffset = getDefaultVerticalOffset() + (float)strtod(value, 0);
          }
       }
+      // br
+      else if(strcmp(tag, "br/") == 0)
+      {
+         pPen->mCharIndex = (uint32_t)i;
+         return true;
+      }
 
       pPen->mCharIndex = (uint32_t)i + 1;
 
@@ -281,6 +287,8 @@ void ComponentLabelBase::evaluateRichTextTag(Pen* pPen)
          extension = mTextExtension[pPen->mCharIndex];
       }
    }
+
+   return false;
 }
 
 void ComponentLabelBase::processVariables()
@@ -442,7 +450,6 @@ void ComponentLabelBase::setSettings(uint8_t pSettings)
 //  ComponentLabel
 //
 const float kFontSizeScale = 0.0001f;
-const unsigned char kLineFeedChar = '~';
 
 const ObjectName ComponentLabel::ClassName("Label");
 
@@ -557,9 +564,11 @@ void ComponentLabel::generateText()
 
    for(sPen.mCharIndex = 0; sPen.mCharIndex < iTextLength; sPen.mCharIndex++)
    {
+      bool lineFeed = false;
+
       if(bRichTextSupport)
       {
-         evaluateRichTextTag(&sPen);
+         lineFeed = evaluateRichTextTag(&sPen);
 
          if(sPen.mCharIndex >= iTextLength)
          {
@@ -567,7 +576,7 @@ void ComponentLabel::generateText()
          }
       }
 
-      if(mText[sPen.mCharIndex] == kLineFeedChar)
+      if(lineFeed)
       {
          mLineWidths.push_back(fCurrentLineWidth);
          mLineFeedIndices.push_back(sPen.mCharIndex);
