@@ -281,13 +281,13 @@ bool DistributionPlatform::remoteFileExists(const char* pSubDir, const char* pNa
    return SteamRemoteStorage()->FileExists(fileName);
 }
 
-void DistributionPlatform::readRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
+bool DistributionPlatform::readRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
    Content::ContentData* pContentData, std::function<void()> pOnFinished)
 {
    char fileName[kPathBufferSize];
    sprintf(fileName, "%s/%s.%s", pSubDir, pName, pExtension);
 
-   const int32_t fileSize = SteamRemoteStorage()->GetFileSize(fileName);
+   const uint32 fileSize = (uint32)SteamRemoteStorage()->GetFileSize(fileName);
    SteamAPICall_t apiCall = SteamRemoteStorage()->FileReadAsync(fileName, 0u, fileSize);
 
    gCallResultRemoteFileRead.Set(apiCall, [fileSize, pContentData, pOnFinished](RemoteStorageFileReadAsyncComplete_t* pResult, bool pIOFailure)
@@ -305,15 +305,16 @@ void DistributionPlatform::readRemoteFile(const char* pSubDir, const char* pName
          pOnFinished();
       }
    });
+
+   return apiCall != k_uAPICallInvalid;
 }
 
-void DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
+bool DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
    const Content::ContentData* pContentData, std::function<void(bool pSuccess)> pOnFinished)
 {
    char fileName[kPathBufferSize];
    sprintf(fileName, "%s/%s.%s", pSubDir, pName, pExtension);
 
-   const int32_t fileSize = SteamRemoteStorage()->GetFileSize(fileName);
    SteamAPICall_t apiCall = SteamRemoteStorage()->FileWriteAsync(fileName, pContentData->getData(), pContentData->getDataSize());
 
    gCallResultRemoteFileWritten.Set(apiCall, [pOnFinished](RemoteStorageFileWriteAsyncComplete_t* pResult, bool pIOFailure)
@@ -325,14 +326,16 @@ void DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pNam
          pOnFinished(pResult->m_eResult == k_EResultOK);
       }
    });
+
+   return apiCall != k_uAPICallInvalid;
 }
 
-void DistributionPlatform::deleteRemoteFile(const char* pSubDir, const char* pName, const char* pExtension)
+bool DistributionPlatform::deleteRemoteFile(const char* pSubDir, const char* pName, const char* pExtension)
 {
    char fileName[kPathBufferSize];
    sprintf(fileName, "%s/%s.%s", pSubDir, pName, pExtension);
 
-   SteamRemoteStorage()->FileDelete(fileName);
+   return SteamRemoteStorage()->FileDelete(fileName);
 }
 
 void DistributionPlatform::setStat(const ObjectName& pStatName, float pValue)

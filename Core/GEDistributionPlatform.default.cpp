@@ -50,7 +50,7 @@ bool DistributionPlatform::remoteFileExists(const char* pSubDir, const char* pNa
    return Device::userFileExists(pSubDir, pName, pExtension);
 }
 
-void DistributionPlatform::readRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
+bool DistributionPlatform::readRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
    Content::ContentData* pContentData, std::function<void()> pOnFinished)
 {
    Device::readUserFile(pSubDir, pName, pExtension, pContentData);
@@ -59,9 +59,11 @@ void DistributionPlatform::readRemoteFile(const char* pSubDir, const char* pName
    {
       pOnFinished();
    }
+
+   return true;
 }
 
-void DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
+bool DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
    const Content::ContentData* pContentData, std::function<void(bool pSuccess)> pOnFinished)
 {
    Device::writeUserFile(pSubDir, pName, pExtension, pContentData);
@@ -70,11 +72,15 @@ void DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pNam
    {
       pOnFinished(true);
    }
+
+   return true;
 }
 
-void DistributionPlatform::deleteRemoteFile(const char* pSubDir, const char* pName, const char* pExtension)
+bool DistributionPlatform::deleteRemoteFile(const char* pSubDir, const char* pName, const char* pExtension)
 {
    Device::deleteUserFile(pSubDir, pName, pExtension);
+
+   return true;
 }
 
 void DistributionPlatform::setStat(const ObjectName&, float)
