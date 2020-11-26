@@ -287,26 +287,46 @@ bool DistributionPlatform::readRemoteFile(const char* pSubDir, const char* pName
    char fileName[kPathBufferSize];
    sprintf(fileName, "%s/%s.%s", pSubDir, pName, pExtension);
 
+   bool success = false;
    const uint32 fileSize = (uint32)SteamRemoteStorage()->GetFileSize(fileName);
    SteamAPICall_t apiCall = SteamRemoteStorage()->FileReadAsync(fileName, 0u, fileSize);
 
-   gCallResultRemoteFileRead.Set(apiCall, [fileSize, pContentData, pOnFinished](RemoteStorageFileReadAsyncComplete_t* pResult, bool pIOFailure)
+   if(apiCall != k_uAPICallInvalid)
    {
-      if(!pIOFailure)
+      success = true;
+
+      gCallResultRemoteFileRead.Set(apiCall, [fileSize, pContentData, pOnFinished](RemoteStorageFileReadAsyncComplete_t* pResult, bool pIOFailure)
       {
-         char* buffer = Allocator::alloc<char>(fileSize);
-         SteamRemoteStorage()->FileReadAsyncComplete(pResult->m_hFileReadAsync, buffer, fileSize);      
-         pContentData->load(fileSize, buffer);
-         Allocator::free(buffer);
-      }
+         if(!pIOFailure)
+         {
+            char* buffer = Allocator::alloc<char>(fileSize);
+            SteamRemoteStorage()->FileReadAsyncComplete(pResult->m_hFileReadAsync, buffer, fileSize);
+            pContentData->load(fileSize, buffer);
+            Allocator::free(buffer);
+         }
+
+         if(pOnFinished)
+         {
+            pOnFinished();
+         }
+      });
+   }
+   else
+   {
+      Log::log(LogType::Warning, "[Steam] The '%s' file could not be read asynchronously", fileName);
+
+      char* buffer = Allocator::alloc<char>(fileSize);
+      success = SteamRemoteStorage()->FileRead(fileName, buffer, (int32)fileSize) == (int32)fileSize;
+      pContentData->load(fileSize, buffer);
+      Allocator::free(buffer);
 
       if(pOnFinished)
       {
          pOnFinished();
       }
-   });
+   }
 
-   return apiCall != k_uAPICallInvalid;
+   return success;
 }
 
 bool DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pName, const char* pExtension,
@@ -315,19 +335,31 @@ bool DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pNam
    char fileName[kPathBufferSize];
    sprintf(fileName, "%s/%s.%s", pSubDir, pName, pExtension);
 
+   bool success = false;
    SteamAPICall_t apiCall = SteamRemoteStorage()->FileWriteAsync(fileName, pContentData->getData(), pContentData->getDataSize());
 
-   gCallResultRemoteFileWritten.Set(apiCall, [pOnFinished](RemoteStorageFileWriteAsyncComplete_t* pResult, bool pIOFailure)
+   if(apiCall != k_uAPICallInvalid)
    {
-      (void)pIOFailure;
+      success = true;
 
-      if(pOnFinished)
+      gCallResultRemoteFileWritten.Set(apiCall, [pOnFinished](RemoteStorageFileWriteAsyncComplete_t* pResult, bool pIOFailure)
       {
-         pOnFinished(pResult->m_eResult == k_EResultOK);
-      }
-   });
+         (void)pIOFailure;
 
-   return apiCall != k_uAPICallInvalid;
+         if(pOnFinished)
+         {
+            pOnFinished(pResult->m_eResult == k_EResultOK);
+         }
+      });
+   }
+   else
+   {
+      Log::log(LogType::Warning, "[Steam] The '%s' file could not be written asynchronously", fileName);
+
+      success = SteamRemoteStorage()->FileWrite(fileName, pContentData->getData(), (int32)pContentData->getDataSize());
+   }
+
+   return success;
 }
 
 bool DistributionPlatform::deleteRemoteFile(const char* pSubDir, const char* pName, const char* pExtension)
