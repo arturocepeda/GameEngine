@@ -163,11 +163,16 @@ public:
    }
 };
 
-SteamCallResult<RemoteStorageFileReadAsyncComplete_t> gCallResultRemoteFileRead;
-SteamCallResult<RemoteStorageFileWriteAsyncComplete_t> gCallResultRemoteFileWritten;
+static const int kStorageCallResults = 8;
+SteamCallResult<RemoteStorageFileReadAsyncComplete_t> gCallResultRemoteFileRead[kStorageCallResults];
+SteamCallResult<RemoteStorageFileWriteAsyncComplete_t> gCallResultRemoteFileWritten[kStorageCallResults];
+int gCallResultRemoteFileReadIndex = 0;
+int gCallResultRemoteFileWrittenIndex = 0;
+
 SteamCallResult<LeaderboardFindResult_t> gCallResultFindLeaderboard;
 SteamCallResult<LeaderboardScoreUploaded_t> gCallResultUpdateLeaderboardScore;
 SteamCallResult<LeaderboardScoresDownloaded_t> gCallResultDownloadLeaderboardEntries;
+
 SteamCallResult<LobbyCreated_t> gCallResultCreateLobby;
 SteamCallResult<LobbyMatchList_t> gCallResultFindLobbies;
 SteamCallResult<LobbyEnter_t> gCallResultJoinLobby;
@@ -305,7 +310,8 @@ bool DistributionPlatform::readRemoteFile(const char* pSubDir, const char* pName
    {
       success = true;
 
-      gCallResultRemoteFileRead.Set(apiCall, [fileSize, pContentData, pOnFinished](RemoteStorageFileReadAsyncComplete_t* pResult, bool pIOFailure)
+      gCallResultRemoteFileRead[gCallResultRemoteFileReadIndex++].Set(
+         apiCall, [fileSize, pContentData, pOnFinished](RemoteStorageFileReadAsyncComplete_t* pResult, bool pIOFailure)
       {
          if(!pIOFailure)
          {
@@ -320,6 +326,11 @@ bool DistributionPlatform::readRemoteFile(const char* pSubDir, const char* pName
             pOnFinished();
          }
       });
+
+      if(gCallResultRemoteFileReadIndex == kStorageCallResults)
+      {
+         gCallResultRemoteFileReadIndex = 0;
+      }
    }
    else
    {
@@ -352,7 +363,8 @@ bool DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pNam
    {
       success = true;
 
-      gCallResultRemoteFileWritten.Set(apiCall, [pOnFinished](RemoteStorageFileWriteAsyncComplete_t* pResult, bool pIOFailure)
+      gCallResultRemoteFileWritten[gCallResultRemoteFileWrittenIndex++].Set(
+         apiCall, [pOnFinished](RemoteStorageFileWriteAsyncComplete_t* pResult, bool pIOFailure)
       {
          (void)pIOFailure;
 
@@ -361,6 +373,11 @@ bool DistributionPlatform::writeRemoteFile(const char* pSubDir, const char* pNam
             pOnFinished(pResult->m_eResult == k_EResultOK);
          }
       });
+
+      if(gCallResultRemoteFileWrittenIndex == kStorageCallResults)
+      {
+         gCallResultRemoteFileWrittenIndex = 0;
+      }
    }
    else
    {
