@@ -24,6 +24,14 @@ using namespace GE::Core;
 
 static const size_t kPathBufferSize = 256u;
 
+extern "C"
+void __cdecl steamAPIDebugTextHook(int pSeverity, const char* pDebugText)
+{
+   const LogType logType = pSeverity == 1 ? LogType::Warning : LogType::Info;
+   Log::log(logType, pDebugText);
+}
+
+
 //
 //  SteamCallback
 //
@@ -176,6 +184,8 @@ bool DistributionPlatform::init() const
 
    if(success)
    {
+      SteamUtils()->SetWarningMessageHook(&steamAPIDebugTextHook);
+
       gCallbackRequestCurrentStats.Set([](UserStatsReceived_t* pResult, bool pIOFailure)
       {
          (void)pResult;
