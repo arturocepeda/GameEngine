@@ -412,11 +412,7 @@ void ComponentLabelBase::setStringID(const ObjectName& pStringID)
    if(!pStringID.isEmpty())
    {
       locaString = LocalizedStringsManager::getInstance()->get(pStringID);
-
-      if(locaString)
-      {
-         setText(locaString->getString());
-      }
+      setText(locaString ? locaString->getString() : pStringID.getString());
    }
 }
 
