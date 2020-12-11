@@ -412,6 +412,25 @@ void ComponentParticleSystem::update()
    const float deltaTime = cOwner->getClock()->getDelta();
    simulate(deltaTime);
 
+   if(eRenderingMode == RenderingMode::_3D)
+   {
+      ComponentCamera* camera = RenderSystem::getInstance()->getActiveCamera();
+
+      if(!camera)
+      {
+         return;
+      }
+
+      const Vector3& cameraWorldPosition = camera->getTransform()->getWorldPosition();
+
+      std::sort(lParticles.begin(), lParticles.end(), [&](const Particle& P1, const Particle& P2) -> bool
+      {
+         Vector3 vP1ToCamera = cameraWorldPosition - P1.Position;
+         Vector3 vP2ToCamera = cameraWorldPosition - P2.Position;
+         return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
+      });
+   }
+
    composeVertexData();
 }
 
@@ -673,22 +692,9 @@ void ComponentParticleSystem::composeBillboardVertexData()
    if(eRenderingMode == RenderingMode::_3D)
    {
       ComponentCamera* camera = RenderSystem::getInstance()->getActiveCamera();
-
-      if(!camera)
-         return;
-
-      const Vector3& cameraWorldPosition = camera->getTransform()->getWorldPosition();
-
       cameraRight = camera->getTransform()->getRightVector();
       cameraUp = camera->getTransform()->getUpVector();
       cameraForward = camera->getTransform()->getForwardVector();
-
-      std::sort(lParticles.begin(), lParticles.end(), [&](const Particle& P1, const Particle& P2) -> bool
-      {
-         Vector3 vP1ToCamera = cameraWorldPosition - P1.Position;
-         Vector3 vP2ToCamera = cameraWorldPosition - P2.Position;
-         return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
-      });
    }
    else
    {
@@ -765,43 +771,65 @@ void ComponentParticleSystem::composeBillboardVertexData()
          textureCoordinates.V1 = 1.0f;
       }
 
-      *vertexData++ = topLeftPosition.X; *vertexData++ = topLeftPosition.Y; *vertexData++ = topLeftPosition.Z;
-      *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
-      *vertexData++ = textureCoordinates.U0; *vertexData++ = textureCoordinates.V0;
+      // Top left
+      *vertexData++ = topLeftPosition.X;
+      *vertexData++ = topLeftPosition.Y;
+      *vertexData++ = topLeftPosition.Z;
 
-      *vertexData++ = bottomLeftPosition.X; *vertexData++ = bottomLeftPosition.Y; *vertexData++ = bottomLeftPosition.Z;
-      *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
-      *vertexData++ = textureCoordinates.U0; *vertexData++ = textureCoordinates.V1;
+      *vertexData++ = particle.DiffuseColor.Red;
+      *vertexData++ = particle.DiffuseColor.Green;
+      *vertexData++ = particle.DiffuseColor.Blue;
+      *vertexData++ = particle.DiffuseColor.Alpha;
 
-      *vertexData++ = topRightPosition.X; *vertexData++ = topRightPosition.Y; *vertexData++ = topRightPosition.Z;
-      *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
-      *vertexData++ = textureCoordinates.U1; *vertexData++ = textureCoordinates.V0;
+      *vertexData++ = textureCoordinates.U0;
+      *vertexData++ = textureCoordinates.V0;
 
-      *vertexData++ = bottomRightPosition.X; *vertexData++ = bottomRightPosition.Y; *vertexData++ = bottomRightPosition.Z;
-      *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
-      *vertexData++ = textureCoordinates.U1; *vertexData++ = textureCoordinates.V1;
+      // Bottom left
+      *vertexData++ = bottomLeftPosition.X;
+      *vertexData++ = bottomLeftPosition.Y;
+      *vertexData++ = bottomLeftPosition.Z;
+
+      *vertexData++ = particle.DiffuseColor.Red;
+      *vertexData++ = particle.DiffuseColor.Green;
+      *vertexData++ = particle.DiffuseColor.Blue;
+      *vertexData++ = particle.DiffuseColor.Alpha;
+
+      *vertexData++ = textureCoordinates.U0;
+      *vertexData++ = textureCoordinates.V1;
+
+      // Top right
+      *vertexData++ = topRightPosition.X;
+      *vertexData++ = topRightPosition.Y;
+      *vertexData++ = topRightPosition.Z;
+
+      *vertexData++ = particle.DiffuseColor.Red;
+      *vertexData++ = particle.DiffuseColor.Green;
+      *vertexData++ = particle.DiffuseColor.Blue;
+      *vertexData++ = particle.DiffuseColor.Alpha;
+
+      *vertexData++ = textureCoordinates.U1;
+      *vertexData++ = textureCoordinates.V0;
+
+      // Bottom right
+      *vertexData++ = bottomRightPosition.X;
+      *vertexData++ = bottomRightPosition.Y;
+      *vertexData++ = bottomRightPosition.Z;
+
+      *vertexData++ = particle.DiffuseColor.Red;
+      *vertexData++ = particle.DiffuseColor.Green;
+      *vertexData++ = particle.DiffuseColor.Blue;
+      *vertexData++ = particle.DiffuseColor.Alpha;
+
+      *vertexData++ = textureCoordinates.U1;
+      *vertexData++ = textureCoordinates.V1;
    }
 
-   sGeometryData.NumVertices = (uint)lParticles.size() * 4;
-   sGeometryData.NumIndices = (uint)lParticles.size() * 6;
+   sGeometryData.NumVertices = (uint32_t)lParticles.size() * 4u;
+   sGeometryData.NumIndices = (uint32_t)lParticles.size() * 6u;
 }
 
 void ComponentParticleSystem::composeMeshVertexData()
 {
-   ComponentCamera* camera = RenderSystem::getInstance()->getActiveCamera();
-
-   if(!camera)
-      return;
-
-   const Vector3& cameraWorldPosition = camera->getTransform()->getWorldPosition();
-
-   std::sort(lParticles.begin(), lParticles.end(), [&](const Particle& P1, const Particle& P2) -> bool
-   {
-      Vector3 vP1ToCamera = cameraWorldPosition - P1.Position;
-      Vector3 vP2ToCamera = cameraWorldPosition - P2.Position;
-      return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
-   });
-
    const Texture* diffuseTexture = nullptr;
 
    if(!vMaterialPassList.empty())
@@ -861,12 +889,19 @@ void ComponentParticleSystem::composeMeshVertexData()
             textureCoordinates.V1 = 1.0f;
          }
 
-         const float vertexU = textureCoordinates.U0 + (meshVertexData[6] * (textureCoordinates.U1 - textureCoordinates.U0));
-         const float vertexV = textureCoordinates.V0 + (meshVertexData[7] * (textureCoordinates.V1 - textureCoordinates.V0));         
+         *vertexData++ = vertexPosition.X;
+         *vertexData++ = vertexPosition.Y;
+         *vertexData++ = vertexPosition.Z;
 
-         *vertexData++ = vertexPosition.X; *vertexData++ = vertexPosition.Y; *vertexData++ = vertexPosition.Z;
-         *vertexData++ = particle.DiffuseColor.Red; *vertexData++ = particle.DiffuseColor.Green; *vertexData++ = particle.DiffuseColor.Blue; *vertexData++ = particle.DiffuseColor.Alpha;
-         *vertexData++ = vertexU; *vertexData++ = vertexV;
+         *vertexData++ = particle.DiffuseColor.Red;
+         *vertexData++ = particle.DiffuseColor.Green;
+         *vertexData++ = particle.DiffuseColor.Blue;
+         *vertexData++ = particle.DiffuseColor.Alpha;
+
+         *vertexData++ =
+            textureCoordinates.U0 + (meshVertexData[6] * (textureCoordinates.U1 - textureCoordinates.U0));
+         *vertexData++ =
+            textureCoordinates.V0 + (meshVertexData[7] * (textureCoordinates.V1 - textureCoordinates.V0));
       }
    }
 
