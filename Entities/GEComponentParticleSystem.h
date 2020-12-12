@@ -34,7 +34,8 @@ namespace GE { namespace Entities
    {
       Billboard,
       Mesh,
-      Text,
+      TextBillboard,
+      Text3D,
 
       Count
    };
@@ -277,6 +278,9 @@ namespace GE { namespace Entities
       void composeBillboardVertexData();
       void composeMeshVertexData();
       void composeTextVertexData();
+
+      uint32_t getParticleTextLength() const;
+      float getParticleTextCharWidth(size_t pCharIndex) const;
 
       static float getRandomFloat(float fMin, float fMax);
       static Vector3 getRandomVector3(const Vector3& vMin, const Vector3& vMax);

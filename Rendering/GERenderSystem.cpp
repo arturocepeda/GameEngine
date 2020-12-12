@@ -1069,7 +1069,8 @@ void RenderSystem::queueForRenderingSingle(ComponentRenderable* pRenderable, Ren
             vShadowedParticlesToRender.push_back(sRenderOperation);
          }
 
-         if(cParticleSystem->getParticleType() == ParticleType::Text)
+         if(cParticleSystem->getParticleType() == ParticleType::TextBillboard ||
+            cParticleSystem->getParticleType() == ParticleType::Text3D)
          {
             sRenderOperation.mDiffuseTexture =
                const_cast<Texture*>(cParticleSystem->getParticleTextFont()->getTexture());

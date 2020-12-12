@@ -45,6 +45,8 @@ using namespace GE::Content;
 //
 //  ComponentParticleSystem
 //
+static const float kFontSizeScale = 0.0001f;
+
 RandFloat cRandFloat01(0.0f, 1.0f);
 
 const ObjectName ParticleEmissionName = ObjectName("ParticleEmission");
@@ -722,15 +724,7 @@ void ComponentParticleSystem::allocateVertexData()
    {
       if(mParticleTextFont)
       {
-         uint32_t textLength = 0u;
-
-         for(size_t i = 0u; i < mParticleText.size(); i++)
-         {
-            if(mParticleText[i] != ' ')
-            {
-               textLength++;
-            }
-         }
+         const uint32_t textLength = getParticleTextLength();
 
          if(textLength > 0u)
          {
@@ -1022,27 +1016,34 @@ void ComponentParticleSystem::composeTextVertexData()
       return;
    }
 
-   static const float kFontSizeScale = 0.0001f;
+   Vector3 cameraRight;
+   Vector3 cameraUp;
+   Vector3 cameraForward;
+
+   if(mParticleType == ParticleType::TextBillboard)
+   {
+      if(eRenderingMode == RenderingMode::_3D)
+      {
+         ComponentCamera* camera = RenderSystem::getInstance()->getActiveCamera();
+         cameraRight = camera->getTransform()->getRightVector();
+         cameraUp = camera->getTransform()->getUpVector();
+         cameraForward = camera->getTransform()->getForwardVector();
+      }
+      else
+      {
+         cameraRight = Vector3::UnitX;
+         cameraUp = Vector3::UnitY;
+         cameraForward = Vector3::UnitZ;
+      }
+   }
+
    const float characterSize = mParticleTextSize * kFontSizeScale;
 
    float textWidth = 0.0f;
 
    for(size_t i = 0u; i < mParticleText.size(); i++)
    {
-      const char textChar = mParticleText[i];
-
-      const uint16_t glyphIndex = (uint16_t)textChar;
-      const uint16_t charSetIndex = 0u;
-      const Glyph& glyph = mParticleTextFont->getGlyph(charSetIndex, glyphIndex);
-      textWidth += glyph.AdvanceX * characterSize;
-
-      if(i > 0u)
-      {
-         const uint16_t previousGlyphIndex = (uint16_t)mParticleText[i - 1u];
-         const float kerning =
-            mParticleTextFont->getKerning(charSetIndex, previousGlyphIndex, glyphIndex);
-         textWidth += kerning * characterSize;
-      }
+      textWidth += getParticleTextCharWidth(i);
    }
 
    uint32_t textLength = 0u;
@@ -1052,8 +1053,25 @@ void ComponentParticleSystem::composeTextVertexData()
    {
       Particle& particle = *it;
 
-      Rotation rotation(particle.Angle);
-      Matrix4 transform = rotation.getRotationMatrix();
+      Matrix4 transform;
+
+      if(mParticleType == ParticleType::TextBillboard)
+      {
+         if(fabsf(particle.Angle.Z) < GE_EPSILON)
+         {
+            Matrix4MakeIdentity(&transform);
+         }
+         else
+         {
+            Rotation rotation(cameraForward, particle.Angle.Z);
+            transform = rotation.getRotationMatrix();
+         }
+      }
+      else
+      {
+         Rotation rotation(particle.Angle);
+         transform = rotation.getRotationMatrix();
+      }
 
       transform.m[GE_M4_1_4] = particle.Position.X;
       transform.m[GE_M4_2_4] = particle.Position.Y;
@@ -1071,7 +1089,6 @@ void ComponentParticleSystem::composeTextVertexData()
          const uint16_t glyphIndex = (uint16_t)textChar;
          const uint16_t charSetIndex = 0u;
          const Glyph& glyph = mParticleTextFont->getGlyph(charSetIndex, glyphIndex);
-         float advanceX = glyph.AdvanceX * characterSize;
 
          if(textChar != ' ')
          {
@@ -1083,17 +1100,39 @@ void ComponentParticleSystem::composeTextVertexData()
             const float glyphOffsetX = glyph.OffsetX * characterSize;
             const float glyphOffsetY = glyph.OffsetY * characterSize;
 
-            Vector3 vertexPosition;
+            Vector3 topLeftPosition;
+            Vector3 topRightPosition;
+            Vector3 bottomLeftPosition;
+            Vector3 bottomRightPosition;
+
+            if(mParticleType == ParticleType::TextBillboard)
+            {
+               topLeftPosition =
+                  (cameraRight * (posX + glyphOffsetX)) + (cameraUp * (glyphOffsetY - glyphHeight));
+               topRightPosition =
+                  (cameraRight * (posX + glyphOffsetX + glyphWidth)) + (cameraUp * (glyphOffsetY - glyphHeight));
+               bottomLeftPosition =
+                  (cameraRight * (posX + glyphOffsetX)) + (cameraUp * glyphOffsetY);
+               bottomRightPosition =
+                  (cameraRight * (posX + glyphOffsetX + glyphWidth)) + (cameraUp * glyphOffsetY);
+            }
+            else
+            {
+               topLeftPosition.X = bottomLeftPosition.X = posX + glyphOffsetX;
+               topRightPosition.X = bottomRightPosition.X = posX + glyphOffsetX + glyphWidth;
+               topLeftPosition.Y = topRightPosition.Y = glyphOffsetY - glyphHeight;
+               bottomLeftPosition.Y = bottomRightPosition.Y = glyphOffsetY;
+            }
+
+            Matrix4Transform(transform, &topLeftPosition);
+            Matrix4Transform(transform, &topRightPosition);
+            Matrix4Transform(transform, &bottomLeftPosition);
+            Matrix4Transform(transform, &bottomRightPosition);
 
             // Top left
-            vertexPosition.X = posX + glyphOffsetX;
-            vertexPosition.Y = glyphOffsetY - glyphHeight;
-            vertexPosition.Z = 0.0f;
-            Matrix4Transform(transform, &vertexPosition);
-
-            *vertexData++ = vertexPosition.X;
-            *vertexData++ = vertexPosition.Y;
-            *vertexData++ = vertexPosition.Z;
+            *vertexData++ = topLeftPosition.X;
+            *vertexData++ = topLeftPosition.Y;
+            *vertexData++ = topLeftPosition.Z;
 
             *vertexData++ = particle.DiffuseColor.Red;
             *vertexData++ = particle.DiffuseColor.Green;
@@ -1103,15 +1142,10 @@ void ComponentParticleSystem::composeTextVertexData()
             *vertexData++ = glyph.UV.U0;
             *vertexData++ = glyph.UV.V1;
 
-            // Bottom left
-            vertexPosition.X = posX + glyphOffsetX + glyphWidth;
-            vertexPosition.Y = glyphOffsetY - glyphHeight;
-            vertexPosition.Z = 0.0f;
-            Matrix4Transform(transform, &vertexPosition);
-
-            *vertexData++ = vertexPosition.X;
-            *vertexData++ = vertexPosition.Y;
-            *vertexData++ = vertexPosition.Z;
+            // Top right
+            *vertexData++ = topRightPosition.X;
+            *vertexData++ = topRightPosition.Y;
+            *vertexData++ = topRightPosition.Z;
 
             *vertexData++ = particle.DiffuseColor.Red;
             *vertexData++ = particle.DiffuseColor.Green;
@@ -1121,15 +1155,10 @@ void ComponentParticleSystem::composeTextVertexData()
             *vertexData++ = glyph.UV.U1;
             *vertexData++ = glyph.UV.V1;
 
-            // Top right
-            vertexPosition.X = posX + glyphOffsetX;
-            vertexPosition.Y = glyphOffsetY;
-            vertexPosition.Z = 0.0f;
-            Matrix4Transform(transform, &vertexPosition);
-
-            *vertexData++ = vertexPosition.X;
-            *vertexData++ = vertexPosition.Y;
-            *vertexData++ = vertexPosition.Z;
+            // Bottom left
+            *vertexData++ = bottomLeftPosition.X;
+            *vertexData++ = bottomLeftPosition.Y;
+            *vertexData++ = bottomLeftPosition.Z;
 
             *vertexData++ = particle.DiffuseColor.Red;
             *vertexData++ = particle.DiffuseColor.Green;
@@ -1140,14 +1169,9 @@ void ComponentParticleSystem::composeTextVertexData()
             *vertexData++ = glyph.UV.V0;
 
             // Bottom right
-            vertexPosition.X = posX + glyphOffsetX + glyphWidth;
-            vertexPosition.Y = glyphOffsetY;
-            vertexPosition.Z = 0.0f;
-            Matrix4Transform(transform, &vertexPosition);
-
-            *vertexData++ = vertexPosition.X;
-            *vertexData++ = vertexPosition.Y;
-            *vertexData++ = vertexPosition.Z;
+            *vertexData++ = bottomRightPosition.X;
+            *vertexData++ = bottomRightPosition.Y;
+            *vertexData++ = bottomRightPosition.Z;
 
             *vertexData++ = particle.DiffuseColor.Red;
             *vertexData++ = particle.DiffuseColor.Green;
@@ -1158,20 +1182,51 @@ void ComponentParticleSystem::composeTextVertexData()
             *vertexData++ = glyph.UV.V0;
          }
 
-         if(i > 0u)
-         {
-            const uint16_t previousGlyphIndex = (uint16_t)mParticleText[i - 1u];
-            const float kerning =
-               mParticleTextFont->getKerning(charSetIndex, previousGlyphIndex, glyphIndex);
-            advanceX += kerning * characterSize;
-         }
-
-         posX += advanceX;
+         posX += getParticleTextCharWidth(i);
       }
    }
 
    sGeometryData.NumVertices = (uint32_t)lParticles.size() * textLength * 4u;
    sGeometryData.NumIndices = (uint32_t)lParticles.size() * textLength * 6u;
+}
+
+uint32_t ComponentParticleSystem::getParticleTextLength() const
+{
+   uint32_t textLength = 0u;
+
+   for(size_t i = 0u; i < mParticleText.size(); i++)
+   {
+      if(mParticleText[i] != ' ')
+      {
+         textLength++;
+      }
+   }
+
+   return textLength;
+}
+
+float ComponentParticleSystem::getParticleTextCharWidth(size_t pCharIndex) const
+{
+   GEAssert(pCharIndex < mParticleText.size());
+
+   const char textChar = mParticleText[pCharIndex];
+   float textCharWidth = 0.0f;
+
+   const uint16_t glyphIndex = (uint16_t)textChar;
+   const uint16_t charSetIndex = 0u;
+   const Glyph& glyph = mParticleTextFont->getGlyph(charSetIndex, glyphIndex);
+   const float characterSize = mParticleTextSize * kFontSizeScale;
+   textCharWidth += glyph.AdvanceX * characterSize;
+
+   if(pCharIndex > 0u)
+   {
+      const uint16_t previousGlyphIndex = (uint16_t)mParticleText[pCharIndex - 1u];
+      const float kerning =
+         mParticleTextFont->getKerning(charSetIndex, previousGlyphIndex, glyphIndex);
+      textCharWidth += kerning * characterSize;
+   }
+
+   return textCharWidth;
 }
 
 float ComponentParticleSystem::getRandomFloat(float fMin, float fMax)
