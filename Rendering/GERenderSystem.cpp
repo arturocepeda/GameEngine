@@ -1069,6 +1069,12 @@ void RenderSystem::queueForRenderingSingle(ComponentRenderable* pRenderable, Ren
             vShadowedParticlesToRender.push_back(sRenderOperation);
          }
 
+         if(cParticleSystem->getParticleType() == ParticleType::Text)
+         {
+            sRenderOperation.mDiffuseTexture =
+               const_cast<Texture*>(cParticleSystem->getParticleTextFont()->getTexture());
+         }
+
          if(uiElement)
          {
             if(uiElement->getClassName() == ComponentUI2DElement::ClassName)

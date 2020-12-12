@@ -13,11 +13,20 @@
 #pragma once
 
 #include "GEComponentRenderable.h"
-#include "Content/GEMesh.h"
 #include "Content/GEResourcesManager.h"
 #include "Core/GEThreads.h"
 #include "Core/GEEvents.h"
 #include "Types/GECurve.h"
+
+namespace GE { namespace Content
+{
+   class Mesh;
+}}
+
+namespace GE { namespace Rendering
+{
+   class Font;
+}}
 
 namespace GE { namespace Entities
 {
@@ -25,6 +34,7 @@ namespace GE { namespace Entities
    {
       Billboard,
       Mesh,
+      Text,
 
       Count
    };
@@ -237,6 +247,9 @@ namespace GE { namespace Entities
       Content::Mesh* mParticleMesh;
       Content::Mesh* cEmitterMesh;
       Entity* cEmitterMeshEntity;
+      GESTLString mParticleText;
+      Rendering::Font* mParticleTextFont;
+      float mParticleTextSize;
 
       bool bEmitterActive;
       uint8_t mSettings;
@@ -263,6 +276,7 @@ namespace GE { namespace Entities
       void composeVertexData();
       void composeBillboardVertexData();
       void composeMeshVertexData();
+      void composeTextVertexData();
 
       static float getRandomFloat(float fMin, float fMax);
       static Vector3 getRandomVector3(const Vector3& vMin, const Vector3& vMax);
@@ -282,6 +296,9 @@ namespace GE { namespace Entities
       uint getParticlesCount() const { return (uint)lParticles.size(); }
 
       void setParticleMesh(const Core::ObjectName& pMeshName);
+      void setParticleText(const char* pText);
+      void setParticleTextFontName(const Core::ObjectName& pFontName);
+      void setParticleTextSize(float pSize);
 
       void setEmitterPointA(const Vector3& Point);
       void setEmitterPointB(const Vector3& Point);
@@ -290,6 +307,10 @@ namespace GE { namespace Entities
       void setEmitterMeshEntity(const Core::ObjectName& EntityName);
 
       const Core::ObjectName& getParticleMesh() const;
+      const char* getParticleText() const;
+      const Core::ObjectName& getParticleTextFontName() const;
+      Rendering::Font* getParticleTextFont() const;
+      float getParticleTextSize() const;
 
       const Vector3& getEmitterPointA() const;
       const Vector3& getEmitterPointB() const;

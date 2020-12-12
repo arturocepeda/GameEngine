@@ -18,7 +18,7 @@
 #include "Core/GETime.h"
 #include "Core/GERand.h"
 #include "Core/GEProfiler.h"
-#include "Content/GEResourcesManager.h"
+#include "Content/GEMesh.h"
 #include "Rendering/GERenderSystem.h"
 
 #include <algorithm>
@@ -65,6 +65,8 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
    , mParticleMesh(nullptr)
    , cEmitterMesh(nullptr)
    , cEmitterMeshEntity(nullptr)
+   , mParticleTextFont(nullptr)
+   , mParticleTextSize(12.0f)
    , bEmitterActive(false)
    , mSettings(0u)
    , fEmissionRate(0.0f)
@@ -81,6 +83,9 @@ ComponentParticleSystem::ComponentParticleSystem(Entity* Owner)
 
    GERegisterPropertyEnum(ParticleType, ParticleType);
    GERegisterProperty(ObjectName, ParticleMesh);
+   GERegisterProperty(String, ParticleText);
+   GERegisterProperty(ObjectName, ParticleTextFontName);
+   GERegisterProperty(Float, ParticleTextSize);
 
    GERegisterPropertyBitMask(ParticleSystemSettingsBitMask, Settings);
 
@@ -169,6 +174,30 @@ void ComponentParticleSystem::setParticleMesh(const ObjectName& pMeshName)
    bVertexDataReallocationPending = true;
 }
 
+void ComponentParticleSystem::setParticleText(const char* pText)
+{
+   mParticleText.assign(pText);
+
+   bVertexDataReallocationPending = true;
+}
+
+void ComponentParticleSystem::setParticleTextFontName(const Core::ObjectName& pFontName)
+{
+   if(pFontName.isEmpty())
+   {
+      mParticleTextFont = nullptr;
+   }
+   else
+   {
+      mParticleTextFont = RenderSystem::getInstance()->getFont(pFontName);
+   }
+}
+
+void ComponentParticleSystem::setParticleTextSize(float pSize)
+{
+   mParticleTextSize = pSize;
+}
+
 void ComponentParticleSystem::setEmitterPointA(const Vector3& Point)
 {
    vEmitterPointA = Point;
@@ -212,6 +241,26 @@ void ComponentParticleSystem::setEmitterMeshEntity(const ObjectName& EntityName)
 const ObjectName& ComponentParticleSystem::getParticleMesh() const
 {
    return mParticleMesh ? mParticleMesh->getName() : ObjectName::Empty;
+}
+
+const char* ComponentParticleSystem::getParticleText() const
+{
+   return mParticleText.c_str();
+}
+
+const ObjectName& ComponentParticleSystem::getParticleTextFontName() const
+{
+   return mParticleTextFont ? mParticleTextFont->getName() : ObjectName::Empty;
+}
+
+Font* ComponentParticleSystem::getParticleTextFont() const
+{
+   return mParticleTextFont;
+}
+
+float ComponentParticleSystem::getParticleTextSize() const
+{
+   return mParticleTextSize;
 }
 
 const Vector3& ComponentParticleSystem::getEmitterPointA() const
@@ -613,14 +662,15 @@ void ComponentParticleSystem::prewarm()
 
 void ComponentParticleSystem::allocateVertexData()
 {
+   // Billboard
    if(mParticleType == ParticleType::Billboard)
    {
-      sGeometryData.NumVertices = 4 * iMaxParticles;
+      sGeometryData.NumVertices = 4u * iMaxParticles;
       sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
       sGeometryData.VertexData =
          Allocator::realloc<float>(sGeometryData.VertexData, sGeometryData.VertexStride * sGeometryData.NumVertices);
 
-      sGeometryData.NumIndices = 6 * iMaxParticles;
+      sGeometryData.NumIndices = 6u * iMaxParticles;
       sGeometryData.Indices =
          Allocator::realloc<ushort>(sGeometryData.Indices, sGeometryData.NumIndices);
 
@@ -639,28 +689,75 @@ void ComponentParticleSystem::allocateVertexData()
          currentVertexOffset += 4u;
       }
    }
-   else if(mParticleMesh)
+   // Mesh
+   else if(mParticleType == ParticleType::Mesh)
    {
-      sGeometryData.NumVertices = mParticleMesh->getVertexCount() * iMaxParticles;
-      sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
-      sGeometryData.VertexData =
-         Allocator::realloc<float>(sGeometryData.VertexData, sGeometryData.VertexStride * sGeometryData.NumVertices);
-
-      sGeometryData.NumIndices = mParticleMesh->getGeometryData().NumIndices * iMaxParticles;
-      sGeometryData.Indices =
-         Allocator::realloc<ushort>(sGeometryData.Indices, sGeometryData.NumIndices);
-
-      ushort* indices = sGeometryData.Indices;
-      ushort currentVertexOffset = 0u;
-
-      for(uint32_t i = 0u; i < iMaxParticles; i++)
+      if(mParticleMesh)
       {
-         for(uint32_t j = 0u; j < mParticleMesh->getGeometryData().NumIndices; j++)
+         sGeometryData.NumVertices = mParticleMesh->getVertexCount() * iMaxParticles;
+         sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
+         sGeometryData.VertexData =
+            Allocator::realloc<float>(sGeometryData.VertexData, sGeometryData.VertexStride * sGeometryData.NumVertices);
+
+         sGeometryData.NumIndices = mParticleMesh->getGeometryData().NumIndices * iMaxParticles;
+         sGeometryData.Indices =
+            Allocator::realloc<ushort>(sGeometryData.Indices, sGeometryData.NumIndices);
+
+         ushort* indices = sGeometryData.Indices;
+         ushort currentVertexOffset = 0u;
+
+         for(uint32_t i = 0u; i < iMaxParticles; i++)
          {
-            *indices++ = mParticleMesh->getGeometryData().Indices[j] + currentVertexOffset;
+            for(uint32_t j = 0u; j < mParticleMesh->getGeometryData().NumIndices; j++)
+            {
+               *indices++ = mParticleMesh->getGeometryData().Indices[j] + currentVertexOffset;
+            }
+
+            currentVertexOffset += mParticleMesh->getVertexCount();
+         }
+      }
+   }
+   // Text
+   else
+   {
+      if(mParticleTextFont)
+      {
+         uint32_t textLength = 0u;
+
+         for(size_t i = 0u; i < mParticleText.size(); i++)
+         {
+            if(mParticleText[i] != ' ')
+            {
+               textLength++;
+            }
          }
 
-         currentVertexOffset += mParticleMesh->getVertexCount();
+         if(textLength > 0u)
+         {
+            sGeometryData.NumVertices = 4u * textLength * iMaxParticles;
+            sGeometryData.VertexStride = (3 + 4 + 2) * sizeof(float);
+            sGeometryData.VertexData =
+               Allocator::realloc<float>(sGeometryData.VertexData, sGeometryData.VertexStride * sGeometryData.NumVertices);
+
+            sGeometryData.NumIndices = 6u * textLength * iMaxParticles;
+            sGeometryData.Indices =
+               Allocator::realloc<ushort>(sGeometryData.Indices, sGeometryData.NumIndices);
+
+            ushort* indices = sGeometryData.Indices;
+            ushort currentVertexOffset = 0u;
+
+            for(uint32_t i = 0u; i < (textLength * iMaxParticles); i++)
+            {
+               *indices++ = QuadIndices[0] + currentVertexOffset;
+               *indices++ = QuadIndices[1] + currentVertexOffset;
+               *indices++ = QuadIndices[2] + currentVertexOffset;
+               *indices++ = QuadIndices[3] + currentVertexOffset;
+               *indices++ = QuadIndices[4] + currentVertexOffset;
+               *indices++ = QuadIndices[5] + currentVertexOffset;
+
+               currentVertexOffset += 4u;
+            }
+         }
       }
    }
 
@@ -677,9 +774,13 @@ void ComponentParticleSystem::composeVertexData()
    {
       composeBillboardVertexData();
    }
-   else if(mParticleMesh)
+   else if(mParticleType == ParticleType::Mesh)
    {
       composeMeshVertexData();
+   }
+   else
+   {
+      composeTextVertexData();
    }
 }
 
@@ -830,6 +931,11 @@ void ComponentParticleSystem::composeBillboardVertexData()
 
 void ComponentParticleSystem::composeMeshVertexData()
 {
+   if(!mParticleMesh)
+   {
+      return;
+   }
+
    const Texture* diffuseTexture = nullptr;
 
    if(!vMaterialPassList.empty())
@@ -909,12 +1015,173 @@ void ComponentParticleSystem::composeMeshVertexData()
    sGeometryData.NumIndices = (uint32_t)lParticles.size() * mParticleMesh->getGeometryData().NumIndices;
 }
 
+void ComponentParticleSystem::composeTextVertexData()
+{
+   if(mParticleText.empty() || !mParticleTextFont)
+   {
+      return;
+   }
+
+   static const float kFontSizeScale = 0.0001f;
+   const float characterSize = mParticleTextSize * kFontSizeScale;
+
+   float textWidth = 0.0f;
+
+   for(size_t i = 0u; i < mParticleText.size(); i++)
+   {
+      const char textChar = mParticleText[i];
+
+      const uint16_t glyphIndex = (uint16_t)textChar;
+      const uint16_t charSetIndex = 0u;
+      const Glyph& glyph = mParticleTextFont->getGlyph(charSetIndex, glyphIndex);
+      textWidth += glyph.AdvanceX * characterSize;
+
+      if(i > 0u)
+      {
+         const uint16_t previousGlyphIndex = (uint16_t)mParticleText[i - 1u];
+         const float kerning =
+            mParticleTextFont->getKerning(charSetIndex, previousGlyphIndex, glyphIndex);
+         textWidth += kerning * characterSize;
+      }
+   }
+
+   uint32_t textLength = 0u;
+   float* vertexData = sGeometryData.VertexData;
+
+   for(ParticleList::iterator it = lParticles.begin(); it != lParticles.end(); it++)
+   {
+      Particle& particle = *it;
+
+      Rotation rotation(particle.Angle);
+      Matrix4 transform = rotation.getRotationMatrix();
+
+      transform.m[GE_M4_1_4] = particle.Position.X;
+      transform.m[GE_M4_2_4] = particle.Position.Y;
+      transform.m[GE_M4_3_4] = particle.Position.Z;
+
+      const Vector3 particleSize = particle.Scale * particle.Size;
+      Matrix4Scale(&transform, particleSize);
+
+      float posX = textWidth * -0.5f;
+
+      for(size_t i = 0u; i < mParticleText.size(); i++)
+      {
+         const char textChar = mParticleText[i];
+
+         const uint16_t glyphIndex = (uint16_t)textChar;
+         const uint16_t charSetIndex = 0u;
+         const Glyph& glyph = mParticleTextFont->getGlyph(charSetIndex, glyphIndex);
+         float advanceX = glyph.AdvanceX * characterSize;
+
+         if(textChar != ' ')
+         {
+            textLength++;
+
+            const float glyphWidth = glyph.Width * characterSize;
+            const float glyphHeight = glyph.Height * characterSize;
+
+            const float glyphOffsetX = glyph.OffsetX * characterSize;
+            const float glyphOffsetY = glyph.OffsetY * characterSize;
+
+            Vector3 vertexPosition;
+
+            // Top left
+            vertexPosition.X = posX + glyphOffsetX;
+            vertexPosition.Y = glyphOffsetY - glyphHeight;
+            vertexPosition.Z = 0.0f;
+            Matrix4Transform(transform, &vertexPosition);
+
+            *vertexData++ = vertexPosition.X;
+            *vertexData++ = vertexPosition.Y;
+            *vertexData++ = vertexPosition.Z;
+
+            *vertexData++ = particle.DiffuseColor.Red;
+            *vertexData++ = particle.DiffuseColor.Green;
+            *vertexData++ = particle.DiffuseColor.Blue;
+            *vertexData++ = particle.DiffuseColor.Alpha;
+
+            *vertexData++ = glyph.UV.U0;
+            *vertexData++ = glyph.UV.V1;
+
+            // Bottom left
+            vertexPosition.X = posX + glyphOffsetX + glyphWidth;
+            vertexPosition.Y = glyphOffsetY - glyphHeight;
+            vertexPosition.Z = 0.0f;
+            Matrix4Transform(transform, &vertexPosition);
+
+            *vertexData++ = vertexPosition.X;
+            *vertexData++ = vertexPosition.Y;
+            *vertexData++ = vertexPosition.Z;
+
+            *vertexData++ = particle.DiffuseColor.Red;
+            *vertexData++ = particle.DiffuseColor.Green;
+            *vertexData++ = particle.DiffuseColor.Blue;
+            *vertexData++ = particle.DiffuseColor.Alpha;
+
+            *vertexData++ = glyph.UV.U1;
+            *vertexData++ = glyph.UV.V1;
+
+            // Top right
+            vertexPosition.X = posX + glyphOffsetX;
+            vertexPosition.Y = glyphOffsetY;
+            vertexPosition.Z = 0.0f;
+            Matrix4Transform(transform, &vertexPosition);
+
+            *vertexData++ = vertexPosition.X;
+            *vertexData++ = vertexPosition.Y;
+            *vertexData++ = vertexPosition.Z;
+
+            *vertexData++ = particle.DiffuseColor.Red;
+            *vertexData++ = particle.DiffuseColor.Green;
+            *vertexData++ = particle.DiffuseColor.Blue;
+            *vertexData++ = particle.DiffuseColor.Alpha;
+
+            *vertexData++ = glyph.UV.U0;
+            *vertexData++ = glyph.UV.V0;
+
+            // Bottom right
+            vertexPosition.X = posX + glyphOffsetX + glyphWidth;
+            vertexPosition.Y = glyphOffsetY;
+            vertexPosition.Z = 0.0f;
+            Matrix4Transform(transform, &vertexPosition);
+
+            *vertexData++ = vertexPosition.X;
+            *vertexData++ = vertexPosition.Y;
+            *vertexData++ = vertexPosition.Z;
+
+            *vertexData++ = particle.DiffuseColor.Red;
+            *vertexData++ = particle.DiffuseColor.Green;
+            *vertexData++ = particle.DiffuseColor.Blue;
+            *vertexData++ = particle.DiffuseColor.Alpha;
+
+            *vertexData++ = glyph.UV.U1;
+            *vertexData++ = glyph.UV.V0;
+         }
+
+         if(i > 0u)
+         {
+            const uint16_t previousGlyphIndex = (uint16_t)mParticleText[i - 1u];
+            const float kerning =
+               mParticleTextFont->getKerning(charSetIndex, previousGlyphIndex, glyphIndex);
+            advanceX += kerning * characterSize;
+         }
+
+         posX += advanceX;
+      }
+   }
+
+   sGeometryData.NumVertices = (uint32_t)lParticles.size() * textLength * 4u;
+   sGeometryData.NumIndices = (uint32_t)lParticles.size() * textLength * 6u;
+}
+
 float ComponentParticleSystem::getRandomFloat(float fMin, float fMax)
 {
    float fDiff = fMax - fMin;
 
    if(fabsf(fDiff) < GE_EPSILON)
+   {
       return fMin;
+   }
 
    return fMin + (cRandFloat01.generate() * fDiff);
 }
