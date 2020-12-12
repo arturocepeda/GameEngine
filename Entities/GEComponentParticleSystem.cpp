@@ -1046,7 +1046,6 @@ void ComponentParticleSystem::composeTextVertexData()
       textWidth += getParticleTextCharWidth(i);
    }
 
-   uint32_t textLength = 0u;
    float* vertexData = sGeometryData.VertexData;
 
    for(ParticleList::iterator it = lParticles.begin(); it != lParticles.end(); it++)
@@ -1092,8 +1091,6 @@ void ComponentParticleSystem::composeTextVertexData()
 
          if(textChar != ' ')
          {
-            textLength++;
-
             const float glyphWidth = glyph.Width * characterSize;
             const float glyphHeight = glyph.Height * characterSize;
 
@@ -1185,6 +1182,8 @@ void ComponentParticleSystem::composeTextVertexData()
          posX += getParticleTextCharWidth(i);
       }
    }
+
+   const uint32_t textLength = getParticleTextLength();
 
    sGeometryData.NumVertices = (uint32_t)lParticles.size() * textLength * 4u;
    sGeometryData.NumIndices = (uint32_t)lParticles.size() * textLength * 6u;
