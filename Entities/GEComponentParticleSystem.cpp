@@ -694,6 +694,9 @@ void ComponentParticleSystem::allocateVertexData()
    // Mesh
    else if(mParticleType == ParticleType::Mesh)
    {
+      sGeometryData.NumVertices = 0u;
+      sGeometryData.NumIndices = 0u;
+
       if(mParticleMesh)
       {
          sGeometryData.NumVertices = mParticleMesh->getVertexCount() * iMaxParticles;
@@ -722,6 +725,9 @@ void ComponentParticleSystem::allocateVertexData()
    // Text
    else
    {
+      sGeometryData.NumVertices = 0u;
+      sGeometryData.NumIndices = 0u;
+
       if(mParticleTextFont)
       {
          const uint32_t textLength = getParticleTextLength();
