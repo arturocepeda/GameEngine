@@ -159,7 +159,9 @@ namespace GE { namespace Entities
    const char* strParticleType[] =
    {
       "Billboard",
-      "Mesh"
+      "Mesh",
+      "TextBillboard",
+      "Text3D"
    };
 
    const char* strParticleSystemSettingsBitMask[] =
