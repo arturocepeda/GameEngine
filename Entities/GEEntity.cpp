@@ -230,20 +230,7 @@ bool Entity::isActive() const
 
 bool Entity::isActiveInHierarchy() const
 {
-   if(!bActive)
-      return false;
-
-   Entity* cCurrentParent = cParent;
-
-   while(cCurrentParent)
-   {
-      if(!cCurrentParent->isActive())
-         return false;
-
-      cCurrentParent = cCurrentParent->getParent();
-   }
-
-   return true;
+   return bActive && (!cParent || cParent->isActiveInHierarchy());
 }
 
 void Entity::setActive(bool Active)

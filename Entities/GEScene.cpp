@@ -860,13 +860,17 @@ void Scene::queueUpdateJobs()
    for(uint i = 0; i < vCameras.size(); i++)
    {
       ComponentCamera* cCamera = static_cast<ComponentCamera*>(vCameras[i]);
+
+      if(cCamera->getOwner()->isActiveInHierarchy())
+      {
 #if defined (GE_SCENE_JOBIFIED_UPDATE)
-      JobDesc sJobDesc("UpdateCamera");
-      sJobDesc.Task = [cCamera] { cCamera->update(); };
-      TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
+         JobDesc sJobDesc("UpdateCamera");
+         sJobDesc.Task = [cCamera] { cCamera->update(); };
+         TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
 #else
-      cCamera->update();
+         cCamera->update();
 #endif
+      }
    }
 
    // skeletons
@@ -875,13 +879,17 @@ void Scene::queueUpdateJobs()
    for(uint i = 0; i < vSkeletons.size(); i++)
    {
       ComponentSkeleton* cSkeleton = static_cast<ComponentSkeleton*>(vSkeletons[i]);
+
+      if(cSkeleton->getOwner()->isActiveInHierarchy())
+      {
 #if defined (GE_SCENE_JOBIFIED_UPDATE)
-      JobDesc sJobDesc("UpdateSkeleton");
-      sJobDesc.Task = [cSkeleton] { cSkeleton->update(); };
-      TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
+         JobDesc sJobDesc("UpdateSkeleton");
+         sJobDesc.Task = [cSkeleton] { cSkeleton->update(); };
+         TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
 #else
-      cSkeleton->update();
+         cSkeleton->update();
 #endif
+      }
    }
 
    // particle systems
@@ -891,7 +899,9 @@ void Scene::queueUpdateJobs()
    {
       ComponentRenderable* cRenderable = static_cast<ComponentRenderable*>(vRenderables[i]);
 
-      if(cRenderable->getVisible() && cRenderable->getClassName() == ComponentParticleSystem::ClassName)
+      if(cRenderable->getVisible() &&
+         cRenderable->getClassName() == ComponentParticleSystem::ClassName &&
+         cRenderable->getOwner()->isActiveInHierarchy())
       {
          ComponentParticleSystem* cParticleSystem = static_cast<ComponentParticleSystem*>(cRenderable);
 #if defined (GE_SCENE_JOBIFIED_UPDATE)
@@ -910,13 +920,17 @@ void Scene::queueUpdateJobs()
    for(uint i = 0; i < vAudioComponents.size(); i++)
    {
       ComponentAudio* cAudioComponent = static_cast<ComponentAudio*>(vAudioComponents[i]);
+
+      if(cAudioComponent->getOwner()->isActiveInHierarchy())
+      {
 #if defined (GE_SCENE_JOBIFIED_UPDATE)
-      JobDesc sJobDesc("UpdateAudioComponent");
-      sJobDesc.Task = [cAudioComponent] { cAudioComponent->update(); };
-      TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
+         JobDesc sJobDesc("UpdateAudioComponent");
+         sJobDesc.Task = [cAudioComponent] { cAudioComponent->update(); };
+         TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
 #else
-      cAudioComponent->update();
+         cAudioComponent->update();
 #endif
+      }
    }
 
 #if defined (GE_SCENE_JOBIFIED_UPDATE)
