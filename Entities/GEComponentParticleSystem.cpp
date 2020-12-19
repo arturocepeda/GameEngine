@@ -472,14 +472,15 @@ void ComponentParticleSystem::update()
          return;
       }
 
-      const Vector3& cameraWorldPosition = camera->getTransform()->getWorldPosition();
+      const Vector3 cameraWorldPosition = camera->getTransform()->getWorldPosition();
 
-      std::sort(lParticles.begin(), lParticles.end(), [&](const Particle& P1, const Particle& P2) -> bool
-      {
-         Vector3 vP1ToCamera = cameraWorldPosition - P1.Position;
-         Vector3 vP2ToCamera = cameraWorldPosition - P2.Position;
-         return vP1ToCamera.getSquaredLength() > vP2ToCamera.getSquaredLength();
-      });
+      std::sort(lParticles.begin(), lParticles.end(),
+         [&cameraWorldPosition](const Particle& pP1, const Particle& pP2) -> bool
+         {
+            const Vector3 p1ToCamera = cameraWorldPosition - pP1.Position;
+            const Vector3 p2ToCamera = cameraWorldPosition - pP2.Position;
+            return p1ToCamera.getSquaredLength() > p2ToCamera.getSquaredLength();
+         });
    }
 
    composeVertexData();
@@ -504,8 +505,7 @@ void ComponentParticleSystem::simulate(float pDeltaTime)
 
       if(particle.RemainingLifeTime <= 0.0f)
       {
-         particle = lParticles[lParticles.size() - 1];
-         lParticles.pop_back();
+         lParticles.erase(lParticles.begin() + particleIndex);
          continue;
       }
 
