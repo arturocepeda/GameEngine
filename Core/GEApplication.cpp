@@ -67,6 +67,14 @@ public:
 
    virtual void onLog(LogType pType, const char* pMessage) override
    {
+      char timeBuffer[32];
+      const time_t timeStamp = time(nullptr);
+      tm* brokenDownTimeStamp = localtime(&timeStamp);
+      sprintf(timeBuffer, "[%02d:%02d:%02d] ",
+         brokenDownTimeStamp->tm_hour,
+         brokenDownTimeStamp->tm_min,
+         brokenDownTimeStamp->tm_sec);
+
       if(pType == LogType::Info)
       {
          mLogFile.write("[INF] ", 6u);
@@ -80,8 +88,11 @@ public:
          mLogFile.write("[ERR] ", 6u);
       }
 
+      mLogFile.write(timeBuffer, 11u);
       mLogFile.write(pMessage, strlen(pMessage));
       mLogFile.write("\n", 1u);
+
+      mLogFile.flush();
    }
 };
 
