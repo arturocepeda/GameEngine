@@ -34,6 +34,7 @@ namespace GE { namespace Core
 
       // Development
       bool mErrorPopUps;
+      bool mDumpLogs;
 
    public:
       Settings();
@@ -71,5 +72,8 @@ namespace GE { namespace Core
       // Development
       GEDefaultSetter(bool, ErrorPopUps, m)
       GEDefaultGetter(bool, ErrorPopUps, m)
+
+      GEDefaultSetter(bool, DumpLogs, m)
+      GEDefaultGetter(bool, DumpLogs, m)
    };
 }}

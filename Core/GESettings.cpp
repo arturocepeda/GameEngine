@@ -28,6 +28,7 @@ Settings::Settings()
    , mWindowSizeX(0u)
    , mWindowSizeY(0u)
    , mErrorPopUps(false)
+   , mDumpLogs(false)
 {
    mLanguage[0] = '\0';
 
@@ -45,6 +46,7 @@ Settings::Settings()
 
    // Development
    GERegisterProperty(Bool, ErrorPopUps);
+   GERegisterProperty(Bool, DumpLogs);
 }
 
 Settings::~Settings()

@@ -123,11 +123,14 @@ void Application::startUp(void (*pInitAppModuleFunction)())
    Allocator::init();
    Device::init();
 
-   gLogFileWriter = Allocator::alloc<LogFileWriter>();
-   GEInvokeCtor(LogFileWriter, gLogFileWriter);
-   Log::addListener(gLogFileWriter);
-
    Settings::getInstance()->load();
+
+   if(Settings::getInstance()->getDumpLogs())
+   {
+      gLogFileWriter = Allocator::alloc<LogFileWriter>();
+      GEInvokeCtor(LogFileWriter, gLogFileWriter);
+      Log::addListener(gLogFileWriter);
+   }
 
    Device::ContentHashPath = ContentType == ApplicationContentType::Bin;
 
@@ -235,9 +238,12 @@ void Application::shutDown()
    GEInvokeDtor(TaskManager, TaskManager::getInstance());
    Allocator::free(TaskManager::getInstance());
 
-   GEInvokeDtor(LogFileWriter, gLogFileWriter);
-   Allocator::free(gLogFileWriter);
-   gLogFileWriter = nullptr;
+   if(gLogFileWriter)
+   {
+      GEInvokeDtor(LogFileWriter, gLogFileWriter);
+      Allocator::free(gLogFileWriter);
+      gLogFileWriter = nullptr;
+   }
 
    Device::release();
    Allocator::release();
