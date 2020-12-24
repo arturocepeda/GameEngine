@@ -14,6 +14,8 @@
 
 #include "Types/GETypes.h"
 
+#include <vector>
+
 namespace GE { namespace Core
 {
    enum class LogType
@@ -27,15 +29,17 @@ namespace GE { namespace Core
    class LogListener
    {
    public:
-      virtual void onLog(LogType, const char*) {}
+      virtual void onLog(LogType pType, const char* pMessage) = 0;
    };
 
 
    class Log
    {
-   public:
-      static LogListener* CurrentLogListener;
+   private:
+      static std::vector<LogListener*> smListeners;
 
-      static void log(LogType Type, const char* Message, ...);
+   public:
+      static void addListener(LogListener* pListener);
+      static void log(LogType pType, const char* pMessage, ...);
    };
 }}

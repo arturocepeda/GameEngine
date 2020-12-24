@@ -354,9 +354,6 @@
     <ClCompile Include="Core\Windows\GEDevice.Windows.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Windows\GELog.Windows.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Core\GEDevice.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -452,6 +449,9 @@
     </ClCompile>
     <ClCompile Include="Rendering\GETextRasterizer.cpp">
       <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\GELog.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
