@@ -39,6 +39,7 @@
     <ClCompile Include="Core\GEEvents.cpp" />
     <ClCompile Include="Core\GEGeometry.cpp" />
     <ClCompile Include="Core\GEInterpolator.cpp" />
+    <ClCompile Include="Core\GELog.cpp" />
     <ClCompile Include="Core\GEMath.cpp" />
     <ClCompile Include="Core\GEObject.cpp" />
     <ClCompile Include="Core\GEParser.cpp" />
@@ -55,7 +56,6 @@
     <ClCompile Include="Core\GEUtils.cpp" />
     <ClCompile Include="Core\GEValue.cpp" />
     <ClCompile Include="Core\Windows\GEDevice.Windows.cpp" />
-    <ClCompile Include="Core\Windows\GELog.Windows.cpp" />
     <ClCompile Include="Entities\GEComponent.cpp" />
     <ClCompile Include="Entities\GEComponentAudio.cpp" />
     <ClCompile Include="Entities\GEComponentCamera.cpp" />

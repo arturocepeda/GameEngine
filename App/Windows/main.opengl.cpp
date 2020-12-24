@@ -80,7 +80,7 @@ class Win32LogListener : public LogListener
 public:
    virtual void onLog(LogType pLogType, const char* pMsg) override
    {
-      if(pLogType == LogType::Error && gSettings.getErrorPopUps())
+      if(pLogType == LogType::Error)
       {
          MessageBoxA(nullptr, pMsg, "Error", MB_OK | MB_ICONERROR);
       }
@@ -105,7 +105,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
    Application::ContentType = ApplicationContentType::Bin;
 #endif
 
-   Log::CurrentLogListener = &gLogListener;
+   if(gSettings.getErrorPopUps())
+   {
+      Log::addListener(&gLogListener);
+   }
 
    // initialize the distribution platform
    DistributionPlatform distributionPlatform;
