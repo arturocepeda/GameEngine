@@ -17,6 +17,7 @@
 #include "GEPlatform.h"
 #include "GETime.h"
 #include "GESettings.h"
+#include "GELog.h"
 #include "GEDistributionPlatform.h"
 
 #include "Input/GEInputSystem.h"
@@ -48,13 +49,52 @@ using namespace GE::Entities;
 using namespace GE::Audio;
 using namespace GE::Scripting;
 
-const char* Application::Name = 0;
-const char* Application::ID = 0;
 
-const char* Application::VersionString = 0;
-uint Application::VersionNumber = 0;
+class LogFileWriter : public LogListener
+{
+private:
+   std::ofstream mLogFile;
 
-const char* Application::ExecutablePath = 0;
+public:
+   LogFileWriter()
+   {
+      mLogFile = Device::writeUserFile(".", "logs", "txt");
+   }
+   ~LogFileWriter()
+   {
+      mLogFile.close();
+   }
+
+   virtual void onLog(LogType pType, const char* pMessage) override
+   {
+      if(pType == LogType::Info)
+      {
+         mLogFile.write("[INF] ", 6u);
+      }
+      else if(pType == LogType::Warning)
+      {
+         mLogFile.write("[WAR] ", 6u);
+      }
+      else
+      {
+         mLogFile.write("[ERR] ", 6u);
+      }
+
+      mLogFile.write(pMessage, strlen(pMessage));
+      mLogFile.write("\n", 1u);
+   }
+};
+
+LogFileWriter* gLogFileWriter = nullptr;
+
+
+const char* Application::Name = nullptr;
+const char* Application::ID = nullptr;
+
+const char* Application::VersionString = nullptr;
+uint Application::VersionNumber = 0u;
+
+const char* Application::ExecutablePath = nullptr;
 GESTLVector(const char*) Application::Arguments;
 
 #if defined (GE_RENDERING_API_DIRECTX)
@@ -71,6 +111,10 @@ void Application::startUp(void (*pInitAppModuleFunction)())
 {
    Allocator::init();
    Device::init();
+
+   gLogFileWriter = Allocator::alloc<LogFileWriter>();
+   GEInvokeCtor(LogFileWriter, gLogFileWriter);
+   Log::addListener(gLogFileWriter);
 
    Settings::getInstance()->load();
 
@@ -179,6 +223,10 @@ void Application::shutDown()
 
    GEInvokeDtor(TaskManager, TaskManager::getInstance());
    Allocator::free(TaskManager::getInstance());
+
+   GEInvokeDtor(LogFileWriter, gLogFileWriter);
+   Allocator::free(gLogFileWriter);
+   gLogFileWriter = nullptr;
 
    Device::release();
    Allocator::release();
