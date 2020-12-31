@@ -29,10 +29,12 @@ namespace GE { namespace Input
          DPadDown,
          DPadLeft,
          DPadRight,
-         Left,
-         Right,
+         ShoulderLeft,
+         ShoulderRight,
          StickLeft,
          StickRight,
+         Start,
+         Back,
 
          Count
       };
@@ -160,7 +162,8 @@ namespace GE { namespace Input
       void setInputEnabled(bool pEnabled);
       void processEvents();
 
-      const Gamepad* getGamepad(int pID) const;
+      Gamepad* getGamepad(int pID);
+
       const Vector2& getMousePosition() const { return mMousePosition; }
       const Vector3& getAccelerometerStatus() const { return mAccelerometerStatus; } 
 

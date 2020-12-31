@@ -191,6 +191,7 @@ void InputSystem::processEvents()
          }
          break;
       case InputEventType::GamepadButtonPressed:
+         getGamepad(event.mID)->mStateButtons[event.mIndex] = true;
          for(size_t j = 0; j < mListeners.size(); j++)
          {
             if(mListeners[j]->inputGamepadButtonPress(event.mID, (Gamepad::Button)event.mIndex))
@@ -198,6 +199,7 @@ void InputSystem::processEvents()
          }
          break;
       case InputEventType::GamepadButtonReleased:
+         getGamepad(event.mID)->mStateButtons[event.mIndex] = false;
          for(size_t j = 0; j < mListeners.size(); j++)
          {
             if(mListeners[j]->inputGamepadButtonRelease(event.mID, (Gamepad::Button)event.mIndex))
@@ -205,6 +207,7 @@ void InputSystem::processEvents()
          }
          break;
       case InputEventType::GamepadStickChanged:
+         getGamepad(event.mID)->mStateSticks[event.mIndex] = event.mPointA;
          for(size_t j = 0; j < mListeners.size(); j++)
          {
             if(mListeners[j]->inputGamepadStickChanged(event.mID, (Gamepad::Stick)event.mIndex, event.mPointA))
@@ -212,6 +215,7 @@ void InputSystem::processEvents()
          }
          break;
       case InputEventType::GamepadTriggerChanged:
+         getGamepad(event.mID)->mStateTriggers[event.mIndex] = event.mPointA.X;
          for(size_t j = 0; j < mListeners.size(); j++)
          {
             if(mListeners[j]->inputGamepadTriggerChanged(event.mID, (Gamepad::Trigger)event.mIndex, event.mPointA.X))
@@ -278,7 +282,7 @@ void InputSystem::setInputEnabled(bool pEnabled)
    }
 }
 
-const Gamepad* InputSystem::getGamepad(int pID) const
+Gamepad* InputSystem::getGamepad(int pID)
 {
    for(size_t i = 0u; i < mGamepads.size(); i++)
    {
