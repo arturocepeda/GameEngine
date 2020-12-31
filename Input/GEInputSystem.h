@@ -17,6 +17,55 @@
 
 namespace GE { namespace Input
 {
+   struct Gamepad
+   {
+      enum class Button
+      {
+         A,
+         B,
+         X,
+         Y,
+         DPadUp,
+         DPadDown,
+         DPadLeft,
+         DPadRight,
+         Left,
+         Right,
+         StickLeft,
+         StickRight,
+
+         Count
+      };
+      enum class Stick
+      {
+         Left,
+         Right,
+
+         Count
+      };
+      enum class Trigger
+      {
+         Left,
+         Right,
+
+         Count
+      };
+
+      int mID;
+      bool mStateButtons[(int)Button::Count];
+      Vector2 mStateSticks[(int)Stick::Count];
+      float mStateTriggers[(int)Trigger::Count];
+
+      Gamepad()
+         : mID(0)
+      {
+         memset(mStateButtons, 0, sizeof(mStateButtons));
+         memset(mStateSticks, 0, sizeof(mStateSticks));
+         memset(mStateTriggers, 0, sizeof(mStateTriggers));
+      }
+   };
+
+
    class InputListener
    {
    protected:
@@ -36,6 +85,11 @@ namespace GE { namespace Input
       virtual bool inputMouseRightButton();
       virtual bool inputMouseWheel(int pDelta);
 
+      virtual bool inputGamepadButtonPress(int pID, Gamepad::Button pButton);
+      virtual bool inputGamepadButtonRelease(int pID, Gamepad::Button pButton);
+      virtual bool inputGamepadStickChanged(int pID, Gamepad::Stick pStick, const Vector2& pState);
+      virtual bool inputGamepadTriggerChanged(int pID, Gamepad::Trigger pTrigger, float pState);
+
       virtual bool inputTouchBegin(int pID, const Vector2& pPoint);
       virtual bool inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint);
       virtual bool inputTouchEnd(int pID, const Vector2& pPoint);
@@ -45,7 +99,7 @@ namespace GE { namespace Input
    class InputSystem : public Core::Singleton<InputSystem>
    {
    private:
-      enum class InputEventType : uint16_t
+      enum class InputEventType : uint8_t
       {
          Invalid,
 
@@ -58,6 +112,11 @@ namespace GE { namespace Input
          MouseRightButton,
          MouseWheel,
 
+         GamepadButtonPressed,
+         GamepadButtonReleased,
+         GamepadStickChanged,
+         GamepadTriggerChanged,
+
          TouchBegin,
          TouchMoved,
          TouchEnd
@@ -66,12 +125,14 @@ namespace GE { namespace Input
       struct InputEvent
       {
          InputEventType mType;
+         uint8_t mIndex;
          int16_t mID;
          Vector2 mPointA;
          Vector2 mPointB;
 
          InputEvent()
             : mType(InputEventType::Invalid)
+            , mIndex(0u)
             , mID(0)
          {
          }
@@ -80,6 +141,7 @@ namespace GE { namespace Input
       GEMutex mEventsMutex;
       GESTLVector(InputListener*) mListeners;
       GESTLVector(InputEvent) mEvents;
+      GESTLVector(Gamepad) mGamepads;
 
       bool mInputEnabled;
       Vector2 mMousePosition;
@@ -92,9 +154,13 @@ namespace GE { namespace Input
       void addListener(InputListener* pListener);
       void removeListener(InputListener* pListener);
 
+      void onGamepadConnected(int pID);
+      void onGamepadDisconnected(int pID);
+
       void setInputEnabled(bool pEnabled);
       void processEvents();
 
+      const Gamepad* getGamepad(int pID) const;
       const Vector2& getMousePosition() const { return mMousePosition; }
       const Vector3& getAccelerometerStatus() const { return mAccelerometerStatus; } 
 
@@ -106,6 +172,11 @@ namespace GE { namespace Input
       void inputMouseLeftButton();
       void inputMouseRightButton();
       void inputMouseWheel(int pDelta);
+
+      void inputGamepadButtonPress(int pID, Gamepad::Button pButton);
+      void inputGamepadButtonRelease(int pID, Gamepad::Button pButton);
+      void inputGamepadStickChanged(int pID, Gamepad::Stick pStick, const Vector2& pState);
+      void inputGamepadTriggerChanged(int pID, Gamepad::Trigger pTrigger, float pState);
 
       void inputTouchBegin(int pID, const Vector2& pPoint);
       void inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint);

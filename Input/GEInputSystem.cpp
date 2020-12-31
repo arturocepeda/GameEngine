@@ -57,6 +57,23 @@ bool InputListener::inputMouseWheel(int)
    return false;
 }
 
+bool InputListener::inputGamepadButtonPress(int, Gamepad::Button)
+{
+   return false;
+}
+bool InputListener::inputGamepadButtonRelease(int, Gamepad::Button)
+{
+   return false;
+}
+bool InputListener::inputGamepadStickChanged(int, Gamepad::Stick, const Vector2&)
+{
+   return false;
+}
+bool InputListener::inputGamepadTriggerChanged(int, Gamepad::Trigger, float)
+{
+   return false;
+}
+
 bool InputListener::inputTouchBegin(int, const Vector2&)
 {
    return false;
@@ -173,6 +190,34 @@ void InputSystem::processEvents()
                break;
          }
          break;
+      case InputEventType::GamepadButtonPressed:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputGamepadButtonPress(event.mID, (Gamepad::Button)event.mIndex))
+               break;
+         }
+         break;
+      case InputEventType::GamepadButtonReleased:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputGamepadButtonRelease(event.mID, (Gamepad::Button)event.mIndex))
+               break;
+         }
+         break;
+      case InputEventType::GamepadStickChanged:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputGamepadStickChanged(event.mID, (Gamepad::Stick)event.mIndex, event.mPointA))
+               break;
+         }
+         break;
+      case InputEventType::GamepadTriggerChanged:
+         for(size_t j = 0; j < mListeners.size(); j++)
+         {
+            if(mListeners[j]->inputGamepadTriggerChanged(event.mID, (Gamepad::Trigger)event.mIndex, event.mPointA.X))
+               break;
+         }
+         break;
       case InputEventType::TouchBegin:
          for(size_t j = 0; j < mListeners.size(); j++)
          {
@@ -202,6 +247,27 @@ void InputSystem::processEvents()
    GEMutexUnlock(mEventsMutex);
 }
 
+void InputSystem::onGamepadConnected(int pID)
+{
+   if(!getGamepad(pID))
+   {
+      mGamepads.emplace_back();
+      mGamepads.back().mID = pID;
+   }
+}
+
+void InputSystem::onGamepadDisconnected(int pID)
+{
+   for(size_t i = 0u; i < mGamepads.size(); i++)
+   {
+      if(mGamepads[i].mID == pID)
+      {
+         mGamepads.erase(mGamepads.begin() + i);
+         break;
+      }
+   }
+}
+
 void InputSystem::setInputEnabled(bool pEnabled)
 {
    mInputEnabled = pEnabled;
@@ -210,6 +276,19 @@ void InputSystem::setInputEnabled(bool pEnabled)
    {
       inputMouse(mMousePosition);
    }
+}
+
+const Gamepad* InputSystem::getGamepad(int pID) const
+{
+   for(size_t i = 0u; i < mGamepads.size(); i++)
+   {
+      if(mGamepads[i].mID == pID)
+      {
+         return &mGamepads[i];
+      }
+   }
+
+   return nullptr;
 }
 
 void InputSystem::inputKeyPress(char pKey)
@@ -301,6 +380,68 @@ void InputSystem::inputMouseWheel(int pDelta)
    InputEvent event;
    event.mType = InputEventType::MouseWheel;
    event.mID = (int16_t)pDelta;
+
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
+}
+
+void InputSystem::inputGamepadButtonPress(int pID, Gamepad::Button pButton)
+{
+   if(!mInputEnabled)
+      return;
+
+   InputEvent event;
+   event.mType = InputEventType::GamepadButtonPressed;
+   event.mIndex = (uint8_t)pButton;
+   event.mID = (int16_t)pID;
+
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
+}
+
+void InputSystem::inputGamepadButtonRelease(int pID, Gamepad::Button pButton)
+{
+   if(!mInputEnabled)
+      return;
+
+   InputEvent event;
+   event.mType = InputEventType::GamepadButtonReleased;
+   event.mIndex = (uint8_t)pButton;
+   event.mID = (int16_t)pID;
+
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
+}
+
+void InputSystem::inputGamepadStickChanged(int pID, Gamepad::Stick pStick, const Vector2& pState)
+{
+   if(!mInputEnabled)
+      return;
+
+   InputEvent event;
+   event.mType = InputEventType::GamepadStickChanged;
+   event.mIndex = (uint8_t)pStick;
+   event.mID = (int16_t)pID;
+   event.mPointA = pState;
+
+   GEMutexLock(mEventsMutex);
+   mEvents.push_back(event);
+   GEMutexUnlock(mEventsMutex);
+}
+
+void InputSystem::inputGamepadTriggerChanged(int pID, Gamepad::Trigger pTrigger, float pState)
+{
+   if(!mInputEnabled)
+      return;
+
+   InputEvent event;
+   event.mType = InputEventType::GamepadTriggerChanged;
+   event.mIndex = (uint8_t)pTrigger;
+   event.mID = (int16_t)pID;
+   event.mPointA.X = pState;
 
    GEMutexLock(mEventsMutex);
    mEvents.push_back(event);

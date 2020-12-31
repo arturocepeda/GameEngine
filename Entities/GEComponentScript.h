@@ -94,6 +94,11 @@ namespace GE { namespace Entities
       bool inputMouse(const Vector2& pPoint);
       bool inputMouseWheel(int pDelta);
 
+      bool inputGamepadButtonPress(int pID, Input::Gamepad::Button pButton);
+      bool inputGamepadButtonRelease(int pID, Input::Gamepad::Button pButton);
+      bool inputGamepadStickChanged(int pID, Input::Gamepad::Stick pStick, const Vector2& pState);
+      bool inputGamepadTriggerChanged(int pID, Input::Gamepad::Trigger pTrigger, float pState);
+
       bool inputTouchBegin(int pID, const Vector2& pPoint);
       bool inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint);
       bool inputTouchEnd(int pID, const Vector2& pPoint);
@@ -124,6 +129,11 @@ namespace GE { namespace Entities
 
       virtual bool inputMouse(const Vector2& pPoint) override;
       virtual bool inputMouseWheel(int pDelta) override;
+
+      virtual bool inputGamepadButtonPress(int pID, Input::Gamepad::Button pButton) override;
+      virtual bool inputGamepadButtonRelease(int pID, Input::Gamepad::Button pButton) override;
+      virtual bool inputGamepadStickChanged(int pID, Input::Gamepad::Stick pStick, const Vector2& pState) override;
+      virtual bool inputGamepadTriggerChanged(int pID, Input::Gamepad::Trigger pTrigger, float pState) override;
 
       virtual bool inputTouchBegin(int pID, const Vector2& pPoint) override;
       virtual bool inputTouchMove(int pID, const Vector2& pPreviousPoint, const Vector2& pCurrentPoint) override;

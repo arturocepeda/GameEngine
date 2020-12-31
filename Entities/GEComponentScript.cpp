@@ -45,6 +45,10 @@ const ObjectName cInputKeyReleaseFunctionName = ObjectName("inputKeyRelease");
 const ObjectName cInputKeyTextFunctionName = ObjectName("inputKeyText");
 const ObjectName cInputMouseFunctionName = ObjectName("inputMouse");
 const ObjectName cInputMouseWheelFunctionName = ObjectName("inputMouseWheel");
+const ObjectName cInputGamepadButtonPressFunctionName = ObjectName("inputGamepadButtonPress");
+const ObjectName cInputGamepadButtonReleaseFunctionName = ObjectName("inputGamepadButtonRelease");
+const ObjectName cInputGamepadStickChangedFunctionName = ObjectName("inputGamepadStickChanged");
+const ObjectName cInputGamepadTriggerChangedFunctionName = ObjectName("inputGamepadTriggerChanged");
 const ObjectName cInputTouchBeginFunctionName = ObjectName("inputTouchBegin");
 const ObjectName cInputTouchMoveFunctionName = ObjectName("inputTouchMove");
 const ObjectName cInputTouchEndFunctionName = ObjectName("inputTouchEnd");
@@ -497,6 +501,62 @@ bool ScriptInstance::inputMouseWheel(int pDelta)
    return false;
 }
 
+bool ScriptInstance::inputGamepadButtonPress(int pID, Gamepad::Button pButton)
+{
+   if(!getActive() || !mNamespace)
+      return false;
+
+   if(mNamespace->isFunctionDefined(cInputGamepadButtonPressFunctionName))
+   {
+      if(mNamespace->runFunction<bool>(cInputGamepadButtonPressFunctionName, pID, pButton))
+         return true;
+   }
+
+   return false;
+}
+
+bool ScriptInstance::inputGamepadButtonRelease(int pID, Gamepad::Button pButton)
+{
+   if(!getActive() || !mNamespace)
+      return false;
+
+   if(mNamespace->isFunctionDefined(cInputGamepadButtonReleaseFunctionName))
+   {
+      if(mNamespace->runFunction<bool>(cInputGamepadButtonReleaseFunctionName, pID, pButton))
+         return true;
+   }
+
+   return false;
+}
+
+bool ScriptInstance::inputGamepadStickChanged(int pID, Gamepad::Stick pStick, const Vector2& pState)
+{
+   if(!getActive() || !mNamespace)
+      return false;
+
+   if(mNamespace->isFunctionDefined(cInputGamepadStickChangedFunctionName))
+   {
+      if(mNamespace->runFunction<bool>(cInputGamepadStickChangedFunctionName, pID, pStick, pState))
+         return true;
+   }
+
+   return false;
+}
+
+bool ScriptInstance::inputGamepadTriggerChanged(int pID, Gamepad::Trigger pTrigger, float pState)
+{
+   if(!getActive() || !mNamespace)
+      return false;
+
+   if(mNamespace->isFunctionDefined(cInputGamepadTriggerChangedFunctionName))
+   {
+      if(mNamespace->runFunction<bool>(cInputGamepadTriggerChangedFunctionName, pID, pTrigger, pState))
+         return true;
+   }
+
+   return false;
+}
+
 bool ScriptInstance::inputTouchBegin(int pID, const Vector2& pPoint)
 {
    if(!getActive() || !mNamespace)
@@ -656,6 +716,62 @@ bool ComponentScript::inputMouseWheel(int pDelta)
    for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
    {
       if(getScriptInstance(i)->inputMouseWheel(pDelta))
+         return true;
+   }
+
+   return false;
+}
+
+bool ComponentScript::inputGamepadButtonPress(int pID, Gamepad::Button pButton)
+{
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
+   {
+      if(getScriptInstance(i)->inputGamepadButtonPress(pID, pButton))
+         return true;
+   }
+
+   return false;
+}
+
+bool ComponentScript::inputGamepadButtonRelease(int pID, Gamepad::Button pButton)
+{
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
+   {
+      if(getScriptInstance(i)->inputGamepadButtonRelease(pID, pButton))
+         return true;
+   }
+
+   return false;
+}
+
+bool ComponentScript::inputGamepadStickChanged(int pID, Gamepad::Stick pStick, const Vector2& pState)
+{
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
+   {
+      if(getScriptInstance(i)->inputGamepadStickChanged(pID, pStick, pState))
+         return true;
+   }
+
+   return false;
+}
+
+bool ComponentScript::inputGamepadTriggerChanged(int pID, Gamepad::Trigger pTrigger, float pState)
+{
+   if(!cOwner->isActiveInHierarchy())
+      return false;
+
+   for(uint32_t i = 0u; i < (uint32_t)vScriptInstanceList.size(); i++)
+   {
+      if(getScriptInstance(i)->inputGamepadTriggerChanged(pID, pTrigger, pState))
          return true;
    }
 
