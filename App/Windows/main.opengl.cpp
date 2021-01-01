@@ -29,6 +29,7 @@
 #include "Input/GEInputSystem.h"
 
 #include "Externals/glfw/include/GLFW/glfw3.h"
+#include "Input/GEGamepad.GLFW.h"
 
 #pragma comment(lib, "GameEngine.OpenGL.lib")
 #pragma comment(lib, "AppModule.lib")
@@ -258,6 +259,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
          }
 
          Time::setDelta(fTimeDelta);
+
+         checkGamepadState();
 
          TaskManager::getInstance()->update();
          TaskManager::getInstance()->render();
