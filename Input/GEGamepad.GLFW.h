@@ -83,12 +83,12 @@ static void checkGamepadState()
          GE::Vector2
          (
             state.axes[GLFW_GAMEPAD_AXIS_LEFT_X],
-            state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y]
+            -state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y]
          ),
          GE::Vector2
          (
             state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X],
-            state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y]
+            -state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y]
          )
       };
 
