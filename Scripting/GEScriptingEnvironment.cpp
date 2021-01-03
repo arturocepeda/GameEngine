@@ -1035,6 +1035,20 @@ void Environment::registerTypes()
       , "getInstance", &InputSystem::getInstance
       , "setInputEnabled", &InputSystem::setInputEnabled
       , "getMousePosition", &InputSystem::getMousePosition
+      , "inputKeyPress", &InputSystem::inputKeyPress
+      , "inputKeyRelease", &InputSystem::inputKeyRelease
+      , "inputKeyText", &InputSystem::inputKeyText
+      , "inputMouse", &InputSystem::inputMouse
+      , "inputMouseLeftButton", &InputSystem::inputMouseLeftButton
+      , "inputMouseRightButton", &InputSystem::inputMouseRightButton
+      , "inputMouseWheel", &InputSystem::inputMouseWheel
+      , "inputGamepadButtonPress", &InputSystem::inputGamepadButtonPress
+      , "inputGamepadButtonRelease", &InputSystem::inputGamepadButtonRelease
+      , "inputGamepadStickChanged", &InputSystem::inputGamepadStickChanged
+      , "inputGamepadTriggerChanged", &InputSystem::inputGamepadTriggerChanged
+      , "inputTouchBegin", &InputSystem::inputTouchBegin
+      , "inputTouchMove", &InputSystem::inputTouchMove
+      , "inputTouchEnd", &InputSystem::inputTouchEnd
    );
 
    //
