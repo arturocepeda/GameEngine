@@ -12,12 +12,14 @@
 
 #include "Core/GEDevice.h"
 
+#include <fstream>
+
 using namespace GE;
 using namespace GE::Core;
 using namespace GE::Content;
 
 GEMutex Device::mIOMutex;
-Device::IOBuffersMap* Device::mIOBuffers = 0;
+Device::IOBuffersMap* Device::mIOBuffers = nullptr;
 
 int Device::ScreenWidth = 0;
 int Device::ScreenHeight = 0;
@@ -102,6 +104,14 @@ void Device::getContentFileNames(const char* pSubDir, const char* pExtension, Fi
       Device::getContentFileName(pSubDir, pExtension, i, fileName);
       pOutFileNames->push_back(GESTLString(fileName));
    }
+}
+
+void Device::writeUserFile(const char* pSubDir, const char* pName, const char* pExtension, const ContentData* pContentData)
+{
+   std::ofstream file = writeUserFile(pSubDir, pName, pExtension);
+   GEAssert(file.is_open());
+   file.write(pContentData->getData(), pContentData->getDataSize());
+   file.close();
 }
 
 void Device::getUserFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames)

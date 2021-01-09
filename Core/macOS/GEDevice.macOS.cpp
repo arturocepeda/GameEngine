@@ -248,7 +248,7 @@ void Device::readUserFile(const char* SubDir, const char* Name, const char* Exte
    Allocator::free(pFileData);
 }
 
-void Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension, const ContentData* ContentData)
+std::ofstream Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension)
 {
    static const mode_t mkdirMode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
    
@@ -282,11 +282,7 @@ void Device::writeUserFile(const char* SubDir, const char* Name, const char* Ext
    sprintf(sFileName, "../Users/%s/%s/%s.%s", getUserName(), SubDir, Name, Extension);
    GESTLString sFullPath = getFullPath(sFileName);
    
-   std::ofstream file(sFullPath.c_str(), std::ios::out | std::ios::binary);
-   GEAssert(file.is_open());
-   
-   file.write(ContentData->getData(), ContentData->getDataSize());
-   file.close();
+   return std::ofstream(sFullPath.c_str(), std::ios::out | std::ios::binary);
 }
 
 uint Device::getUserFilesCount(const char* SubDir, const char* Extension)

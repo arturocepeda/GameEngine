@@ -312,35 +312,6 @@ void Device::readUserFile(const char* SubDir, const char* Name, const char* Exte
    ContentData->load(iFileLength, (const char*)pFileData);
 }
 
-void Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension, const ContentData* ContentData)
-{
-   char sPath[MaxPath];
-   HRESULT hr = SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, sPath);
-   GEAssert(hr >= 0);
-
-   char sDirectory[MaxPath];
-   sprintf(sDirectory, "%s\\%s", sPath, Application::Name);
-   CreateDirectory(sDirectory, NULL);
-   
-   char sSubDir[MaxPath];
-   toWindowsSubDir(SubDir, sSubDir);
-
-   if(strlen(sSubDir) > 0)
-   {
-      sprintf(sDirectory, "%s\\%s\\%s", sPath, Application::Name, sSubDir);
-      CreateDirectory(sDirectory, NULL);
-   }
-
-   char sFullPath[MaxPath];
-   sprintf(sFullPath, "%s\\%s.%s", sDirectory, Name, Extension);
-
-   std::ofstream file(sFullPath, std::ios::out | std::ios::binary);
-   GEAssert(file.is_open());
-
-   file.write(ContentData->getData(), ContentData->getDataSize());
-   file.close();
-}
-
 std::ofstream Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension)
 {
    char sPath[MaxPath];
