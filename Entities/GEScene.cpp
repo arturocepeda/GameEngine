@@ -94,7 +94,7 @@ void Scene::loadPrefabData()
 
          if(Device::ContentHashPath)
          {
-            prefabNameHash = strtoul(prefabNames[i].c_str(), nullptr, 16);
+            prefabNameHash = (uint32_t)strtoul(prefabNames[i].c_str(), nullptr, 16);
          }
          else
          {
