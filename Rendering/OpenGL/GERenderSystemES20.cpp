@@ -28,20 +28,20 @@ using namespace GE::Content;
 using namespace GE::Entities;
 using namespace GE::Rendering;
 
-// buffers
-void* iCurrentVertexBuffer = 0;
-void* iCurrentIndexBuffer = 0;
+// Buffers
+void* gCurrentVertexBuffer = nullptr;
+void* gCurrentIndexBuffer = nullptr;
 
 GESTLVector(uint16_t) gMappedIndices16;
 GESTLVector(uint32_t) gMappedIndices32;
 
-// shadow mapping
-uint iFrameBuffer = 0;
-uint iRenderBuffer = 0;
-Texture* cDepthTexture = 0;
+// Shadow mapping
+uint32_t gFrameBuffer = 0u;
+uint32_t gRenderBuffer = 0u;
+Texture* gDepthTexture = nullptr;
 
-// shaders
-ShaderProgramES20* cActiveProgram = 0;
+// Shaders
+ShaderProgramES20* gActiveProgram = nullptr;
 
 const ObjectName _Mesh_ = ObjectName("Mesh");
 const ObjectName _Label_ = ObjectName("Label");
@@ -49,7 +49,12 @@ const ObjectName _ParticleSystem_ = ObjectName("ParticleSystem");
 
 RenderSystemES20::RenderSystemES20()
    : RenderSystem(nullptr, false)
-{  
+{
+   const GLubyte* glVendor = glGetString(GL_VENDOR);
+   const GLubyte* glRenderer = glGetString(GL_RENDERER);
+
+   Log::log(LogType::Info, "Graphics Card: %s (%s)", glRenderer, glVendor);
+
    // enable face culling
    glEnable(GL_CULL_FACE);
    
@@ -73,10 +78,10 @@ RenderSystemES20::~RenderSystemES20()
 {
    releaseBuffers();
 
-   GLuint iDepthTexture = (GLuint)((GLuintPtrSize)cDepthTexture->getHandler());
-   glDeleteTextures(1, &iDepthTexture);
-   GEInvokeDtor(Texture, cDepthTexture);
-   Allocator::free(cDepthTexture);
+   GLuint depthTexture = (GLuint)((GLuintPtrSize)gDepthTexture->getHandler());
+   glDeleteTextures(1, &depthTexture);
+   GEInvokeDtor(Texture, gDepthTexture);
+   Allocator::free(gDepthTexture);
 }
 
 void RenderSystemES20::createBuffers()
@@ -99,20 +104,20 @@ void RenderSystemES20::createBuffers()
    }
 
    // buffer and texture for shadow mapping
-   glGenFramebuffers(1, &iFrameBuffer);
-   glGenRenderbuffers(1, &iRenderBuffer);
-   glBindRenderbuffer(GL_RENDERBUFFER, iRenderBuffer);
+   glGenFramebuffers(1, &gFrameBuffer);
+   glGenRenderbuffers(1, &gRenderBuffer);
+   glBindRenderbuffer(GL_RENDERBUFFER, gRenderBuffer);
    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, kShadowMapSize, kShadowMapSize);
-   glBindFramebuffer(GL_FRAMEBUFFER, iFrameBuffer);
+   glBindFramebuffer(GL_FRAMEBUFFER, gFrameBuffer);
 
-   cDepthTexture = Allocator::alloc<Texture>();
-   GEInvokeCtor(Texture, cDepthTexture)("Depth", "Texture");
-   cDepthTexture->setWidth(kShadowMapSize);
-   cDepthTexture->setHeight(kShadowMapSize);
+   gDepthTexture = Allocator::alloc<Texture>();
+   GEInvokeCtor(Texture, gDepthTexture)("Depth", "Texture");
+   gDepthTexture->setWidth(kShadowMapSize);
+   gDepthTexture->setHeight(kShadowMapSize);
    
    GLuint iDepthTexture;
    glGenTextures(1, &iDepthTexture);
-   cDepthTexture->setHandler((void*)((uintPtrSize)iDepthTexture));
+   gDepthTexture->setHandler((void*)((uintPtrSize)iDepthTexture));
 
    glBindTexture(GL_TEXTURE_2D, iDepthTexture);
    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kShadowMapSize, kShadowMapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -122,7 +127,7 @@ void RenderSystemES20::createBuffers()
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, iDepthTexture, 0);
-   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, iRenderBuffer);
+   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, gRenderBuffer);
    GEAssert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -141,21 +146,21 @@ void RenderSystemES20::releaseBuffers()
       glDeleteBuffers(1, &iIndexBuffer);
    }
 
-   glDeleteBuffers(1, &iFrameBuffer);
+   glDeleteBuffers(1, &gFrameBuffer);
 }
 
 void RenderSystem::bindBuffers(const GPUBufferPair& sBuffers)
 {
-   if(iCurrentVertexBuffer != sBuffers.VertexBuffer)
+   if(gCurrentVertexBuffer != sBuffers.VertexBuffer)
    {
-      iCurrentVertexBuffer = sBuffers.VertexBuffer;
-      glBindBuffer(GL_ARRAY_BUFFER, (GLuint)((uintPtrSize)iCurrentVertexBuffer));
+      gCurrentVertexBuffer = sBuffers.VertexBuffer;
+      glBindBuffer(GL_ARRAY_BUFFER, (GLuint)((uintPtrSize)gCurrentVertexBuffer));
    }
 
-   if(iCurrentIndexBuffer != sBuffers.IndexBuffer)
+   if(gCurrentIndexBuffer != sBuffers.IndexBuffer)
    {
-      iCurrentIndexBuffer = sBuffers.IndexBuffer;
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)((uintPtrSize)iCurrentIndexBuffer));
+      gCurrentIndexBuffer = sBuffers.IndexBuffer;
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)((uintPtrSize)gCurrentIndexBuffer));
    }
 }
 
@@ -229,7 +234,7 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
    GEInvokeDtor(ImageData, cPreloadedTexture->Data);
    Allocator::free(cPreloadedTexture->Data);
 
-   cPreloadedTexture->Data = 0;
+   cPreloadedTexture->Data = nullptr;
    cPreloadedTexture->Tex->setHandler((void*)((uintPtrSize)iTexture));
 }
 
@@ -511,12 +516,12 @@ void RenderSystem::useShaderProgram(const Core::ObjectName& cName)
    GEAssert(cShaderProgram);
    glUseProgram(cShaderProgram->ID);
    iActiveProgram = cName.getID();
-   cActiveProgram = const_cast<ShaderProgramES20*>(cShaderProgram);
+   gActiveProgram = const_cast<ShaderProgramES20*>(cShaderProgram);
 
    setDepthBufferMode(cShaderProgram->getDepthBufferMode());
    setCullingMode(cShaderProgram->getCullingMode());
 
-   glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::AmbientLightColor), 1, &cAmbientLightColor.Red);
+   glUniform4fv(gActiveProgram->getUniformLocation((uint)Uniforms::AmbientLightColor), 1, &cAmbientLightColor.Red);
 }
 
 void RenderSystem::renderShadowMap()
@@ -535,7 +540,7 @@ void RenderSystem::renderShadowMap()
    GLint glDefaultViewport[4];
    glGetIntegerv(GL_VIEWPORT, glDefaultViewport);
    
-   glBindFramebuffer(GL_FRAMEBUFFER, iFrameBuffer);
+   glBindFramebuffer(GL_FRAMEBUFFER, gFrameBuffer);
    glViewport(0, 0, kShadowMapSize, kShadowMapSize);
 
    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -561,10 +566,10 @@ void RenderSystem::renderShadowMap()
          // set uniform
          Matrix4 matLightWVP;
          Matrix4Multiply(matLightViewProjection, sRenderOperation.mWorldTransform, &matLightWVP);
-         glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
+         glUniformMatrix4fv(gActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
 
          // bind buffers
-         GESTLMap(uint, GeometryRenderInfo)* cGeometryRegistry = 0;
+         GESTLMap(uint, GeometryRenderInfo)* cGeometryRegistry = nullptr;
 
          if(sRenderOperation.isStatic())
          {
@@ -601,13 +606,13 @@ void RenderSystem::renderShadowMap()
          const RenderOperation& sRenderOperation = *it;
 
          // set uniform
-         glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightViewProjection.m);
+         glUniformMatrix4fv(gActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightViewProjection.m);
 
          // bind diffuse texture
          if(sRenderOperation.mRenderMaterialPass->getMaterial()->getDiffuseTexture())
          {
             bindTexture(TextureSlot::Diffuse, sRenderOperation.mRenderMaterialPass->getMaterial()->getDiffuseTexture());
-            glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), 0);
+            glUniform1i(gActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), 0);
          }
 
          // bind buffers
@@ -639,7 +644,7 @@ void RenderSystem::renderBegin()
    glClearDepth(1.0);
 #endif
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   iDrawCalls = 0;
+   iDrawCalls = 0u;
 }
 
 void RenderSystem::render(const RenderOperation& sRenderOperation)
@@ -648,7 +653,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
    const Matrix4& mViewProjection = GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::RenderThroughActiveCamera)
       ? cActiveCamera->getViewProjectionMatrix()
       : mat2DViewProjection;
-   glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::ViewProjectionMatrix), 1, 0, mViewProjection.m);
+   glUniformMatrix4fv(gActiveProgram->getUniformLocation((uint)Uniforms::ViewProjectionMatrix), 1, 0, mViewProjection.m);
 
    if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::RenderThroughActiveCamera))
    {
@@ -659,76 +664,76 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       calculate2DTransformMatrix(sRenderOperation.mWorldTransform);
    }
 
-   glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::WorldMatrix), 1, 0, sRenderOperation.mWorldTransform.m);
+   glUniformMatrix4fv(gActiveProgram->getUniformLocation((uint)Uniforms::WorldMatrix), 1, 0, sRenderOperation.mWorldTransform.m);
 
    if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::LightingSupport))
    {
       calculate3DInverseTransposeMatrix(sRenderOperation.mWorldTransform);
 
-      glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::InverseTransposeWorldMatrix), 1, 0, matModelInverseTranspose.m);
+      glUniformMatrix4fv(gActiveProgram->getUniformLocation((uint)Uniforms::InverseTransposeWorldMatrix), 1, 0, matModelInverseTranspose.m);
 
       if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::BindShadowMap))
       {
          Matrix4 matLightWVP;
          Matrix4Multiply(matLightViewProjection, sRenderOperation.mWorldTransform, &matLightWVP);
-         glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
+         glUniformMatrix4fv(gActiveProgram->getUniformLocation((uint)Uniforms::LightWorldViewProjectionMatrix), 1, 0, matLightWVP.m);
       }
 
-      glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::AmbientLightColor), 1, &cAmbientLightColor.Red);
-      glUniform3fv(cActiveProgram->getUniformLocation((uint)Uniforms::EyePosition), 1, &cActiveCamera->getTransform()->getPosition().X);
+      glUniform4fv(gActiveProgram->getUniformLocation((uint)Uniforms::AmbientLightColor), 1, &cAmbientLightColor.Red);
+      glUniform3fv(gActiveProgram->getUniformLocation((uint)Uniforms::EyePosition), 1, &cActiveCamera->getTransform()->getPosition().X);
    }
 
-   glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::WorldViewProjectionMatrix), 1, 0, matModelViewProjection.m);
+   glUniformMatrix4fv(gActiveProgram->getUniformLocation((uint)Uniforms::WorldViewProjectionMatrix), 1, 0, matModelViewProjection.m);
 
    MaterialPass* cMaterialPass = sRenderOperation.mRenderMaterialPass;
    Material* cMaterial = cMaterialPass->getMaterial();
    Color cDiffuseColor = cMaterial->getDiffuseColor() * sRenderOperation.mColor;
 
-   glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseColor), 1, &cDiffuseColor.Red);
-   glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::SpecularColor), 1, &cMaterial->getSpecularColor().Red);
+   glUniform4fv(gActiveProgram->getUniformLocation((uint)Uniforms::DiffuseColor), 1, &cDiffuseColor.Red);
+   glUniform4fv(gActiveProgram->getUniformLocation((uint)Uniforms::SpecularColor), 1, &cMaterial->getSpecularColor().Red);
 
    if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::LightingSupport))
    {
       if(vLightsToRender.empty())
       {
-         glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::LightType), 0);
-         glUniform4f(cActiveProgram->getUniformLocation((uint)Uniforms::LightColor), 0.0f, 0.0f, 0.0f, 1.0f);
+         glUniform1i(gActiveProgram->getUniformLocation((uint)Uniforms::LightType), 0);
+         glUniform4f(gActiveProgram->getUniformLocation((uint)Uniforms::LightColor), 0.0f, 0.0f, 0.0f, 1.0f);
       }
       else
       {
          ComponentLight* cLight = vLightsToRender[0];
          Vector3 vLightDirection = cLight->getDirection();
 
-         glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::LightType), (GE::uint)cLight->getLightType());
-         glUniform4fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightColor), 1, &cLight->getColor().Red);
-         glUniform3fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightPosition), 1, &cLight->getTransform()->getPosition().X);
-         glUniform3fv(cActiveProgram->getUniformLocation((uint)Uniforms::LightDirection), 1, &vLightDirection.X);
-         glUniform1f(cActiveProgram->getUniformLocation((uint)Uniforms::Attenuation), cLight->getLinearAttenuation());
-         glUniform1f(cActiveProgram->getUniformLocation((uint)Uniforms::SpotAngle), cLight->getSpotAngle());
-         glUniform1f(cActiveProgram->getUniformLocation((uint)Uniforms::ShadowIntensity), cLight->getShadowIntensity());
+         glUniform1i(gActiveProgram->getUniformLocation((uint)Uniforms::LightType), (GE::uint)cLight->getLightType());
+         glUniform4fv(gActiveProgram->getUniformLocation((uint)Uniforms::LightColor), 1, &cLight->getColor().Red);
+         glUniform3fv(gActiveProgram->getUniformLocation((uint)Uniforms::LightPosition), 1, &cLight->getTransform()->getPosition().X);
+         glUniform3fv(gActiveProgram->getUniformLocation((uint)Uniforms::LightDirection), 1, &vLightDirection.X);
+         glUniform1f(gActiveProgram->getUniformLocation((uint)Uniforms::Attenuation), cLight->getLinearAttenuation());
+         glUniform1f(gActiveProgram->getUniformLocation((uint)Uniforms::SpotAngle), cLight->getSpotAngle());
+         glUniform1f(gActiveProgram->getUniformLocation((uint)Uniforms::ShadowIntensity), cLight->getShadowIntensity());
       }
    }
 
    if(sRenderOperation.mDiffuseTexture)
    {
       bindTexture(TextureSlot::Diffuse, sRenderOperation.mDiffuseTexture);
-      glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), (uint)TextureSlot::Diffuse);
+      glUniform1i(gActiveProgram->getUniformLocation((uint)Uniforms::DiffuseTexture), (uint)TextureSlot::Diffuse);
    }
 
    if(GEHasFlag(sRenderOperation.mFlags, RenderOperationFlags::BindShadowMap))
    {
-      bindTexture(TextureSlot::ShadowMap, cDepthTexture);
-      glUniform1i(cActiveProgram->getUniformLocation((uint)Uniforms::ShadowTexture), (uint)TextureSlot::ShadowMap);
+      bindTexture(TextureSlot::ShadowMap, gDepthTexture);
+      glUniform1i(gActiveProgram->getUniformLocation((uint)Uniforms::ShadowTexture), (uint)TextureSlot::ShadowMap);
    }
 
    if(cMaterialPass->hasVertexParameters())
    {
-      glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::VertexParameters), 1, 0, (const GLfloat*)cMaterialPass->getConstantBufferDataVertex());
+      glUniformMatrix4fv(gActiveProgram->getUniformLocation((uint)Uniforms::VertexParameters), 1, 0, (const GLfloat*)cMaterialPass->getConstantBufferDataVertex());
    }
 
    if(cMaterialPass->hasFragmentParameters())
    {
-      glUniformMatrix4fv(cActiveProgram->getUniformLocation((uint)Uniforms::FragmentParameters), 1, 0, (const GLfloat*)cMaterialPass->getConstantBufferDataFragment());
+      glUniformMatrix4fv(gActiveProgram->getUniformLocation((uint)Uniforms::FragmentParameters), 1, 0, (const GLfloat*)cMaterialPass->getConstantBufferDataFragment());
    }
 
    // bind buffers and get index offset

@@ -32,6 +32,9 @@
 #pragma comment(lib, "GameEngine.DX11.lib")
 #pragma comment(lib, "AppModule.lib")
 
+#pragma comment(lib, "D3D11.lib")
+#pragma comment(lib, "DXGI.lib")
+
 #if defined (_M_X64)
 # pragma comment(lib, "../../../GameEngine/Externals/OpenAL/lib/Win64/OpenAL32.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/libogg/lib/x64/libogg_static.lib")

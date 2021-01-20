@@ -35,35 +35,35 @@ ComPtr<ID3D11DepthStencilView> dxDepthStencilView;
 
 D3D_FEATURE_LEVEL dxFeatureLevel;
 
-// states
-ID3D11BlendState* dxBlendStateNone = 0;
-ID3D11BlendState* dxBlendStateAlpha = 0;
-ID3D11BlendState* dxBlendStateAdditive = 0;
-ID3D11SamplerState* dxSamplerStateClamp = 0;
-ID3D11SamplerState* dxSamplerStateWrap = 0;
-ID3D11DepthStencilState* dxDepthStencilStateNoDepth = 0;
-ID3D11DepthStencilState* dxDepthStencilStateTestOnly = 0;
-ID3D11DepthStencilState* dxDepthStencilStateTestAndWrite = 0;
-ID3D11RasterizerState* dxRasterizerStateSolidCullBack = 0;
-ID3D11RasterizerState* dxRasterizerStateSolidCullFront = 0;
-ID3D11RasterizerState* dxRasterizerStateSolidNoCull = 0;
-ID3D11RasterizerState* dxRasterizerStateWireFrame = 0;
+// States
+ID3D11BlendState* dxBlendStateNone = nullptr;
+ID3D11BlendState* dxBlendStateAlpha = nullptr;
+ID3D11BlendState* dxBlendStateAdditive = nullptr;
+ID3D11SamplerState* dxSamplerStateClamp = nullptr;
+ID3D11SamplerState* dxSamplerStateWrap = nullptr;
+ID3D11DepthStencilState* dxDepthStencilStateNoDepth = nullptr;
+ID3D11DepthStencilState* dxDepthStencilStateTestOnly = nullptr;
+ID3D11DepthStencilState* dxDepthStencilStateTestAndWrite = nullptr;
+ID3D11RasterizerState* dxRasterizerStateSolidCullBack = nullptr;
+ID3D11RasterizerState* dxRasterizerStateSolidCullFront = nullptr;
+ID3D11RasterizerState* dxRasterizerStateSolidNoCull = nullptr;
+ID3D11RasterizerState* dxRasterizerStateWireFrame = nullptr;
 
-// buffers
-ID3D11Buffer* dxConstantBufferTransform = 0;
-ID3D11Buffer* dxConstantBufferMaterial = 0;
-ID3D11Buffer* dxConstantBufferLighting = 0;
-ID3D11Buffer* dxConstantBufferVertexParameters = 0;
-ID3D11Buffer* dxConstantBufferFragmentParameters = 0;
+// Buffers
+ID3D11Buffer* dxConstantBufferTransform = nullptr;
+ID3D11Buffer* dxConstantBufferMaterial = nullptr;
+ID3D11Buffer* dxConstantBufferLighting = nullptr;
+ID3D11Buffer* dxConstantBufferVertexParameters = nullptr;
+ID3D11Buffer* dxConstantBufferFragmentParameters = nullptr;
 
-ID3D11Buffer* pCurrentVertexBuffer = 0;
-ID3D11Buffer* pCurrentIndexBuffer = 0;
+ID3D11Buffer* pCurrentVertexBuffer = nullptr;
+ID3D11Buffer* pCurrentIndexBuffer = nullptr;
 
 ShaderConstantsTransform sShaderConstantsTransform;
 ShaderConstantsMaterial sShaderConstantsMaterial;
 ShaderConstantsLighting sShaderConstantsLighting;
 
-RenderTextureDX11* cShadowMap = 0;
+RenderTextureDX11* cShadowMap = nullptr;
 
 const ObjectName _Mesh_ = ObjectName("Mesh");
 const ObjectName _Label_ = ObjectName("Label");
@@ -72,6 +72,17 @@ const ObjectName _ParticleSystem_ = ObjectName("ParticleSystem");
 RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
    : RenderSystem(WindowHandle, Windowed)
 {
+   IDXGIFactory* dxFactory = nullptr;
+   CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxFactory);
+   IDXGIAdapter* dxAdapter = nullptr;
+   const HRESULT result = dxFactory->EnumAdapters(0u, &dxAdapter);
+   GEAssert(result != DXGI_ERROR_NOT_FOUND);
+   GEAssert(dxAdapter);
+
+   DXGI_ADAPTER_DESC dxAdapterDesc;
+   dxAdapter->GetDesc(&dxAdapterDesc);
+   Log::log(LogType::Info, "Graphics Card: %ls", dxAdapterDesc.Description);
+
    createDeviceResources();
    createWindowSizeDependentResources();
 
