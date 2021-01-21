@@ -17,6 +17,7 @@
 #include "Core/GEProfiler.h"
 #include "Core/GEApplication.h"
 #include "Core/GEEvents.h"
+#include "Core/GELog.h"
 #include "Content/GEImageData.h"
 #include "Entities/GEEntity.h"
 #include "pugixml/pugixml.hpp"
