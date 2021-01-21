@@ -345,10 +345,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
    switch(iMsg)
    {
-   case WM_CLOSE:
-      bEnd = true;
-      return 0;
-
    case WM_KEYDOWN:
       {
          const bool keyRepeat = (lParam & 0x40000000) > 0;
@@ -414,6 +410,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
          }
       }
 
+      return 0;
+
+   case WM_CREATE:
+      {
+         HICON hWindowIcon = (HICON)LoadImage(NULL, "icon.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
+         HICON hWindowIconBig = (HICON)LoadImage(NULL, "icon.ico", IMAGE_ICON, 64, 64, LR_LOADFROMFILE);
+         SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hWindowIcon);
+         SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)hWindowIconBig);
+      }
+      return 0;
+
+   case WM_CLOSE:
+      bEnd = true;
       return 0;
    }
     

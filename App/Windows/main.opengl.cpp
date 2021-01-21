@@ -23,6 +23,8 @@
 #include "Core/GELog.h"
 #include "Core/GEDistributionPlatform.h"
 
+#include "Content/GEImageData.h"
+
 #include "Rendering/OpenGL/GEOpenGLES20.h"
 #include "Rendering/OpenGL/GERenderSystemES20.h"
 #include "Audio/GEAudioSystem.h"
@@ -54,6 +56,7 @@ using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Audio;
 using namespace GE::Input;
+using namespace GE::Content;
 
 bool bMousePositionSet;
 
@@ -179,6 +182,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, PSTR, int)
    GLFWwindow* window = glfwCreateWindow(Device::ScreenWidth, Device::ScreenHeight, GE_APP_NAME, monitor, nullptr);
    glfwSetWindowPos(window, windowPositionX, windowPositionY);
    glfwMakeContextCurrent(window);
+
+   Device::ContentHashPath = false;
+
+   if(Device::contentFileExists(".", "icon", "png"))
+   {
+      ImageData imageData;
+      Device::readContentFile(ContentType::Texture, ".", "icon", "png", &imageData);
+
+      GLFWimage image;
+      image.width = imageData.getWidth();
+      image.height = imageData.getHeight();
+      image.pixels = (unsigned char*)imageData.getData();
+
+      glfwSetWindowIcon(window, 1, &image);
+   }
+
+   Device::ContentHashPath = Application::ContentType == ApplicationContentType::Bin;
 
    glewInit();
 
