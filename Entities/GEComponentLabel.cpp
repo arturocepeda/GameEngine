@@ -111,6 +111,9 @@ ComponentLabelBase::ComponentLabelBase(Entity* pOwner)
 
 ComponentLabelBase::~ComponentLabelBase()
 {
+   cOwner->disconnectEventCallback(Events::RenderableColorChanged, this);
+
+   EventHandlingObject::disconnectStaticEventCallback(Events::LocalizedStringsReloaded, this);
 }
 
 uint16_t ComponentLabelBase::getGlyphIndex(size_t pCharIndex) const
@@ -479,9 +482,6 @@ ComponentLabel::ComponentLabel(Entity* pOwner)
 
 ComponentLabel::~ComponentLabel()
 {
-   cOwner->disconnectEventCallback(Events::RenderableColorChanged, this);
-
-   EventHandlingObject::disconnectStaticEventCallback(Events::LocalizedStringsReloaded, this);
 }
 
 float ComponentLabel::getInternalFontSize() const
@@ -939,7 +939,9 @@ Font* ComponentLabel::getFont() const
 
    if(font)
    {
-      if(Device::Language >= SystemLanguage::Russian && mStringID.isValid())
+      if(Device::Language >= SystemLanguage::Russian &&
+         mStringID.isValid() &&
+         !LocalizedStringsManager::getInstance()->isGlobal(mStringID))
       {
          Font* nonLatinFont = RenderSystem::getInstance()->getFont(font->getNonLatinFontName());
 

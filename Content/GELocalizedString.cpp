@@ -183,6 +183,12 @@ void LocalizedStringsManager::loadGlobalStringsSet()
          loadStringsSetFromStream(stream);
       }
    }
+
+   iterate([this](LocalizedString* pString) -> bool
+   {
+      mGlobalStringIDs.insert(pString->getName().getID());
+      return true;
+   });
 }
 
 void LocalizedStringsManager::loadStringsSet(const char* Name)
@@ -280,4 +286,10 @@ const char* LocalizedStringsManager::getVariable(const ObjectName& VariableName)
 {
    GESTLMap(uint32_t, GESTLString)::const_iterator it = mVariables.find(VariableName.getID());
    return it != mVariables.end() ? it->second.c_str() : nullptr;
+}
+
+bool LocalizedStringsManager::isGlobal(const Core::ObjectName& pStringID) const
+{
+   GESTLSet(uint32_t)::const_iterator it = mGlobalStringIDs.find(pStringID.getID());
+   return it != mGlobalStringIDs.end();
 }

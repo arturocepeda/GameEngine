@@ -37,6 +37,7 @@ namespace GE { namespace Content
    {
    private:
       GESTLMap(uint32_t, GESTLString) mVariables;
+      GESTLSet(uint32_t) mGlobalStringIDs;
 
       void getStringSetNames(Core::FileNamesList* pOutFileNames);
 
@@ -59,5 +60,7 @@ namespace GE { namespace Content
 
       void setVariable(const Core::ObjectName& VariableName, const char* VariableValue);
       const char* getVariable(const Core::ObjectName& VariableName);
+
+      bool isGlobal(const Core::ObjectName& pStringID) const;
    };
 }}
