@@ -40,6 +40,14 @@ namespace GE { namespace Content
 
       void getStringSetNames(Core::FileNamesList* pOutFileNames);
 
+      void loadStringsSetFromXml(const pugi::xml_node& pXmlRootNode);
+      void unloadStringsSetFromXml(const pugi::xml_node& pXmlRootNode);
+
+      void loadStringsSetFromStream(std::istream& pStream);
+      void unloadStringsSetFromStream(std::istream& pStream);
+
+      void loadGlobalStringsSet();
+
       void loadStringsSet(const char* Name);
       void unloadStringsSet(const char* Name);
 

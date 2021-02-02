@@ -46,26 +46,28 @@ const char* LocalizedString::getString() const
 //
 //  LocalizedStringsManager
 //
-const ObjectName LocalizedStringName("LocalizedString");
-
+static const ObjectName LocalizedStringName("LocalizedString");
+static const char* const kGlobalStringsSetFileName = "global";
 static const char* kLanguageExtensions[] =
 {
-   "en", // English
-   "es", // Spanish
-   "de", // German
-   "fr", // French
-   "it", // Italian
-   "pt", // Portuguese
-   "ru", // Russian
+   "en",    // English
+   "es",    // Spanish
+   "de",    // German
+   "fr",    // French
+   "it",    // Italian
+   "pt",    // Portuguese
+   "ru",    // Russian
    "zh-CN", // ChineseSimplified
    "zh-TW", // ChineseTraditional
-   "ja", // Japanese
-   "ko", // Korean
+   "ja",    // Japanese
+   "ko",    // Korean
 };
 
 LocalizedStringsManager::LocalizedStringsManager()
 {
    ResourcesManager::getInstance()->registerObjectManager<LocalizedString>(LocalizedStringName, this);
+
+   loadGlobalStringsSet();
    loadStrings();
 }
 
@@ -85,101 +87,156 @@ void LocalizedStringsManager::getStringSetNames(FileNamesList* pOutFileNames)
    Device::getContentFileNames("Strings", extension, pOutFileNames);
 }
 
-void LocalizedStringsManager::loadStringsSet(const char* Name)
+void LocalizedStringsManager::loadStringsSetFromXml(const pugi::xml_node& pXmlRootNode)
 {
-   char extension[32];
-   ContentData cStringsSetData;
+   for(const pugi::xml_node& xmlString : pXmlRootNode.children("String"))
+   {
+      const char* sStringID = xmlString.attribute("id").value();
+      const char* sText = xmlString.attribute("text").value();
+
+      ObjectName cStringID = ObjectName(sStringID);
+      GEAssert(!get(cStringID));
+
+      LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
+      GEInvokeCtor(LocalizedString, cLocaString)(cStringID, sText);
+
+      add(cLocaString);
+   }
+}
+
+void LocalizedStringsManager::unloadStringsSetFromXml(const pugi::xml_node& pXmlRootNode)
+{
+   for(const pugi::xml_node& xmlString : pXmlRootNode.children("String"))
+   {
+      const char* sStringID = xmlString.attribute("id").value();
+
+      ObjectName cStringID = ObjectName(sStringID);
+      remove(cStringID);
+   }
+}
+
+void LocalizedStringsManager::loadStringsSetFromStream(std::istream& pStream)
+{
+   const uint32_t stringsCount = (uint32_t)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+   GESTLString stringBuffer;
+
+   for(uint32_t i = 0u; i < stringsCount; i++)
+   {
+      const ObjectName stringID = Value::fromStream(ValueType::ObjectName, pStream).getAsObjectName();
+      GEAssert(!get(stringID));
+
+      const size_t stringLength = (size_t)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      stringBuffer.resize(stringLength);
+      pStream.read(const_cast<char*>(stringBuffer.c_str()), stringLength);
+
+      LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
+      GEInvokeCtor(LocalizedString, cLocaString)(stringID, stringBuffer.c_str());
+
+      add(cLocaString);
+   }
+}
+
+void LocalizedStringsManager::unloadStringsSetFromStream(std::istream& pStream)
+{
+   const uint32_t stringsCount = (uint32_t)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+
+   for(uint32_t i = 0u; i < stringsCount; i++)
+   {
+      const ObjectName stringID = Value::fromStream(ValueType::ObjectName, pStream).getAsObjectName();
+      GEAssert(get(stringID));
+      remove(stringID);
+
+      const size_t stringLength = (size_t)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      pStream.ignore(stringLength);
+   }
+}
+
+void LocalizedStringsManager::loadGlobalStringsSet()
+{
+   ContentData stringsSetData;
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      sprintf(extension, "%s.xml", kLanguageExtensions[(uint)Device::Language]);
-      Device::readContentFile(ContentType::GenericTextData, "Strings", Name, extension, &cStringsSetData);
-
-      pugi::xml_document xml;
-      xml.load_buffer(cStringsSetData.getData(), cStringsSetData.getDataSize());
-      const pugi::xml_node& xmlStrings = xml.child("Strings");
-
-      for(const pugi::xml_node& xmlString : xmlStrings.children("String"))
+      if(Device::contentFileExists("Strings", kGlobalStringsSetFileName, "xml"))
       {
-         const char* sStringID = xmlString.attribute("id").value();
-         const char* sText = xmlString.attribute("text").value();
+         Device::readContentFile(
+            ContentType::GenericTextData, "Strings", kGlobalStringsSetFileName, "xml", &stringsSetData);
 
-         ObjectName cStringID = ObjectName(sStringID);
-         GEAssert(!get(cStringID));
+         pugi::xml_document xml;
+         xml.load_buffer(stringsSetData.getData(), stringsSetData.getDataSize());
+         const pugi::xml_node& xmlStrings = xml.child("Strings");
 
-         LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
-         GEInvokeCtor(LocalizedString, cLocaString)(cStringID, sText);
-
-         add(cLocaString);
+         loadStringsSetFromXml(xmlStrings);
       }
    }
    else
    {
-      sprintf(extension, "%s.ge", kLanguageExtensions[(uint)Device::Language]);
-      Device::readContentFile(ContentType::GenericBinaryData, "Strings", Name, extension, &cStringsSetData);
-      ContentDataMemoryBuffer sMemoryBuffer(cStringsSetData);
-      std::istream sStream(&sMemoryBuffer);
-
-      const uint32_t stringsCount = (uint32_t)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
-      GESTLString stringBuffer;
-
-      for(uint32_t i = 0u; i < stringsCount; i++)
+      if(Device::contentFileExists("Strings", kGlobalStringsSetFileName, "ge"))
       {
-         const ObjectName stringID = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
-         GEAssert(!get(stringID));
+         Device::readContentFile(
+            ContentType::GenericBinaryData, "Strings", kGlobalStringsSetFileName, "ge", &stringsSetData);
 
-         const size_t stringLength = (size_t)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
-         stringBuffer.resize(stringLength);
-         sStream.read(const_cast<char*>(stringBuffer.c_str()), stringLength);
+         ContentDataMemoryBuffer memoryBuffer(stringsSetData);
+         std::istream stream(&memoryBuffer);
 
-         LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
-         GEInvokeCtor(LocalizedString, cLocaString)(stringID, stringBuffer.c_str());
-
-         add(cLocaString);
+         loadStringsSetFromStream(stream);
       }
+   }
+}
+
+void LocalizedStringsManager::loadStringsSet(const char* Name)
+{
+   char extension[32];
+   ContentData stringsSetData;
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      sprintf(extension, "%s.xml", kLanguageExtensions[(uint)Device::Language]);
+      Device::readContentFile(ContentType::GenericTextData, "Strings", Name, extension, &stringsSetData);
+
+      pugi::xml_document xml;
+      xml.load_buffer(stringsSetData.getData(), stringsSetData.getDataSize());
+      const pugi::xml_node& xmlStrings = xml.child("Strings");
+
+      loadStringsSetFromXml(xmlStrings);
+   }
+   else
+   {
+      sprintf(extension, "%s.ge", kLanguageExtensions[(uint)Device::Language]);
+      Device::readContentFile(ContentType::GenericBinaryData, "Strings", Name, extension, &stringsSetData);
+
+      ContentDataMemoryBuffer memoryBuffer(stringsSetData);
+      std::istream stream(&memoryBuffer);
+
+      loadStringsSetFromStream(stream);
    }
 }
 
 void LocalizedStringsManager::unloadStringsSet(const char* Name)
 {
    char extension[32];
-   ContentData cStringsSetData;
+   ContentData stringsSetData;
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
       sprintf(extension, "%s.xml", kLanguageExtensions[(uint32_t)Device::Language]);
-      Device::readContentFile(ContentType::GenericTextData, "Strings", Name, extension, &cStringsSetData);
+      Device::readContentFile(ContentType::GenericTextData, "Strings", Name, extension, &stringsSetData);
 
       pugi::xml_document xml;
-      xml.load_buffer(cStringsSetData.getData(), cStringsSetData.getDataSize());
+      xml.load_buffer(stringsSetData.getData(), stringsSetData.getDataSize());
       const pugi::xml_node& xmlStrings = xml.child("Strings");
 
-      for(const pugi::xml_node& xmlString : xmlStrings.children("String"))
-      {
-         const char* sStringID = xmlString.attribute("id").value();
-
-         ObjectName cStringID = ObjectName(sStringID);
-         remove(cStringID);
-      }
+      unloadStringsSetFromXml(xmlStrings);
    }
    else
    {
       sprintf(extension, "%s.ge", kLanguageExtensions[(uint32_t)Device::Language]);
-      Device::readContentFile(ContentType::GenericBinaryData, "Strings", Name, extension, &cStringsSetData);
-      ContentDataMemoryBuffer sMemoryBuffer(cStringsSetData);
-      std::istream sStream(&sMemoryBuffer);
+      Device::readContentFile(ContentType::GenericBinaryData, "Strings", Name, extension, &stringsSetData);
 
-      const uint32_t iStringsCount = (uint32_t)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
+      ContentDataMemoryBuffer memoryBuffer(stringsSetData);
+      std::istream stream(&memoryBuffer);
 
-      for(uint32_t i = 0u; i < iStringsCount; i++)
-      {
-         const ObjectName cStringID = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
-         GEAssert(get(cStringID));
-         remove(cStringID);
-
-         const size_t stringLength = (size_t)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
-         sStream.ignore(stringLength);
-      }
+      unloadStringsSetFromStream(stream);
    }
 }
 
@@ -197,7 +254,7 @@ void LocalizedStringsManager::loadStrings()
 
    for(size_t i = 0u; i < fileNames.size(); i++)
    {
-      LocalizedStringsManager::getInstance()->loadStringsSet(fileNames[i].c_str());
+      loadStringsSet(fileNames[i].c_str());
    }
 }
 
