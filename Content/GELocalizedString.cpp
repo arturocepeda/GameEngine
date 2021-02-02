@@ -94,7 +94,7 @@ void LocalizedStringsManager::loadStringsSetFromXml(const pugi::xml_node& pXmlRo
       const char* sStringID = xmlString.attribute("id").value();
       const char* sText = xmlString.attribute("text").value();
 
-      ObjectName cStringID = ObjectName(sStringID);
+      const ObjectName cStringID(sStringID);
       GEAssert(!get(cStringID));
 
       LocalizedString* cLocaString = Allocator::alloc<LocalizedString>();
@@ -110,7 +110,8 @@ void LocalizedStringsManager::unloadStringsSetFromXml(const pugi::xml_node& pXml
    {
       const char* sStringID = xmlString.attribute("id").value();
 
-      ObjectName cStringID = ObjectName(sStringID);
+      const ObjectName cStringID(sStringID);
+      GEAssert(get(cStringID));
       remove(cStringID);
    }
 }
