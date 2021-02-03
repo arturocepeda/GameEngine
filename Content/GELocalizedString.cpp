@@ -66,8 +66,6 @@ static const char* kLanguageExtensions[] =
 LocalizedStringsManager::LocalizedStringsManager()
 {
    ResourcesManager::getInstance()->registerObjectManager<LocalizedString>(LocalizedStringName, this);
-
-   loadGlobalStringsSet();
    loadStrings();
 }
 
@@ -191,6 +189,35 @@ void LocalizedStringsManager::loadGlobalStringsSet()
    });
 }
 
+void LocalizedStringsManager::unloadGlobalStringsSet()
+{
+   ContentData stringsSetData;
+
+   if(Application::ContentType == ApplicationContentType::Xml)
+   {
+      Device::readContentFile(
+         ContentType::GenericTextData, "Strings", kGlobalStringsSetFileName, "xml", &stringsSetData);
+
+      pugi::xml_document xml;
+      xml.load_buffer(stringsSetData.getData(), stringsSetData.getDataSize());
+      const pugi::xml_node& xmlStrings = xml.child("Strings");
+
+      unloadStringsSetFromXml(xmlStrings);
+   }
+   else
+   {
+      Device::readContentFile(
+         ContentType::GenericBinaryData, "Strings", kGlobalStringsSetFileName, "ge", &stringsSetData);
+
+      ContentDataMemoryBuffer memoryBuffer(stringsSetData);
+      std::istream stream(&memoryBuffer);
+
+      unloadStringsSetFromStream(stream);
+   }
+
+   mGlobalStringIDs.clear();
+}
+
 void LocalizedStringsManager::loadStringsSet(const char* Name)
 {
    char extension[32];
@@ -249,6 +276,8 @@ void LocalizedStringsManager::unloadStringsSet(const char* Name)
 
 void LocalizedStringsManager::loadStrings()
 {
+   loadGlobalStringsSet();
+
    FileNamesList fileNames;
    getStringSetNames(&fileNames);
 
@@ -274,6 +303,8 @@ void LocalizedStringsManager::unloadStrings()
    {
       LocalizedStringsManager::getInstance()->unloadStringsSet(fileNames[i].c_str());
    }
+
+   unloadGlobalStringsSet();
 }
 
 void LocalizedStringsManager::setVariable(const ObjectName& VariableName, const char* VariableValue)

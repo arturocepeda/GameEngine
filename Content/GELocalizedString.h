@@ -48,6 +48,7 @@ namespace GE { namespace Content
       void unloadStringsSetFromStream(std::istream& pStream);
 
       void loadGlobalStringsSet();
+      void unloadGlobalStringsSet();
 
       void loadStringsSet(const char* Name);
       void unloadStringsSet(const char* Name);
