@@ -66,8 +66,8 @@ namespace GE { namespace Tools
          char sFindString[MAX_PATH];
          sprintf(sFindString, "%s\\%s\\*.%s.xml", ContentXmlDirName, T::SubDir, T::Extension);
 
-         WIN32_FIND_DATA sFileData;
-         HANDLE hFile = FindFirstFile(sFindString, &sFileData);
+         WIN32_FIND_DATAA sFileData;
+         HANDLE hFile = FindFirstFileA(sFindString, &sFileData);
 
          if(hFile == INVALID_HANDLE_VALUE)
             return;
@@ -109,21 +109,21 @@ namespace GE { namespace Tools
             getBinFileName(sXmlFileName, sBinFileName);
 
             char sOutputPath[MAX_PATH];
-            GetCurrentDirectory(MAX_PATH, sOutputPath);
+            GetCurrentDirectoryA(MAX_PATH, sOutputPath);
             sprintf(sOutputPath, "%s\\%s", sOutputPath, ContentBinDirName);
 #if GE_HASH_OUTPUT_PATHS
             size_t outputPathOffset = strlen(sOutputPath) + 1u;
 #endif
-            CreateDirectory(sOutputPath, NULL);
+            CreateDirectoryA(sOutputPath, NULL);
             sprintf(sOutputPath, "%s\\%s", sOutputPath, T::SubDir);
 #if GE_HASH_OUTPUT_PATHS
-            toHashPath(sOutputPath + outputPathOffset);
+            Core::toHashPath(sOutputPath + outputPathOffset);
             outputPathOffset = strlen(sOutputPath) + 1u;
 #endif
-            CreateDirectory(sOutputPath, NULL);
+            CreateDirectoryA(sOutputPath, NULL);
             sprintf(sOutputPath, "%s\\%s", sOutputPath, sBinFileName);
 #if GE_HASH_OUTPUT_PATHS
-            toHashPath(sOutputPath + outputPathOffset);
+            Core::toHashPath(sOutputPath + outputPathOffset);
 #endif
 
             std::ofstream sOutputFile(sOutputPath, std::ios::out | std::ios::binary);
@@ -144,7 +144,7 @@ namespace GE { namespace Tools
 
             sOutputFile.close();
          }
-         while(FindNextFile(hFile, &sFileData));
+         while(FindNextFileA(hFile, &sFileData));
 
          FindClose(hFile);
       }
