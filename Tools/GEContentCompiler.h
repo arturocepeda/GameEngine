@@ -23,7 +23,10 @@
 #include <windows.h>
 #include <Shlobj.h>
 
+#include "Content/GEContentData.h"
 #include "Core/GEApplication.h"
+
+#include "Externals/pugixml/pugixml.hpp"
 
 #include <functional>
 #include <iostream>
