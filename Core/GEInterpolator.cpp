@@ -167,7 +167,7 @@ CurvePropertyInterpolator::CurvePropertyInterpolator(Curve* cCurve, Serializable
    }
    else
    {
-      Interpolator<float>::attachSetter([cCurve, cProperty](const float& t)
+      Interpolator<float>::attachSetter([](const float& t)
       {
       });
    }

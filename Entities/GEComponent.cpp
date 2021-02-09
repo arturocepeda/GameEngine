@@ -19,9 +19,11 @@ using namespace GE::Core;
 //
 //  Component
 //
+static const ObjectName kClassName("Component");
+
 Component::Component(Entity* Owner)
-   : cOwner(Owner)
-   , Serializable("Component")
+   : Serializable(kClassName)
+   , cOwner(Owner)
 {
    GEAssert(Owner);
 }

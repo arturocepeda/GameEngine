@@ -13,6 +13,7 @@
 #include "Core/GELog.h"
 
 #include <stdarg.h>
+#include <stdio.h>
 
 using namespace GE;
 using namespace GE::Core;

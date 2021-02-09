@@ -15,9 +15,9 @@
 using namespace GE::Core;
 
 Timer::Timer()
-   : bRunning(true)
-   , dStartTime(0.0)
+   : dStartTime(0.0)
    , dEndTime(0.0)
+   , bRunning(true)
 {
 #ifdef WIN32
    QueryPerformanceFrequency(&iFrequency);
@@ -42,7 +42,7 @@ void Timer::start()
 #ifdef WIN32
    QueryPerformanceCounter(&iStartCount);
 #else
-   gettimeofday(&iStartCount, NULL);
+   gettimeofday(&iStartCount, nullptr);
 #endif
 }
 
@@ -53,7 +53,7 @@ void Timer::stop()
 #ifdef WIN32
    QueryPerformanceCounter(&iEndCount);
 #else
-   gettimeofday(&iEndCount, NULL);
+   gettimeofday(&iEndCount, nullptr);
 #endif
 }
 
@@ -61,13 +61,17 @@ double Timer::getTime()
 {
 #ifdef WIN32
    if(bRunning)
+   {
       QueryPerformanceCounter(&iEndCount);
+   }
 
    dStartTime = iStartCount.QuadPart * (1000000.0 / iFrequency.QuadPart);
    dEndTime = iEndCount.QuadPart * (1000000.0 / iFrequency.QuadPart);
 #else
    if(bRunning)
-      gettimeofday(&iEndCount, NULL);
+   {
+      gettimeofday(&iEndCount, nullptr);
+   }
 
    dStartTime = (iStartCount.tv_sec * 1000000.0) + iStartCount.tv_usec;
    dEndTime = (iEndCount.tv_sec * 1000000.0) + iEndCount.tv_usec;

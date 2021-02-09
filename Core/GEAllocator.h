@@ -16,7 +16,7 @@
 #include "Core/GEThreads.h"
 
 #include <cstdlib>
-#include <climits>
+#include <cstdint>
 
 #if defined (GE_DEVELOPMENT)
 # include "Core/GELog.h"
