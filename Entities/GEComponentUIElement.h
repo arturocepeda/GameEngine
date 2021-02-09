@@ -20,6 +20,8 @@ namespace GE { namespace Entities
    {
    protected:
       float fAlpha;
+      bool mInputEnabled;
+      uint8_t mInputTabOrder;
 
       ComponentUIElement(Entity* Owner);
 
@@ -34,6 +36,12 @@ namespace GE { namespace Entities
       float getAlphaInHierarchy() const;
 
       void setAlpha(float Alpha);
+
+      GEDefaultGetter(bool, InputEnabled, m);
+      GEDefaultSetter(bool, InputEnabled, m);
+
+      GEDefaultGetter(uint8_t, InputTabOrder, m);
+      GEDefaultSetter(uint8_t, InputTabOrder, m);
    };
 
 

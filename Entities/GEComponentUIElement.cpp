@@ -27,6 +27,8 @@ const ObjectName ComponentUIElement::ClassName = ObjectName("UIElement");
 ComponentUIElement::ComponentUIElement(Entity* Owner)
    : Component(Owner)
    , fAlpha(1.0f)
+   , mInputEnabled(false)
+   , mInputTabOrder(0u)
 {
    mClassNames.push_back(ClassName);
 
@@ -34,6 +36,8 @@ ComponentUIElement::ComponentUIElement(Entity* Owner)
 
    GERegisterProperty(Float, Alpha);
    GERegisterPropertyReadonly(Float, AlphaInHierarchy);
+   GERegisterProperty(Bool, InputEnabled);
+   GERegisterProperty(Byte, InputTabOrder);
 }
 
 ComponentUIElement::~ComponentUIElement()
