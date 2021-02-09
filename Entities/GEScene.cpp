@@ -854,25 +854,6 @@ void Scene::queueUpdateJobs()
 
    GEMutexUnlock(mSceneMutex);
 
-   // cameras
-   GESTLVector(Component*)& vCameras = vComponents[(uint)ComponentType::Camera];
-
-   for(uint i = 0; i < vCameras.size(); i++)
-   {
-      ComponentCamera* cCamera = static_cast<ComponentCamera*>(vCameras[i]);
-
-      if(cCamera->getOwner()->isActiveInHierarchy())
-      {
-#if defined (GE_SCENE_JOBIFIED_UPDATE)
-         JobDesc sJobDesc("UpdateCamera");
-         sJobDesc.Task = [cCamera] { cCamera->update(); };
-         TaskManager::getInstance()->queueJob(sJobDesc, JobType::Frame);
-#else
-         cCamera->update();
-#endif
-      }
-   }
-
    // skeletons
    GESTLVector(Component*)& vSkeletons = vComponents[(uint)ComponentType::Skeleton];
 
@@ -1020,6 +1001,19 @@ void Scene::update()
       {
          ComponentSprite* cSprite = static_cast<ComponentSprite*>(cRenderable);
          cSprite->update();
+      }
+   }
+
+   // cameras
+   GESTLVector(Component*)& vCameras = vComponents[(uint)ComponentType::Camera];
+
+   for(uint i = 0; i < vCameras.size(); i++)
+   {
+      ComponentCamera* cCamera = static_cast<ComponentCamera*>(vCameras[i]);
+
+      if(cCamera->getOwner()->isActiveInHierarchy())
+      {
+         cCamera->update();
       }
    }
 }
