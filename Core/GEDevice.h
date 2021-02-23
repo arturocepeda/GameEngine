@@ -35,6 +35,21 @@ namespace GE { namespace Core
 
       Count
    };
+   static const char* kSystemLanguageCodes[] = 
+   {
+      "en",    // English
+      "es",    // Spanish
+      "de",    // German
+      "fr",    // French
+      "it",    // Italian
+      "pt",    // PortugueseW
+
+      "ru",    // Russian
+      "zh-CN", // ChineseSimplified
+      "zh-TW", // ChineseTraditional
+      "ja",    // Japanese
+      "ko",    // Korean
+   };
 
 
    enum class DeviceOrientation

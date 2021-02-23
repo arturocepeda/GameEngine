@@ -48,20 +48,6 @@ const char* LocalizedString::getString() const
 //
 static const ObjectName LocalizedStringName("LocalizedString");
 static const char* const kGlobalStringsSetFileName = "global";
-static const char* kLanguageExtensions[] =
-{
-   "en",    // English
-   "es",    // Spanish
-   "de",    // German
-   "fr",    // French
-   "it",    // Italian
-   "pt",    // Portuguese
-   "ru",    // Russian
-   "zh-CN", // ChineseSimplified
-   "zh-TW", // ChineseTraditional
-   "ja",    // Japanese
-   "ko",    // Korean
-};
 
 LocalizedStringsManager::LocalizedStringsManager()
 {
@@ -75,11 +61,11 @@ void LocalizedStringsManager::getStringSetNames(FileNamesList* pOutFileNames)
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      sprintf(extension, "%s.xml", kLanguageExtensions[(uint)Device::Language]);
+      sprintf(extension, "%s.xml", kSystemLanguageCodes[(uint)Device::Language]);
    }
    else
    {
-      sprintf(extension, "%s.ge", kLanguageExtensions[(uint)Device::Language]);
+      sprintf(extension, "%s.ge", kSystemLanguageCodes[(uint)Device::Language]);
    }   
 
    Device::getContentFileNames("Strings", extension, pOutFileNames);
@@ -225,7 +211,7 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      sprintf(extension, "%s.xml", kLanguageExtensions[(uint)Device::Language]);
+      sprintf(extension, "%s.xml", kSystemLanguageCodes[(uint)Device::Language]);
       Device::readContentFile(ContentType::GenericTextData, "Strings", Name, extension, &stringsSetData);
 
       pugi::xml_document xml;
@@ -236,7 +222,7 @@ void LocalizedStringsManager::loadStringsSet(const char* Name)
    }
    else
    {
-      sprintf(extension, "%s.ge", kLanguageExtensions[(uint)Device::Language]);
+      sprintf(extension, "%s.ge", kSystemLanguageCodes[(uint)Device::Language]);
       Device::readContentFile(ContentType::GenericBinaryData, "Strings", Name, extension, &stringsSetData);
 
       ContentDataMemoryBuffer memoryBuffer(stringsSetData);
@@ -253,7 +239,7 @@ void LocalizedStringsManager::unloadStringsSet(const char* Name)
 
    if(Application::ContentType == ApplicationContentType::Xml)
    {
-      sprintf(extension, "%s.xml", kLanguageExtensions[(uint32_t)Device::Language]);
+      sprintf(extension, "%s.xml", kSystemLanguageCodes[(uint32_t)Device::Language]);
       Device::readContentFile(ContentType::GenericTextData, "Strings", Name, extension, &stringsSetData);
 
       pugi::xml_document xml;
@@ -264,7 +250,7 @@ void LocalizedStringsManager::unloadStringsSet(const char* Name)
    }
    else
    {
-      sprintf(extension, "%s.ge", kLanguageExtensions[(uint32_t)Device::Language]);
+      sprintf(extension, "%s.ge", kSystemLanguageCodes[(uint32_t)Device::Language]);
       Device::readContentFile(ContentType::GenericBinaryData, "Strings", Name, extension, &stringsSetData);
 
       ContentDataMemoryBuffer memoryBuffer(stringsSetData);
