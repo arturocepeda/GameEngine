@@ -1215,6 +1215,10 @@ void Environment::registerTypes()
       "ComponentUIElement"
       , "getAlpha", &ComponentUIElement::getAlpha
       , "setAlpha", &ComponentUIElement::setAlpha
+      , "getInputEnabled", &ComponentUIElement::getInputEnabled
+      , "setInputEnabled", &ComponentUIElement::setInputEnabled
+      , "getInputTabOrder", &ComponentUIElement::getInputTabOrder
+      , "setInputTabOrder", &ComponentUIElement::setInputTabOrder
       , sol::base_classes, sol::bases<Component, Serializable>()
    );
    mLua.new_simple_usertype<ComponentUI2DElement>
