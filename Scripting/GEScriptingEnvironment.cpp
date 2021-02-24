@@ -702,7 +702,9 @@ void Environment::registerTypes()
       , "normalize", &Vector2::normalize
       , "getSquaredLength", &Vector2::getSquaredLength
       , "getLength", &Vector2::getLength
+      , "getSquaredDistanceTo", &Vector2::getSquaredDistanceTo
       , "getDistanceTo", &Vector2::getDistanceTo
+      , "dotProduct", &Vector2::dotProduct
       , "lerp", &Vector2::lerp
       , sol::meta_method::addition, &Vector2::operator+
       , sol::meta_method::subtraction, (Vector2 (Vector2::*)(const Vector2&) const)&Vector2::operator-
@@ -719,6 +721,7 @@ void Environment::registerTypes()
       , "normalize", &Vector3::normalize
       , "getSquaredLength", &Vector3::getSquaredLength
       , "getLength", &Vector3::getLength
+      , "getSquaredDistanceTo", &Vector3::getSquaredDistanceTo
       , "getDistanceTo", &Vector3::getDistanceTo
       , "dotProduct", &Vector3::dotProduct
       , "crossProduct", &Vector3::crossProduct
@@ -1067,6 +1070,7 @@ void Environment::registerTypes()
       , "renameEntity", &Scene::renameEntity
       , "setEntityParent", &Scene::setEntityParent
       , "sendComponentToBack", &Scene::sendComponentToBack
+      , "getComponents", &Scene::getComponents
       , "setupEntityFromPrefab", &Scene::setupEntityFromPrefab
       , sol::base_classes, sol::bases<Serializable>()
    );

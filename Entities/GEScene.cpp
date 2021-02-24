@@ -534,6 +534,7 @@ Entity* Scene::getEntityByIndex(uint Index) const
 
 void Scene::registerComponent(ComponentType pType, Component* pComponent)
 {
+   GEAssert(pType < ComponentType::Count);
    GEAssert(pComponent);
    GEMutexLock(mSceneMutex);
    vComponents[(uint32_t)pType].push_back(pComponent);
@@ -542,6 +543,7 @@ void Scene::registerComponent(ComponentType pType, Component* pComponent)
 
 void Scene::removeComponent(ComponentType pType, Component* pComponent)
 {
+   GEAssert(pType < ComponentType::Count);
    GEAssert(pComponent);
    GEMutexLock(mSceneMutex);
 
@@ -561,6 +563,7 @@ void Scene::removeComponent(ComponentType pType, Component* pComponent)
 
 void Scene::bringComponentToFront(ComponentType pType, Component* pComponent)
 {
+   GEAssert(pType < ComponentType::Count);
    GEAssert(pComponent);
    GEMutexLock(mSceneMutex);
 
@@ -581,6 +584,7 @@ void Scene::bringComponentToFront(ComponentType pType, Component* pComponent)
 
 void Scene::sendComponentToBack(ComponentType pType, Component* pComponent)
 {
+   GEAssert(pType < ComponentType::Count);
    GEAssert(pComponent);
    GEMutexLock(mSceneMutex);
 
@@ -597,6 +601,12 @@ void Scene::sendComponentToBack(ComponentType pType, Component* pComponent)
    }
 
    GEMutexUnlock(mSceneMutex);
+}
+
+const GESTLVector(Component*)& Scene::getComponents(ComponentType pType)
+{
+   GEAssert(pType < ComponentType::Count);
+   return vComponents[(uint)pType];
 }
 
 Entity* Scene::addPrefab(const char* PrefabName, const ObjectName& EntityName, Entity* cParent)

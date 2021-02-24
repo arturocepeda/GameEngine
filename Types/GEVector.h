@@ -55,12 +55,14 @@ namespace GE
          return sqrt(X * X + Y * Y);
       }
 
-      void normalize()
+      float normalize()
       {
          float fLength = sqrt(X * X + Y * Y);
 
          X /= fLength;
          Y /= fLength;
+
+         return fLength;
       }
 
       float getSquaredDistanceTo(const Vector2& other) const
@@ -77,6 +79,11 @@ namespace GE
          float fDeltaY = other.Y - Y;
 
          return sqrt(fDeltaX * fDeltaX + fDeltaY * fDeltaY);
+      }
+
+      float dotProduct(const Vector2& other) const
+      {
+         return X * other.X + Y * other.Y;
       }
 
       bool equals(const Vector2& other) const

@@ -123,6 +123,8 @@ namespace GE { namespace Entities
          return vComponents[(uint)T::getType()];
       }
 
+      const GESTLVector(Component*)& getComponents(ComponentType pType);
+
       Entity* addPrefab(const char* PrefabName, const Core::ObjectName& EntityName, Entity* cParent = 0);
       void setupEntityFromPrefab(Entity* pEntity, const char* pPrefabName, bool pIncludeRootTransform = true);
 
