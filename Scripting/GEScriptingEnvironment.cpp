@@ -1053,6 +1053,36 @@ void Environment::registerTypes()
       , "inputTouchMove", &InputSystem::inputTouchMove
       , "inputTouchEnd", &InputSystem::inputTouchEnd
    );
+   mLua.new_enum
+   (
+      "GamepadButton"
+      , "A", Gamepad::Button::A
+      , "B", Gamepad::Button::B
+      , "X", Gamepad::Button::X
+      , "Y", Gamepad::Button::Y
+      , "DPadUp", Gamepad::Button::DPadUp
+      , "DPadDown", Gamepad::Button::DPadDown
+      , "DPadLeft", Gamepad::Button::DPadLeft
+      , "DPadRight", Gamepad::Button::DPadRight
+      , "ShoulderLeft", Gamepad::Button::ShoulderLeft
+      , "ShoulderRight", Gamepad::Button::ShoulderRight
+      , "StickLeft", Gamepad::Button::StickLeft
+      , "StickRight", Gamepad::Button::StickRight
+      , "Start", Gamepad::Button::Start
+      , "Back", Gamepad::Button::Back
+   );
+   mLua.new_enum
+   (
+      "GamepadStick"
+      , "Left", Gamepad::Stick::Left
+      , "Right", Gamepad::Stick::Right
+   );
+   mLua.new_enum
+   (
+      "GamepadTrigger"
+      , "Left", Gamepad::Trigger::Left
+      , "Right", Gamepad::Trigger::Right
+   );
 
    //
    //  GE::Entities
