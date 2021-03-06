@@ -15,8 +15,20 @@
 #include "Types/GETypes.h"
 #include "Core/GESingleton.h"
 
+#include <atomic>
+
 namespace GE { namespace Input
 {
+   enum class InputDevice : uint8_t
+   {
+      None,
+      Keyboard,
+      Mouse,
+      Gamepad,
+      Touchpad
+   };
+
+
    struct Gamepad
    {
       enum class Button
@@ -145,6 +157,7 @@ namespace GE { namespace Input
       GESTLVector(InputEvent) mEvents;
       GESTLVector(Gamepad) mGamepads;
 
+      std::atomic<InputDevice> mCurrentInputDevice;
       bool mInputEnabled;
       Vector2 mMousePosition;
       Vector3 mAccelerometerStatus;
@@ -155,6 +168,9 @@ namespace GE { namespace Input
 
       void addListener(InputListener* pListener);
       void removeListener(InputListener* pListener);
+
+      InputDevice getCurrentInputDevice();
+      void setCurrentInputDevice(InputDevice pDevice);
 
       void onGamepadConnected(int pID);
       void onGamepadDisconnected(int pID);

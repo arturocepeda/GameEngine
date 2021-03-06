@@ -351,6 +351,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
          if(!keyRepeat)
          {
+            InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Keyboard);
             InputSystem::getInstance()->inputKeyPress((char)wParam);
          }
       }
@@ -362,12 +363,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
       return 0;
 
    case WM_CHAR:
+      InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Keyboard);
       InputSystem::getInstance()->inputKeyText((uint16_t)wParam);
       return 0;
 
    case WM_LBUTTONDOWN:
       bMouseLeftButton = true;
       vMouseLastPosition = GetMouseScreenPosition();
+      InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Mouse);
       InputSystem::getInstance()->inputMouseLeftButton();
       InputSystem::getInstance()->inputTouchBegin(0, vMouseLastPosition);
 
@@ -391,14 +394,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
       return 0;
 
    case WM_RBUTTONDOWN:
+      InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Mouse);
       InputSystem::getInstance()->inputMouseRightButton();
       return 0;
 
    case WM_MOUSEWHEEL:
+      InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Mouse);
       InputSystem::getInstance()->inputMouseWheel(GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA);
       return 0;
 
    case WM_MOUSEMOVE:
+      InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Mouse);
+
       if(!gSettings.getFullscreen())
       {
          RECT rWindow;

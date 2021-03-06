@@ -1032,10 +1032,19 @@ void Environment::registerTypes()
    //
    //  GE::Input
    //
+   mLua.new_enum
+   (
+      "InputDevice"
+      , "Keyboard", InputDevice::Keyboard
+      , "Mouse", InputDevice::Mouse
+      , "Gamepad", InputDevice::Gamepad
+      , "Touchpad", InputDevice::Touchpad
+   );
    mLua.new_simple_usertype<InputSystem>
    (
       "InputSystem"
       , "getInstance", &InputSystem::getInstance
+      , "getCurrentInputDevice", &InputSystem::getCurrentInputDevice
       , "setInputEnabled", &InputSystem::setInputEnabled
       , "getMousePosition", &InputSystem::getMousePosition
       , "inputKeyPress", &InputSystem::inputKeyPress

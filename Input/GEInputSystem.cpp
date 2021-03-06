@@ -125,6 +125,16 @@ void InputSystem::removeListener(InputListener* pListener)
    }
 }
 
+InputDevice InputSystem::getCurrentInputDevice()
+{
+   return mCurrentInputDevice;
+}
+
+void InputSystem::setCurrentInputDevice(InputDevice pDevice)
+{
+   mCurrentInputDevice = pDevice;
+}
+
 void InputSystem::processEvents()
 {
    GEMutexLock(mEventsMutex);

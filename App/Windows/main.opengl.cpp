@@ -315,6 +315,8 @@ void keyboard(GLFWwindow*, int pKey, int pScancode, int pAction, int pMods)
 {
    (void)pScancode; (void)pMods;
 
+   InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Keyboard);
+
    if(pAction == GLFW_PRESS)
    {
       InputSystem::getInstance()->inputKeyPress((char)pKey);
@@ -339,12 +341,15 @@ void keyboard(GLFWwindow*, int pKey, int pScancode, int pAction, int pMods)
 
 void keyboardText(GLFWwindow*, unsigned int pCodePoint)
 {
+   InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Keyboard);
    InputSystem::getInstance()->inputKeyText((uint16_t)pCodePoint);
 }
 
 void mouseButton(GLFWwindow*, int pButton, int pAction, int pMods)
 {
    (void)pMods;
+
+   InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Mouse);
 
    // left button
    if(pButton == GLFW_MOUSE_BUTTON_LEFT)
@@ -378,6 +383,8 @@ void mouseMove(GLFWwindow*, double pX, double pY)
    pMouse.x = (LONG)pX;
    pMouse.y = (LONG)pY;
 
+   InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Mouse);
+
    GE::Vector2 vMouseCurrentPosition = getMouseScreenPosition();
    InputSystem::getInstance()->inputMouse(vMouseCurrentPosition);
 
@@ -398,5 +405,6 @@ void mouseMove(GLFWwindow*, double pX, double pY)
 void mouseWheel(GLFWwindow*, double pXOffset, double pYOffset)
 {
    (void)pXOffset;
+   InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Mouse);
    InputSystem::getInstance()->inputMouseWheel((int)pYOffset);
 }

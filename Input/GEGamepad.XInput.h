@@ -71,6 +71,7 @@ static void checkGamepadState()
          {
             if(buttonPressed)
             {
+               InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Gamepad);
                InputSystem::getInstance()->inputGamepadButtonPress(id, (Gamepad::Button)i);
             }
             else
@@ -109,6 +110,7 @@ static void checkGamepadState()
 
          if(!sticks[i].equals(gamepad->mStateSticks[i]))
          {
+            InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Gamepad);
             InputSystem::getInstance()->inputGamepadStickChanged(id, (Gamepad::Stick)i, sticks[i]);
          }
       }
@@ -123,6 +125,7 @@ static void checkGamepadState()
       {
          if(!GEFloatEquals(triggers[i], gamepad->mStateTriggers[i]))
          {
+            InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Gamepad);
             InputSystem::getInstance()->inputGamepadTriggerChanged(id, (Gamepad::Trigger)i, triggers[i]);
          }
       }
