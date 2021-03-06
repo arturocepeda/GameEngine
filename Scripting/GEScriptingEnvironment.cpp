@@ -1121,6 +1121,7 @@ void Environment::registerTypes()
       , "getActive", &Entity::getActive
       , "setActive", &Entity::setActive
       , "getClock", &Entity::getClock
+      , "isActiveInHierarchy", &Entity::isActiveInHierarchy
       , "addComponent", (Component* (Entity::*)(const Core::ObjectName&))&Entity::addComponent
       , "addComponentTransform", &Entity::addComponent<ComponentTransform>
       , "addComponentSprite", &Entity::addComponent<ComponentSprite>
