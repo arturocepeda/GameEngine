@@ -1259,6 +1259,7 @@ void Environment::registerTypes()
       "ComponentUIElement"
       , "getAlpha", &ComponentUIElement::getAlpha
       , "setAlpha", &ComponentUIElement::setAlpha
+      , "getAlphaInHierarchy", &ComponentUIElement::getAlphaInHierarchy
       , "getInputEnabled", &ComponentUIElement::getInputEnabled
       , "setInputEnabled", &ComponentUIElement::setInputEnabled
       , "getInputTabOrder", &ComponentUIElement::getInputTabOrder
