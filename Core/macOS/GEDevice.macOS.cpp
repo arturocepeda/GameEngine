@@ -416,3 +416,10 @@ void Device::requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutio
    
    pOutResolutions->push_back(resolution);
 }
+
+void Device::openWebPage(const char* pURL)
+{
+   char buffer[kMaxPath];
+   sprintf(buffer, "open %s", pURL);
+   system(buffer);
+}

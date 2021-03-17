@@ -122,5 +122,7 @@ namespace GE { namespace Core
       static uint getUserFilesCount(const char* SubDir, const char* Extension);
       static bool getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name);
       static void getUserFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames);
+
+      static void openWebPage(const char* pURL);
    };
 }}

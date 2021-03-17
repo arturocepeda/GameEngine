@@ -518,3 +518,8 @@ void Device::requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutio
       }
    }
 }
+
+void Device::openWebPage(const char* pURL)
+{
+   ShellExecuteA(NULL, "open", pURL, NULL, NULL, SW_SHOWNORMAL);
+}
