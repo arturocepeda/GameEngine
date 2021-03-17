@@ -544,11 +544,6 @@ void RenderSystem::renderShadowMap()
    glViewport(0, 0, kShadowMapSize, kShadowMapSize);
 
    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-#if defined (GE_PLATFORM_ANDROID) || defined (GE_PLATFORM_IOS)
-   glClearDepthf(1.0f);
-#else
-   glClearDepth(1.0);
-#endif
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    calculateLightViewProjectionMatrix(cLight);
@@ -638,11 +633,6 @@ void RenderSystem::renderBegin()
 {
    glDepthMask(GL_TRUE);
    glClearColor(cBackgroundColor.Red, cBackgroundColor.Green, cBackgroundColor.Blue, 1.0f);
-#if defined (GE_PLATFORM_ANDROID) || defined (GE_PLATFORM_IOS)
-   glClearDepthf(1.0f);
-#else
-   glClearDepth(1.0);
-#endif
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    iDrawCalls = 0u;
 }
