@@ -1109,7 +1109,7 @@ void Environment::registerTypes()
       , "renameEntity", &Scene::renameEntity
       , "setEntityParent", &Scene::setEntityParent
       , "sendComponentToBack", &Scene::sendComponentToBack
-      , "getComponents", &Scene::getComponents
+      , "getComponents", (const GESTLVector(Component*)& (Scene::*)(ComponentType))&Scene::getComponents
       , "setupEntityFromPrefab", &Scene::setupEntityFromPrefab
       , sol::base_classes, sol::bases<Serializable>()
    );
