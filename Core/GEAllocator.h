@@ -17,6 +17,7 @@
 
 #include <cstdlib>
 #include <cstdint>
+#include <cstddef>
 
 #if defined (GE_DEVELOPMENT)
 # include "Core/GELog.h"
