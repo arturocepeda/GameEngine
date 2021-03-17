@@ -16,7 +16,9 @@
 // 
 //  Platform
 //
-#if defined (WIN32)
+#if defined (NN_SDK_BUILD_DEBUG) || defined (NN_SDK_BUILD_DEVELOP) || defined (NN_SDK_BUILD_RELEASE)
+# define GE_PLATFORM_SWITCH
+#elif defined (WIN32)
 # if defined (WINAPI_FAMILY) && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
 #  define GE_PLATFORM_WP8
 # else

@@ -279,7 +279,11 @@ static int io_popen (lua_State *L) {
 
 static int io_tmpfile (lua_State *L) {
   LStream *p = newfile(L);
+#if defined (NN_SDK_BUILD_DEBUG) || defined (NN_SDK_BUILD_DEVELOP) || defined (NN_SDK_BUILD_RELEASE)
+  p->f = NULL;
+#else
   p->f = tmpfile();
+#endif
   return (p->f == NULL) ? luaL_fileresult(L, 0, NULL) : 1;
 }
 
