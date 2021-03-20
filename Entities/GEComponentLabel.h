@@ -60,7 +60,6 @@ namespace GE { namespace Entities
       uint32_t mCharacterCountLimit;
 
       uint16_t getGlyphIndex(size_t pCharIndex) const;
-      bool canBreakLine(const Pen& pPen) const;
 
       virtual float getInternalFontSize() const;
       virtual float getDefaultVerticalOffset() const;
@@ -102,6 +101,7 @@ namespace GE { namespace Entities
 
       GESTLVector(float) mLineWidths;
       GESTLVector(uint) mLineFeedIndices;
+      GESTLVector(bool) mLineFeedSkipChar;
       GESTLVector(uint) mLineJustifySpaces;
 
       GESTLVector(float) mVertexData;

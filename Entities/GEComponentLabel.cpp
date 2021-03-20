@@ -134,32 +134,6 @@ static inline bool isCJKPunctuationCharacter(uint16_t pUnicode)
    return (pUnicode >= 0x3000 && pUnicode <= 0x303a) || pUnicode == 0xff0c || pUnicode == 0xff0e;
 }
 
-bool ComponentLabelBase::canBreakLine(const Pen& pPen) const
-{
-   if(mText[pPen.mCharIndex] == ' ' && mTextExtension[pPen.mCharIndex] == 0)
-   {
-      return true;
-   }
-
-   if(isCJKLanguage())
-   {
-      const uint16_t glyphIndex = getGlyphIndex((size_t)pPen.mCharIndex);
-
-      if(glyphIndex >= 0x0250 && !isCJKPunctuationCharacter(glyphIndex))
-      {
-         const size_t nextCharIndex = pPen.mCharIndex + 1u;
-
-         if(nextCharIndex < mText.length())
-         {
-            const uint16_t nextGlyphIndex = getGlyphIndex(nextCharIndex);
-            return !isCJKPunctuationCharacter(nextGlyphIndex);
-         }
-      }
-   }
-
-   return false;
-}
-
 float ComponentLabelBase::getInternalFontSize() const
 {
    return mFontSize;
@@ -540,7 +514,7 @@ void ComponentLabel::generateText()
    sPen.mFontSize = fontSize;
    sPen.mYOffset = defaultVerticalOffset;
    sPen.mFontStyle = mFontStyle;
-   sPen.mCharIndex = 0;
+   sPen.mCharIndex = 0u;
 
    const uint32_t iTextLength = (uint32_t)mText.length();
 
@@ -550,6 +524,7 @@ void ComponentLabel::generateText()
 
    mLineWidths.clear();
    mLineFeedIndices.clear();
+   mLineFeedSkipChar.clear();
    mLineJustifySpaces.clear();
 
    float fCurrentLineWidth = 0.0f;
@@ -557,6 +532,7 @@ void ComponentLabel::generateText()
    int iLastSpaceIndex = -1;
    float fLineWidthAtLastSpace = 0.0f;
    float fLastSpaceCharWidth = 0.0f;
+   bool bLastSpaceSkipChar = false;
 
    for(sPen.mCharIndex = 0; sPen.mCharIndex < iTextLength; sPen.mCharIndex++)
    {
@@ -581,6 +557,7 @@ void ComponentLabel::generateText()
       {
          mLineWidths.push_back(fCurrentLineWidth);
          mLineFeedIndices.push_back(sPen.mCharIndex);
+         mLineFeedSkipChar.push_back(true);
          mLineJustifySpaces.push_back(0);
 
          fCurrentLineWidth = 0.0f;
@@ -591,11 +568,26 @@ void ComponentLabel::generateText()
 
       const float fCharWidth = measureCharacter(sPen) + getKerning(sPen);
 
-      if(canBreakLine(sPen))
+      bool canBreakLine = false;
+      bool skipChar = false;
+
+      if(mText[sPen.mCharIndex] == ' ' && mTextExtension[sPen.mCharIndex] == 0)
+      {
+         canBreakLine = true;
+         skipChar = true;
+      }
+      else if(isCJKLanguage())
+      {
+         const uint16_t glyphIndex = getGlyphIndex(sPen.mCharIndex);
+         canBreakLine = glyphIndex >= 0x0250 && !isCJKPunctuationCharacter(glyphIndex);
+      }
+
+      if(canBreakLine)
       {
          iLastSpaceIndex = (int)sPen.mCharIndex;
          fLineWidthAtLastSpace = fCurrentLineWidth;
          fLastSpaceCharWidth = fCharWidth;
+         bLastSpaceSkipChar = skipChar;
       }
 
       fCurrentLineWidth += fCharWidth;
@@ -607,6 +599,7 @@ void ComponentLabel::generateText()
       {
          mLineWidths.push_back(fLineWidthAtLastSpace);
          mLineFeedIndices.push_back((uint32_t)iLastSpaceIndex);
+         mLineFeedSkipChar.push_back(bLastSpaceSkipChar);
 
          if(bJustifyText)
          {
@@ -642,13 +635,20 @@ void ComponentLabel::generateText()
             mLineJustifySpaces.push_back(iLineCharsCount - 1);
          }
 
-         fCurrentLineWidth -= fLineWidthAtLastSpace + fLastSpaceCharWidth;
+         fCurrentLineWidth -= fLineWidthAtLastSpace;
+
+         if(bLastSpaceSkipChar)
+         {
+            fCurrentLineWidth -= fLastSpaceCharWidth;
+         }
+
          iLastSpaceIndex = -1;
       }
    }
 
    mLineWidths.push_back(fCurrentLineWidth);
    mLineFeedIndices.push_back(iTextLength);
+   mLineFeedSkipChar.push_back(true);
    mLineJustifySpaces.push_back(0u);
 
    mFontResizeFactor = 1.0f;
@@ -766,6 +766,8 @@ void ComponentLabel::generateText()
 
       if(sPen.mCharIndex == mLineFeedIndices[iCurrentLineIndex])
       {
+         const bool skipChar = mLineFeedSkipChar[iCurrentLineIndex];
+
          iCurrentLineIndex++;
 
          fPosY -= fLineHeight;
@@ -799,10 +801,11 @@ void ComponentLabel::generateText()
             break;
          }
 
-         continue;
+         if(skipChar)
+         {
+            continue;
+         }
       }
-
-      float fAdvanceX = measureCharacter(sPen);
 
       if(mText[sPen.mCharIndex] != ' ' || mTextExtension[sPen.mCharIndex] != 0)
       {
@@ -871,6 +874,8 @@ void ComponentLabel::generateText()
       {
          break;
       }
+
+      float fAdvanceX = measureCharacter(sPen);
 
       if(bJustifyText && mLineWidth > GE_EPSILON && mLineJustifySpaces[iCurrentLineIndex] > 0u)
       {
