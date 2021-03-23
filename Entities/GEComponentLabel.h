@@ -93,6 +93,7 @@ namespace GE { namespace Entities
    {
    private:
       Rendering::Font* mFont;
+      Rendering::FontReplacement* mFontReplacement;
 
       float mHorizontalSpacing;
       float mVerticalSpacing;
@@ -121,7 +122,7 @@ namespace GE { namespace Entities
       ComponentLabel(Entity* pOwner);
       ~ComponentLabel();
 
-      Rendering::Font* getFont() const;
+      Rendering::Font* getFont();
       const Core::ObjectName& getFontName() const;
       const Core::ObjectName& getFontCharacterSet() const;
       float getHorizontalSpacing() const;

@@ -429,6 +429,7 @@ const ObjectName ComponentLabel::ClassName("Label");
 ComponentLabel::ComponentLabel(Entity* pOwner)
    : ComponentLabelBase(pOwner)
    , mFont(nullptr)
+   , mFontReplacement(nullptr)
    , mHorizontalSpacing(0.0f)
    , mVerticalSpacing(0.0f)
    , mLineWidth(0.0f)
@@ -460,38 +461,12 @@ ComponentLabel::~ComponentLabel()
 
 float ComponentLabel::getInternalFontSize() const
 {
-   float fontSize = mFontSize;
-   Font* font = getFont();
-
-   if(font)
-   {
-      const bool nonLatinFont = font->getName() != mFont->getName();
-
-      if(nonLatinFont)
-      {
-         fontSize *= mFont->getNonLatinSizeFactor();
-      }
-   }
-
-   return fontSize;
+   return mFontReplacement ? mFontSize * mFontReplacement->getSizeFactor() : mFontSize;
 }
 
 float ComponentLabel::getDefaultVerticalOffset() const
 {
-   float verticalOffset = 0.0f;
-   Font* font = getFont();
-
-   if(font)
-   {
-      const bool nonLatinFont = font->getName() != mFont->getName();
-
-      if(nonLatinFont)
-      {
-         verticalOffset = mFont->getNonLatinVerticalOffset();
-      }
-   }
-
-   return verticalOffset;
+   return mFontReplacement ? mFontReplacement->getVerticalOffset() : 0.0f;
 }
 
 void ComponentLabel::generateText()
@@ -938,21 +913,33 @@ float ComponentLabel::getKerning(const Pen& pPen)
    return kerning;
 }
 
-Font* ComponentLabel::getFont() const
+Font* ComponentLabel::getFont()
 {
    Font* font = mFont;
 
+   mFontReplacement = nullptr;
+
    if(font)
    {
-      if(Device::Language >= SystemLanguage::Russian &&
-         mStringID.isValid() &&
-         !LocalizedStringsManager::getInstance()->isGlobal(mStringID))
+      for(uint32_t i = 0u; i < font->getFontReplacementCount(); i++)
       {
-         Font* nonLatinFont = RenderSystem::getInstance()->getFont(font->getNonLatinFontName());
+         FontReplacement* fontReplacementEntry = font->getFontReplacement(i);
 
-         if(nonLatinFont)
+         if(fontReplacementEntry->getLanguage() == Device::Language)
          {
-            font = nonLatinFont;
+            if(mStringID.isValid() && !LocalizedStringsManager::getInstance()->isGlobal(mStringID))
+            {
+               const ObjectName& replacementFontName = fontReplacementEntry->getFontName();
+               Font* replacementFont = RenderSystem::getInstance()->getFont(replacementFontName);
+
+               if(replacementFont)
+               {
+                  font = replacementFont;
+                  mFontReplacement = fontReplacementEntry;
+               }
+            }
+
+            break;
          }
       }
    }

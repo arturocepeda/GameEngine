@@ -15,6 +15,7 @@
 #include "Rendering/GETexture.h"
 #include "Content/GEImageData.h"
 #include "Content/GEResource.h"
+#include "Core/GEDevice.h"
 
 #include <map>
 
@@ -61,6 +62,30 @@ namespace GE { namespace Rendering
    };
 
 
+   class FontReplacement : public Core::SerializableArrayElement
+   {
+   private:
+      Core::SystemLanguage mLanguage;
+      Core::ObjectName mFontName;
+      float mSizeFactor;
+      float mVerticalOffset;
+
+   public:
+      FontReplacement();
+      ~FontReplacement();
+
+      GEDefaultGetter(Core::SystemLanguage, Language, m)
+      GEDefaultGetter(const Core::ObjectName&, FontName, m)
+      GEDefaultGetter(float, SizeFactor, m)
+      GEDefaultGetter(float, VerticalOffset, m)
+
+      GEDefaultSetter(Core::SystemLanguage, Language, m)
+      GEDefaultSetter(const Core::ObjectName&, FontName, m)
+      GEDefaultSetter(float, SizeFactor, m)
+      GEDefaultSetter(float, VerticalOffset, m)
+   };
+
+
    class Font : public Content::Resource
    {
    private:
@@ -75,10 +100,6 @@ namespace GE { namespace Rendering
       typedef GESTLMap(uint16_t, int) CharKerningsMap;
       typedef GESTLMap(uint16_t, CharKerningsMap) KerningsMap;
       GESTLVector(KerningsMap) mKernings;
-
-      Core::ObjectName mNonLatinFontName;
-      float mNonLatinSizeFactor;
-      float mNonLatinVerticalOffset;
 
       void loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData);
       void loadFontData(uint32_t pCharSet, std::istream& pStream);
@@ -105,14 +126,7 @@ namespace GE { namespace Rendering
       const Glyph& getGlyph(uint32_t pCharSetIndex, uint16_t pCharacter);
       float getKerning(uint32_t pCharSetIndex, uint16_t pChar1, uint16_t pChar2) const;
 
-      GEDefaultGetter(const Core::ObjectName&, NonLatinFontName, m)
-      GEDefaultGetter(float, NonLatinSizeFactor, m)
-      GEDefaultGetter(float, NonLatinVerticalOffset, m)
-
-      GEDefaultSetter(const Core::ObjectName&, NonLatinFontName, m)
-      GEDefaultSetter(float, NonLatinSizeFactor, m)
-      GEDefaultSetter(float, NonLatinVerticalOffset, m)
-
       GEPropertyArray(FontCharacterSet, FontCharacterSet)
+      GEPropertyArray(FontReplacement, FontReplacement)
    };
 }}

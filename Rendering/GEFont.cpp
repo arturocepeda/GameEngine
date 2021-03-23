@@ -49,6 +49,28 @@ FontCharacterSet::~FontCharacterSet()
 
 
 //
+//  FontReplacement
+//
+const ObjectName FontReplacementClassName = ObjectName("FontReplacement");
+
+FontReplacement::FontReplacement()
+   : SerializableArrayElement(FontReplacementClassName)
+   , mLanguage(SystemLanguage::English)
+   , mSizeFactor(1.0f)
+   , mVerticalOffset(0.0f)
+{
+   GERegisterPropertyEnum(SystemLanguage, Language);
+   GERegisterProperty(ObjectName, FontName);
+   GERegisterProperty(Float, SizeFactor);
+   GERegisterProperty(Float, VerticalOffset);
+}
+
+FontReplacement::~FontReplacement()
+{
+}
+
+
+//
 //  Font
 //
 const ObjectName Font::TypeName = ObjectName("Font");
@@ -57,14 +79,9 @@ Font::Font(const ObjectName& Name, const ObjectName& GroupName)
    : Resource(Name, GroupName, TypeName)
    , pRenderDevice(nullptr)
    , cTexture(nullptr)
-   , mNonLatinSizeFactor(1.0f)
-   , mNonLatinVerticalOffset(0.0f)
 {
-   GERegisterProperty(ObjectName, NonLatinFontName);
-   GERegisterProperty(Float, NonLatinSizeFactor);
-   GERegisterProperty(Float, NonLatinVerticalOffset);
-
    GERegisterPropertyArray(FontCharacterSet);
+   GERegisterPropertyArray(FontReplacement);
 }
 
 Font::~Font()
@@ -75,6 +92,7 @@ Font::~Font()
    }
 
    GEReleasePropertyArray(FontCharacterSet);
+   GEReleasePropertyArray(FontReplacement);
 }
 
 void Font::load(void* pRenderDevice)
