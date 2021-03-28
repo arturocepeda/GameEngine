@@ -689,7 +689,6 @@ void ComponentLabel::generateText()
    const uint32_t fontCharSetIndex = font->getCharacterSetIndex(mFontStyle);
    const float fFontOffsetY =
       font->getLineHeight(fontCharSetIndex) * fontSize * kFontSizeScale * mFontResizeFactor;
-   const float fHalfFontOffsetY = fFontOffsetY * 0.5f;
    const float fLineHeight = fFontOffsetY + mVerticalSpacing;
 
    switch(mAlignment)

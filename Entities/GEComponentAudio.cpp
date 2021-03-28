@@ -283,8 +283,6 @@ void ComponentAudioSource3D::update()
 
    ComponentAudioSource::update();
 
-   AudioSystem* audioSystem = AudioSystem::getInstance();
-
    for(size_t i = 0u; i < mAudioEventInstances.size(); i++)
    {
       update3DAttributes(mAudioEventInstances[i]);
