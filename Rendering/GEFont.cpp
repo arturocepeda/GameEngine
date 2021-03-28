@@ -133,7 +133,7 @@ void Font::load(void* pRenderDevice)
       loadFontData(i, xml.child("font"));
    }
 
-#if defined (GE_PLATFORM_DESKTOP)
+#if defined (GE_PLATFORM_DESKTOP) || defined (GE_PLATFORM_SWITCH)
    const char* textureFormat = "dds";
 #else
    const char* textureFormat = "png";

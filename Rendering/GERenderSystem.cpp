@@ -316,7 +316,7 @@ void RenderSystem::preloadTextures(const char* FileName)
          GEInvokeCtor(Texture, sPreloadedTexture.Tex)(sTextureName, cGroupName);
          sPreloadedTexture.Tex->loadFromXml(xmlTexture);
 
-#if defined (GE_PLATFORM_DESKTOP)
+#if defined (GE_PLATFORM_DESKTOP) || defined (GE_PLATFORM_SWITCH)
          const char* sTextureFormat = "dds";
 #else
          const char* sTextureFormat = sPreloadedTexture.Tex->getFormat();
