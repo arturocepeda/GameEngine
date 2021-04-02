@@ -337,6 +337,14 @@ std::ofstream Device::writeUserFile(const char* SubDir, const char* Name, const 
    return std::ofstream(sFullPath, std::ios::out | std::ios::binary);
 }
 
+void Device::writeUserFile(const char* pSubDir, const char* pName, const char* pExtension, const ContentData* pContentData)
+{
+   std::ofstream file = writeUserFile(pSubDir, pName, pExtension);
+   GEAssert(file.is_open());
+   file.write(pContentData->getData(), pContentData->getDataSize());
+   file.close();
+}
+
 void Device::deleteUserFile(const char* SubDir, const char* Name, const char* Extension)
 {
    char sPath[MaxPath];

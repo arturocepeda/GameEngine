@@ -106,14 +106,6 @@ void Device::getContentFileNames(const char* pSubDir, const char* pExtension, Fi
    }
 }
 
-void Device::writeUserFile(const char* pSubDir, const char* pName, const char* pExtension, const ContentData* pContentData)
-{
-   std::ofstream file = writeUserFile(pSubDir, pName, pExtension);
-   GEAssert(file.is_open());
-   file.write(pContentData->getData(), pContentData->getDataSize());
-   file.close();
-}
-
 void Device::getUserFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames)
 {
    pOutFileNames->clear();

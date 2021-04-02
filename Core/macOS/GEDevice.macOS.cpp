@@ -285,6 +285,14 @@ std::ofstream Device::writeUserFile(const char* SubDir, const char* Name, const 
    return std::ofstream(sFullPath.c_str(), std::ios::out | std::ios::binary);
 }
 
+void Device::writeUserFile(const char* pSubDir, const char* pName, const char* pExtension, const ContentData* pContentData)
+{
+   std::ofstream file = writeUserFile(pSubDir, pName, pExtension);
+   GEAssert(file.is_open());
+   file.write(pContentData->getData(), pContentData->getDataSize());
+   file.close();
+}
+
 uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
 {
    char sSubDir[kMaxPath];
