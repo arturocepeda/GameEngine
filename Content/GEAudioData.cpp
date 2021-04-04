@@ -226,6 +226,15 @@ void AudioData::loadOggData(uint32_t Size, const char* Data)
 #endif
 }
 
+void AudioData::loadCustom(uint32_t Size, const char* Data)
+{
+   iSampleRate = 0;
+   iBitDepth = 0;
+   iNumberOfChannels = 0;
+
+   ContentData::load(Size, Data);
+}
+
 void AudioData::load(GE::uint Size, const char* Data)
 {
    unload();
@@ -239,6 +248,11 @@ void AudioData::load(GE::uint Size, const char* Data)
    else if(strncmp(Data, "OggS", 4) == 0)
    {
       loadOggData(Size, Data);
+   }
+   // Custom format
+   else
+   {
+      loadCustom(Size, Data);
    }
 }
 

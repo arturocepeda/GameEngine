@@ -167,8 +167,6 @@ namespace GE { namespace Audio
 
       GEMutex mMutex;
 
-      float mTimeSinceLastUpdate;
-
       Vector3 mListenerPosition;
       Rotation mListenerOrientation;
 
@@ -178,6 +176,8 @@ namespace GE { namespace Audio
       void releaseAudioBankFiles(AudioBank* pAudioBank);
 
       // platform specific methods
+      const char* platformAudioFileExtension();
+
       void platformInit();
       void platformUpdate();
       void platformRelease();

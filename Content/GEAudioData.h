@@ -25,6 +25,7 @@ namespace GE { namespace Content
 
       void loadWAVData(uint32_t Size, const char* Data);
       void loadOggData(uint32_t Size, const char* Data);
+      void loadCustom(uint32_t Size, const char* Data);
     
    public:
       AudioData();

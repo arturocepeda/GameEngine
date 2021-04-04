@@ -56,6 +56,7 @@ void ContentData::unload()
    {
       Allocator::free(pData);
       pData = nullptr;
+      iDataSize = 0u;
    }
 }
 

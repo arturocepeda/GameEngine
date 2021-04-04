@@ -28,6 +28,15 @@ using namespace GE::Audio;
 using namespace GE::Core;
 using namespace GE::Content;
 
+const char* AudioSystem::platformAudioFileExtension()
+{
+#if defined (GE_PLATFORM_DESKTOP)
+   return "ogg";
+#else
+   return "wav";
+#endif
+}
+
 void AudioSystem::platformInit()
 {
    alDevice = alcOpenDevice(0);

@@ -25,8 +25,6 @@ using namespace GE::Audio;
 using namespace GE::Core;
 using namespace GE::Content;
 
-const float UpdatePeriod = 0.5f;
-
 //
 //  AudioBus
 //
@@ -81,7 +79,6 @@ AudioSystem::AudioSystem()
    , mBuffers(nullptr)
    , mAudioEventInstanceAssignmentIndex(0u)
    , mAudioStreamAssignmentIndex(0u)
-   , mTimeSinceLastUpdate(0.0f)
 {
    AudioBus* masterBus = Allocator::alloc<AudioBus>();
    GEInvokeCtor(AudioBus, masterBus)(MasterBusName, ObjectName::Empty);
@@ -122,11 +119,7 @@ void AudioSystem::loadAudioBankFiles(AudioBank* pAudioBank)
    const GESTLVector(ObjectName)& audioFileNames = pAudioBank->getAudioFileNames();
 
    const char* audioFilesSubdir = "Audio/files";
-#if defined (GE_PLATFORM_DESKTOP)
-   const char* audioFilesExt = "ogg";
-#else
-   const char* audioFilesExt = "wav";
-#endif
+   const char* audioFilesExt = platformAudioFileExtension();
 
    for(size_t i = 0u; i < audioFileNames.size(); i++)
    {
@@ -264,30 +257,19 @@ void AudioSystem::update()
    const float deltaTime = Time::getDelta();
 
    // audio system update
-   mTimeSinceLastUpdate += deltaTime;
-
-   if(mTimeSinceLastUpdate >= UpdatePeriod)
-   {
-      mTimeSinceLastUpdate -= UpdatePeriod;
-
-      GEMutexLock(mMutex);
-
-      for(ChannelID i = 0u; i < mChannelsCount; i++)
-      {
-         if(!mChannels[i].Free && !platformIsInUse(i))
-         {
-            releaseChannel(i);
-         }
-      }
-
-      GEMutexUnlock(mMutex);
-
-      platformUpdate();
-   }
-
-   // handle fades
    GEMutexLock(mMutex);
 
+   for(ChannelID i = 0u; i < mChannelsCount; i++)
+   {
+      if(!mChannels[i].Free && !platformIsInUse(i))
+      {
+         releaseChannel(i);
+      }
+   }
+
+   platformUpdate();
+
+   // handle fades
    for(size_t i = 0u; i < mActiveAudioEventInstances.size(); )
    {
       AudioEventInstance* instance = mActiveAudioEventInstances[i];
