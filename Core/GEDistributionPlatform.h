@@ -61,14 +61,16 @@ namespace GE { namespace Core
       DistributionPlatform();
       ~DistributionPlatform();
 
-      bool init() const;
-      void update() const;
-      void shutdown() const;
+      bool init();
+      void update();
+      void shutdown();
 
       const char* getPlatformName() const;
       const char* getUserName() const;
 
       SystemLanguage getLanguage() const;
+
+      bool networkServicesAvailable() const;
 
       // Data storage
       bool remoteFileExists(const char* pSubDir, const char* pName, const char* pExtension);

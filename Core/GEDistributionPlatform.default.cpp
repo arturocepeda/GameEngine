@@ -15,16 +15,16 @@
 using namespace GE;
 using namespace GE::Core;
 
-bool DistributionPlatform::init() const
+bool DistributionPlatform::init()
 {
    return true;
 }
 
-void DistributionPlatform::update() const
+void DistributionPlatform::update()
 {
 }
 
-void DistributionPlatform::shutdown() const
+void DistributionPlatform::shutdown()
 {
 }
 
@@ -43,6 +43,11 @@ const char* DistributionPlatform::getUserName() const
 SystemLanguage DistributionPlatform::getLanguage() const
 {
    return SystemLanguage::Count;
+}
+
+bool DistributionPlatform::networkServicesAvailable() const
+{
+   return false;
 }
 
 bool DistributionPlatform::remoteFileExists(const char* pSubDir, const char* pName, const char* pExtension)

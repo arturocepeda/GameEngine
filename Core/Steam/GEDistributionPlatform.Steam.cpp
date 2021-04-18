@@ -183,7 +183,7 @@ SteamCallResult<LobbyEnter_t> gCallResultJoinLobby;
 //
 static bool gStoreStatsPending = false;
 
-bool DistributionPlatform::init() const
+bool DistributionPlatform::init()
 {
    const bool success = SteamAPI_Init();
 
@@ -208,7 +208,7 @@ bool DistributionPlatform::init() const
    return success;
 }
 
-void DistributionPlatform::update() const
+void DistributionPlatform::update()
 {
    if(gStoreStatsPending)
    {
@@ -219,7 +219,7 @@ void DistributionPlatform::update() const
    SteamAPI_RunCallbacks();
 }
 
-void DistributionPlatform::shutdown() const
+void DistributionPlatform::shutdown()
 {
    SteamAPI_Shutdown();
 }
@@ -286,6 +286,11 @@ SystemLanguage DistributionPlatform::getLanguage() const
    }
 
    return SystemLanguage::Count;
+}
+
+bool DistributionPlatform::networkServicesAvailable() const
+{
+   return true;
 }
 
 bool DistributionPlatform::remoteFileExists(const char* pSubDir, const char* pName, const char* pExtension)
