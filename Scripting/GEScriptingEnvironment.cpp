@@ -977,6 +977,8 @@ void Environment::registerTypes()
       "Lobby"
       , "mID", &DistributionPlatform::Lobby::mID
       , "mOwnerID", &DistributionPlatform::Lobby::mOwnerID
+      , "mOwnerIP", &DistributionPlatform::Lobby::mOwnerIP
+      , "mOwnerPort", &DistributionPlatform::Lobby::mOwnerPort
       , "mName", &DistributionPlatform::Lobby::mName
       , "mMember", &DistributionPlatform::Lobby::mMember
    );

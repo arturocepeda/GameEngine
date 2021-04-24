@@ -39,7 +39,9 @@ namespace GE { namespace Core
       {
          uint64_t mID;
          uint64_t mOwnerID;
+         GESTLString mOwnerIP;
          GESTLString mName;
+         uint16_t mOwnerPort;
          bool mMember;
       };
       struct LobbyMember

@@ -16,6 +16,7 @@
 #include "Externals/steamworks_sdk/public/steam/steam_api.h"
 
 #include <functional>
+#include <sstream>
 
 #pragma comment(lib, "../../../GameEngine/Externals/steamworks_sdk/redistributable_bin/win64/steam_api64.lib")
 
@@ -600,6 +601,7 @@ void DistributionPlatform::findLobbies()
             Lobby lobby;
             lobby.mID = lobbyID.ConvertToUint64();
             lobby.mOwnerID = 0u;
+            lobby.mOwnerPort = 0u;
             lobby.mName = lobbyName;
             lobby.mMember = false;
             mLobbies.push_back(lobby);
@@ -627,6 +629,7 @@ void DistributionPlatform::createLobby(const char* pName, uint32_t pMaxMembers)
          Lobby lobby;
          lobby.mID = lobbyID.ConvertToUint64();
          lobby.mOwnerID = SteamUser()->GetSteamID().ConvertToUint64();
+         lobby.mOwnerPort = 0u;
          lobby.mName = lobbyName;
          lobby.mMember = true;
          mLobbies.push_back(lobby);
@@ -655,7 +658,12 @@ void DistributionPlatform::joinLobby(const Lobby* pLobby)
                CSteamID lobbyOwnerID = SteamMatchmaking()->GetLobbyOwner(lobbyID);
 
                mLobbies[i].mOwnerID = lobbyOwnerID.ConvertToUint64();
+               mLobbies[i].mOwnerPort = 0u;
                mLobbies[i].mMember = true;
+
+               std::ostringstream oss;
+               oss << mLobbies[i].mOwnerID;
+               mLobbies[i].mOwnerIP.assign(oss.str().c_str());
 
                break;
             }
