@@ -115,8 +115,9 @@ using namespace GE::Multiplayer;
 //
 //  Server
 //
-Server* Server::request(Protocol pProtocol)
+Server* Server::request(Mode pMode, Protocol pProtocol)
 {
+   (void)pMode;
    ServerSocket* server = Allocator::alloc<ServerSocket>();
    GEInvokeCtor(ServerSocket, server)(pProtocol);
    return server;
@@ -132,8 +133,9 @@ void Server::release(Server* pServer)
 //
 //  Client
 //
-Client* Client::request(Protocol pProtocol)
+Client* Client::request(Mode pMode, Protocol pProtocol)
 {
+   (void)pMode;
    ClientSocket* client = Allocator::alloc<ClientSocket>();
    GEInvokeCtor(ClientSocket, client)(pProtocol);
    return client;

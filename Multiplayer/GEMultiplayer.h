@@ -18,6 +18,12 @@
 
 namespace GE { namespace Multiplayer
 {
+   enum class Mode
+   {
+      Internet,
+      LAN,
+      AdHoc
+   };
    enum class Protocol
    {
       TCP,
@@ -40,7 +46,7 @@ namespace GE { namespace Multiplayer
    class Server
    {
    public:
-      static Server* request(Protocol pProtocol);
+      static Server* request(Mode pMode, Protocol pProtocol);
       static void release(Server* pServer);
 
    protected:
@@ -74,7 +80,7 @@ namespace GE { namespace Multiplayer
    class Client
    {
    public:
-      static Client* request(Protocol pProtocol);
+      static Client* request(Mode pMode, Protocol pProtocol);
       static void release(Client* pClient);
 
    protected:
