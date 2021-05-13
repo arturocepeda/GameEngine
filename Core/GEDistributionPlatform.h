@@ -54,8 +54,8 @@ namespace GE { namespace Core
       GESTLVector(Leaderboard) mLeaderboards;
       GESTLVector(Lobby) mLobbies;
 
-      bool mUpdatingLeaderboardScore;
-      bool mSearchingForLobbies;
+      std::atomic<bool> mUpdatingLeaderboardScore;
+      std::atomic<bool> mSearchingForLobbies;
 
       void addLeaderboardEntry(size_t pLeaderboardIndex, const LeaderboardEntry& pEntry);
 
