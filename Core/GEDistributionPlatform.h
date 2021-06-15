@@ -16,6 +16,8 @@
 #include "GEObject.h"
 #include "GEDevice.h"
 
+#include <atomic>
+
 namespace GE { namespace Core
 {
    class DistributionPlatform : public Singleton<DistributionPlatform>
