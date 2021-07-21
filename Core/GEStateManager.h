@@ -26,7 +26,7 @@ namespace GE { namespace Core
    private:
       ObjectManager<State> mStatesRegistry;
       GESTLVector(State*) mActiveStates;
-      uint32_t mStatePopRequests;
+      std::atomic<uint32_t> mStatePopRequests;
 
    public:
       StateManager();
@@ -50,7 +50,7 @@ namespace GE { namespace Core
 
       void pushState(const ObjectName& pStateName);
       void popState();
-      void popStates(uint32_t pStatesCount);
+      void requestPopStates(uint32_t pStatesCount);
 
       void update();
       void releaseStates();

@@ -49,7 +49,7 @@ void StateManager::popState()
    mActiveStates.pop_back();
 }
 
-void StateManager::popStates(uint32_t pStatesCount)
+void StateManager::requestPopStates(uint32_t pStatesCount)
 {
    mStatePopRequests += pStatesCount;
 }
