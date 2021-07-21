@@ -74,7 +74,11 @@ namespace GE { namespace Core
 
       SystemLanguage getLanguage() const;
 
-      bool networkServicesAvailable() const;
+      // Network
+      bool internetConnectionAvailable() const;
+      bool loggedIn() const;
+
+      void logIn(std::function<void()> onFinished);
 
       // Data storage
       bool remoteFileExists(const char* pSubDir, const char* pName, const char* pExtension);

@@ -289,9 +289,18 @@ SystemLanguage DistributionPlatform::getLanguage() const
    return SystemLanguage::Count;
 }
 
-bool DistributionPlatform::networkServicesAvailable() const
+bool DistributionPlatform::internetConnectionAvailable() const
 {
    return true;
+}
+
+bool DistributionPlatform::loggedIn() const
+{
+   return true;
+}
+
+void DistributionPlatform::logIn(std::function<void()> onFinished)
+{
 }
 
 bool DistributionPlatform::remoteFileExists(const char* pSubDir, const char* pName, const char* pExtension)

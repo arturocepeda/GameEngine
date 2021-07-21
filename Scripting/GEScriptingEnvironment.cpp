@@ -988,7 +988,8 @@ void Environment::registerTypes()
       , "getInstance", &DistributionPlatform::getInstance
       , "getPlatformName", &DistributionPlatform::getPlatformName
       , "getUserName", &DistributionPlatform::getUserName
-      , "networkServicesAvailable", &DistributionPlatform::networkServicesAvailable
+      , "internetConnectionAvailable", &DistributionPlatform::internetConnectionAvailable
+      , "loggedIn", &DistributionPlatform::loggedIn
       , "setStat", &DistributionPlatform::setStat
       , "getStat", &DistributionPlatform::getStat
       , "unlockAchievement", &DistributionPlatform::unlockAchievement
