@@ -151,6 +151,7 @@ namespace GE { namespace Rendering
       bool bClearGeometryRenderInfoEntriesPending;
       bool bShaderReloadPending;
 
+      float mVRAMInMb;
       float fFrameTime;
       float fFramesPerSecond;
       uint iDrawCalls;
@@ -201,6 +202,7 @@ namespace GE { namespace Rendering
       // info
       const void* getWindowHandler() const;
       bool getWindowedMode() const;
+      float getVRAMInMb() const;
       float getFPS() const;
       uint getDrawCalls() const;
 

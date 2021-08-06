@@ -55,6 +55,12 @@ RenderSystemES20::RenderSystemES20()
 
    Log::log(LogType::Info, "Graphics Card: %s (%s)", glRenderer, glVendor);
 
+   GLint graphicsCardValues[4] = { 0 };
+   glGetIntegerv(0x9049, graphicsCardValues); // GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX
+   glGetIntegerv(0x87FC, graphicsCardValues); // TEXTURE_FREE_MEMORY_ATI
+   glGetError(); // (one of the two calls should have set the error state)
+   mVRAMInMb = (float)graphicsCardValues[0] / 1024.0f;
+
    // enable face culling
    glEnable(GL_CULL_FACE);
    

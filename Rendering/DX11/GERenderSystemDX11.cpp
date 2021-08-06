@@ -83,6 +83,7 @@ RenderSystemDX11::RenderSystemDX11(HWND WindowHandle, bool Windowed)
    DXGI_ADAPTER_DESC dxAdapterDesc;
    dxAdapter->GetDesc(&dxAdapterDesc);
    Log::log(LogType::Info, "Graphics Card: %ls", dxAdapterDesc.Description);
+   mVRAMInMb = (float)dxAdapterDesc.DedicatedVideoMemory / 1024.0f / 1024.0f;
 
    createDeviceResources();
    createWindowSizeDependentResources();

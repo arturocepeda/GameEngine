@@ -61,6 +61,7 @@ RenderSystem::RenderSystem(void* Window, bool Windowed)
    , mTextRasterizer(Device::getScreenWidth(), Device::getScreenHeight())
 #endif
    , mAny3DUIElementsToRender(false)
+   , mVRAMInMb(0.0f)
    , fFrameTime(Time::getElapsed())
    , fFramesPerSecond(0.0f)
    , iDrawCalls(0)
@@ -122,6 +123,11 @@ const void* RenderSystem::getWindowHandler() const
 bool RenderSystem::getWindowedMode() const
 {
    return bWindowed;
+}
+
+float RenderSystem::getVRAMInMb() const
+{
+   return mVRAMInMb;
 }
 
 float RenderSystem::getFPS() const
