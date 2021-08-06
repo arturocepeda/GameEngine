@@ -409,7 +409,13 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
       Value(sTextureName).writeToStream(sOutputFile);
 
       Texture* cTexture = new Texture(sTextureName, sSetName.c_str());
-      mManagerTextures.add(cTexture);
+      const bool textureAlreadyAdded = mManagerTextures.get(sTextureName) != nullptr;
+
+      if(!textureAlreadyAdded)
+      {
+         mManagerTextures.add(cTexture);
+      }
+
       cTexture->loadFromXml(xmlTexture);
       cTexture->saveToStream(sOutputFile);
 
@@ -471,6 +477,11 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
       }
 
       sTextureFile.close();
+
+      if(textureAlreadyAdded)
+      {
+         delete cTexture;
+      }
    }
 
    sOutputFile.close();
