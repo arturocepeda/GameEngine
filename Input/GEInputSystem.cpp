@@ -92,7 +92,8 @@ bool InputListener::inputTouchEnd(int, const Vector2&)
 //  InputSystem
 //
 InputSystem::InputSystem()
-   : mInputEnabled(true)
+   : mCurrentInputDevice(InputDevice::None)
+   , mInputEnabled(true)
 {
    GEMutexInit(mEventsMutex);
 }
