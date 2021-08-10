@@ -74,6 +74,8 @@ namespace GE { namespace Multiplayer
 
       virtual void sendMessage(const RemoteConnection* pClient, const char* pMessage, size_t pSize) = 0;
       virtual size_t receiveMessage(RemoteConnection** pOutClient, char* pBuffer, size_t pMaxSize) = 0;
+
+      virtual void update() {}
    };
 
 
@@ -105,5 +107,7 @@ namespace GE { namespace Multiplayer
 
       virtual void sendMessage(const char* pMessage, size_t pSize) = 0;
       virtual size_t receiveMessage(char* pBuffer, size_t pMaxSize) = 0;
+
+      virtual void update() {}
    };
 }}
