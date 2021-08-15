@@ -131,6 +131,9 @@ namespace GE { namespace Core
       static void getUserFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames);
 
       static void showVirtualKeyboard(const char* pText);
+      static void hideVirtualKeyboard();
+      static bool getVirtualKeyboardActive();
+
       static void openWebPage(const char* pURL);
    };
 }}

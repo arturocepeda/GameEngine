@@ -760,6 +760,8 @@ void Environment::registerTypes()
       , "getScreenHeight", &Device::getScreenHeight
       , "getAspectRatio", &Device::getAspectRatio
       , "showVirtualKeyboard", &Device::showVirtualKeyboard
+      , "hideVirtualKeyboard", &Device::hideVirtualKeyboard
+      , "getVirtualKeyboardActive", &Device::getVirtualKeyboardActive
    );
    mLua.new_simple_usertype<ObjectName>
    (
