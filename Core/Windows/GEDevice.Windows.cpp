@@ -33,6 +33,10 @@ void Device::platformInit()
 {
 }
 
+void Device::platformUpdate()
+{
+}
+
 void Device::platformRelease()
 {
 }

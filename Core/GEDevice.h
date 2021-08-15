@@ -72,6 +72,7 @@ namespace GE { namespace Core
       static IOBuffersMap* mIOBuffers;
 
       static void platformInit();
+      static void platformUpdate();
       static void platformRelease();
 
       static IOBuffer* requestIOBuffer(GE::uint iSize);
@@ -97,6 +98,7 @@ namespace GE { namespace Core
       static int AudioSystemFramesPerBuffer;
 
       static void init();
+      static void update();
       static void release();
 
       static int getScreenWidth();

@@ -44,6 +44,11 @@ void Device::init()
    platformInit();
 }
 
+void Device::update()
+{
+   platformUpdate();
+}
+
 void Device::release()
 {
    platformRelease();

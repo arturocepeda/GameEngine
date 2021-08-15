@@ -198,6 +198,7 @@ void Application::tick()
       smScriptingEnvironments[i]->collectGarbageStep();
    }
 
+   Device::update();
    DistributionPlatform::getInstance()->update();
 }
 
