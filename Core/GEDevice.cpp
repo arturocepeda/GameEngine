@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////
 
 #include "Core/GEDevice.h"
+#include "Core/GEStateManager.h"
 
 #include <fstream>
 
@@ -39,10 +40,14 @@ void Device::init()
    GEMutexInit(mIOMutex);
    mIOBuffers = Allocator::alloc<IOBuffersMap>();
    GEInvokeCtor(IOBuffersMap, mIOBuffers);
+
+   platformInit();
 }
 
 void Device::release()
 {
+   platformRelease();
+
    GEInvokeDtor(IOBuffersMap, mIOBuffers);
    Allocator::free(mIOBuffers);
    mIOBuffers = 0;
@@ -117,5 +122,15 @@ void Device::getUserFileNames(const char* pSubDir, const char* pExtension, FileN
       char fileName[256];
       Device::getUserFileName(pSubDir, pExtension, i, fileName);
       pOutFileNames->push_back(GESTLString(fileName));
+   }
+}
+
+void Device::onVirtualKeyboardTextInput(uint16_t pUnicode)
+{
+   State* activeState = StateManager::getInstance()->getActiveState();
+
+   if(activeState)
+   {
+      activeState->inputKeyText(pUnicode);
    }
 }

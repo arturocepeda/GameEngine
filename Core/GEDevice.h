@@ -71,10 +71,15 @@ namespace GE { namespace Core
       static GEMutex mIOMutex;
       static IOBuffersMap* mIOBuffers;
 
+      static void platformInit();
+      static void platformRelease();
+
       static IOBuffer* requestIOBuffer(GE::uint iSize);
 
       static GE::uint getFileLength(const char* Filename);
       static GE::uint readFile(const char* Filename, GE::byte* ReadBuffer, GE::uint BufferSize);
+
+      static void onVirtualKeyboardTextInput(uint16_t pUnicode);
 
    public:
       static int ScreenWidth;
@@ -123,6 +128,7 @@ namespace GE { namespace Core
       static bool getUserFileName(const char* SubDir, const char* Extension, uint Index, char* Name);
       static void getUserFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames);
 
+      static void showVirtualKeyboard(const char* pText);
       static void openWebPage(const char* pURL);
    };
 }}

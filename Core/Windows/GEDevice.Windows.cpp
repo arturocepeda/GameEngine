@@ -29,6 +29,14 @@ using namespace GE::Content;
 
 const uint MaxPath = 256u;
 
+void Device::platformInit()
+{
+}
+
+void Device::platformRelease()
+{
+}
+
 int Device::getTouchPadWidth()
 {
    return ScreenWidth;
@@ -525,6 +533,10 @@ void Device::requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutio
          pOutResolutions->emplace(pOutResolutions->begin(), modeWidth, modeHeight);
       }
    }
+}
+
+void Device::showVirtualKeyboard(const char*)
+{
 }
 
 void Device::openWebPage(const char* pURL)
