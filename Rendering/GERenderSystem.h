@@ -247,6 +247,10 @@ namespace GE { namespace Rendering
       void unloadFonts(const char* FileName);
       Font* getFont(const Core::ObjectName& Name);
 
+      // bitmap textures
+      void createBitmapTexture(const Core::ObjectName& pName, size_t pWidth, size_t pHeight);
+      void updateBitmapTexture(const Core::ObjectName& pName, const char* pBitmapData);
+
       // text rasterization
       TextRasterizer* getTextRasterizer();
 

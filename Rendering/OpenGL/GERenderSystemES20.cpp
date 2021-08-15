@@ -128,7 +128,7 @@ void RenderSystemES20::createBuffers()
    gDepthTexture->setHandler((void*)((uintPtrSize)iDepthTexture));
 
    glBindTexture(GL_TEXTURE_2D, iDepthTexture);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kShadowMapSize, kShadowMapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kShadowMapSize, kShadowMapSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -756,6 +756,40 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
 void RenderSystem::renderEnd()
 {
+}
+
+void RenderSystem::createBitmapTexture(const Core::ObjectName& pName, size_t pWidth, size_t pHeight)
+{
+   Texture* bitmapTexture = Allocator::alloc<Texture>();
+   GEInvokeCtor(Texture, bitmapTexture)(pName, "Bitmaps");
+   bitmapTexture->setWidth(pWidth);
+   bitmapTexture->setHeight(pHeight);
+   mTextures.add(bitmapTexture);
+   
+   GLuint glBitmapTexture;
+   glGenTextures(1, &glBitmapTexture);
+   bitmapTexture->setHandler((void*)((uintPtrSize)glBitmapTexture));
+
+   glBindTexture(GL_TEXTURE_2D, glBitmapTexture);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+      (GLsizei)pWidth, (GLsizei)pHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
+
+void RenderSystem::updateBitmapTexture(const Core::ObjectName& pName, const char* pBitmapData)
+{
+   Texture* bitmapTexture = mTextures.get(pName);
+
+   if(bitmapTexture)
+   {
+      bindTexture(TextureSlot::Diffuse, bitmapTexture);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+         (GLsizei)bitmapTexture->getWidth(), (GLsizei)bitmapTexture->getHeight(),
+         0, GL_RGBA, GL_UNSIGNED_BYTE, pBitmapData);
+   }
 }
 
 void RenderSystem::setBlendingMode(BlendingMode Mode)
