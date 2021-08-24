@@ -543,6 +543,15 @@ void Device::showVirtualKeyboard(const char*)
 {
 }
 
+void Device::hideVirtualKeyboard()
+{
+}
+
+bool Device::getVirtualKeyboardActive()
+{
+   return false;
+}
+
 void Device::openWebPage(const char* pURL)
 {
    ShellExecuteA(NULL, "open", pURL, NULL, NULL, SW_SHOWNORMAL);
