@@ -762,6 +762,7 @@ void Environment::registerTypes()
       , "showVirtualKeyboard", &Device::showVirtualKeyboard
       , "hideVirtualKeyboard", &Device::hideVirtualKeyboard
       , "getVirtualKeyboardActive", &Device::getVirtualKeyboardActive
+      , "getVirtualKeyboardCurrentText", &Device::getVirtualKeyboardCurrentText
    );
    mLua.new_simple_usertype<ObjectName>
    (

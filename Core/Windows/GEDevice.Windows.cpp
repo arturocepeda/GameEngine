@@ -552,6 +552,11 @@ bool Device::getVirtualKeyboardActive()
    return false;
 }
 
+const char* Device::getVirtualKeyboardCurrentText()
+{
+   return "";
+}
+
 void Device::openWebPage(const char* pURL)
 {
    ShellExecuteA(NULL, "open", pURL, NULL, NULL, SW_SHOWNORMAL);

@@ -129,13 +129,3 @@ void Device::getUserFileNames(const char* pSubDir, const char* pExtension, FileN
       pOutFileNames->push_back(GESTLString(fileName));
    }
 }
-
-void Device::onVirtualKeyboardTextInput(uint16_t pUnicode)
-{
-   State* activeState = StateManager::getInstance()->getActiveState();
-
-   if(activeState)
-   {
-      activeState->inputKeyText(pUnicode);
-   }
-}

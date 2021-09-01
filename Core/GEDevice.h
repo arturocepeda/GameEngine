@@ -80,8 +80,6 @@ namespace GE { namespace Core
       static GE::uint getFileLength(const char* Filename);
       static GE::uint readFile(const char* Filename, GE::byte* ReadBuffer, GE::uint BufferSize);
 
-      static void onVirtualKeyboardTextInput(uint16_t pUnicode);
-
    public:
       static int ScreenWidth;
       static int ScreenHeight;
@@ -133,6 +131,7 @@ namespace GE { namespace Core
       static void showVirtualKeyboard(const char* pText);
       static void hideVirtualKeyboard();
       static bool getVirtualKeyboardActive();
+      static const char* getVirtualKeyboardCurrentText();
 
       static void openWebPage(const char* pURL);
    };
