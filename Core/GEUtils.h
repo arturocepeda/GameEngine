@@ -96,4 +96,11 @@ namespace GE { namespace Core
    uint32_t hash(const char* pString);
    bool isHash(const char* pString);
    void toHashPath(char* pPath);
+
+
+   //
+   //  UTF-8
+   //
+   void utf8ToUnicode(const char* pSequence, int* pOutUnicode, int* pOutExtraChars);
+   void utf8AppendText(const char* pText, GESTLString* pString, GESTLString* pStringExtension);
 }}

@@ -27,54 +27,6 @@ using namespace GE::Rendering;
 using namespace GE::Content;
 
 
-static void utf8ToUnicode(const char* pSequence, int* pOutUnicode, int* pOutExtraChars)
-{
-   int sequenceChar = pSequence[0] & 0x000000ff;
-   int unicode = 0;
-   int extraChars = 0;
-
-   if(sequenceChar < 0x80)
-   {
-      // ASCII character
-      unicode = sequenceChar;
-   }
-   else
-   {
-      // non-ASCII character
-      while(sequenceChar & 0x40)
-      {
-         // multi-byte symbol
-         extraChars++;
-         const int nextSequenceChar = pSequence[extraChars] & 0x000000ff;
-         unicode = (unicode << 6) | (nextSequenceChar & 0x3f);
-         sequenceChar <<= 1;
-      }
-
-      unicode |= (sequenceChar & 0x7f) << (extraChars * 5);
-   }
-
-   *pOutUnicode = unicode;
-   *pOutExtraChars = extraChars;
-}
-
-static void utf8AppendText(const char* pText, GESTLString* pString, GESTLString* pStringExtension)
-{
-   const int textLength = (int)strlen(pText);
-
-   for(int i = 0; i < textLength; i++)
-   {
-      int glyphIndex = 0;
-      int extraChars = 0;
-      utf8ToUnicode(pText + i, &glyphIndex, &extraChars);
-
-      pString->push_back(glyphIndex & 0x000000ff);
-      pStringExtension->push_back((glyphIndex & 0x0000ff00) >> 8);
-
-      i += extraChars;
-   }
-}
-
-
 //
 //  ComponentLabelBase
 //
