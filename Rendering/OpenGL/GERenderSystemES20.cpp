@@ -762,8 +762,8 @@ void RenderSystem::createBitmapTexture(const Core::ObjectName& pName, size_t pWi
 {
    Texture* bitmapTexture = Allocator::alloc<Texture>();
    GEInvokeCtor(Texture, bitmapTexture)(pName, "Bitmaps");
-   bitmapTexture->setWidth(pWidth);
-   bitmapTexture->setHeight(pHeight);
+   bitmapTexture->setWidth((uint32_t)pWidth);
+   bitmapTexture->setHeight((uint32_t)pHeight);
    mTextures.add(bitmapTexture);
    
    GLuint glBitmapTexture;
