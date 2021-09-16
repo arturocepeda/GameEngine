@@ -64,6 +64,11 @@ namespace GE { namespace Input
 
          Count
       };
+      enum class VibrationDevice
+      {
+         Left,
+         Right
+      };
 
       int mID;
       bool mStateButtons[(int)Button::Count];
@@ -166,6 +171,8 @@ namespace GE { namespace Input
       void platformUpdate();
       void platformShutdown();
 
+      void platformSetGamepadVibration(int pID, Gamepad::VibrationDevice pDevice, float pLevel);
+
    public:
       InputSystem();
       ~InputSystem();
@@ -190,6 +197,8 @@ namespace GE { namespace Input
 
       const Vector2& getMousePosition() const { return mMousePosition; }
       const Vector3& getAccelerometerStatus() const { return mAccelerometerStatus; } 
+
+      void setGamepadVibration(int pID, Gamepad::VibrationDevice pDevice, float pLevel);
 
       void inputKeyPress(char pKey);
       void inputKeyRelease(char pKey);

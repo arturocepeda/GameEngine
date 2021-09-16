@@ -1055,6 +1055,7 @@ void Environment::registerTypes()
       , "getCurrentInputDevice", &InputSystem::getCurrentInputDevice
       , "setInputEnabled", &InputSystem::setInputEnabled
       , "getMousePosition", &InputSystem::getMousePosition
+      , "setGamepadVibration", &InputSystem::setGamepadVibration
       , "inputKeyPress", &InputSystem::inputKeyPress
       , "inputKeyRelease", &InputSystem::inputKeyRelease
       , "inputKeyText", &InputSystem::inputKeyText
@@ -1099,6 +1100,12 @@ void Environment::registerTypes()
       "GamepadTrigger"
       , "Left", Gamepad::Trigger::Left
       , "Right", Gamepad::Trigger::Right
+   );
+   mLua.new_enum
+   (
+      "GamepadVibrationDevice"
+      , "Left", Gamepad::VibrationDevice::Left
+      , "Right", Gamepad::VibrationDevice::Right
    );
 
    //

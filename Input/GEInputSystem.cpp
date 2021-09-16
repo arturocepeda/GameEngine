@@ -321,6 +321,11 @@ Gamepad* InputSystem::getGamepad(int pID)
    return nullptr;
 }
 
+void InputSystem::setGamepadVibration(int pID, Gamepad::VibrationDevice pDevice, float pLevel)
+{
+   platformSetGamepadVibration(pID, pDevice, pLevel);
+}
+
 void InputSystem::inputKeyPress(char pKey)
 {
    if(!mInputEnabled)
