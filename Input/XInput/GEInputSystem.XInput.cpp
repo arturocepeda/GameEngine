@@ -4,21 +4,26 @@
 //  Arturo Cepeda Pérez
 //  Game Engine
 //
-//  Input
+//  Input (XInput)
 //
-//  --- GEGamepad.XInput.h ---
+//  --- GEInputSystem.XInput.cpp ---
 //
 //////////////////////////////////////////////////////////////////
 
-#pragma once
+#include "Input/GEInputSystem.h"
 
 #include <XInput.h>
+
 #pragma comment(lib, "XInput.lib")
 
-static void checkGamepadState()
-{ 
-   using namespace GE::Input;
+using namespace GE::Input;
 
+void InputSystem::platformInit()
+{
+}
+
+void InputSystem::platformUpdate()
+{ 
    XINPUT_STATE state;
    ZeroMemory(&state, sizeof(XINPUT_STATE));
 
@@ -27,16 +32,16 @@ static void checkGamepadState()
       const int id = (int)i;
       const bool connected = XInputGetState(i, &state) == ERROR_SUCCESS;
 
-      Gamepad* gamepad = InputSystem::getInstance()->getGamepad(id);
+      Gamepad* gamepad = getGamepad(id);
 
       if(connected && !gamepad)
       {
-         InputSystem::getInstance()->onGamepadConnected(id);
-         gamepad = InputSystem::getInstance()->getGamepad(id);
+         onGamepadConnected(id);
+         gamepad = getGamepad(id);
       }
       else if(!connected && gamepad)
       {
-         InputSystem::getInstance()->onGamepadDisconnected(id);
+         onGamepadDisconnected(id);
       }
 
       if(!connected)
@@ -71,12 +76,12 @@ static void checkGamepadState()
          {
             if(buttonPressed)
             {
-               InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Gamepad);
-               InputSystem::getInstance()->inputGamepadButtonPress(id, (Gamepad::Button)i);
+               setCurrentInputDevice(InputDevice::Gamepad);
+               inputGamepadButtonPress(id, (Gamepad::Button)i);
             }
             else
             {
-               InputSystem::getInstance()->inputGamepadButtonRelease(id, (Gamepad::Button)i);
+               inputGamepadButtonRelease(id, (Gamepad::Button)i);
             }
          }
       }
@@ -110,8 +115,8 @@ static void checkGamepadState()
 
          if(!sticks[i].equals(gamepad->mStateSticks[i]))
          {
-            InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Gamepad);
-            InputSystem::getInstance()->inputGamepadStickChanged(id, (Gamepad::Stick)i, sticks[i]);
+            setCurrentInputDevice(InputDevice::Gamepad);
+            inputGamepadStickChanged(id, (Gamepad::Stick)i, sticks[i]);
          }
       }
 
@@ -125,9 +130,13 @@ static void checkGamepadState()
       {
          if(!GEFloatEquals(triggers[i], gamepad->mStateTriggers[i]))
          {
-            InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Gamepad);
-            InputSystem::getInstance()->inputGamepadTriggerChanged(id, (Gamepad::Trigger)i, triggers[i]);
+            setCurrentInputDevice(InputDevice::Gamepad);
+            inputGamepadTriggerChanged(id, (Gamepad::Trigger)i, triggers[i]);
          }
       }
    }
+}
+
+void InputSystem::platformShutdown()
+{
 }

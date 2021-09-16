@@ -103,6 +103,21 @@ InputSystem::~InputSystem()
    GEMutexDestroy(mEventsMutex);
 }
 
+void InputSystem::init()
+{
+   platformInit();
+}
+
+void InputSystem::update()
+{
+   platformUpdate();
+}
+
+void InputSystem::shutdown()
+{
+   platformShutdown();
+}
+
 bool inputListenerComparer(InputListener* pListenerA, InputListener* pListenerB)
 {
    return (pListenerA->getInputPriority() < pListenerB->getInputPriority());

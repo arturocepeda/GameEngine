@@ -453,6 +453,9 @@
     <ClCompile Include="Core\GELog.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Input\XInput\GEInputSystem.XInput.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio\GEAudioSystem.h">

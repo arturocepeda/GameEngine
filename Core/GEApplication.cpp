@@ -159,6 +159,7 @@ void Application::startUp(void (*pInitAppModuleFunction)())
 
    InputSystem* cInputSystem = Allocator::alloc<InputSystem>();
    GEInvokeCtor(InputSystem, cInputSystem);
+   cInputSystem->init();
 
    SerializableResourcesManager* cSerializableResourcesManager = Allocator::alloc<SerializableResourcesManager>();
    GEInvokeCtor(SerializableResourcesManager, cSerializableResourcesManager);
@@ -193,6 +194,8 @@ void Application::startUp(void (*pInitAppModuleFunction)())
 
 void Application::tick()
 {
+   InputSystem::getInstance()->update();
+
    for(uint32_t i = 0; i < ScriptingEnvironmentsCount; i++)
    {
       smScriptingEnvironments[i]->collectGarbageStep();
@@ -227,6 +230,7 @@ void Application::shutDown()
    GEInvokeDtor(ResourcesManager, ResourcesManager::getInstance());
    Allocator::free(ResourcesManager::getInstance());
 
+   InputSystem::getInstance()->shutdown();
    GEInvokeDtor(InputSystem, InputSystem::getInstance());
    Allocator::free(InputSystem::getInstance());
 

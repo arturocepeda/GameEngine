@@ -162,9 +162,17 @@ namespace GE { namespace Input
       Vector2 mMousePosition;
       Vector3 mAccelerometerStatus;
 
+      void platformInit();
+      void platformUpdate();
+      void platformShutdown();
+
    public:
       InputSystem();
       ~InputSystem();
+
+      void init();
+      void update();
+      void shutdown();
 
       void addListener(InputListener* pListener);
       void removeListener(InputListener* pListener);

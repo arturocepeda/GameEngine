@@ -27,7 +27,6 @@
 #include "Rendering/DX11/GERenderSystemDX11.h"
 #include "Audio/GEAudioSystem.h"
 #include "Input/GEInputSystem.h"
-#include "Input/GEGamepad.XInput.h"
 
 #pragma comment(lib, "GameEngine.DX11.lib")
 #pragma comment(lib, "AppModule.lib")
@@ -306,8 +305,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR sCmdLine, 
          }
 
          Time::setDelta(fTimeDelta);
-
-         checkGamepadState();
 
          TaskManager::getInstance()->update();
          TaskManager::getInstance()->render();
