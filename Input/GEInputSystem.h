@@ -193,6 +193,7 @@ namespace GE { namespace Input
       void setInputEnabled(bool pEnabled);
       void processEvents();
 
+      int getConnectedGamepadID(size_t pIndex) const;
       Gamepad* getGamepad(int pID);
 
       const Vector2& getMousePosition() const { return mMousePosition; }

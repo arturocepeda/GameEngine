@@ -308,6 +308,11 @@ void InputSystem::setInputEnabled(bool pEnabled)
    }
 }
 
+int InputSystem::getConnectedGamepadID(size_t pIndex) const
+{
+   return pIndex < mGamepads.size() ? mGamepads[pIndex].mID : -1;
+}
+
 Gamepad* InputSystem::getGamepad(int pID)
 {
    for(size_t i = 0u; i < mGamepads.size(); i++)

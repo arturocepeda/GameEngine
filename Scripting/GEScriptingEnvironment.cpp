@@ -1055,6 +1055,7 @@ void Environment::registerTypes()
       , "getCurrentInputDevice", &InputSystem::getCurrentInputDevice
       , "setInputEnabled", &InputSystem::setInputEnabled
       , "getMousePosition", &InputSystem::getMousePosition
+      , "getConnectedGamepadID", &InputSystem::getConnectedGamepadID
       , "setGamepadVibration", &InputSystem::setGamepadVibration
       , "inputKeyPress", &InputSystem::inputKeyPress
       , "inputKeyRelease", &InputSystem::inputKeyRelease
