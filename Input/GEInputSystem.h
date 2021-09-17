@@ -67,7 +67,9 @@ namespace GE { namespace Input
       enum class VibrationDevice
       {
          Left,
-         Right
+         Right,
+
+         Count
       };
 
       int mID;

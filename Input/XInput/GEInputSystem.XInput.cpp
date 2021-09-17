@@ -18,6 +18,8 @@
 
 using namespace GE::Input;
 
+static WORD gGamepadVibrationLevel[(int)Gamepad::VibrationDevice::Count] = {{ 0u }};
+
 void InputSystem::platformInit()
 {
 }
@@ -139,4 +141,15 @@ void InputSystem::platformUpdate()
 
 void InputSystem::platformShutdown()
 {
+}
+
+void InputSystem::platformSetGamepadVibration(int pID, Gamepad::VibrationDevice pDevice, float pLevel)
+{
+   gGamepadVibrationLevel[(int)pDevice] = (WORD)(pLevel * 65535.0f);
+
+   XINPUT_VIBRATION vibration;
+   vibration.wLeftMotorSpeed = gGamepadVibrationLevel[(int)Gamepad::VibrationDevice::Left];
+   vibration.wRightMotorSpeed = gGamepadVibrationLevel[(int)Gamepad::VibrationDevice::Right];
+
+   XInputSetState((DWORD)pID, &vibration);
 }
