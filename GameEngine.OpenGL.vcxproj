@@ -132,7 +132,7 @@
     <ClCompile Include="Externals\stblib\stb_image.c" />
     <ClCompile Include="Externals\tlsf\tlsf.c" />
     <ClCompile Include="Input\GEInputSystem.cpp" />
-    <ClCompile Include="Input\GLFW\GEInputSystem.GLFW.cpp" />
+    <ClCompile Include="Input\XInput\GEInputSystem.XInput.cpp" />
     <ClCompile Include="Rendering\GEFont.cpp" />
     <ClCompile Include="Rendering\GEGraphicsDevice.cpp" />
     <ClCompile Include="Rendering\GEMaterial.cpp" />

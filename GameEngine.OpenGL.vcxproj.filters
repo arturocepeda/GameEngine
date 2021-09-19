@@ -450,7 +450,7 @@
     <ClCompile Include="Core\GELog.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Input\GLFW\GEInputSystem.GLFW.cpp">
+    <ClCompile Include="Input\XInput\GEInputSystem.XInput.cpp">
       <Filter>Input</Filter>
     </ClCompile>
   </ItemGroup>
