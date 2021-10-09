@@ -1364,11 +1364,20 @@ void Environment::registerTypes()
       , "getActiveCamera", &RenderSystem::getActiveCamera
       , "getFPS", &RenderSystem::getFPS
    );
+   mLua.new_simple_usertype<TextureCoordinates>
+   (
+      "TextureCoordinates"
+      , "U0", &TextureCoordinates::U0
+      , "U1", &TextureCoordinates::U1
+      , "V0", &TextureCoordinates::V0
+      , "V1", &TextureCoordinates::V1
+   );
    mLua.new_simple_usertype<Texture>
    (
       "Texture"
       , "getAtlasSize", &Texture::getAtlasSize
       , "getAtlasName", &Texture::getAtlasName
+      , "getAtlasCoordinates", &Texture::getAtlasCoordinates
    );
    mLua.new_simple_usertype<Material>
    (

@@ -92,6 +92,7 @@ namespace GE { namespace Rendering
 
       uint getAtlasSize() const;
       const Core::ObjectName& getAtlasName(uint Index) const;
+      const TextureCoordinates& getAtlasCoordinates(uint Index) const;
 
       void setHandler(void* HandlePtr) { pHandlePtr = HandlePtr; }
       const void* getHandler() const { return pHandlePtr; }

@@ -51,6 +51,12 @@ const ObjectName& Texture::getAtlasName(uint Index) const
    return AtlasUV[Index].getName();
 }
 
+const TextureCoordinates& Texture::getAtlasCoordinates(uint Index) const
+{
+   GEAssert(Index < AtlasUV.size());
+   return AtlasUV[Index].UV;
+}
+
 void Texture::populateAtlasUVManager()
 {
    for(uint i = 0; i < AtlasUV.size(); i++)
