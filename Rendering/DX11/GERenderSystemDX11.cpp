@@ -937,7 +937,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
             sShaderConstantsLighting.LightType = (GE::uint)cLight->getLightType();
             sShaderConstantsLighting.LightColor = cLight->getColor();
-            sShaderConstantsLighting.LightPosition = cLight->getTransform()->getPosition();
+            sShaderConstantsLighting.LightPosition = cLight->getTransform()->getWorldPosition();
             sShaderConstantsLighting.LightDirection = cLight->getDirection();
             sShaderConstantsLighting.Attenuation = cLight->getLinearAttenuation();
             sShaderConstantsLighting.SpotAngle = cLight->getSpotAngle();
@@ -969,7 +969,7 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
 
          sShaderConstantsLighting.LightType = (GE::uint)cLight->getLightType();
          sShaderConstantsLighting.LightColor = cLight->getColor();
-         sShaderConstantsLighting.LightPosition = cLight->getTransform()->getPosition();
+         sShaderConstantsLighting.LightPosition = cLight->getTransform()->getWorldPosition();
          sShaderConstantsLighting.LightDirection = cLight->getDirection();
          sShaderConstantsLighting.Attenuation = cLight->getLinearAttenuation();
          sShaderConstantsLighting.SpotAngle = cLight->getSpotAngle();

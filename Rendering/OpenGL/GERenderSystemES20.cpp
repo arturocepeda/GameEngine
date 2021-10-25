@@ -700,11 +700,12 @@ void RenderSystem::render(const RenderOperation& sRenderOperation)
       else
       {
          ComponentLight* cLight = vLightsToRender[0];
+         Vector3 vLightPosition = cLight->getTransform()->getWorldPosition();
          Vector3 vLightDirection = cLight->getDirection();
 
          glUniform1i(gActiveProgram->getUniformLocation((uint)Uniforms::LightType), (GE::uint)cLight->getLightType());
          glUniform4fv(gActiveProgram->getUniformLocation((uint)Uniforms::LightColor), 1, &cLight->getColor().Red);
-         glUniform3fv(gActiveProgram->getUniformLocation((uint)Uniforms::LightPosition), 1, &cLight->getTransform()->getPosition().X);
+         glUniform3fv(gActiveProgram->getUniformLocation((uint)Uniforms::LightPosition), 1, &vLightPosition.X);
          glUniform3fv(gActiveProgram->getUniformLocation((uint)Uniforms::LightDirection), 1, &vLightDirection.X);
          glUniform1f(gActiveProgram->getUniformLocation((uint)Uniforms::Attenuation), cLight->getLinearAttenuation());
          glUniform1f(gActiveProgram->getUniformLocation((uint)Uniforms::SpotAngle), cLight->getSpotAngle());
