@@ -14,7 +14,7 @@
 
 #include <XInput.h>
 
-#pragma comment(lib, "XInput.lib")
+#pragma comment(lib, "xinput9_1_0.lib")
 
 using namespace GE::Input;
 
