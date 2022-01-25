@@ -14,6 +14,7 @@
 #include "Core/GEAllocator.h"
 #include "Core/GEApplication.h"
 #include "Core/GEValue.h"
+#include "Core/GELog.h"
 #include "Content/GEResourcesManager.h"
 
 using namespace GE;
