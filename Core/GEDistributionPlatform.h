@@ -59,6 +59,8 @@ namespace GE { namespace Core
       std::atomic<bool> mUpdatingLeaderboardScore;
       std::atomic<bool> mSearchingForLobbies;
 
+      std::atomic<uint32_t> mErrorCode;
+
       void addLeaderboardEntry(size_t pLeaderboardIndex, const LeaderboardEntry& pEntry);
 
    public:
@@ -118,5 +120,9 @@ namespace GE { namespace Core
 
       size_t getLobbiesCount() const;
       const Lobby* getLobby(size_t pIndex) const;
+
+      // Error management
+      void resetErrorCode();
+      uint32_t getErrorCode() const;
    };
 }}

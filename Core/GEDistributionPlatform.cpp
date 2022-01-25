@@ -18,6 +18,7 @@ using namespace GE::Core;
 DistributionPlatform::DistributionPlatform()
    : mUpdatingLeaderboardScore(false)
    , mSearchingForLobbies(false)
+   , mErrorCode(0u)
 {
 }
 
@@ -103,4 +104,14 @@ const DistributionPlatform::Lobby* DistributionPlatform::getLobby(size_t pIndex)
 {
    GEAssert(pIndex < mLobbies.size());
    return &mLobbies[pIndex];
+}
+
+void DistributionPlatform::resetErrorCode()
+{
+   mErrorCode = 0u;
+}
+
+uint32_t DistributionPlatform::getErrorCode() const
+{
+   return mErrorCode;
 }
