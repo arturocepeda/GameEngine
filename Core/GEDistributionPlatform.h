@@ -34,7 +34,10 @@ namespace GE { namespace Core
       struct Leaderboard
       {
          ObjectName mLeaderboardName;
+         float mLeaderboardAge;
          GESTLVector(LeaderboardEntry) mLeaderboardEntries;
+
+         Leaderboard() : mLeaderboardAge(0.0f) {}
       };
 
       struct Lobby
@@ -61,6 +64,7 @@ namespace GE { namespace Core
 
       std::atomic<uint32_t> mErrorCode;
 
+      void updateLeaderboardEntries(float pDeltaTime);
       void addLeaderboardEntry(size_t pLeaderboardIndex, const LeaderboardEntry& pEntry);
 
    public:
@@ -101,10 +105,12 @@ namespace GE { namespace Core
       // Leaderboards
       void updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore, uint32_t pScoreDetail);
       bool updatingLeaderboardScore() const;
+
       void resetLeaderboard(const ObjectName& pLeaderboardName);
       void requestLeaderboardScores(const ObjectName& pLeaderboardName, uint16_t pFirstPosition, uint16_t pLastPosition);
       void requestLeaderboardScoresAroundUser(const ObjectName& pLeaderboardName, uint16_t pPositionsCount);
 
+      float getLeaderboardAge(const ObjectName& pLeaderboardName) const;
       size_t getLeaderboardEntriesCount(const ObjectName& pLeaderboardName) const;
       const LeaderboardEntry* getLeaderboardEntry(const ObjectName& pLeaderboardName, size_t pEntryIndex) const;
 

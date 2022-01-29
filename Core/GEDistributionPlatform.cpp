@@ -26,6 +26,14 @@ DistributionPlatform::~DistributionPlatform()
 {
 }
 
+void DistributionPlatform::updateLeaderboardEntries(float pDeltaTime)
+{
+   for(size_t i = 0u; i < mLeaderboards.size(); i++)
+   {
+      mLeaderboards[i].mLeaderboardAge += pDeltaTime;
+   }
+}
+
 void DistributionPlatform::addLeaderboardEntry(size_t pLeaderboardIndex, const LeaderboardEntry& pEntry)
 {
    bool addNewEntry = true;
@@ -60,6 +68,19 @@ void DistributionPlatform::resetLeaderboard(const ObjectName& pLeaderboardName)
          break;
       }
    }
+}
+
+float DistributionPlatform::getLeaderboardAge(const ObjectName& pLeaderboardName) const
+{
+   for(size_t i = 0u; i < mLeaderboards.size(); i++)
+   {
+      if(mLeaderboards[i].mLeaderboardName == pLeaderboardName)
+      {
+         return mLeaderboards[i].mLeaderboardAge;
+      }
+   }
+
+   return FLT_MAX;
 }
 
 size_t DistributionPlatform::getLeaderboardEntriesCount(const ObjectName& pLeaderboardName) const

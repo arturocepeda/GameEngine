@@ -1002,6 +1002,7 @@ void Environment::registerTypes()
       , "resetLeaderboard", &DistributionPlatform::resetLeaderboard
       , "requestLeaderboardScores", &DistributionPlatform::requestLeaderboardScores
       , "requestLeaderboardScoresAroundUser", &DistributionPlatform::requestLeaderboardScoresAroundUser
+      , "getLeaderboardAge", &DistributionPlatform::getLeaderboardAge
       , "getLeaderboardEntriesCount", &DistributionPlatform::getLeaderboardEntriesCount
       , "getLeaderboardEntry", &DistributionPlatform::getLeaderboardEntry
       , "findLobbies", &DistributionPlatform::findLobbies
