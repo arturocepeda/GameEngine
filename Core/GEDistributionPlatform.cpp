@@ -64,6 +64,7 @@ void DistributionPlatform::resetLeaderboard(const ObjectName& pLeaderboardName)
    {
       if(mLeaderboards[i].mLeaderboardName == pLeaderboardName)
       {
+         mLeaderboards[i].mLeaderboardAge = 0.0f;
          mLeaderboards[i].mLeaderboardEntries.clear();
          break;
       }
