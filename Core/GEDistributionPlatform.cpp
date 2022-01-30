@@ -18,6 +18,7 @@ using namespace GE::Core;
 DistributionPlatform::DistributionPlatform()
    : mUpdatingLeaderboardScore(false)
    , mSearchingForLobbies(false)
+   , mJoiningOrCreatingLobby(false)
    , mErrorCode(0u)
 {
 }
@@ -115,6 +116,11 @@ const DistributionPlatform::LeaderboardEntry* DistributionPlatform::getLeaderboa
 bool DistributionPlatform::searchingForLobbies() const
 {
    return mSearchingForLobbies;
+}
+
+bool DistributionPlatform::joiningOrCreatingLobby() const
+{
+   return mJoiningOrCreatingLobby;
 }
 
 size_t DistributionPlatform::getLobbiesCount() const

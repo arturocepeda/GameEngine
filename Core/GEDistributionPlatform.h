@@ -61,6 +61,7 @@ namespace GE { namespace Core
 
       std::atomic<bool> mUpdatingLeaderboardScore;
       std::atomic<bool> mSearchingForLobbies;
+      std::atomic<bool> mJoiningOrCreatingLobby;
 
       std::atomic<uint32_t> mErrorCode;
 
@@ -121,6 +122,10 @@ namespace GE { namespace Core
       void createLobby(const char* pName, uint32_t pMaxMembers);
       void joinLobby(const Lobby* pLobby);
       void leaveLobby(const Lobby* pLobby);
+
+      bool isJoinOrCreateLobbyFeatureAvailable() const;
+      void joinOrCreateLobby(const char* pName, uint32_t pMaxMembers);
+      bool joiningOrCreatingLobby() const;
 
       size_t getLobbyMembersCount(const Lobby* pLobby) const;
       void getLobbyMember(const Lobby* pLobby, size_t pIndex, LobbyMember* pOutMember);

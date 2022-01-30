@@ -1010,6 +1010,9 @@ void Environment::registerTypes()
       , "createLobby", &DistributionPlatform::createLobby
       , "joinLobby", &DistributionPlatform::joinLobby
       , "leaveLobby", &DistributionPlatform::leaveLobby
+      , "isJoinOrCreateLobbyFeatureAvailable", &DistributionPlatform::isJoinOrCreateLobbyFeatureAvailable
+      , "joinOrCreateLobby", &DistributionPlatform::joinOrCreateLobby
+      , "joiningOrCreatingLobby", &DistributionPlatform::joiningOrCreatingLobby
       , "getLobbyMembersCount", &DistributionPlatform::getLobbyMembersCount
       , "getLobbyMember", &DistributionPlatform::getLobbyMember
       , "getLobbiesCount", &DistributionPlatform::getLobbiesCount
