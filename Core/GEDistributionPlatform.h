@@ -128,7 +128,7 @@ namespace GE { namespace Core
       bool joiningOrCreatingLobby() const;
 
       size_t getLobbyMembersCount(const Lobby* pLobby) const;
-      void getLobbyMember(const Lobby* pLobby, size_t pIndex, LobbyMember* pOutMember);
+      bool getLobbyMember(const Lobby* pLobby, size_t pIndex, LobbyMember* pOutMember);
 
       size_t getLobbiesCount() const;
       const Lobby* getLobby(size_t pIndex) const;

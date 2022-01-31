@@ -59,6 +59,10 @@ void DistributionPlatform::logIn(std::function<void()>)
 {
 }
 
+void DistributionPlatform::logOut()
+{
+}
+
 bool DistributionPlatform::remoteFileExists(const char* pSubDir, const char* pName, const char* pExtension)
 {
    return Device::userFileExists(pSubDir, pName, pExtension);
@@ -143,6 +147,7 @@ size_t DistributionPlatform::getLobbyMembersCount(const Lobby*) const
    return 0u;
 }
 
-void DistributionPlatform::getLobbyMember(const Lobby*, size_t, LobbyMember*)
+bool DistributionPlatform::getLobbyMember(const Lobby*, size_t, LobbyMember*)
 {
+   return false;
 }
