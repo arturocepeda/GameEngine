@@ -60,6 +60,7 @@ namespace GE { namespace Core
       GESTLVector(Lobby) mLobbies;
 
       std::atomic<bool> mUpdatingLeaderboardScore;
+      std::atomic<bool> mRequestingLeaderboardScores;
       std::atomic<bool> mSearchingForLobbies;
       std::atomic<bool> mJoiningOrCreatingLobby;
 
@@ -110,6 +111,7 @@ namespace GE { namespace Core
       void resetLeaderboard(const ObjectName& pLeaderboardName);
       void requestLeaderboardScores(const ObjectName& pLeaderboardName, uint16_t pFirstPosition, uint16_t pLastPosition);
       void requestLeaderboardScoresAroundUser(const ObjectName& pLeaderboardName, uint16_t pPositionsCount);
+      bool requestingLeaderboardScores() const;
 
       float getLeaderboardAge(const ObjectName& pLeaderboardName) const;
       size_t getLeaderboardEntriesCount(const ObjectName& pLeaderboardName) const;

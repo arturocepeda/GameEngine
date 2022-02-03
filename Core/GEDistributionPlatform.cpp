@@ -17,6 +17,7 @@ using namespace GE::Core;
 
 DistributionPlatform::DistributionPlatform()
    : mUpdatingLeaderboardScore(false)
+   , mRequestingLeaderboardScores(false)
    , mSearchingForLobbies(false)
    , mJoiningOrCreatingLobby(false)
    , mErrorCode(0u)
@@ -70,6 +71,11 @@ void DistributionPlatform::resetLeaderboard(const ObjectName& pLeaderboardName)
          break;
       }
    }
+}
+
+bool DistributionPlatform::requestingLeaderboardScores() const
+{
+   return mRequestingLeaderboardScores;
 }
 
 float DistributionPlatform::getLeaderboardAge(const ObjectName& pLeaderboardName) const
