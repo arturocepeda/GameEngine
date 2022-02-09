@@ -52,6 +52,8 @@ namespace GE { namespace Core
       void popState();
       void requestPopStates(uint32_t pStatesCount);
 
+      bool isOnTheStack(State* pState) const;
+
       void update();
       void releaseStates();
    };

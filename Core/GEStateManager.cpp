@@ -54,6 +54,19 @@ void StateManager::requestPopStates(uint32_t pStatesCount)
    mStatePopRequests += pStatesCount;
 }
 
+bool StateManager::isOnTheStack(State* pState) const
+{
+   for(size_t i = 0u; i < mActiveStates.size(); i++)
+   {
+      if(mActiveStates[i] == pState)
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
 void StateManager::update()
 {
    if(mStatePopRequests > 0u)

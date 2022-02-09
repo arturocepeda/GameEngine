@@ -80,7 +80,19 @@ void TaskManager::update()
       {
          InputSystem::getInstance()->removeListener(cCurrentState);
 
-         if(!cActiveState || cActiveState->getStateType() != StateType::Modal)
+         bool deactivatePreviousState = false;
+
+         if(cStateManager->isOnTheStack(cCurrentState))
+         {
+            deactivatePreviousState =
+               !cActiveState || cActiveState->getStateType() != StateType::Modal;
+         }
+         else
+         {
+            deactivatePreviousState = true;
+         }
+
+         if(deactivatePreviousState)
          {
             GEAssert(cCurrentState->getActive());
             cCurrentState->deactivate();
