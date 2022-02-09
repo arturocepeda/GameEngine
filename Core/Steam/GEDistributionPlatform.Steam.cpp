@@ -301,6 +301,7 @@ bool DistributionPlatform::loggedIn() const
 
 void DistributionPlatform::logIn(std::function<void()> onFinished)
 {
+   (void)onFinished;
 }
 
 bool DistributionPlatform::remoteFileExists(const char* pSubDir, const char* pName, const char* pExtension)
@@ -699,6 +700,17 @@ void DistributionPlatform::leaveLobby(const Lobby* pLobby)
          break;
       }
    }
+}
+
+bool DistributionPlatform::isJoinOrCreateLobbyFeatureAvailable() const
+{
+   return false;
+}
+
+void DistributionPlatform::joinOrCreateLobby(const char* pName, uint32_t pMaxMembers)
+{
+   (void)pName;
+   (void)pMaxMembers;
 }
 
 size_t DistributionPlatform::getLobbyMembersCount(const Lobby* pLobby) const

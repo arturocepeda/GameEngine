@@ -142,6 +142,15 @@ void DistributionPlatform::leaveLobby(const Lobby*)
 {
 }
 
+bool DistributionPlatform::isJoinOrCreateLobbyFeatureAvailable() const
+{
+   return false;
+}
+
+void DistributionPlatform::joinOrCreateLobby(const char*, uint32_t)
+{
+}
+
 size_t DistributionPlatform::getLobbyMembersCount(const Lobby*) const
 {
    return 0u;
