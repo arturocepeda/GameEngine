@@ -52,12 +52,16 @@ namespace GE { namespace Core
    protected:
       void* pGlobalData;
       StateType eStateType;
+      bool mActive;
 
    public:
       State(const ObjectName& Name, void* GlobalData);
       virtual ~State();
 
       StateType getStateType() const;
+
+      void setActive(bool pActive);
+      bool getActive() const;
 
       virtual void activate() = 0;
       virtual void update() = 0;

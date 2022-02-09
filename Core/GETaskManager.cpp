@@ -82,15 +82,18 @@ void TaskManager::update()
 
          if(!cActiveState || cActiveState->getStateType() != StateType::Modal)
          {
+            GEAssert(cCurrentState->getActive());
             cCurrentState->deactivate();
+            cCurrentState->setActive(false);
          }
       }
 
       if(cActiveState)
       {
-         if(!cCurrentState || cCurrentState->getStateType() != StateType::Modal)
+         if(!cActiveState->getActive())
          {
             cActiveState->activate();
+            cActiveState->setActive(true);
          }
 
          InputSystem::getInstance()->addListener(cActiveState);
