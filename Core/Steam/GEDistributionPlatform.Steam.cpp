@@ -304,6 +304,10 @@ void DistributionPlatform::logIn(std::function<void()> onFinished)
    (void)onFinished;
 }
 
+void DistributionPlatform::logOut()
+{
+}
+
 bool DistributionPlatform::remoteFileExists(const char* pSubDir, const char* pName, const char* pExtension)
 {
    char fileName[kPathBufferSize];
@@ -721,7 +725,7 @@ size_t DistributionPlatform::getLobbyMembersCount(const Lobby* pLobby) const
    return (size_t)SteamMatchmaking()->GetNumLobbyMembers(lobbyID);
 }
 
-void DistributionPlatform::getLobbyMember(const Lobby* pLobby, size_t pIndex, LobbyMember* pOutMember)
+bool DistributionPlatform::getLobbyMember(const Lobby* pLobby, size_t pIndex, LobbyMember* pOutMember)
 {
    CSteamID lobbyID;
    lobbyID.SetFromUint64(pLobby->mID);
@@ -729,4 +733,6 @@ void DistributionPlatform::getLobbyMember(const Lobby* pLobby, size_t pIndex, Lo
    const CSteamID memberID = SteamMatchmaking()->GetLobbyMemberByIndex(lobbyID, (int)pIndex);
    pOutMember->mID = memberID.ConvertToUint64();
    pOutMember->mUserName.assign(SteamFriends()->GetFriendPersonaName(memberID));
+
+   return true;
 }
