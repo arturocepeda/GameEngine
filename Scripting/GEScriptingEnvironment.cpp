@@ -19,7 +19,6 @@
 #include "Core/GEPlatform.h"
 #include "Core/GEApplication.h"
 #include "Core/GESettings.h"
-#include "Core/GELog.h"
 #include "Core/GEDevice.h"
 #include "Core/GEInterpolator.h"
 #include "Core/GEPhysics.h"
@@ -129,14 +128,14 @@ Namespace* Namespace::addNamespaceFromModule(const ObjectName& pName, const char
          }
          else
          {
-            Environment::handleScriptError(pModuleName, "does not return any valid module");
+            handleScriptError(pModuleName, "does not return any valid module");
             return 0;
          }
       }
       else
       {
          sol::error luaError = loadFunction;
-         Environment::handleScriptError(pModuleName, luaError.what());
+         handleScriptError(pModuleName, luaError.what());
          return 0;
       }
    }
@@ -419,30 +418,6 @@ bool Environment::loadModule(State* pState, const char* pModuleName, Table* pOut
    }
 
    return true;
-}
-
-void Environment::handleScriptError(const char* pScriptName, const char* pMsg)
-{
-   if(pMsg)
-   {
-      Log::log(LogType::Error, "Lua error (the '%s' script could not be loaded): %s", pScriptName, pMsg);
-   }
-   else
-   {
-      Log::log(LogType::Error, "Lua error (the '%s' script could not be loaded)", pScriptName);
-   }
-}
-
-void Environment::handleFunctionError(const char* pFunctionName, const char* pMsg)
-{
-   if(pMsg)
-   {
-      Log::log(LogType::Error, "Lua error ('%s' function): %s", pFunctionName, pMsg);
-   }
-   else
-   {
-      Log::log(LogType::Error, "Lua error ('%s' function)", pFunctionName);
-   }
 }
 
 struct LuaDump

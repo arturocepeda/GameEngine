@@ -14,6 +14,7 @@
 
 #include "Core/GESingleton.h"
 #include "Core/GEPlatform.h"
+#include "Core/GELog.h"
 #include "Entities/GEEntity.h"
 #include "Types/GESTLTypes.h"
 
@@ -21,6 +22,8 @@
 
 #include "Externals/sol2/sol.hpp"
 #include "Externals/tlsf/tlsf.h"
+
+#define GE_SAFE_FUNCTIONS 1
 
 
 namespace GE { namespace Content
@@ -33,11 +36,38 @@ namespace GE { namespace Scripting
 {
    typedef sol::state State;
    typedef sol::table Table;
-#if defined (GE_EDITOR_SUPPORT)
+#if (GE_SAFE_FUNCTIONS)
    typedef sol::protected_function Function;
 #else
    typedef sol::function Function;
 #endif
+
+
+   static void handleScriptError(const char* pScriptName, const char* pMsg = nullptr)
+   {
+      if(pMsg)
+      {
+         Core::Log::log(
+            Core::LogType::Error, "Lua error (the '%s' script could not be loaded): %s", pScriptName, pMsg);
+      }
+      else
+      {
+         Core::Log::log(
+            Core::LogType::Error, "Lua error (the '%s' script could not be loaded)", pScriptName);
+      }
+   }
+
+   static void handleFunctionError(const char* pFunctionName, const char* pMsg = nullptr)
+   {
+      if(pMsg)
+      {
+         Core::Log::log(Core::LogType::Error, "Lua error ('%s' function): %s", pFunctionName, pMsg);
+      }
+      else
+      {
+         Core::Log::log(Core::LogType::Error, "Lua error ('%s' function)", pFunctionName);
+      }
+   }
 
 
    class Namespace
@@ -95,13 +125,13 @@ namespace GE { namespace Scripting
       ReturnType runFunction(const Core::ObjectName& pFunctionName, Parameters&&... pParameterList)
       {
          Function& luaFunction = mFunctions.find(pFunctionName.getID())->second;
-#if defined (GE_EDITOR_SUPPORT)
+#if (GE_SAFE_FUNCTIONS)
          auto luaFunctionResult = luaFunction(pParameterList...);
 
          if(!luaFunctionResult.valid())
          {
             sol::error luaError = luaFunctionResult;
-            Environment::handleFunctionError(pFunctionName.getString(), luaError.what());
+            handleFunctionError(pFunctionName.getString(), luaError.what());
             return (ReturnType)0;
          }
 
@@ -149,9 +179,6 @@ namespace GE { namespace Scripting
 
       static bool loadModuleContent(Content::ContentData* pContentData, const char* pModuleName);
       static bool loadModule(State* pState, const char* pModuleName, Table* pOutReturnValue);
-
-      static void handleScriptError(const char* pScriptName, const char* pMsg = 0);
-      static void handleFunctionError(const char* pFunctionName, const char* pMsg = 0);
 
       static size_t compileScript(const char* pCode, size_t pBytecodeMaxSize, char* pOutBytecode);
 
