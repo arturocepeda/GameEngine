@@ -1345,7 +1345,7 @@ void ContentCompiler::compileScripts()
    if(hFile == INVALID_HANDLE_VALUE)
       return;
 
-   const size_t bufferSize = 128u * 1024u;
+   const size_t bufferSize = 256u * 1024u;
 
    char codeBuffer[bufferSize];
    char byteCodeBuffer[bufferSize];
@@ -1392,6 +1392,7 @@ void ContentCompiler::compileScripts()
       FILE* outputFile = fopen(sOutputPath, "wb");
       const size_t outputFileSize =
          Scripting::Environment::compileScript(codeBuffer, bufferSize, byteCodeBuffer);
+      GEAssert(outputFileSize > 0u);
       fwrite(byteCodeBuffer, 1u, outputFileSize, outputFile);
       fclose(outputFile);
    }
