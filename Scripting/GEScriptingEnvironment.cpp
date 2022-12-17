@@ -1343,6 +1343,11 @@ void Environment::registerTypes()
       , "get3DUICanvasCount", &RenderSystem::get3DUICanvasCount
       , "getActiveCamera", &RenderSystem::getActiveCamera
       , "getFPS", &RenderSystem::getFPS
+      , "preloadTextures", &RenderSystem::preloadTextures
+      , "loadAllPreloadedTextures", &RenderSystem::loadAllPreloadedTextures
+      , "unloadTextures", &RenderSystem::unloadTextures
+      , "loadMaterials", &RenderSystem::loadMaterials
+      , "unloadMaterials", &RenderSystem::unloadMaterials
    );
    mLua.new_simple_usertype<TextureCoordinates>
    (
