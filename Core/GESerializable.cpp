@@ -402,6 +402,41 @@ void Serializable::loadFromStream(std::istream& Stream)
    }
 }
 
+void Serializable::advanceStream(std::istream& Stream) const
+{
+   for(uint i = 0; i < vProperties.size(); i++)
+   {
+      const Property& sProperty = vProperties[i];
+
+      if(sProperty.Setter && !GEHasFlag(sProperty.Flags, PropertyFlags::Runtime))
+      {
+         Value::fromStream(sProperty.Type, Stream);
+      }
+   }
+
+   for(uint i = 0; i < vPropertyArrays.size(); i++)
+   {
+      const PropertyArray& sPropertyArray = vPropertyArrays[i];
+      const uint iPropertyArrayElementsCount =
+         (uint)Value::fromStream(ValueType::Byte, Stream).getAsByte();
+
+      if(iPropertyArrayElementsCount > 0)
+      {
+         if(sPropertyArray.Entries->empty())
+         {
+            sPropertyArray.Add();
+         }
+
+         SerializableArrayElement* cPropertyArrayElement = sPropertyArray.Entries->front();
+
+         for(uint j = 0; j < iPropertyArrayElementsCount; j++)
+         {
+            cPropertyArrayElement->advanceStream(Stream);
+         }
+      }
+   }
+}
+
 void Serializable::saveToStream(std::ostream& Stream) const
 {
    for(uint i = 0; i < vProperties.size(); i++)

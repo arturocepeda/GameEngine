@@ -468,13 +468,32 @@ void RenderSystem::unloadTextures(const char* FileName)
       ContentDataMemoryBuffer sMemoryBuffer(cTexturesData);
       std::istream sStream(&sMemoryBuffer);
 
-      uint iTexturesCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+      uint iTexturesCount = (uint)Value::fromStream(ValueType::UShort, sStream).getAsUShort();
 
       for(uint i = 0; i < iTexturesCount; i++)
       {
          ObjectName cTextureName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
          Texture* cTexture = mTextures.get(cTextureName);
          GEAssert(cTexture);
+         cTexture->advanceStream(sStream);
+
+         const uint iTextureDataSize = Value::fromStream(ValueType::UInt, sStream).getAsUInt();
+         sStream.ignore(iTextureDataSize);
+
+         if(GEHasFlag(cTexture->getSettings(), TextureSettingsBitMask::AtlasUV))
+         {
+            uint iAtlasEntriesCount = (uint)Value::fromStream(ValueType::Byte, sStream).getAsByte();
+
+            for(uint j = 0; j < iAtlasEntriesCount; j++)
+            {
+               Value::fromStream(ValueType::ObjectName, sStream);  // Atlas entry name
+               Value::fromStream(ValueType::UShort, sStream);  // x
+               Value::fromStream(ValueType::UShort, sStream);  // y
+               Value::fromStream(ValueType::UShort, sStream);  // w
+               Value::fromStream(ValueType::UShort, sStream);  // h
+            }
+         }
+
          unloadTexture(cTexture);
          mTextures.remove(cTextureName);
       }
@@ -620,6 +639,9 @@ void RenderSystem::unloadMaterials(const char* FileName)
       for(uint i = 0; i < iMaterialsCount; i++)
       {
          ObjectName cMaterialName = Value::fromStream(ValueType::ObjectName, sStream).getAsObjectName();
+         Material* material = mMaterials.get(cMaterialName);
+         GEAssert(material);
+         material->advanceStream(sStream);
          unloadMaterial(cMaterialName);
       }
    }
