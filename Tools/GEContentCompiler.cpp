@@ -717,7 +717,7 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
 
             Value(iKerningFirstCharId).writeToStream(sOutputFile);
             Value(iKerningSecondCharId).writeToStream(sOutputFile);
-            Value((uint16_t)iKerningAmount).writeToStream(sOutputFile);
+            Value(iKerningAmount).writeToStream(sOutputFile);
          }
       }
 

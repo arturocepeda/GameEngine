@@ -302,7 +302,7 @@ void Font::loadFontData(uint32_t pCharSetIndex, std::istream& pStream)
    {
       const uint16_t iKerningFirstCharId = Value::fromStream(ValueType::UShort, pStream).getAsUShort();
       const uint16_t iKerningSecondCharId = Value::fromStream(ValueType::UShort, pStream).getAsUShort();
-      const int iKerningAmount = (int)Value::fromStream(ValueType::UShort, pStream).getAsUShort();
+      const int iKerningAmount = Value::fromStream(ValueType::Int, pStream).getAsInt();
 
       KerningsMap::iterator it = mKernings[pCharSetIndex].find(iKerningFirstCharId);
 
