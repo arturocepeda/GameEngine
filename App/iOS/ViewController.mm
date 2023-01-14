@@ -22,6 +22,7 @@
 #import "GETime.h"
 #import "GEDevice.h"
 #import "GEApplication.h"
+#import "GELog.h"
 #import "GEDistributionPlatform.h"
 
 #import "config.h"
@@ -32,6 +33,27 @@ using namespace GE::Core;
 using namespace GE::Rendering;
 using namespace GE::Audio;
 using namespace GE::Input;
+
+
+class iOSLogListener : public LogListener
+{
+public:
+   virtual void onLog(LogType pType, const char* pMessage) override
+   {
+      if(pType == LogType::Info)
+      {
+         NSLog(@"[Info] %s", pMessage);
+      }
+      else if(pType == LogType::Warning)
+      {
+         NSLog(@"[Warning] %s", pMessage);
+      }
+      else if(pType == LogType::Error)
+      {
+         NSLog(@"[Error] %s", pMessage);
+      }
+   }
+} gLogListener;
 
 
 @interface ViewController () <UIAccelerometerDelegate>
@@ -118,6 +140,9 @@ using namespace GE::Input;
 #endif
    Device::ScreenWidth = (int)(screenWidth * [[UIScreen mainScreen] scale]);
    Device::ScreenHeight = (int)(screenHeight * [[UIScreen mainScreen] scale]);
+   
+   // register the log listener
+   Log::addListener(&gLogListener);
    
    // initialize the distribution platform
    cDistributionPlatform.init();

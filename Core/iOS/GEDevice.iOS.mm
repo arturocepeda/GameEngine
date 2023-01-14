@@ -19,6 +19,18 @@
 namespace GE { namespace Core
 {
    using namespace Content;
+
+   void Device::platformInit()
+   {
+   }
+
+   void Device::platformUpdate()
+   {
+   }
+
+   void Device::platformRelease()
+   {
+   }
    
    int Device::getTouchPadWidth()
    {
@@ -242,6 +254,24 @@ namespace GE { namespace Core
       fflush(file);
       fclose(file);
    }
+
+   std::ofstream Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension)
+   {
+      char sFileName[64];
+      sprintf(sFileName, "%s.%s", Name, Extension);
+      NSString* nsFileName = [NSString stringWithUTF8String:sFileName];
+      NSString* nsSubDir = [NSString stringWithUTF8String:SubDir];
+      
+      NSArray* nsPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+      NSString* nsDocumentsDirectory = [nsPaths objectAtIndex:0];
+      NSString* nsDirectory = [nsDocumentsDirectory stringByAppendingPathComponent:nsSubDir];
+      NSString* aFile = [nsDirectory stringByAppendingPathComponent:nsFileName];
+      
+      createDirectoryIfNonExisting(nsDirectory);
+      const char* filePath = [aFile fileSystemRepresentation];
+      
+      return std::ofstream(filePath, std::ios::out | std::ios::binary);
+   }
    
    void Device::deleteUserFile(const char* SubDir, const char* Name, const char* Extension)
    {
@@ -302,5 +332,38 @@ namespace GE { namespace Core
    int Device::getNumberOfCPUCores()
    {
       return (int)[[NSProcessInfo processInfo] processorCount];
+   }
+
+   SystemLanguage Device::requestOSLanguage()
+   {
+      //TODO
+      return SystemLanguage::English;
+   }
+
+   void Device::requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutions)
+   {
+   }
+
+   void Device::showVirtualKeyboard(const char* pText)
+   {
+      
+   }
+
+   void Device::hideVirtualKeyboard()
+   {
+   }
+
+   bool Device::getVirtualKeyboardActive()
+   {
+      return false;
+   }
+
+   const char* Device::getVirtualKeyboardCurrentText()
+   {
+      return nullptr;
+   }
+
+   void Device::openWebPage(const char* pURL)
+   {
    }
 }}
