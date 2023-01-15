@@ -133,13 +133,16 @@ public:
    Device::Orientation = DeviceOrientation::Portrait;
    const float screenWidth = std::min(screenSize.width, screenSize.height);
    const float screenHeight = std::max(screenSize.width, screenSize.height);
+   const float aspectRatio = screenWidth / screenHeight;
 #else
    Device::Orientation = DeviceOrientation::Landscape;
    const float screenWidth = std::max(screenSize.width, screenSize.height);
    const float screenHeight = std::min(screenSize.width, screenSize.height);
+   const float aspectRatio = screenHeight / screenWidth;
 #endif
    Device::ScreenWidth = (int)(screenWidth * [[UIScreen mainScreen] scale]);
    Device::ScreenHeight = (int)(screenHeight * [[UIScreen mainScreen] scale]);
+   Device::AspectRatio = aspectRatio;
    
    // register the log listener
    Log::addListener(&gLogListener);
@@ -172,8 +175,10 @@ public:
    
    // IDs for touch management
    for(int i = 0; i < GE_MAX_FINGERS; i++)
+   {
       iFingerID[i] = 0;
-
+   }
+   
    // system language
    NSString* nsLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
    
@@ -218,6 +223,9 @@ public:
    
    // create the task manager
    cTaskManager = new TaskManager();
+   
+   // set the input device
+   InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Touchpad);
 }
 
 -(void) viewDidUnload
