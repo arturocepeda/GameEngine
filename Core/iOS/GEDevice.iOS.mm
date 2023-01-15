@@ -336,8 +336,21 @@ namespace GE { namespace Core
 
    SystemLanguage Device::requestOSLanguage()
    {
-      //TODO
-      return SystemLanguage::English;
+      NSString* nsLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
+      const char* strLanguage = [nsLanguage UTF8String];
+      
+      SystemLanguage systemLanguage = SystemLanguage::English;
+      
+      for(size_t i = 0u; i < (size_t)SystemLanguage::Count; i++)
+      {
+         if(strcmp(kSystemLanguageCodes[i], strLanguage) == 0)
+         {
+            systemLanguage = (SystemLanguage)i;
+            break;
+         }
+      }
+      
+      return systemLanguage;
    }
 
    void Device::requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutions)

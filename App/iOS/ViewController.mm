@@ -179,16 +179,6 @@ public:
       iFingerID[i] = 0;
    }
    
-   // system language
-   NSString* nsLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
-   
-   if([nsLanguage isEqualToString:@"en"])
-      Device::Language = SystemLanguage::English;
-   else if([nsLanguage isEqualToString:@"es"])
-      Device::Language = SystemLanguage::Spanish;
-   else if([nsLanguage isEqualToString:@"de"])
-      Device::Language = SystemLanguage::German;
-   
    // pixel space to screen space
    if(Device::Orientation == DeviceOrientation::Portrait)
    {

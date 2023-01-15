@@ -42,7 +42,7 @@ namespace GE { namespace Core
       "de",    // German
       "fr",    // French
       "it",    // Italian
-      "pt",    // PortugueseW
+      "pt",    // Portuguese
 
       "ru",    // Russian
       "zh-CN", // ChineseSimplified
