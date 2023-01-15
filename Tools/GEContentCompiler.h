@@ -43,17 +43,17 @@ namespace GE { namespace Tools
       static void getBinFileName(const char* pXmlFileName, char* pBinFileName);
 
       static void packShaders(Core::ApplicationRenderingAPI pRenderingAPI);
-      static void packTextures();
-      static void packTextureFile(const char* pXmlFileName);
+      static void packTextures(const char* pTextureFilesExtension);
+      static void packTextureFile(const char* pXmlFileName, const char* pTextureFileExtension);
       static void packMaterials();
-      static void packFonts();
-      static void packFontFile(const char* pXmlFileName);
+      static void packFonts(const char* pTextureFilesExtension);
+      static void packFontFile(const char* pXmlFileName, const char* pTextureFileExtension);
       static void packStrings();
       static void packMeshes();
       static void packMeshFile(const char* pXmlFileName);
       static void packSkeletons();
       static void packAnimations();
-      static void packSounds();
+      static void packSounds(const char* pAudioFilesExtension);
       static void packPrefabs();
       static void packScenes();
       static void packData();
@@ -152,7 +152,7 @@ namespace GE { namespace Tools
          FindClose(hFile);
       }
 
-      static void compileContent();
+      static void compileContent(const char* pConfigFilePath = nullptr);
    };
 }}
 

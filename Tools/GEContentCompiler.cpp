@@ -57,6 +57,46 @@ ObjectManager<Font> mManagerFonts;
 
 Scene cDummyScene(ObjectName("Dummy"));
 
+
+class ContentCompilerConfig : public Serializable
+{
+private:
+   bool mIncludeShadersDirectX;
+   bool mIncludeShadersOpenGL;
+
+   char mTextureFilesExtension[8];
+   char mAudioFilesExtension[8];
+
+public:
+   ContentCompilerConfig()
+      : Serializable("ContentCompilerConfig")
+      , mIncludeShadersDirectX(true)
+      , mIncludeShadersOpenGL(true)
+   {
+      strcpy(mTextureFilesExtension, ".dds");
+      strcpy(mAudioFilesExtension, ".ogg");
+
+      GERegisterProperty(Bool, IncludeShadersDirectX);
+      GERegisterProperty(Bool, IncludeShadersOpenGL);
+      GERegisterProperty(String, TextureFilesExtension);
+      GERegisterProperty(String, AudioFilesExtension);
+   }
+   ~ContentCompilerConfig()
+   {
+   }
+
+   GEDefaultGetter(bool, IncludeShadersDirectX, m)
+   GEDefaultGetter(bool, IncludeShadersOpenGL, m)
+   GEDefaultGetter(const char*, TextureFilesExtension, m)
+   GEDefaultGetter(const char*, AudioFilesExtension, m)
+
+   GEDefaultSetter(bool, IncludeShadersDirectX, m)
+   GEDefaultSetter(bool, IncludeShadersOpenGL, m)
+   GEDefaultSetterString(const char*, TextureFilesExtension, m)
+   GEDefaultSetterString(const char*, AudioFilesExtension, m)
+};
+
+
 void registerCompilerObjectManagers()
 {
    ResourcesManager::getInstance()->registerObjectManager<ShaderProgram>(ShaderProgram::TypeName, &mManagerShaderPrograms);
@@ -336,7 +376,7 @@ void ContentCompiler::packShaders(ApplicationRenderingAPI pRenderingAPI)
    sOutputFile.close();
 }
 
-void ContentCompiler::packTextures()
+void ContentCompiler::packTextures(const char* pTextureFilesExtension)
 {
    Log::log(LogType::Info, "Packing textures...");
 
@@ -351,14 +391,14 @@ void ContentCompiler::packTextures()
 
    do 
    {
-      packTextureFile(sFileData.cFileName);
+      packTextureFile(sFileData.cFileName, pTextureFilesExtension);
    }
    while(FindNextFile(hFile, &sFileData));
 
    FindClose(hFile);
 }
 
-void ContentCompiler::packTextureFile(const char* XmlFileName)
+void ContentCompiler::packTextureFile(const char* XmlFileName, const char* pTextureFileExtension)
 {
    char sBinFileName[MAX_PATH];
    getBinFileName(XmlFileName, sBinFileName);
@@ -419,11 +459,16 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
       cTexture->loadFromXml(xmlTexture);
       cTexture->saveToStream(sOutputFile);
 
-#if defined (GE_PLATFORM_DESKTOP)
-      const char* sTextureExtension = "dds";
-#else
-      const char* sTextureExtension = cTexture->getFormat();
-#endif
+      char textureFileExtension[8];
+
+      if(pTextureFileExtension[0] != '\0')
+      {
+         strcpy(textureFileExtension, pTextureFileExtension);
+      }
+      else
+      {
+         sprintf(textureFileExtension, ".%s", cTexture->getFormat());
+      }
 
       std::string sTextureFilePath;
       sTextureFilePath.append(ContentXmlDirName);
@@ -431,8 +476,7 @@ void ContentCompiler::packTextureFile(const char* XmlFileName)
       sTextureFilePath.append(sSetName);
       sTextureFilePath.append("\\");
       sTextureFilePath.append(sTextureName);
-      sTextureFilePath.append(".");
-      sTextureFilePath.append(sTextureExtension);
+      sTextureFilePath.append(textureFileExtension);
       
       std::ifstream sTextureFile(sTextureFilePath, std::ios::in | std::ios::binary);
       GEAssert(sTextureFile.is_open());
@@ -566,7 +610,7 @@ void ContentCompiler::packMaterials()
    FindClose(hFile);
 }
 
-void ContentCompiler::packFonts()
+void ContentCompiler::packFonts(const char* pTextureFilesExtension)
 {
    Log::log(LogType::Info, "Packing fonts...");
 
@@ -581,14 +625,14 @@ void ContentCompiler::packFonts()
 
    do 
    {
-      packFontFile(sFileData.cFileName);
+      packFontFile(sFileData.cFileName, pTextureFilesExtension);
    }
    while(FindNextFile(hFile, &sFileData));
 
    FindClose(hFile);
 }
 
-void ContentCompiler::packFontFile(const char* XmlFileName)
+void ContentCompiler::packFontFile(const char* XmlFileName, const char* pTextureFileExtension)
 {
    char sBinFileName[MAX_PATH];
    getBinFileName(XmlFileName, sBinFileName);
@@ -721,11 +765,16 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
          }
       }
 
-#if defined (GE_PLATFORM_DESKTOP)
-      const char* sTextureExtension = ".dds";
-#else
-      const char* sTextureExtension = ".png";
-#endif
+      char textureFileExtension[8];
+
+      if(pTextureFileExtension[0] != '\0')
+      {
+         strcpy(textureFileExtension, pTextureFileExtension);
+      }
+      else
+      {
+         strcpy(textureFileExtension, ".png");
+      }
 
       std::string sFontFilePath;
       sFontFilePath.append(ContentXmlDirName);
@@ -733,7 +782,7 @@ void ContentCompiler::packFontFile(const char* XmlFileName)
       sFontFilePath.append(sSetName);
       sFontFilePath.append("\\");
       sFontFilePath.append(sFontName);
-      sFontFilePath.append(sTextureExtension);
+      sFontFilePath.append(textureFileExtension);
 
       std::ifstream sFontTextureFile(sFontFilePath, std::ios::in | std::ios::binary);
       GEAssert(sFontTextureFile.is_open());
@@ -1120,7 +1169,7 @@ void ContentCompiler::packAnimations()
    FindClose(hFile);
 }
 
-void ContentCompiler::packSounds()
+void ContentCompiler::packSounds(const char* pAudioFilesExtension)
 {
    Log::log(LogType::Info, "Packing sounds...");
 
@@ -1129,7 +1178,7 @@ void ContentCompiler::packSounds()
    packSerializableResources<AudioBus>();
 
    char sFindString[MAX_PATH];
-   sprintf(sFindString, "%s\\Audio\\files\\*.*", ContentXmlDirName);
+   sprintf(sFindString, "%s\\Audio\\files\\*%s", ContentXmlDirName, pAudioFilesExtension);
 
    WIN32_FIND_DATA sFileData;
    HANDLE hFile = FindFirstFile(sFindString, &sFileData);
@@ -1401,22 +1450,37 @@ void ContentCompiler::compileScripts()
    FindClose(hFile);
 }
 
-void ContentCompiler::compileContent()
+void ContentCompiler::compileContent(const char* pConfigFilePath)
 {
+   pugi::xml_document xml;
+   xml.load_file(pConfigFilePath);
+   const pugi::xml_node& xmlConfig = xml.child("ContentCompilerConfig");
+
+   ContentCompilerConfig config;
+   config.loadFromXml(xmlConfig);
+
    registerCompilerObjectManagers();
 
-   packShaders(ApplicationRenderingAPI::DirectX);
-   mManagerShaderPrograms.clear();
-   packShaders(ApplicationRenderingAPI::OpenGL);
+   if(config.getIncludeShadersDirectX())
+   {
+      packShaders(ApplicationRenderingAPI::DirectX);
+   }
 
-   packTextures();
+   mManagerShaderPrograms.clear();
+
+   if(config.getIncludeShadersOpenGL())
+   {
+      packShaders(ApplicationRenderingAPI::OpenGL);
+   }
+
+   packTextures(config.getTextureFilesExtension());
    packMaterials();
-   packFonts();
+   packFonts(config.getTextureFilesExtension());
    packStrings();
    packMeshes();
    packSkeletons();
    packAnimations();
-   packSounds();
+   packSounds(config.getAudioFilesExtension());
    packPrefabs();
    packScenes();
    packData();
