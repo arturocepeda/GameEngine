@@ -117,6 +117,9 @@ namespace GE { namespace Core
       size_t getLeaderboardEntriesCount(const ObjectName& pLeaderboardName) const;
       const LeaderboardEntry* getLeaderboardEntry(const ObjectName& pLeaderboardName, size_t pEntryIndex) const;
 
+      // DLCs
+      bool isDLCAvailable(const ObjectName& pDLCName) const;
+
       // Matchmaking
       void findLobbies();
       bool searchingForLobbies() const;

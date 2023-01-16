@@ -126,6 +126,11 @@ void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName&,
 {
 }
 
+bool DistributionPlatform::isDLCAvailable(const ObjectName& pDLCName) const
+{
+   return false;
+}
+
 void DistributionPlatform::findLobbies()
 {
 }

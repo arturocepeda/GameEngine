@@ -981,6 +981,7 @@ void Environment::registerTypes()
       , "getLeaderboardAge", &DistributionPlatform::getLeaderboardAge
       , "getLeaderboardEntriesCount", &DistributionPlatform::getLeaderboardEntriesCount
       , "getLeaderboardEntry", &DistributionPlatform::getLeaderboardEntry
+      , "isDLCAvailable", &DistributionPlatform::isDLCAvailable
       , "findLobbies", &DistributionPlatform::findLobbies
       , "searchingForLobbies", &DistributionPlatform::searchingForLobbies
       , "createLobby", &DistributionPlatform::createLobby
