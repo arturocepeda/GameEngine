@@ -595,6 +595,30 @@ void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName& 
    });
 }
 
+bool DistributionPlatform::isDLCAvailable(const ObjectName& pDLCName) const
+{
+   const int32 dlcCount = SteamApps()->GetDLCCount();
+
+   for(int i = 0; i < dlcCount; i++)
+   {
+      static const int kNameBufferSize = 128;
+
+      AppId_t appId;
+      bool available;
+      char name[kNameBufferSize];
+
+      if(SteamApps()->BGetDLCDataByIndex(i, &appId, &available, name, kNameBufferSize))
+      {
+         if(strcmp(pDLCName.getString(), name) == 0)
+         {
+            return available && SteamApps()->BIsDlcInstalled(appId);
+         }
+      }
+   }
+
+   return false;
+}
+
 void DistributionPlatform::findLobbies()
 {
    mLobbies.clear();
