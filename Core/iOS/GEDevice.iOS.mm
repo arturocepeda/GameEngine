@@ -12,9 +12,14 @@
 
 #include "../GEDevice.h"
 #include "../GEAllocator.h"
+#include "../GEUtils.h"
+
 #include "Content/GEImageData.h"
 #include "Content/GEAudioData.h"
+
 #include <fstream>
+
+static const size_t kContentPathOffset = 11u;  // "contentBin/"
 
 namespace GE { namespace Core
 {
@@ -67,13 +72,22 @@ namespace GE { namespace Core
    uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
    {
       char sSubDir[256];
-      sprintf(sSubDir, "content/%s", SubDir);
+      sprintf(sSubDir, "contentBin/%s", SubDir);
+      
+      char sExtension[64];
+      strcpy(sExtension, Extension);
+      
+      if(ContentHashPath)
+      {
+         toHashPath(sSubDir + kContentPathOffset);
+         toHashPath(sExtension);
+      }
       
       NSString* nsSubDir = [NSString stringWithUTF8String:sSubDir];
       NSString* nsAppDir = [[NSBundle mainBundle] resourcePath];
       NSString* nsDirectory = [nsAppDir stringByAppendingPathComponent:nsSubDir];
       NSArray* nsDirectoryContents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:nsDirectory error:nil];
-      NSString* nsExtension = [NSString stringWithUTF8String:Extension];
+      NSString* nsExtension = [NSString stringWithUTF8String:sExtension];
       
       uint iFilesCount = 0;
       
@@ -89,13 +103,22 @@ namespace GE { namespace Core
    bool Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
    {
       char sSubDir[256];
-      sprintf(sSubDir, "content/%s", SubDir);
+      sprintf(sSubDir, "contentBin/%s", SubDir);
+      
+      char sExtension[64];
+      strcpy(sExtension, Extension);
+      
+      if(ContentHashPath)
+      {
+         toHashPath(sSubDir + kContentPathOffset);
+         toHashPath(sExtension);
+      }
       
       NSString* nsSubDir = [NSString stringWithUTF8String:sSubDir];
       NSString* nsAppDir = [[NSBundle mainBundle] resourcePath];
       NSString* nsDirectory = [nsAppDir stringByAppendingPathComponent:nsSubDir];
       NSArray* nsDirectoryContents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:nsDirectory error:nil];
-      NSString* nsExtension = [NSString stringWithUTF8String:Extension];
+      NSString* nsExtension = [NSString stringWithUTF8String:sExtension];
       
       uint iFileIndex = 0;
       
@@ -122,7 +145,12 @@ namespace GE { namespace Core
    bool Device::contentFileExists(const char* SubDir, const char* Name, const char* Extension)
    {
       char sResourceName[256];
-      sprintf(sResourceName, "content/%s/%s.%s", SubDir, Name, Extension);
+      sprintf(sResourceName, "contentBin/%s/%s.%s", SubDir, Name, Extension);
+      
+      if(ContentHashPath)
+      {
+         toHashPath(sResourceName + kContentPathOffset);
+      }
       
       NSString* nsResourceName = [NSString stringWithUTF8String:sResourceName];
       NSString* nsFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:nsResourceName];
@@ -133,8 +161,29 @@ namespace GE { namespace Core
 
    void Device::readContentFile(ContentType Type, const char* SubDir, const char* Name, const char* Extension, ContentData* ContentData)
    {
-      char sResourceName[256];   
-      sprintf(sResourceName, "content/%s/%s.%s", SubDir, Name, Extension);
+      char subDir[64];
+      strcpy(subDir, SubDir);
+      
+      char name[64];
+      strcpy(name, Name);
+      
+      char extension[64];
+      strcpy(extension, Extension);
+      
+      if(ContentHashPath)
+      {
+         toHashPath(subDir);
+         
+         if(!isHash(Name))
+         {
+            toHashPath(name);
+         }
+         
+         toHashPath(extension);
+      }
+      
+      char sResourceName[256];
+      sprintf(sResourceName, "contentBin/%s/%s.%s", subDir, name, extension);
       
       NSString* nsResourceName = [NSString stringWithUTF8String:sResourceName];
       NSString* nsFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:nsResourceName];

@@ -122,10 +122,7 @@ public:
    Application::ID = GE_APP_ID;
    Application::VersionString = GE_VERSION_STRING;
    Application::VersionNumber = GE_VERSION_NUMBER;
-
-#if defined (GE_BINARY_CONTENT)
-    Application::ContentType = ApplicationContentType::Bin;
-#endif
+   Application::ContentType = ApplicationContentType::Bin;
 
    // set device screen size and orientation
    const CGSize& screenSize = [[UIScreen mainScreen] bounds].size;
