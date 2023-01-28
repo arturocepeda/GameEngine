@@ -298,7 +298,13 @@ public:
             CGPoint cgPoint = [uiTouch locationInView: self.view];
             
             iFingerID[i] = uiTouch;
-            InputSystem::getInstance()->inputTouchBegin(i, [self pixelToScreen: Vector2(cgPoint.x, cgPoint.y)]);
+            const Vector2 screenPosition = [self pixelToScreen: Vector2(cgPoint.x, cgPoint.y)];
+            InputSystem::getInstance()->inputTouchBegin(i, screenPosition);
+            
+            if(i == 0)
+            {
+               InputSystem::getInstance()->inputMouse(screenPosition);
+            }
             
             break;
          }
@@ -319,9 +325,16 @@ public:
             CGPoint cgPreviousPoint = [uiTouch previousLocationInView: self.view];
             CGPoint cgCurrentPoint = [uiTouch locationInView: self.view];
             
-            InputSystem::getInstance()->inputTouchMove(i,
-                                                   [self pixelToScreen: Vector2(cgPreviousPoint.x, cgPreviousPoint.y)],
-                                                   [self pixelToScreen: Vector2(cgCurrentPoint.x, cgCurrentPoint.y)]);
+            const Vector2 screenPositionPrevious = [self pixelToScreen: Vector2(cgPreviousPoint.x, cgPreviousPoint.y)];
+            const Vector2 screenPositionCurrent = [self pixelToScreen: Vector2(cgCurrentPoint.x, cgCurrentPoint.y)];
+            
+            InputSystem::getInstance()->inputTouchMove(i, screenPositionPrevious, screenPositionCurrent);
+            
+            if(i == 0)
+            {
+               InputSystem::getInstance()->inputMouse(screenPositionCurrent);
+            }
+            
             break;
          }
       }
