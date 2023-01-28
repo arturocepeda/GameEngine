@@ -493,6 +493,11 @@ void InputSystem::inputTouchBegin(int pID, const Vector2& pPoint)
    if(!mInputEnabled)
       return;
 
+   if(pID == 0)
+   {
+      inputMouse(pPoint);
+   }
+
    InputEvent event;
    event.mType = InputEventType::TouchBegin;
    event.mID = (int16_t)pID;
@@ -507,6 +512,11 @@ void InputSystem::inputTouchMove(int pID, const Vector2& pPreviousPoint, const V
 {
    if(!mInputEnabled)
       return;
+
+   if(pID == 0)
+   {
+      inputMouse(pCurrentPoint);
+   }
 
    InputEvent event;
    event.mType = InputEventType::TouchMoved;
