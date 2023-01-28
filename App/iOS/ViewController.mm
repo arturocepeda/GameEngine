@@ -301,11 +301,6 @@ public:
             const Vector2 screenPosition = [self pixelToScreen: Vector2(cgPoint.x, cgPoint.y)];
             InputSystem::getInstance()->inputTouchBegin(i, screenPosition);
             
-            if(i == 0)
-            {
-               InputSystem::getInstance()->inputMouse(screenPosition);
-            }
-            
             break;
          }
       }
@@ -330,11 +325,6 @@ public:
             
             InputSystem::getInstance()->inputTouchMove(i, screenPositionPrevious, screenPositionCurrent);
             
-            if(i == 0)
-            {
-               InputSystem::getInstance()->inputMouse(screenPositionCurrent);
-            }
-            
             break;
          }
       }
@@ -354,7 +344,8 @@ public:
             CGPoint cgPoint = [uiTouch locationInView: self.view];
             
             iFingerID[i] = 0;
-            InputSystem::getInstance()->inputTouchEnd(i, [self pixelToScreen: Vector2(cgPoint.x, cgPoint.y)]);
+            const Vector2 screenPosition = [self pixelToScreen: Vector2(cgPoint.x, cgPoint.y)];
+            InputSystem::getInstance()->inputTouchEnd(i, screenPosition);
             
             break;
          }
