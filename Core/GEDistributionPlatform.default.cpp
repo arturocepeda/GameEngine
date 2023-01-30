@@ -126,7 +126,7 @@ void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName&,
 {
 }
 
-bool DistributionPlatform::isDLCAvailable(const ObjectName& pDLCName) const
+bool DistributionPlatform::isDLCAvailable(const ObjectName&) const
 {
    return false;
 }
