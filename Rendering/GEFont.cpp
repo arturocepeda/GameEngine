@@ -79,9 +79,12 @@ Font::Font(const ObjectName& Name, const ObjectName& GroupName)
    : Resource(Name, GroupName, TypeName)
    , pRenderDevice(nullptr)
    , cTexture(nullptr)
+   , mScaling(1.0f)
 {
    GERegisterPropertyArray(FontCharacterSet);
    GERegisterPropertyArray(FontReplacement);
+
+   GERegisterProperty(Float, Scaling);
 }
 
 Font::~Font()

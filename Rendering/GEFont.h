@@ -101,6 +101,8 @@ namespace GE { namespace Rendering
       typedef GESTLMap(uint16_t, CharKerningsMap) KerningsMap;
       GESTLVector(KerningsMap) mKernings;
 
+      float mScaling;
+
       void loadFontData(uint32_t pCharSet, const pugi::xml_node& pXmlFontData);
       void loadFontData(uint32_t pCharSet, std::istream& pStream);
 
@@ -128,5 +130,9 @@ namespace GE { namespace Rendering
 
       GEPropertyArray(FontCharacterSet, FontCharacterSet)
       GEPropertyArray(FontReplacement, FontReplacement)
+
+      GEDefaultGetter(float, Scaling, m)
+
+      GEDefaultSetter(float, Scaling, m)
    };
 }}

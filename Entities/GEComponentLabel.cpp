@@ -433,7 +433,7 @@ void ComponentLabel::generateText()
       return;
    }
 
-   const float fontSize = getInternalFontSize();
+   const float fontSize = getInternalFontSize() * font->getScaling();
    const float defaultVerticalOffset = getDefaultVerticalOffset();
 
    Pen sPen;
