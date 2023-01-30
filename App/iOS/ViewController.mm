@@ -28,6 +28,9 @@
 #import "config.h"
 
 
+#define USE_BINARY_CONTENT 1
+
+
 using namespace GE;
 using namespace GE::Core;
 using namespace GE::Rendering;
@@ -122,8 +125,11 @@ public:
    Application::ID = GE_APP_ID;
    Application::VersionString = GE_VERSION_STRING;
    Application::VersionNumber = GE_VERSION_NUMBER;
+   
+#if USE_BINARY_CONTENT
    Application::ContentType = ApplicationContentType::Bin;
-
+#endif
+   
    // set device screen size and orientation
    const CGSize& screenSize = [[UIScreen mainScreen] bounds].size;
 #if defined (GE_ORIENTATION_PORTRAIT)

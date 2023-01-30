@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////
 
 #include "../GEDevice.h"
+#include "../GEApplication.h"
 #include "../GEAllocator.h"
 #include "../GEUtils.h"
 
@@ -19,7 +20,16 @@
 
 #include <fstream>
 
-static const size_t kContentPathOffset = 11u;  // "contentBin/"
+static const char* kContentPath[] =
+{
+   "content/",
+   "contentBin/"
+};
+static const size_t kContentPathOffset[] =
+{
+   8u,   // "content/"
+   11u,  // "contentBin/"
+};
 
 namespace GE { namespace Core
 {
@@ -71,15 +81,18 @@ namespace GE { namespace Core
 
    uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
    {
+      const char* contentPath = kContentPath[(uint32_t)Application::ContentType];
+      
       char sSubDir[256];
-      sprintf(sSubDir, "contentBin/%s", SubDir);
+      sprintf(sSubDir, "%s%s", contentPath, SubDir);
       
       char sExtension[64];
       strcpy(sExtension, Extension);
       
       if(ContentHashPath)
       {
-         toHashPath(sSubDir + kContentPathOffset);
+         const size_t contentPathOffset = kContentPathOffset[(uint32_t)Application::ContentType];
+         toHashPath(sSubDir + contentPathOffset);
          toHashPath(sExtension);
       }
       
@@ -102,15 +115,18 @@ namespace GE { namespace Core
    
    bool Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
    {
+      const char* contentPath = kContentPath[(uint32_t)Application::ContentType];
+      
       char sSubDir[256];
-      sprintf(sSubDir, "contentBin/%s", SubDir);
+      sprintf(sSubDir, "%s%s", contentPath, SubDir);
       
       char sExtension[64];
       strcpy(sExtension, Extension);
       
       if(ContentHashPath)
       {
-         toHashPath(sSubDir + kContentPathOffset);
+         const size_t contentPathOffset = kContentPathOffset[(uint32_t)Application::ContentType];
+         toHashPath(sSubDir + contentPathOffset);
          toHashPath(sExtension);
       }
       
@@ -144,12 +160,15 @@ namespace GE { namespace Core
    
    bool Device::contentFileExists(const char* SubDir, const char* Name, const char* Extension)
    {
+      const char* contentPath = kContentPath[(uint32_t)Application::ContentType];
+      
       char sResourceName[256];
-      sprintf(sResourceName, "contentBin/%s/%s.%s", SubDir, Name, Extension);
+      sprintf(sResourceName, "%s%s/%s.%s", contentPath, SubDir, Name, Extension);
       
       if(ContentHashPath)
       {
-         toHashPath(sResourceName + kContentPathOffset);
+         const size_t contentPathOffset = kContentPathOffset[(uint32_t)Application::ContentType];
+         toHashPath(sResourceName + contentPathOffset);
       }
       
       NSString* nsResourceName = [NSString stringWithUTF8String:sResourceName];
@@ -182,8 +201,10 @@ namespace GE { namespace Core
          toHashPath(extension);
       }
       
+      const char* contentPath = kContentPath[(uint32_t)Application::ContentType];
+      
       char sResourceName[256];
-      sprintf(sResourceName, "contentBin/%s/%s.%s", subDir, name, extension);
+      sprintf(sResourceName, "%s%s/%s.%s", contentPath, subDir, name, extension);
       
       NSString* nsResourceName = [NSString stringWithUTF8String:sResourceName];
       NSString* nsFilePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:nsResourceName];
