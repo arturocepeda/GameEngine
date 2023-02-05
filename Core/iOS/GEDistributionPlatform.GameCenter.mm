@@ -129,16 +129,92 @@ void DistributionPlatform::unlockAchievement(const ObjectName&)
 {
 }
 
-void DistributionPlatform::updateLeaderboardScore(const ObjectName&, uint32_t, uint32_t)
+void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore, uint32_t pScoreDetail)
 {
+   mUpdatingLeaderboardScore = true;
+   
+   NSString* leaderboardIdentifier = [NSString stringWithUTF8String:pLeaderboardName.getString()];
+   
+   GKScore* gkScore = [[GKScore alloc] initWithLeaderboardIdentifier:leaderboardIdentifier];
+   gkScore.value = (int64_t)pScore;
+   [GKScore reportScores:@[gkScore] withCompletionHandler:^(NSError* pError)
+   {
+      (void)pError;
+      mUpdatingLeaderboardScore = false;
+   }];
 }
 
-void DistributionPlatform::requestLeaderboardScores(const ObjectName&, uint16_t, uint16_t)
+void DistributionPlatform::requestLeaderboardScores(const ObjectName& pLeaderboardName, uint16_t pFirstPosition, uint16_t pLastPosition)
 {
+   size_t leaderboardIndex = 0u;
+   bool leaderboardFound = false;
+
+   for(size_t i = 0u; i < mLeaderboards.size(); i++)
+   {
+      if(mLeaderboards[i].mLeaderboardName == pLeaderboardName)
+      {
+         leaderboardIndex = i;
+         leaderboardFound = true;
+         break;
+      }
+   }
+
+   if(!leaderboardFound)
+   {
+      mLeaderboards.emplace_back();
+      leaderboardIndex = mLeaderboards.size() - 1u;
+      mLeaderboards[leaderboardIndex].mLeaderboardName = pLeaderboardName;
+   }
+   
+   NSString* leaderboardIdentifier = [NSString stringWithUTF8String:pLeaderboardName.getString()];
+   
+   NSRange leaderboardRange;
+   leaderboardRange.location = (NSUInteger)pFirstPosition;
+   leaderboardRange.length = (NSUInteger)(pLastPosition - pFirstPosition + 1u);
+   
+   GKLeaderboard* gkLeaderboard = [[GKLeaderboard alloc] init];
+   gkLeaderboard.identifier = leaderboardIdentifier;
+   gkLeaderboard.playerScope = GKLeaderboardPlayerScope::GKLeaderboardPlayerScopeGlobal;
+   gkLeaderboard.timeScope = GKLeaderboardTimeScope::GKLeaderboardTimeScopeAllTime;
+   gkLeaderboard.range = leaderboardRange;
+   
+   [gkLeaderboard loadScoresWithCompletionHandler:^(NSArray* pScores, NSError* pError)
+   {
+      if(pScores != nil && pError == nil)
+      {
+         for(NSUInteger i = 0u; i < pScores.count; i++)
+         {
+            GKScore* gkScore = pScores[i];
+            
+            LeaderboardEntry leaderboardEntry;
+            leaderboardEntry.mUserName.assign([gkScore.player.alias UTF8String]);
+            leaderboardEntry.mPosition = (uint16_t)gkScore.rank;
+            leaderboardEntry.mScore = (uint32_t)gkScore.value;
+            leaderboardEntry.mScoreDetail = 0u;
+            addLeaderboardEntry(leaderboardIndex, leaderboardEntry);
+         }
+      }
+   }];
 }
 
-void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName&, uint16_t)
+void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName& pLeaderboardName, uint16_t pPositionsCount)
 {
+   NSString* leaderboardIdentifier = [NSString stringWithUTF8String:pLeaderboardName.getString()];
+   
+   GKLeaderboard* gkLeaderboard = [[GKLeaderboard alloc] init];
+   gkLeaderboard.identifier = leaderboardIdentifier;
+   [gkLeaderboard loadScoresWithCompletionHandler:^(NSArray* pScores, NSError* pError)
+   {
+      if(pScores != nil && pError == nil)
+      {
+         GKScore* localPlayerScore = gkLeaderboard.localPlayerScore;
+         
+         const int firstPosition = std::max((int)localPlayerScore.rank - (int)pPositionsCount, 1);
+         const int lastPosition = (int)localPlayerScore.rank + (int)pPositionsCount;
+         
+         requestLeaderboardScores(pLeaderboardName, (uint16_t)firstPosition, (uint16_t)lastPosition);
+      }
+   }];
 }
 
 bool DistributionPlatform::isDLCAvailable(const ObjectName&) const
