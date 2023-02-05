@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////
 
 #include "Core/GEDistributionPlatform.h"
+#include "Core/GEDevice.h"
 
 #import <GameKit/GameKit.h>
 
@@ -38,27 +39,39 @@ const char* DistributionPlatform::getPlatformName() const
 
 const char* DistributionPlatform::getUserName() const
 {
-   static const char* defaultUserName = "default";
+   if(loggedIn())
+   {
+      NSString* localPlayerAlias = [GKLocalPlayer localPlayer].alias;
+      return [localPlayerAlias UTF8String];
+   }
+   
+   static const char* defaultUserName = "";
    return defaultUserName;
 }
 
 SystemLanguage DistributionPlatform::getLanguage() const
 {
-   return SystemLanguage::Count;
+   return Device::requestOSLanguage();
 }
 
 bool DistributionPlatform::internetConnectionAvailable() const
 {
+   //TODO
    return true;
 }
 
 bool DistributionPlatform::loggedIn() const
 {
-   return true;
+   return [[GKLocalPlayer localPlayer] isAuthenticated];
 }
 
-void DistributionPlatform::logIn(std::function<void()>)
+void DistributionPlatform::logIn(std::function<void()> onFinished)
 {
+   [[GKLocalPlayer localPlayer] authenticateWithCompletionHandler:^(NSError* _Nullable pError)
+   {
+      (void)pError;
+      onFinished();
+   }];
 }
 
 void DistributionPlatform::logOut()
