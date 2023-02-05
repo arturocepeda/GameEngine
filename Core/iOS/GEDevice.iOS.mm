@@ -448,5 +448,8 @@ namespace GE { namespace Core
 
    void Device::openWebPage(const char* pURL)
    {
+      [[UIApplication sharedApplication] openURL:
+         [NSURL URLWithString:[NSString stringWithUTF8String:pURL]]
+         options:@{} completionHandler:nil];
    }
 }}
