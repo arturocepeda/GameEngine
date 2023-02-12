@@ -26,7 +26,8 @@ namespace GE { namespace Content
          DDS_Uncompressed,
          DDS_DXT1,
          DDS_DXT3,
-         DDS_DXT5
+         DDS_DXT5,
+         PVR
       };
 
    private:
@@ -36,6 +37,7 @@ namespace GE { namespace Content
       Format mFormat;
 
       void loadDDS(uint Size, const char* Data);
+      void loadPVR(uint Size, const char* Data);
       void loadRaw(uint Size, const char* Data);
     
    public:

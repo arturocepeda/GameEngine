@@ -85,6 +85,38 @@ void ImageData::loadDDS(uint Size, const char* Data)
    memcpy(pData, Data + kMagicSize + ddsHeader->mSize, iDataSize);
 }
 
+void ImageData::loadPVR(uint Size, const char* Data)
+{
+   struct PVRHeader
+   {
+      uint32_t mVersion;
+      uint32_t mFlags;
+      uint64_t mPixelFormat;
+      uint32_t mColorSpace;
+      uint32_t mChannelType;
+      uint32_t mHeight;
+      uint32_t mWidth;
+      uint32_t mDepth;
+      uint32_t mNumSurfaces;
+      uint32_t mNumFaces;
+      uint32_t mMipMapCount;
+      uint32_t mMetaDataSize;
+   };
+   
+   const PVRHeader* pvrHeader = reinterpret_cast<const PVRHeader*>(Data);
+   
+   GEAssert(pvrHeader->mPixelFormat == 3u);
+   
+   mWidth = (int)pvrHeader->mWidth;
+   mHeight = (int)pvrHeader->mHeight;
+   mBytesPerPixel = 4;
+   mFormat = Format::PVR;
+
+   iDataSize = Size - sizeof(PVRHeader) - pvrHeader->mMetaDataSize;
+   pData = Allocator::alloc<char>(iDataSize);
+   memcpy(pData, Data + sizeof(PVRHeader) + pvrHeader->mMetaDataSize, iDataSize);
+}
+
 void ImageData::loadRaw(uint Size, const char* Data)
 {
    mFormat = Format::Raw;
@@ -98,6 +130,10 @@ void ImageData::load(unsigned int Size, const char* Data)
    if(strncmp(Data, "DDS ", 4u) == 0)
    {
       loadDDS(Size, Data);
+   }
+   else if(strncmp(Data, "PVR", 3u) == 0)
+   {
+      loadPVR(Size, Data);
    }
    else
    {

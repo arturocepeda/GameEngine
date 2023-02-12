@@ -231,6 +231,13 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
          glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
          glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 16;
       }
+#elif GL_IMG_texture_compression_pvrtc
+      if(cPreloadedTexture->Data->getFormat() == ImageData::Format::PVR)
+      {
+         const GLsizei kBitsPerPixel = 4;
+         glFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+         glImageSize = std::max(32, glWidth * glHeight * kBitsPerPixel / 8);
+      }
 #endif
 
       glCompressedTexImage2D(GL_TEXTURE_2D, 0, glFormat, glWidth, glHeight,
