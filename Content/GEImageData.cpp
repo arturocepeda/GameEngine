@@ -13,7 +13,9 @@
 #include "GEImageData.h"
 #include "Types/GETypes.h"
 #include "Core/GEAllocator.h"
+
 #include "stblib/stb_image.h"
+#include "PowerVR/PVRTTexture.h"
 
 using namespace GE;
 using namespace GE::Content;
@@ -87,34 +89,19 @@ void ImageData::loadDDS(uint Size, const char* Data)
 
 void ImageData::loadPVR(uint Size, const char* Data)
 {
-   struct PVRHeader
-   {
-      uint32_t mVersion;
-      uint32_t mFlags;
-      uint64_t mPixelFormat;
-      uint32_t mColorSpace;
-      uint32_t mChannelType;
-      uint32_t mHeight;
-      uint32_t mWidth;
-      uint32_t mDepth;
-      uint32_t mNumSurfaces;
-      uint32_t mNumFaces;
-      uint32_t mMipMapCount;
-      uint32_t mMetaDataSize;
-   };
+   const PVR_Texture_Header* pvrHeader = reinterpret_cast<const PVR_Texture_Header*>(Data);
    
-   const PVRHeader* pvrHeader = reinterpret_cast<const PVRHeader*>(Data);
+   const uint32_t pixelType = pvrHeader->dwpfFlags & PVRTEX_PIXELTYPE;
+   GEAssert(pixelType == OGL_PVRTC4);
    
-   GEAssert(pvrHeader->mPixelFormat == 3u);
-   
-   mWidth = (int)pvrHeader->mWidth;
-   mHeight = (int)pvrHeader->mHeight;
-   mBytesPerPixel = 4;
+   mWidth = (int)pvrHeader->dwWidth;
+   mHeight = (int)pvrHeader->dwHeight;
+   mBytesPerPixel = pvrHeader->dwAlphaBitMask != 0u ? 4 : 3;
    mFormat = Format::PVR;
 
-   iDataSize = Size - sizeof(PVRHeader) - pvrHeader->mMetaDataSize;
+   iDataSize = pvrHeader->dwTextureDataSize;
    pData = Allocator::alloc<char>(iDataSize);
-   memcpy(pData, Data + sizeof(PVRHeader) + pvrHeader->mMetaDataSize, iDataSize);
+   memcpy(pData, Data + sizeof(PVR_Texture_Header), iDataSize);
 }
 
 void ImageData::loadRaw(uint Size, const char* Data)
@@ -131,7 +118,7 @@ void ImageData::load(unsigned int Size, const char* Data)
    {
       loadDDS(Size, Data);
    }
-   else if(strncmp(Data, "PVR", 3u) == 0)
+   else if(Data[0] == '4')
    {
       loadPVR(Size, Data);
    }
