@@ -138,6 +138,13 @@ void Font::load(void* pRenderDevice)
 
 #if defined (GE_PLATFORM_DESKTOP) || defined (GE_PLATFORM_SWITCH)
    const char* textureFormat = "dds";
+#elif defined (GE_PLATFORM_IOS)
+   const char* textureFormat = "pvr";
+   
+   if(!Device::contentFileExists(sSubDir, cName.getString(), textureFormat))
+   {
+      textureFormat = "png";
+   }
 #else
    const char* textureFormat = "png";
 #endif
