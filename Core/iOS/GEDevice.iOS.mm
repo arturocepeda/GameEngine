@@ -63,7 +63,10 @@ namespace GE { namespace Core
    {
       std::ifstream fStream(Filename, std::ifstream::in | std::ifstream::binary);
       
-      GEAssert(fStream.good());
+      if(!fStream.good())
+      {
+         return 0u;
+      }
       
       fStream.seekg(0, std::ifstream::end);
       return (uint)fStream.tellg();
