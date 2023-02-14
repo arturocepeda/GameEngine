@@ -324,6 +324,13 @@ void RenderSystem::preloadTextures(const char* FileName)
 
 #if defined (GE_PLATFORM_DESKTOP) || defined (GE_PLATFORM_SWITCH)
          const char* sTextureFormat = "dds";
+#elif defined (GE_PLATFORM_IOS)
+         const char* sTextureFormat = "pvr";
+         
+         if(!Device::contentFileExists(sSubDir, sTextureName, sTextureFormat))
+         {
+            sTextureFormat = sPreloadedTexture.Tex->getFormat();
+         }
 #else
          const char* sTextureFormat = sPreloadedTexture.Tex->getFormat();
 #endif
