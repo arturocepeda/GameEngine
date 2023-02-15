@@ -459,27 +459,33 @@ void ContentCompiler::packTextureFile(const char* XmlFileName, const char* pText
       cTexture->loadFromXml(xmlTexture);
       cTexture->saveToStream(sOutputFile);
 
-      char textureFileExtension[8];
+      std::string sTextureFilePathBase;
+      sTextureFilePathBase.append(ContentXmlDirName);
+      sTextureFilePathBase.append("\\Textures\\");
+      sTextureFilePathBase.append(sSetName);
+      sTextureFilePathBase.append("\\");
+      sTextureFilePathBase.append(sTextureName);
 
-      if(pTextureFileExtension[0] != '\0')
-      {
-         strcpy(textureFileExtension, pTextureFileExtension);
-      }
-      else
-      {
-         sprintf(textureFileExtension, ".%s", cTexture->getFormat());
-      }
-
-      std::string sTextureFilePath;
-      sTextureFilePath.append(ContentXmlDirName);
-      sTextureFilePath.append("\\Textures\\");
-      sTextureFilePath.append(sSetName);
-      sTextureFilePath.append("\\");
-      sTextureFilePath.append(sTextureName);
-      sTextureFilePath.append(textureFileExtension);
+      std::string sTextureFilePath(sTextureFilePathBase);
+      sTextureFilePath.append(pTextureFileExtension);
       
       std::ifstream sTextureFile(sTextureFilePath, std::ios::in | std::ios::binary);
-      GEAssert(sTextureFile.is_open());
+
+      if(!sTextureFile.is_open())
+      {
+         std::string sTextureFilePathFallback(sTextureFilePathBase);
+         sTextureFilePathFallback.append(".");
+         sTextureFilePathFallback.append(cTexture->getFormat());
+
+         sTextureFile = std::ifstream(sTextureFilePathFallback, std::ios::in | std::ios::binary);
+
+         if(!sTextureFile.is_open())
+         {
+            Log::log(LogType::Error, "The '%s' texture file is missing", sTextureName);
+            exit(1);
+         }
+      }
+
       sTextureFile.seekg(0, std::ios::end);
       uint32_t iTextureFileSize = (uint32_t)sTextureFile.tellg();
       sTextureFile.seekg(0, std::ios::beg);
@@ -765,27 +771,32 @@ void ContentCompiler::packFontFile(const char* XmlFileName, const char* pTexture
          }
       }
 
-      char textureFileExtension[8];
+      std::string sFontFilePathBase;
+      sFontFilePathBase.append(ContentXmlDirName);
+      sFontFilePathBase.append("\\Fonts\\");
+      sFontFilePathBase.append(sSetName);
+      sFontFilePathBase.append("\\");
+      sFontFilePathBase.append(sFontName);
 
-      if(pTextureFileExtension[0] != '\0')
-      {
-         strcpy(textureFileExtension, pTextureFileExtension);
-      }
-      else
-      {
-         strcpy(textureFileExtension, ".png");
-      }
-
-      std::string sFontFilePath;
-      sFontFilePath.append(ContentXmlDirName);
-      sFontFilePath.append("\\Fonts\\");
-      sFontFilePath.append(sSetName);
-      sFontFilePath.append("\\");
-      sFontFilePath.append(sFontName);
-      sFontFilePath.append(textureFileExtension);
+      std::string sFontFilePath(sFontFilePathBase);
+      sFontFilePath.append(pTextureFileExtension);
 
       std::ifstream sFontTextureFile(sFontFilePath, std::ios::in | std::ios::binary);
-      GEAssert(sFontTextureFile.is_open());
+
+      if(!sFontTextureFile.is_open())
+      {
+         std::string sFontFilePathFallback(sFontFilePathBase);
+         sFontFilePathFallback.append(".png");
+
+         sFontTextureFile = std::ifstream(sFontFilePathFallback, std::ios::in | std::ios::binary);
+
+         if(!sFontTextureFile.is_open())
+         {
+            Log::log(LogType::Error, "The '%s' font texture file is missing", sFontName);
+            exit(1);
+         }
+      }
+
       sFontTextureFile.seekg(0, std::ios::end);
       uint32_t iFontFileSize = (uint32_t)sFontTextureFile.tellg();
       sFontTextureFile.seekg(0, std::ios::beg);
