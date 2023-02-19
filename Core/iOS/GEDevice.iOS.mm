@@ -348,7 +348,18 @@ namespace GE { namespace Core
    
    void Device::deleteUserFile(const char* SubDir, const char* Name, const char* Extension)
    {
-      //TODO
+      char sFileName[64];
+      sprintf(sFileName, "%s.%s", Name, Extension);
+      NSString* nsFileName = [NSString stringWithUTF8String:sFileName];
+      NSString* nsSubDir = [NSString stringWithUTF8String:SubDir];
+      
+      NSArray* nsPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+      NSString* nsDocumentsDirectory = [nsPaths objectAtIndex:0];
+      NSString* nsDirectory = [nsDocumentsDirectory stringByAppendingPathComponent:nsSubDir];
+      NSString* aFile = [nsDirectory stringByAppendingPathComponent:nsFileName];
+      
+      NSFileManager* nsFileManager = [NSFileManager defaultManager];
+      [nsFileManager removeItemAtPath:aFile error:NULL];
    }
    
    uint Device::getUserFilesCount(const char* SubDir, const char* Extension)
