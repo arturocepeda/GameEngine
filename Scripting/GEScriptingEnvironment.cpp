@@ -982,6 +982,7 @@ void Environment::registerTypes()
       , "getLeaderboardEntriesCount", &DistributionPlatform::getLeaderboardEntriesCount
       , "getLeaderboardEntry", &DistributionPlatform::getLeaderboardEntry
       , "isDLCAvailable", &DistributionPlatform::isDLCAvailable
+      , "openDLCStorePage", &DistributionPlatform::openDLCStorePage
       , "findLobbies", &DistributionPlatform::findLobbies
       , "searchingForLobbies", &DistributionPlatform::searchingForLobbies
       , "createLobby", &DistributionPlatform::createLobby

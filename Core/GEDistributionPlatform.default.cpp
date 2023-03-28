@@ -131,6 +131,11 @@ bool DistributionPlatform::isDLCAvailable(const ObjectName&) const
    return false;
 }
 
+void DistributionPlatform::openDLCStorePage(const char* pURL) const
+{
+   Device::openWebPage(pURL);
+}
+
 void DistributionPlatform::findLobbies()
 {
 }
