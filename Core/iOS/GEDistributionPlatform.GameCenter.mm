@@ -14,12 +14,38 @@
 #include "Core/GEDevice.h"
 
 #import <GameKit/GameKit.h>
+#import <StoreKit/StoreKit.h>
 
 using namespace GE;
 using namespace GE::Core;
 
+static GESTLSet(uint32_t) gPurchasedProducts;
+
+@interface PaymentTransactionObserver : NSObject<SKPaymentTransactionObserver>
+@end
+
+@implementation PaymentTransactionObserver
+- (void)paymentQueue:(SKPaymentQueue*)pQueue updatedTransactions:(NSArray<SKPaymentTransaction*>*)pTransactions
+{
+   for(SKPaymentTransaction* transaction in pTransactions)
+   {
+      if(transaction.transactionState == SKPaymentTransactionStateRestored ||
+         transaction.transactionState == SKPaymentTransactionStatePurchased)
+      {
+         NSString* productID = transaction.payment.productIdentifier;
+         const uint32_t productIDHash = GE::Core::hash([productID UTF8String]);
+         gPurchasedProducts.insert(productIDHash);
+      }
+   }
+}
+@end
+
 bool DistributionPlatform::init()
 {
+   PaymentTransactionObserver* paymentTransactionObserver = [[PaymentTransactionObserver alloc] init];
+   [[SKPaymentQueue defaultQueue] addTransactionObserver:paymentTransactionObserver];
+   [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
+   
    return true;
 }
 
@@ -217,9 +243,14 @@ void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName& 
    }];
 }
 
-bool DistributionPlatform::isDLCAvailable(const ObjectName&) const
+bool DistributionPlatform::isDLCAvailable(const ObjectName& pDLCName) const
 {
-   return false;
+   return gPurchasedProducts.find(pDLCName.getID()) != gPurchasedProducts.end();
+}
+
+void DistributionPlatform::openDLCStorePage(const char* pURL) const
+{
+   //TODO
 }
 
 void DistributionPlatform::findLobbies()
