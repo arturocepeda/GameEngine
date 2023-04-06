@@ -134,7 +134,7 @@ static ProductMap gProductMap;
    for(SKProduct* product : products)
    {
       const uint32_t productIDHash = GE::Core::hash([product.productIdentifier UTF8String]);
-      gProductMap[productIDHash] = product;
+      gProductMap[productIDHash] = [product retain];
    }
 }
 
