@@ -12,21 +12,83 @@
 
 #include "Core/GEDistributionPlatform.h"
 #include "Core/GEDevice.h"
+#include "Core/GEValue.h"
+#include "Input/GEInputSystem.h"
 
 #import <GameKit/GameKit.h>
 #import <StoreKit/StoreKit.h>
 
+#include <sstream>
+
 using namespace GE;
 using namespace GE::Core;
+using namespace GE::Input;
+
+
+static const char* kPurchasedProductsSubDir = "Save";
+static const char* kPurchasedProductsFileName = "store";
+static const char* kPurchasedProductsFileExtension = "ge";
 
 static GESTLSet(uint32_t) gPurchasedProducts;
 
+static void savePurchasedProducts()
+{
+   std::stringstream stream;
+   
+   Value valueReserved((uint32_t)0u);
+   valueReserved.writeToStream(stream);
+   
+   Value valueCount((uint32_t)gPurchasedProducts.size());
+   valueCount.writeToStream(stream);
+   
+   for(const uint32_t purchasedProductIDHash : gPurchasedProducts)
+   {
+      Value valuePurchasedProductIDHash(purchasedProductIDHash);
+      valuePurchasedProductIDHash.writeToStream(stream);
+   }
+      
+   std::stringstream::pos_type streamSize = stream.tellp();
+   stream.seekp(0u, std::ios::beg);
+
+   Content::ContentData storeData;
+   storeData.load((uint32_t)streamSize, stream);
+   
+   Device::writeUserFile(kPurchasedProductsSubDir, kPurchasedProductsFileName, kPurchasedProductsFileExtension, &storeData);
+}
+
+static void loadPurchasedProducts()
+{
+   if(Device::userFileExists(kPurchasedProductsSubDir, kPurchasedProductsFileName, kPurchasedProductsFileExtension))
+   {
+      Content::ContentData storeData;
+      Device::readUserFile(kPurchasedProductsSubDir, kPurchasedProductsFileName, kPurchasedProductsFileExtension, &storeData);
+      
+      Content::ContentDataMemoryBuffer memoryBuffer(storeData);
+      std::istream stream(&memoryBuffer);
+
+      Value valueReserved = Value::fromStream(ValueType::UInt, stream);
+      Value valueCount = Value::fromStream(ValueType::UInt, stream);
+      
+      for(uint32_t i = 0u; i < valueCount.getAsUInt(); i++)
+      {
+         Value valuePurchasedProductIDHash = Value::fromStream(ValueType::UInt, stream);
+         gPurchasedProducts.insert(valuePurchasedProductIDHash.getAsUInt());
+      }
+   }
+}
+
+
+//
+//  PaymentTransactionObserver
+//
 @interface PaymentTransactionObserver : NSObject<SKPaymentTransactionObserver>
 @end
 
 @implementation PaymentTransactionObserver
 - (void)paymentQueue:(SKPaymentQueue*)pQueue updatedTransactions:(NSArray<SKPaymentTransaction*>*)pTransactions
 {
+   const size_t cachedPurchasedProductCount = gPurchasedProducts.size();
+   
    for(SKPaymentTransaction* transaction in pTransactions)
    {
       if(transaction.transactionState == SKPaymentTransactionStateRestored ||
@@ -37,15 +99,75 @@ static GESTLSet(uint32_t) gPurchasedProducts;
          gPurchasedProducts.insert(productIDHash);
       }
    }
+   
+   if(gPurchasedProducts.size() > cachedPurchasedProductCount)
+   {
+      savePurchasedProducts();
+   }
 }
 @end
 
+@interface ProductsRequestDelegate : NSObject<SKProductsRequestDelegate>
+@end
+
+static PaymentTransactionObserver* gPaymentTransactionObserver = nullptr;
+
+
+//
+//  ProductsRequestDelegate
+//
+typedef GESTLMap(uint32_t, SKProduct*) ProductMap;
+static ProductMap gProductMap;
+
+@implementation ProductsRequestDelegate
+- (void)fetchProductInformation:(NSSet*)pIdentifiers
+{
+   SKProductsRequest* request = [[SKProductsRequest alloc] initWithProductIdentifiers:pIdentifiers];
+   request.delegate = self;
+   [request start];
+}
+
+- (void)productsRequest:(SKProductsRequest*)pRequest didReceiveResponse:(SKProductsResponse*)pResponse
+{
+   NSArray<SKProduct*>* products = pResponse.products;
+   
+   for(SKProduct* product : products)
+   {
+      const uint32_t productIDHash = GE::Core::hash([product.productIdentifier UTF8String]);
+      gProductMap[productIDHash] = product;
+   }
+}
+
+- (void)request:(SKRequest *)request didFailWithError:(NSError*)pError
+{
+}
+@end
+
+static ProductsRequestDelegate* gProductsRequestDelegate = nullptr;
+
+
+//
+//  DistributionPlatform
+//
 bool DistributionPlatform::init()
 {
-   PaymentTransactionObserver* paymentTransactionObserver = [[PaymentTransactionObserver alloc] init];
-   [[SKPaymentQueue defaultQueue] addTransactionObserver:paymentTransactionObserver];
-   [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
+   NSMutableSet* productIdentifiers = [NSMutableSet set];
+   //TODO: read the list of products from a file!
+   [productIdentifiers addObject:@"beac"];
+   [productIdentifiers addObject:@"xmas"];
    
+   gProductsRequestDelegate = [[ProductsRequestDelegate alloc] init];
+   [gProductsRequestDelegate fetchProductInformation:productIdentifiers];
+   
+   loadPurchasedProducts();
+   
+   if([SKPaymentQueue canMakePayments])
+   {
+      gPaymentTransactionObserver = [[PaymentTransactionObserver alloc] init];
+      [[SKPaymentQueue defaultQueue] addTransactionObserver:gPaymentTransactionObserver];
+      [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
+   }
+      
    return true;
 }
 
@@ -55,6 +177,12 @@ void DistributionPlatform::update()
 
 void DistributionPlatform::shutdown()
 {
+   for(const auto& product : gProductMap)
+   {
+      GE::Core::Allocator::free(product.second);
+   }
+   
+   gProductMap.clear();
 }
 
 const char* DistributionPlatform::getPlatformName() const
@@ -250,7 +378,14 @@ bool DistributionPlatform::isDLCAvailable(const ObjectName& pDLCName) const
 
 void DistributionPlatform::openDLCStorePage(const char* pURL) const
 {
-   //TODO
+   const uint32_t productIDHash = GE::Core::hash(pURL);
+   ProductMap::const_iterator it = gProductMap.find(productIDHash);
+   
+   if(it != gProductMap.end())
+   {
+      SKPayment* payment = [SKPayment paymentWithProduct:it->second];
+      [[SKPaymentQueue defaultQueue] addPayment:payment];
+   }
 }
 
 void DistributionPlatform::findLobbies()
