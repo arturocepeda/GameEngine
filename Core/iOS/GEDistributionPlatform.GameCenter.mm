@@ -152,9 +152,20 @@ static ProductsRequestDelegate* gProductsRequestDelegate = nullptr;
 bool DistributionPlatform::init()
 {
    NSMutableSet* productIdentifiers = [NSMutableSet set];
-   //TODO: read the list of products from a file!
-   [productIdentifiers addObject:@"beac"];
-   [productIdentifiers addObject:@"xmas"];
+   
+   Content::ContentData contentData;
+   Device::readContentFile(Content::ContentType::GenericTextData, ".", "ios.metadata", "xml", &contentData);
+
+   pugi::xml_document xml;
+   xml.load_buffer(contentData.getData(), contentData.getDataSize());
+   
+   const pugi::xml_node& xmlInAppPurchases = xml.child("InAppPurchases");
+   
+   for(const pugi::xml_node& xmlProduct : xmlInAppPurchases.children("Product"))
+   {
+      NSString* productID = [NSString stringWithUTF8String:xmlProduct.attribute("id").as_string()];
+      [productIdentifiers addObject:productID];
+   }
    
    gProductsRequestDelegate = [[ProductsRequestDelegate alloc] init];
    [gProductsRequestDelegate fetchProductInformation:productIdentifiers];
