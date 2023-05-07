@@ -30,6 +30,7 @@ static const char* kPurchasedProductsFileName = "store";
 static const char* kPurchasedProductsFileExtension = "ge";
 
 static GESTLSet(uint32_t) gPurchasedProducts;
+static std::atomic<uint32_t> gPurchasingProductIDHash(0u);
 
 static void savePurchasedProducts()
 {
@@ -91,12 +92,19 @@ static void loadPurchasedProducts()
    
    for(SKPaymentTransaction* transaction in pTransactions)
    {
+      NSString* productID = transaction.payment.productIdentifier;
+      const uint32_t productIDHash = GE::Core::hash([productID UTF8String]);
+      
       if(transaction.transactionState == SKPaymentTransactionStateRestored ||
          transaction.transactionState == SKPaymentTransactionStatePurchased)
       {
-         NSString* productID = transaction.payment.productIdentifier;
-         const uint32_t productIDHash = GE::Core::hash([productID UTF8String]);
          gPurchasedProducts.insert(productIDHash);
+      }
+      
+      if(gPurchasingProductIDHash.load() == productIDHash &&
+         transaction.transactionState != SKPaymentTransactionStatePurchasing)
+      {
+         gPurchasingProductIDHash.store(0u);
       }
    }
    
@@ -387,7 +395,7 @@ bool DistributionPlatform::isDLCAvailable(const ObjectName& pDLCName) const
    return gPurchasedProducts.find(pDLCName.getID()) != gPurchasedProducts.end();
 }
 
-void DistributionPlatform::openDLCStorePage(const char* pURL) const
+void DistributionPlatform::requestDLCPurchase(const char* pURL) const
 {
    const uint32_t productIDHash = GE::Core::hash(pURL);
    ProductMap::const_iterator it = gProductMap.find(productIDHash);
@@ -396,7 +404,13 @@ void DistributionPlatform::openDLCStorePage(const char* pURL) const
    {
       SKPayment* payment = [SKPayment paymentWithProduct:it->second];
       [[SKPaymentQueue defaultQueue] addPayment:payment];
+      gPurchasingProductIDHash.store(productIDHash);
    }
+}
+
+bool DistributionPlatform::processingDLCPurchaseRequest() const
+{
+   return gPurchasingProductIDHash.load() != 0u;
 }
 
 void DistributionPlatform::findLobbies()
