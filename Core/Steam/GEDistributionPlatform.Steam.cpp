@@ -619,9 +619,14 @@ bool DistributionPlatform::isDLCAvailable(const ObjectName& pDLCName) const
    return false;
 }
 
-void DistributionPlatform::openDLCStorePage(const char* pURL) const
+void DistributionPlatform::requestDLCPurchase(const char* pURL) const
 {
    SteamFriends()->ActivateGameOverlayToWebPage(pURL);
+}
+
+bool DistributionPlatform::processingDLCPurchaseRequest() const
+{
+   return false;
 }
 
 void DistributionPlatform::findLobbies()

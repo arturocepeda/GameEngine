@@ -119,7 +119,8 @@ namespace GE { namespace Core
 
       // DLCs
       bool isDLCAvailable(const ObjectName& pDLCName) const;
-      void openDLCStorePage(const char* pURL) const;
+      void requestDLCPurchase(const char* pURL) const;
+      bool processingDLCPurchaseRequest() const;
 
       // Matchmaking
       void findLobbies();
