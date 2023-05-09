@@ -32,6 +32,7 @@
 #include <algorithm>
 
 #define GE_SCENE_JOBIFIED_UPDATE
+//#define GE_SCRIPT_INSTANCE_JOBIFIED_UPDATE
 
 using namespace GE;
 using namespace GE::Content;
@@ -924,7 +925,7 @@ void Scene::queueUpdateJobs()
       }
    }
 
-#if defined (GE_SCENE_JOBIFIED_UPDATE)
+#if defined (GE_SCENE_JOBIFIED_UPDATE) && defined (GE_SCRIPT_INSTANCE_JOBIFIED_UPDATE)
    // thread-safe script instances
    for(uint32_t jobIndex = 1u; jobIndex < Application::ScriptingEnvironmentsCount; jobIndex++)
    {
@@ -990,7 +991,7 @@ void Scene::update()
          {
             ScriptInstance* cScriptInstance = cScript->getScriptInstance(j);
 
-#if defined (GE_SCENE_JOBIFIED_UPDATE)
+#if defined (GE_SCENE_JOBIFIED_UPDATE) && defined (GE_SCRIPT_INSTANCE_JOBIFIED_UPDATE)
             if(!cScriptInstance->getThreadSafe())
 #endif
             {
