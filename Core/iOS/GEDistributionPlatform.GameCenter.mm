@@ -404,7 +404,11 @@ void DistributionPlatform::requestDLCPurchase(const char* pURL) const
    {
       SKPayment* payment = [SKPayment paymentWithProduct:it->second];
       [[SKPaymentQueue defaultQueue] addPayment:payment];
-      gPurchasingProductIDHash.store(productIDHash);
+      
+      if([SKPaymentQueue canMakePayments])
+      {
+         gPurchasingProductIDHash.store(productIDHash);
+      }
    }
 }
 
