@@ -175,3 +175,7 @@ bool DistributionPlatform::getLobbyMember(const Lobby*, size_t, LobbyMember*)
 {
    return false;
 }
+
+void DistributionPlatform::showFullscreenAd(const char* pID)
+{
+}

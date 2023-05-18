@@ -139,6 +139,9 @@ namespace GE { namespace Core
 
       size_t getLobbiesCount() const;
       const Lobby* getLobby(size_t pIndex) const;
+      
+      // Ads
+      void showFullscreenAd(const char* pID);
 
       // Error management
       void resetErrorCode();

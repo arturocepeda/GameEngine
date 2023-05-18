@@ -996,6 +996,7 @@ void Environment::registerTypes()
       , "getLobbyMember", &DistributionPlatform::getLobbyMember
       , "getLobbiesCount", &DistributionPlatform::getLobbiesCount
       , "getLobby", &DistributionPlatform::getLobby
+      , "showFullscreenAd", &DistributionPlatform::showFullscreenAd
    );
 
    //
