@@ -14,15 +14,18 @@
 #include "Core/GEDevice.h"
 #include "Core/GEValue.h"
 #include "Input/GEInputSystem.h"
+#include "Audio/GEAudioSystem.h"
 
 #import <GameKit/GameKit.h>
 #import <StoreKit/StoreKit.h>
+#import <GoogleMobileAds/GoogleMobileAds.h>
 
 #include <sstream>
 
 using namespace GE;
 using namespace GE::Core;
 using namespace GE::Input;
+using namespace GE::Audio;
 
 
 static const char* kPurchasedProductsSubDir = "Save";
@@ -115,10 +118,7 @@ static void loadPurchasedProducts()
 }
 @end
 
-@interface ProductsRequestDelegate : NSObject<SKProductsRequestDelegate>
-@end
-
-static PaymentTransactionObserver* gPaymentTransactionObserver = nullptr;
+static PaymentTransactionObserver* gPaymentTransactionObserver = nil;
 
 
 //
@@ -126,6 +126,9 @@ static PaymentTransactionObserver* gPaymentTransactionObserver = nullptr;
 //
 typedef GESTLMap(uint32_t, SKProduct*) ProductMap;
 static ProductMap gProductMap;
+
+@interface ProductsRequestDelegate : NSObject<SKProductsRequestDelegate>
+@end
 
 @implementation ProductsRequestDelegate
 - (void)fetchProductInformation:(NSSet*)pIdentifiers
@@ -151,7 +154,34 @@ static ProductMap gProductMap;
 }
 @end
 
-static ProductsRequestDelegate* gProductsRequestDelegate = nullptr;
+static ProductsRequestDelegate* gProductsRequestDelegate = nil;
+
+
+//
+//  FullscreenAdDelegate
+//
+GADInterstitialAd* gFullscreenAd = nil;
+
+@interface FullscreenAdDelegate : NSObject<GADFullScreenContentDelegate>
+@end
+
+@implementation FullscreenAdDelegate
+- (void)adWillPresentFullScreenContent:(id<GADFullScreenPresentingAd>)pAd
+{
+   InputSystem::getInstance()->setInputEnabled(false);
+   AudioSystem::getInstance()->pauseAll();
+}
+
+- (void)adDidDismissFullScreenContent:(id<GADFullScreenPresentingAd>)pAd
+{
+   InputSystem::getInstance()->setInputEnabled(true);
+   AudioSystem::getInstance()->resumeAll();
+   
+   gFullscreenAd = nil;
+}
+@end
+
+static FullscreenAdDelegate* gFullscreenAdDelegate = nil;
 
 
 //
@@ -186,6 +216,9 @@ bool DistributionPlatform::init()
       [[SKPaymentQueue defaultQueue] addTransactionObserver:gPaymentTransactionObserver];
       [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
    }
+   
+   gFullscreenAdDelegate = [[FullscreenAdDelegate alloc] init];
+   [GADMobileAds.sharedInstance startWithCompletionHandler:nil];
       
    return true;
 }
@@ -450,4 +483,27 @@ size_t DistributionPlatform::getLobbyMembersCount(const Lobby*) const
 bool DistributionPlatform::getLobbyMember(const Lobby*, size_t, LobbyMember*)
 {
    return false;
+}
+
+void DistributionPlatform::showFullscreenAd(const char* pID)
+{
+   NSString* gadID = [NSString stringWithUTF8String:pID];
+   GADRequest* gadRequest = [GADRequest request];
+   
+   [GADInterstitialAd loadWithAdUnitID:gadID
+      request:gadRequest
+      completionHandler:^(GADInterstitialAd* pAd, NSError* pError)
+   {
+      if(pError)
+      {
+         NSLog(@"Failed to load interstitial ad with error: %@", [pError localizedDescription]);
+         return;
+      }
+      
+      gFullscreenAd = [pAd retain];
+      pAd.fullScreenContentDelegate = gFullscreenAdDelegate;
+      
+      UIViewController* rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
+      [pAd presentFromRootViewController:rootViewController];
+   }];
 }
