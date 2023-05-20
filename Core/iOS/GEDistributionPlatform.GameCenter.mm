@@ -172,6 +172,16 @@ GADInterstitialAd* gFullscreenAd = nil;
    AudioSystem::getInstance()->pauseAll();
 }
 
+- (void)ad:(id<GADFullScreenPresentingAd>)pAd didFailToPresentFullScreenContentWithError:(NSError*)pError
+{
+   NSLog(@"Failed to present interstitial ad with error: %@", [pError localizedDescription]);
+
+   InputSystem::getInstance()->setInputEnabled(true);
+   AudioSystem::getInstance()->resumeAll();
+   
+   gFullscreenAd = nil;
+}
+
 - (void)adDidDismissFullScreenContent:(id<GADFullScreenPresentingAd>)pAd
 {
    InputSystem::getInstance()->setInputEnabled(true);
