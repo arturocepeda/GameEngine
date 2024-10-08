@@ -21,9 +21,22 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <android/log.h>
+#include <fstream>
 
 using namespace GE::Core;
 using namespace GE::Content;
+
+void Device::platformInit()
+{
+}
+
+void Device::platformUpdate()
+{
+}
+
+void Device::platformRelease()
+{
+}
 
 int Device::getTouchPadWidth()
 {
@@ -33,6 +46,15 @@ int Device::getTouchPadWidth()
 int Device::getTouchPadHeight()
 {
    return ScreenHeight;
+}
+
+SystemLanguage Device::requestOSLanguage()
+{
+   return SystemLanguage::English;
+}
+
+void Device::requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutions)
+{
 }
 
 static void getContentFullPath(const char* pSubDir, const char* pName, const char* pExtension, char* pFullPath)
@@ -140,6 +162,11 @@ void Device::writeUserFile(const char* SubDir, const char* Name, const char* Ext
    fwrite(ContentData->getData(), 1, ContentData->getDataSize(), file);
    fflush(file);
    fclose(file);
+}
+
+std::ofstream Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension)
+{
+   return std::ofstream();
 }
 
 void Device::deleteUserFile(const char* SubDir, const char* Name, const char* Extension)
@@ -258,4 +285,26 @@ bool Device::getUserFileName(const char* SubDir, const char* Extension, uint Ind
    closedir(sDir);
 
    return true;
+}
+
+void Device::showVirtualKeyboard(const char*)
+{
+}
+
+void Device::hideVirtualKeyboard()
+{
+}
+
+bool Device::getVirtualKeyboardActive()
+{
+   return false;
+}
+
+const char* Device::getVirtualKeyboardCurrentText()
+{
+   return "";
+}
+
+void Device::openWebPage(const char* pURL)
+{
 }

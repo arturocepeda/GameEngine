@@ -268,6 +268,11 @@ using namespace GE::Audio;
 using namespace GE::Core;
 using namespace GE::Content;
 
+const char* AudioSystem::platformAudioFileExtension()
+{
+   return "";
+}
+
 void AudioSystem::platformInit()
 {
 }
@@ -285,6 +290,10 @@ void AudioSystem::platformLoadSound(BufferID pBuffer, Content::AudioData* pAudio
 }
 
 void AudioSystem::platformUnloadSound(BufferID pBuffer)
+{
+}
+
+void AudioSystem::platformReleaseChannel(ChannelID pChannel)
 {
 }
 
@@ -320,6 +329,10 @@ bool AudioSystem::platformIsInUse(ChannelID pChannel) const
 }
 
 void AudioSystem::platformSetVolume(ChannelID pChannel, float pVolume)
+{
+}
+
+void AudioSystem::platformSetPitch(ChannelID pChannel, float pPitch)
 {
 }
 
