@@ -1,7 +1,7 @@
 
 //////////////////////////////////////////////////////////////////
 //
-//  Arturo Cepeda Pérez
+//  Arturo Cepeda PÃ©rez
 //  Game Engine
 //
 //  Android
@@ -99,8 +99,10 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
    // device orientation
 #ifdef GE_ORIENTATION_PORTRAIT
    Device::Orientation = DeviceOrientation::Portrait;
+   Device::AspectRatio = (float)width / (float)height;
 #else
    Device::Orientation = DeviceOrientation::Landscape;
+   Device::AspectRatio = (float)height / (float)width;
 #endif
 
    // system language
