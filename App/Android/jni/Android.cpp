@@ -127,6 +127,9 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
 
    cPixelToScreenX = new Scaler(0.0f, Device::ScreenWidth, -1.0f, 1.0f);
    cPixelToScreenY = new Scaler(0.0f, Device::ScreenHeight, Device::getAspectRatio(), -Device::getAspectRatio());
+
+   // set the input device
+   InputSystem::getInstance()->setCurrentInputDevice(InputDevice::Touchpad);
    
    // initialize rendering system
    cRender = new RenderSystemES20();
