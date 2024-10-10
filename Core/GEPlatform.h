@@ -1,7 +1,7 @@
 
 //////////////////////////////////////////////////////////////////
 //
-//  Arturo Cepeda Pérez
+//  Arturo Cepeda PÃ©rez
 //  Game Engine
 //
 //  Core
@@ -38,6 +38,10 @@
 
 #if defined (GE_PLATFORM_WINDOWS) || defined (GE_PLATFORM_MACOS)
 # define GE_PLATFORM_DESKTOP
+#endif
+
+#if defined (GE_PLATFORM_ANDROID) || defined (GE_PLATFORM_IOS)
+# define GE_PLATFORM_MOBILE
 #endif
 
 
