@@ -270,7 +270,7 @@ using namespace GE::Content;
 
 const char* AudioSystem::platformAudioFileExtension()
 {
-   return "";
+   return "ogg";
 }
 
 void AudioSystem::platformInit()

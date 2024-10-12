@@ -34,9 +34,19 @@ struct AudioDataStream
 };
 
 
-#if defined (GE_PLATFORM_DESKTOP)
-# include "Externals/libogg/include/os_types.h"
-# include "Externals/libvorbis/include/vorbisfile.h"
+#if defined (GE_PLATFORM_DESKTOP) || defined (GE_PLATFORM_ANDROID)
+# define GE_VORBIS_SUPPORT
+#endif
+
+
+#if defined (GE_VORBIS_SUPPORT)
+
+# if defined (GE_PLATFORM_DESKTOP)
+#  include "Externals/libogg/include/os_types.h"
+#  include "Externals/libvorbis/include/vorbisfile.h"
+# elif defined (GE_PLATFORM_ANDROID)
+#  include "Externals/Tremor/ivorbisfile.h"
+# endif
 
 namespace GE { namespace internal
 {
@@ -86,6 +96,12 @@ namespace GE { namespace internal
    {
       AudioDataStream* stream = static_cast<AudioDataStream*>(pDataSource);
       return (long)stream->Cursor;
+   }
+
+   int ovClose(void* pDataSource)
+   {
+      (void)pDataSource;
+      return 0;
    }
 }}
 #endif
@@ -180,7 +196,7 @@ void AudioData::loadWAVData(uint32_t Size, const char* Data)
 
 void AudioData::loadOggData(uint32_t Size, const char* Data)
 {
-#if defined (GE_PLATFORM_DESKTOP)
+#if defined (GE_VORBIS_SUPPORT)
    AudioDataStream stream = AudioDataStream(Data, Size);
    OggVorbis_File ovFile;
    ov_callbacks ovCallbacks;
@@ -189,7 +205,7 @@ void AudioData::loadOggData(uint32_t Size, const char* Data)
    ovCallbacks.read_func = GE::internal::ovRead;
    ovCallbacks.seek_func = GE::internal::ovSeek;
    ovCallbacks.tell_func = GE::internal::ovTell;
-   ovCallbacks.close_func = 0;
+   ovCallbacks.close_func = GE::internal::ovClose;
 
    // attach audio file data with the ovFile struct
    ov_open_callbacks(&stream, &ovFile, 0, 0, ovCallbacks);
@@ -216,7 +232,11 @@ void AudioData::loadOggData(uint32_t Size, const char* Data)
 
    do
    {
+#if defined (GE_PLATFORM_DESKTOP)
       iReadedBytes = ov_read(&ovFile, sBuffer, BufferSize, 0, 2, 1, &iBitStream);
+#else
+      iReadedBytes = ov_read(&ovFile, sBuffer, BufferSize, &iBitStream);
+#endif
       memcpy(pData + iTotalReadedBytes, sBuffer, iReadedBytes);
       iTotalReadedBytes += iReadedBytes;
    }
