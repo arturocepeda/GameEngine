@@ -13,6 +13,7 @@
 #include "Core/GEDevice.h"
 #include "Core/GEAllocator.h"
 #include "Core/GEApplication.h"
+#include "Core/GEUtils.h"
 #include "Content/GEImageData.h"
 #include "Content/GEAudioData.h"
 #include "Types/GESTLTypes.h"
@@ -59,13 +60,37 @@ void Device::requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutio
 
 static void getContentFullPath(const char* pSubDir, const char* pName, const char* pExtension, char* pFullPath)
 {
+   char name[64];
+   strcpy(name, pName);
+
+   char extension[64];
+   strcpy(extension, pExtension);
+
+   if(Device::ContentHashPath)
+   {
+      if(!isHash(pName))
+      {
+         toHashPath(name);
+      }
+
+      toHashPath(extension);
+   }
+
    if(strcmp(pSubDir, ".") == 0)
    {
-      sprintf(pFullPath, "%s.%s", pName, pExtension);
+      sprintf(pFullPath, "%s.%s", name, extension);
    }
    else
    {
-      sprintf(pFullPath, "%s/%s.%s", pSubDir, pName, pExtension);
+      char subDir[64];
+      strcpy(subDir, pSubDir);
+
+      if(Device::ContentHashPath)
+      {
+         toHashPath(subDir);
+      }
+
+      sprintf(pFullPath, "%s/%s.%s", subDir, name, extension);
    }
 }
 
@@ -145,6 +170,8 @@ void Device::readUserFile(const char* SubDir, const char* Name, const char* Exte
 
 void Device::writeUserFile(const char* SubDir, const char* Name, const char* Extension, const ContentData* ContentData)
 {
+   return;
+
    char sAppDirectory[256];
    sprintf(sAppDirectory, "/sdcard/Android/data/%s/", Application::ID);
    mkdir(sAppDirectory, 0770);

@@ -1,7 +1,7 @@
 
 //////////////////////////////////////////////////////////////////
 //
-//  Arturo Cepeda Pérez
+//  Arturo Cepeda PÃ©rez
 //  Game Engine
 //
 //  Android
@@ -12,11 +12,18 @@
 
 #include <android/asset_manager_jni.h>
 #include "Core/GEDevice.h"
+#include "Core/GEUtils.h"
 
 using namespace GE;
 using namespace GE::Core;
 
-static AAssetManager* NativeAssetManager = 0;
+
+static const size_t kSubDirBufferSize = 64u;
+static const size_t kExtensionBufferSize = 32u;
+
+
+static AAssetManager* NativeAssetManager = nullptr;
+
 
 extern "C"
 {
@@ -26,9 +33,10 @@ extern "C"
    }
 };
 
-uint Device::getFileLength(const char* Filename)
+
+uint Device::getFileLength(const char* pFilename)
 {
-    AAsset* aAsset = AAssetManager_open(NativeAssetManager, Filename, AASSET_MODE_UNKNOWN);
+    AAsset* aAsset = AAssetManager_open(NativeAssetManager, pFilename, AASSET_MODE_UNKNOWN);
     
     if(aAsset)
     {
@@ -40,13 +48,13 @@ uint Device::getFileLength(const char* Filename)
     return 0;
 }
 
-uint Device::readFile(const char* Filename, unsigned char* ReadBuffer, uint BufferSize)
+uint Device::readFile(const char* pFilename, unsigned char* pReadBuffer, uint pBufferSize)
 {
-    AAsset* aAsset = AAssetManager_open(NativeAssetManager, Filename, AASSET_MODE_UNKNOWN);
+    AAsset* aAsset = AAssetManager_open(NativeAssetManager, pFilename, AASSET_MODE_UNKNOWN);
     
     if(aAsset)
     {
-        int iReadBytes = AAsset_read(aAsset, ReadBuffer, BufferSize);
+        int iReadBytes = AAsset_read(aAsset, pReadBuffer, pBufferSize);
         AAsset_close(aAsset);
         return iReadBytes;
     }
@@ -54,16 +62,34 @@ uint Device::readFile(const char* Filename, unsigned char* ReadBuffer, uint Buff
     return 0;
 }
 
-uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
+uint Device::getContentFilesCount(const char* pSubDir, const char* pExtension)
 {
-   AAssetDir* aAssetDir = AAssetManager_openDir(NativeAssetManager, SubDir);
+   char subDir[kSubDirBufferSize];
+   strcpy(subDir, pSubDir);
+
+   if(Device::ContentHashPath)
+   {
+      toHashPath(subDir);
+   }
+
+   AAssetDir* aAssetDir = AAssetManager_openDir(NativeAssetManager, subDir);
 
    if(!aAssetDir)
+   {
       return 0;
+   }
 
-   uint iExtensionLength = strlen(Extension);
-   uint iFilesCount = 0;
-   const char* sFileName = 0;
+   char extension[kExtensionBufferSize];
+   strcpy(extension, pExtension);
+
+   if(Device::ContentHashPath)
+   {
+      toHashPath(extension);
+   }
+
+   uint iExtensionLength = strlen(extension);
+   uint iFilesCount = 0u;
+   const char* sFileName = nullptr;
 
    do
    {
@@ -74,14 +100,16 @@ uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
          uint iFileNameLength = strlen(sFileName);
 
          if(iFileNameLength < iExtensionLength)
+         {
             continue;
+         }
 
          bool bHasExtension = true;
          uint iCharIndex = iFileNameLength - iExtensionLength;
 
-         for(uint i = 0; i < iExtensionLength; i++, iCharIndex++)
+         for(uint i = 0u; i < iExtensionLength; i++, iCharIndex++)
          {
-            if(sFileName[iCharIndex] != Extension[i])
+            if(sFileName[iCharIndex] != extension[i])
             {
                bHasExtension = false;
                break;
@@ -89,7 +117,9 @@ uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
          }
 
          if(bHasExtension)
+         {
             iFilesCount++;
+         }
       }
    }
    while(sFileName);
@@ -99,18 +129,34 @@ uint Device::getContentFilesCount(const char* SubDir, const char* Extension)
    return iFilesCount;
 }
 
-bool Device::getContentFileName(const char* SubDir, const char* Extension, uint Index, char* Name)
+bool Device::getContentFileName(const char* pSubDir, const char* pExtension, uint pIndex, char* pName)
 {
-   AAssetDir* aAssetDir = AAssetManager_openDir(NativeAssetManager, SubDir);
+   char subDir[kSubDirBufferSize];
+   strcpy(subDir, pSubDir);
+
+   if(Device::ContentHashPath)
+   {
+      toHashPath(subDir);
+   }
+
+   AAssetDir* aAssetDir = AAssetManager_openDir(NativeAssetManager, subDir);
 
    if(!aAssetDir)
    {
       return false;
    }
 
-   uint iExtensionLength = strlen(Extension);
-   uint iFileIndex = 0;
-   const char* sFileName = 0;
+   char extension[kExtensionBufferSize];
+   strcpy(extension, pExtension);
+
+   if(Device::ContentHashPath)
+   {
+      toHashPath(extension);
+   }
+
+   uint iExtensionLength = strlen(extension);
+   uint iFileIndex = 0u;
+   const char* sFileName = nullptr;
 
    do
    {
@@ -121,14 +167,16 @@ bool Device::getContentFileName(const char* SubDir, const char* Extension, uint 
          uint iFileNameLength = strlen(sFileName);
 
          if(iFileNameLength < iExtensionLength)
+         {
             continue;
+         }
 
          bool bHasExtension = true;
          uint iCharIndex = iFileNameLength - iExtensionLength;
 
-         for(uint i = 0; i < iExtensionLength; i++, iCharIndex++)
+         for(uint i = 0u; i < iExtensionLength; i++, iCharIndex++)
          {
-            if(sFileName[iCharIndex] != Extension[i])
+            if(sFileName[iCharIndex] != extension[i])
             {
                bHasExtension = false;
                break;
@@ -137,11 +185,11 @@ bool Device::getContentFileName(const char* SubDir, const char* Extension, uint 
 
          if(bHasExtension)
          {
-            if(iFileIndex == Index)
+            if(iFileIndex == pIndex)
             {
                uint iReturnStringLength = iFileNameLength - iExtensionLength - 1;
-               strncpy(Name, sFileName, iReturnStringLength);
-               Name[iReturnStringLength] = '\0';
+               strncpy(pName, sFileName, iReturnStringLength);
+               pName[iReturnStringLength] = '\0';
                break;
             }
 
