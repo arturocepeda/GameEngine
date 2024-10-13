@@ -26,7 +26,7 @@
 #endif
 
 #define GEInvokeCtor(ClassName, Ptr) new (Ptr) ClassName
-#define GEInvokeDtor(ClassName, Ptr) Ptr->~ClassName();
+#define GEInvokeDtor(ClassName, Ptr) (Ptr)->~ClassName();
 
 namespace GE { namespace Core
 {

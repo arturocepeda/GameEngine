@@ -10,92 +10,89 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#if 0
+#include "Audio/GEAudioSystem.h"
+#include "Content/GEAudioData.h"
 
-#include "GEAudioSystemOpenSL.h"
-#include "Core/GEDevice.h"
-#include <iostream>
-#include <fstream>
-
-namespace GE { namespace Audio
-{
-   class AudioSystemOpenSL : public AudioSystem
-   {
-   private:
-      SLObjectItf slEngineObject;
-      SLEngineItf slEngine;
-      SLObjectItf slOutputMix;
-
-      SLDataLocator_OutputMix slDataLocatorOut;
-      SLDataSink slDataSink;
-
-      struct OpenSLSource
-      {
-         SLObjectItf AudioPlayer;
-         SLBufferQueueItf BufferQueue;
-         SLPlayItf PlaybackState;
-         SLVolumeItf VolumeController;
-      };
-
-      OpenSLSource* slSources;
-      Content::AudioData* slBuffers;
-
-      void internalInit();
-
-      SLmillibel linearToMillibel(float fGain);
-      SLpermille floatToPermille(float fPanning);
-
-      static void bufferCallback(SLBufferQueueItf slBufferQueue, void* pContext);
-
-   public:
-      AudioSystemOpenSL();
-      ~AudioSystemOpenSL();
-
-      void release();
-   
-      void loadSound(unsigned int SoundIndex, const char* FileName, const char* FileExtension);
-      void unloadSound(unsigned int SoundIndex);
-      void unloadAllSounds();
-   
-      void internalPlaySound(unsigned int SoundIndex, unsigned int SourceIndex);
-      void internalStop(unsigned int SourceIndex);
-
-      bool isPlaying(unsigned int SourceIndex);
-   
-      void moveListener(const Vector3& Delta);
-      void moveSource(unsigned int SourceIndex, const Vector3& Delta);
-   
-      void setListenerPosition(const Vector3& Position);
-      void setVolume(unsigned int SourceIndex, float Volume);
-      void setPosition(unsigned int SourceIndex, const Vector3& Position);
-      void setDirection(unsigned int SourceIndex, const Vector3& Direction);
-   };
-}}
+#include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
 
 using namespace GE::Audio;
 using namespace GE::Core;
 using namespace GE::Content;
 
-AudioSystemOpenSL::AudioSystemOpenSL()
-   : slSources(0)
-   , slBuffers(0)
+
+static const SLuint32 slAudioPlayerIdCount = 3u;
+static const SLInterfaceID slAudioPlayerIds[] = { SL_IID_PLAY, SL_IID_BUFFERQUEUE, SL_IID_VOLUME };
+static const SLboolean slAudioPlayerReq[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
+
+
+static SLObjectItf slEngineObject;
+static SLEngineItf slEngine;
+static SLObjectItf slOutputMix;
+
+static SLDataLocator_OutputMix slDataLocatorOut;
+static SLDataSink slDataSink;
+
+struct OpenSLChannel
 {
+   SLObjectItf AudioPlayer;
+   SLBufferQueueItf BufferQueue;
+   SLPlayItf PlaybackState;
+   SLVolumeItf VolumeController;
+
+   BufferID Buffer;
+   bool Looping;
+
+   OpenSLChannel()
+      : AudioPlayer(nullptr)
+      , BufferQueue(nullptr)
+      , PlaybackState(nullptr)
+      , VolumeController(nullptr)
+      , Buffer(0u)
+      , Looping(false)
+   {}
+};
+
+static OpenSLChannel* slChannels = nullptr;
+
+
+static SLmillibel linearToMillibel(float pGain)
+{
+   if(pGain >= 1.0f)
+   {
+      return 0;
+   }
+
+   if(pGain <= 0.0f)
+   {
+      return SL_MILLIBEL_MIN;
+   }
+
+   return (SLmillibel)(2000.0f * log10(pGain));
 }
 
-AudioSystemOpenSL::~AudioSystemOpenSL()
+static SLpermille floatToPermille(float pPanning)
 {
+   return (SLpermille)(1000.0f * pPanning);
 }
 
-void AudioSystemOpenSL::internalInit()
-{
-   if(iChannels > 0)
-      slSources = new OpenSLSource[iChannels];
 
-   if(iSounds > 0)
-      slBuffers = new AudioData[iSounds];
+const char* AudioSystem::platformAudioFileExtension()
+{
+   return "ogg";
+}
+
+void AudioSystem::platformInit()
+{
+   slChannels = Allocator::alloc<OpenSLChannel>(mChannelsCount, AllocationCategory::Audio);
+
+   for(uint32_t i = 0u; i < mChannelsCount; i++)
+   {
+      GEInvokeCtor(OpenSLChannel, &slChannels[i]);
+   }
 
    // create engine and output mix
-   slCreateEngine(&slEngineObject, 0, NULL, 0, NULL, NULL);
+   slCreateEngine(&slEngineObject, 0, nullptr, 0, nullptr, nullptr);
    (*slEngineObject)->Realize(slEngineObject, SL_BOOLEAN_FALSE);
    (*slEngineObject)->GetInterface(slEngineObject, SL_IID_ENGINE, (void*)&slEngine);
 
@@ -105,176 +102,11 @@ void AudioSystemOpenSL::internalInit()
    (*slEngine)->CreateOutputMix(slEngine, &slOutputMix, slEngineIdCount, slEngineIds, slEngineReq);
    (*slOutputMix)->Realize(slOutputMix, SL_BOOLEAN_FALSE);
 
-   // define format
-   SLDataLocator_AndroidSimpleBufferQueue slDataLocatorIn;
-   slDataLocatorIn.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
-   slDataLocatorIn.numBuffers = 1;
-
-   SLDataFormat_PCM slDataFormat;
-   slDataFormat.formatType = SL_DATAFORMAT_PCM;
-   slDataFormat.numChannels = 1;
-   slDataFormat.samplesPerSec = SL_SAMPLINGRATE_44_1;
-   slDataFormat.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
-   slDataFormat.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
-   slDataFormat.channelMask = SL_SPEAKER_FRONT_CENTER;
-   slDataFormat.endianness = SL_BYTEORDER_LITTLEENDIAN;
-
-   SLDataSource slDataSource;
-   slDataSource.pLocator = &slDataLocatorIn;
-   slDataSource.pFormat = &slDataFormat;
-
    slDataLocatorOut.locatorType = SL_DATALOCATOR_OUTPUTMIX;
    slDataLocatorOut.outputMix = slOutputMix;
 
    slDataSink.pLocator = &slDataLocatorOut;
-   slDataSink.pFormat = NULL;
-
-   // create audio players (sources)
-   const SLuint32 slAudioPlayerIdCount = 3;
-   const SLInterfaceID slAudioPlayerIds[] = { SL_IID_PLAY, SL_IID_BUFFERQUEUE, SL_IID_VOLUME };
-   const SLboolean slAudioPlayerReq[] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
-
-   for(unsigned int i = 0; i < iChannels; i++)
-   {
-      (*slEngine)->CreateAudioPlayer(slEngine, &slSources[i].AudioPlayer, &slDataSource, &slDataSink, slAudioPlayerIdCount, slAudioPlayerIds, slAudioPlayerReq);
-      (*slSources[i].AudioPlayer)->Realize(slSources[i].AudioPlayer, SL_BOOLEAN_FALSE);
-
-      (*slSources[i].AudioPlayer)->GetInterface(slSources[i].AudioPlayer, SL_IID_PLAY, &slSources[i].PlaybackState);
-      (*slSources[i].AudioPlayer)->GetInterface(slSources[i].AudioPlayer, SL_IID_BUFFERQUEUE, &slSources[i].BufferQueue);
-      (*slSources[i].AudioPlayer)->GetInterface(slSources[i].AudioPlayer, SL_IID_VOLUME, &slSources[i].VolumeController);
-
-      (*slSources[i].BufferQueue)->RegisterCallback(slSources[i].BufferQueue, bufferCallback, this);
-
-      (*slSources[i].VolumeController)->EnableStereoPosition(slSources[i].VolumeController, true);
-      (*slSources[i].VolumeController)->SetVolumeLevel(slSources[i].VolumeController, 0.0f);
-      (*slSources[i].VolumeController)->SetStereoPosition(slSources[i].VolumeController, 0.0f);
-   }
-}
-
-void AudioSystemOpenSL::bufferCallback(SLBufferQueueItf slBufferQueue, void* pContext)
-{
-   AudioSystemOpenSL* cAudio = static_cast<AudioSystemOpenSL*>(pContext);
-
-   for(unsigned int i = 0; i < cAudio->iChannels; i++)
-   {
-      if(slBufferQueue == cAudio->slSources[i].BufferQueue)
-      {
-         (*cAudio->slSources[i].PlaybackState)->SetPlayState(cAudio->slSources[i].PlaybackState, SL_PLAYSTATE_STOPPED);
-         cAudio->sChannels[i].Free = true;
-         return;
-      }
-   }
-}
-
-void AudioSystemOpenSL::release()
-{
-   if(slSources)
-      delete[] slSources;
-
-   if(slBuffers)
-      delete[] slBuffers;
-
-   (*slOutputMix)->Destroy(slOutputMix);
-   (*slEngineObject)->Destroy(slEngineObject);
-}
-
-void AudioSystemOpenSL::loadSound(unsigned int SoundIndex, const char* FileName, const char* FileExtension)
-{
-   if(SoundIndex >= iSounds)
-      return;
-   
-   Device::readContentFile(ContentType::Audio, "Sounds", FileName, FileExtension, &slBuffers[SoundIndex]);
-}
-
-void AudioSystemOpenSL::unloadSound(unsigned int SoundIndex)
-{
-   slBuffers[SoundIndex].unload();
-}
-
-void AudioSystemOpenSL::internalPlaySound(unsigned int SoundIndex, unsigned int SourceIndex)
-{
-   (*slSources[SourceIndex].BufferQueue)->Clear(slSources[SourceIndex].BufferQueue);
-   (*slSources[SourceIndex].BufferQueue)->Enqueue(slSources[SourceIndex].BufferQueue, slBuffers[SoundIndex].getData(), slBuffers[SoundIndex].getDataSize());
-   (*slSources[SourceIndex].PlaybackState)->SetPlayState(slSources[SourceIndex].PlaybackState, SL_PLAYSTATE_PLAYING);
-}
-
-void AudioSystemOpenSL::internalStop(unsigned int SourceIndex)
-{
-   (*slSources[SourceIndex].PlaybackState)->SetPlayState(slSources[SourceIndex].PlaybackState, SL_PLAYSTATE_STOPPED);
-}
-
-bool AudioSystemOpenSL::isPlaying(unsigned int SourceIndex)
-{
-   SLuint32 iPlaybackState = 0;
-   (*slSources[SourceIndex].PlaybackState)->GetPlayState(slSources[SourceIndex].PlaybackState, &iPlaybackState);
-   return iPlaybackState == SL_PLAYSTATE_PLAYING;
-}
-
-void AudioSystemOpenSL::moveListener(const Vector3& Delta)
-{
-
-}
-
-void AudioSystemOpenSL::moveSource(unsigned int SourceIndex, const Vector3& Delta)
-{
-
-}
-
-void AudioSystemOpenSL::setListenerPosition(const Vector3& Position)
-{
-
-}
-
-void AudioSystemOpenSL::setVolume(unsigned int SourceIndex, float Volume)
-{
-   (*slSources[SourceIndex].VolumeController)->SetVolumeLevel(slSources[SourceIndex].VolumeController, linearToMillibel(Volume));
-}
-
-void AudioSystemOpenSL::setPosition(unsigned int SourceIndex, const Vector3& Position)
-{
-   //(*slSources[SourceIndex].VolumeController)->SetStereoPosition(slSources[SourceIndex].VolumeController, floatToPermille(Pan));
-}
-
-void AudioSystemOpenSL::setDirection(unsigned int SourceIndex, const Vector3& Direction)
-{
-
-}
-
-SLmillibel AudioSystemOpenSL::linearToMillibel(float fGain)
-{
-   if(fGain >= 1.0f)
-      return 0;
-
-   if(fGain <= 0.0f)
-      return SL_MILLIBEL_MIN;
-
-   return (SLmillibel)(2000 * log10(fGain));
-}
-
-SLpermille AudioSystemOpenSL::floatToPermille(float fPanning)
-{
-   return (SLpermille)(1000 * fPanning);
-}
-
-#endif
-
-
-#include "Audio/GEAudioSystem.h"
-
-#include <SLES/OpenSLES.h>
-#include <SLES/OpenSLES_Android.h>
-
-using namespace GE::Audio;
-using namespace GE::Core;
-using namespace GE::Content;
-
-const char* AudioSystem::platformAudioFileExtension()
-{
-   return "ogg";
-}
-
-void AudioSystem::platformInit()
-{
+   slDataSink.pFormat = nullptr;
 }
 
 void AudioSystem::platformUpdate()
@@ -283,53 +115,179 @@ void AudioSystem::platformUpdate()
 
 void AudioSystem::platformRelease()
 {
+   if(slChannels)
+   {
+      Allocator::free(slChannels);
+      slChannels = nullptr;
+   }
+
+   (*slOutputMix)->Destroy(slOutputMix);
+   (*slEngineObject)->Destroy(slEngineObject);
 }
 
 void AudioSystem::platformLoadSound(BufferID pBuffer, Content::AudioData* pAudioData)
 {
+   (void)pBuffer;
+   (void)pAudioData;
 }
 
 void AudioSystem::platformUnloadSound(BufferID pBuffer)
 {
+   (void)pBuffer;
 }
 
 void AudioSystem::platformReleaseChannel(ChannelID pChannel)
 {
+   if(!slChannels[pChannel].AudioPlayer)
+   {
+      return;
+   }
+
+   (*slChannels[pChannel].AudioPlayer)->Destroy(slChannels[pChannel].AudioPlayer);
+   GEInvokeCtor(OpenSLChannel, &slChannels[pChannel]);
 }
 
 void AudioSystem::platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool pLooping)
 {
+   // Define format
+   SLDataLocator_AndroidSimpleBufferQueue slDataLocatorIn;
+   slDataLocatorIn.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
+   slDataLocatorIn.numBuffers = 1;
+
+   SLDataFormat_PCM slDataFormat;
+   slDataFormat.formatType = SL_DATAFORMAT_PCM;
+   slDataFormat.numChannels = (SLuint32)mBuffers[pBuffer].Data->getNumberOfChannels();
+   slDataFormat.samplesPerSec = (SLuint32)(mBuffers[pBuffer].Data->getSampleRate() * 1000u);
+   slDataFormat.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
+   slDataFormat.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
+   slDataFormat.endianness = SL_BYTEORDER_LITTLEENDIAN;
+   slDataFormat.channelMask = slDataFormat.numChannels == 1u
+      ? SL_SPEAKER_FRONT_CENTER
+      : SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
+
+   SLDataSource slDataSource;
+   slDataSource.pLocator = &slDataLocatorIn;
+   slDataSource.pFormat = &slDataFormat;
+
+   // Create audio player, and play the sound
+   (*slEngine)->CreateAudioPlayer(slEngine, &slChannels[pChannel].AudioPlayer, &slDataSource, &slDataSink, slAudioPlayerIdCount, slAudioPlayerIds, slAudioPlayerReq);
+   (*slChannels[pChannel].AudioPlayer)->Realize(slChannels[pChannel].AudioPlayer, SL_BOOLEAN_FALSE);
+
+   static const auto bufferCallback = [](SLBufferQueueItf pSLBufferQueue, void* pContext)
+   {
+      AudioSystem* audioSystem = (AudioSystem*)pContext;
+
+      for(uint32_t i = 0u; i < audioSystem->mChannelsCount; i++)
+      {
+         if(pSLBufferQueue == slChannels[i].BufferQueue)
+         {
+            if(slChannels[i].Looping)
+            {
+               const BufferID buffer = slChannels[i].Buffer;
+               const char* bufferData = audioSystem->mBuffers[buffer].Data->getData();
+               const uint32_t bufferSize = audioSystem->mBuffers[buffer].Data->getDataSize();
+
+               (*slChannels[i].BufferQueue)->Enqueue(slChannels[i].BufferQueue, bufferData, bufferSize);
+            }
+            else
+            {
+               audioSystem->platformStop((ChannelID)i);
+            }
+
+            break;
+         }
+      }
+   };
+
+   (*slChannels[pChannel].AudioPlayer)->GetInterface(slChannels[pChannel].AudioPlayer, SL_IID_BUFFERQUEUE, &slChannels[pChannel].BufferQueue);
+   (*slChannels[pChannel].BufferQueue)->RegisterCallback(slChannels[pChannel].BufferQueue, bufferCallback, this);
+   (*slChannels[pChannel].BufferQueue)->Clear(slChannels[pChannel].BufferQueue);
+   (*slChannels[pChannel].BufferQueue)->Enqueue(slChannels[pChannel].BufferQueue, mBuffers[pBuffer].Data->getData(),mBuffers[pBuffer].Data->getDataSize());
+
+   (*slChannels[pChannel].AudioPlayer)->GetInterface(slChannels[pChannel].AudioPlayer, SL_IID_VOLUME, &slChannels[pChannel].VolumeController);
+   (*slChannels[pChannel].VolumeController)->EnableStereoPosition(slChannels[pChannel].VolumeController, slDataFormat.numChannels == 1u);
+
+   (*slChannels[pChannel].AudioPlayer)->GetInterface(slChannels[pChannel].AudioPlayer, SL_IID_PLAY, &slChannels[pChannel].PlaybackState);
+   (*slChannels[pChannel].PlaybackState)->SetPlayState(slChannels[pChannel].PlaybackState, SL_PLAYSTATE_PLAYING);
+
+   slChannels[pChannel].Buffer = pBuffer;
+   slChannels[pChannel].Looping = pLooping;
 }
 
 void AudioSystem::platformStop(ChannelID pChannel)
 {
+   if(!slChannels[pChannel].AudioPlayer)
+   {
+      return;
+   }
+
+   (*slChannels[pChannel].PlaybackState)->SetPlayState(slChannels[pChannel].PlaybackState, SL_PLAYSTATE_STOPPED);
 }
 
 void AudioSystem::platformPause(ChannelID pChannel)
 {
+   if(!slChannels[pChannel].AudioPlayer)
+   {
+      return;
+   }
+
+   (*slChannels[pChannel].PlaybackState)->SetPlayState(slChannels[pChannel].PlaybackState, SL_PLAYSTATE_PAUSED);
 }
 
 void AudioSystem::platformResume(ChannelID pChannel)
 {
+   if(!slChannels[pChannel].AudioPlayer)
+   {
+      return;
+   }
+
+   (*slChannels[pChannel].PlaybackState)->SetPlayState(slChannels[pChannel].PlaybackState, SL_PLAYSTATE_PLAYING);
 }
 
 bool AudioSystem::platformIsPlaying(ChannelID pChannel) const
 {
-   return false;
+   if(!slChannels[pChannel].AudioPlayer)
+   {
+      return false;
+   }
+
+   SLuint32 playbackState = 0u;
+   (*slChannels[pChannel].PlaybackState)->GetPlayState(slChannels[pChannel].PlaybackState, &playbackState);
+   return playbackState == SL_PLAYSTATE_PLAYING;
 }
 
 bool AudioSystem::platformIsPaused(ChannelID pChannel) const
 {
-   return false;
+   if(!slChannels[pChannel].AudioPlayer)
+   {
+      return false;
+   }
+
+   SLuint32 playbackState = 0u;
+   (*slChannels[pChannel].PlaybackState)->GetPlayState(slChannels[pChannel].PlaybackState, &playbackState);
+   return playbackState == SL_PLAYSTATE_PAUSED;
 }
 
 bool AudioSystem::platformIsInUse(ChannelID pChannel) const
 {
-   return false;
+   if(!slChannels[pChannel].AudioPlayer)
+   {
+      return false;
+   }
+
+   SLuint32 playbackState = 0u;
+   (*slChannels[pChannel].PlaybackState)->GetPlayState(slChannels[pChannel].PlaybackState, &playbackState);
+   return playbackState != SL_PLAYSTATE_STOPPED;
 }
 
 void AudioSystem::platformSetVolume(ChannelID pChannel, float pVolume)
 {
+   if(!slChannels[pChannel].AudioPlayer)
+   {
+      return;
+   }
+
+   (*slChannels[pChannel].VolumeController)->SetVolumeLevel(slChannels[pChannel].VolumeController, linearToMillibel(pVolume));
 }
 
 void AudioSystem::platformSetPitch(ChannelID pChannel, float pPitch)
@@ -338,6 +296,12 @@ void AudioSystem::platformSetPitch(ChannelID pChannel, float pPitch)
 
 void AudioSystem::platformSetPosition(ChannelID pChannel, const Vector3& pPosition)
 {
+   if(!slChannels[pChannel].AudioPlayer)
+   {
+      return;
+   }
+
+   //(*slChannels[pChannel].VolumeController)->SetStereoPosition(slChannels[pChannel].VolumeController, floatToPermille(pan));
 }
 
 void AudioSystem::platformSetOrientation(ChannelID pChannel, const Rotation& pOrientation)
