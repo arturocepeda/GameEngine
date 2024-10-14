@@ -104,6 +104,48 @@ void ImageData::loadPVR(uint Size, const char* Data)
    memcpy(pData, Data + sizeof(PVR_Texture_Header), iDataSize);
 }
 
+static inline uint32_t alignTo(uint32_t pValue, uint32_t pAlignment)
+{
+   return pValue == 0u
+      ? pAlignment
+      : (pValue + (pAlignment - 1u)) & ~(pAlignment - 1u);
+}
+
+void ImageData::loadKTX(uint Size, const char* Data)
+{
+   // Extracted from:
+   //   https://github.com/google/etc2comp/blob/master/EtcTool/EtcFileHeader.h
+   struct KTXHeader
+   {
+      uint8_t identifier[12];
+      uint32_t endianness;
+      uint32_t glType;
+      uint32_t glTypeSize;
+      uint32_t glFormat;
+      uint32_t glInternalFormat;
+      uint32_t glBaseInternalFormat;
+      uint32_t pixelWidth;
+      uint32_t pixelHeight;
+      uint32_t pixelDepth;
+      uint32_t numberOfArrayElements;
+      uint32_t numberOfFaces;
+      uint32_t numberOfMipmapLevels;
+      uint32_t bytesOfKeyValueData;
+   };
+
+   const KTXHeader* ktxHeader = reinterpret_cast<const KTXHeader*>(Data);
+
+   mWidth = (int)ktxHeader->pixelWidth;
+   mHeight = (int)ktxHeader->pixelHeight;
+   mBytesPerPixel = 4;
+   mFormat = Format::ASTC;
+
+   const uint32_t headerSize = (uint32_t)sizeof(KTXHeader) + alignTo(ktxHeader->bytesOfKeyValueData, 4u);
+   iDataSize = Size - headerSize;
+   pData = Allocator::alloc<char>(iDataSize);
+   memcpy(pData, Data + headerSize, iDataSize);
+}
+
 void ImageData::loadRaw(uint Size, const char* Data)
 {
    mFormat = Format::Raw;
@@ -121,6 +163,10 @@ void ImageData::load(unsigned int Size, const char* Data)
    else if(Data[0] == '4')
    {
       loadPVR(Size, Data);
+   }
+   else if(Data[0] != '\0' && strncmp(Data + 1, "KTX 11", 6u) == 0)
+   {
+      loadKTX(Size, Data);
    }
    else
    {

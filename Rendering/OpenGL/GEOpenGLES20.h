@@ -18,7 +18,7 @@
 # include <OpenGLES/ES2/gl.h>
 # include <OpenGLES/ES2/glext.h>
 #elif defined (GE_PLATFORM_ANDROID)
-# include <GLES2/gl2.h>
+# include <GLES3/gl32.h>
 #elif defined (GE_PLATFORM_MACOS)
 # include <GLUT/glut.h>
 #else

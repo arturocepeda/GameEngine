@@ -27,7 +27,8 @@ namespace GE { namespace Content
          DDS_DXT1,
          DDS_DXT3,
          DDS_DXT5,
-         PVR
+         PVR,
+         ASTC
       };
 
    private:
@@ -38,6 +39,7 @@ namespace GE { namespace Content
 
       void loadDDS(uint Size, const char* Data);
       void loadPVR(uint Size, const char* Data);
+      void loadKTX(uint Size, const char* Data);
       void loadRaw(uint Size, const char* Data);
     
    public:

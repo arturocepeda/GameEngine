@@ -210,35 +210,52 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
    else
    {
       GLenum glFormat = GL_RGBA;
-      GLsizei glImageSize = 0;
+      GLsizei glImageSize = (GLsizei)cPreloadedTexture->Data->getDataSize();
 
       const GLsizei glWidth = (GLsizei)cPreloadedTexture->Data->getWidth();
       const GLsizei glHeight = (GLsizei)cPreloadedTexture->Data->getHeight();
 
+      switch(cPreloadedTexture->Data->getFormat())
+      {
 #if GL_EXT_texture_compression_s3tc
-      if(cPreloadedTexture->Data->getFormat() == ImageData::Format::DDS_DXT1)
-      {
-         glFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-         glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 8;
-      }
-      else if(cPreloadedTexture->Data->getFormat() == ImageData::Format::DDS_DXT3)
-      {
-         glFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-         glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 16;
-      }
-      else if(cPreloadedTexture->Data->getFormat() == ImageData::Format::DDS_DXT5)
-      {
-         glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-         glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 16;
-      }
-#elif GL_IMG_texture_compression_pvrtc
-      if(cPreloadedTexture->Data->getFormat() == ImageData::Format::PVR)
-      {
-         const GLsizei kBitsPerPixel = 4;
-         glFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
-         glImageSize = std::max(32, glWidth * glHeight * kBitsPerPixel / 8);
-      }
+         case ImageData::Format::DDS_DXT1:
+         {
+            glFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+            glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 8;
+            break;
+         }
+         case ImageData::Format::DDS_DXT3:
+         {
+            glFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+            glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 16;
+            break;
+         }
+         case ImageData::Format::DDS_DXT5:
+         {
+            glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            glImageSize = ((glWidth + 3) / 4) * ((glHeight + 3) / 4) * 16;
+            break;
+         }
 #endif
+#if GL_IMG_texture_compression_pvrtc
+         case ImageData::Format::PVR:
+         {
+            const GLsizei kBitsPerPixel = 4;
+            glFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+            glImageSize = std::max(32, glWidth * glHeight * kBitsPerPixel / 8);
+            break;
+         }
+#endif
+#if GL_ES_VERSION_3_2
+         case ImageData::Format::ASTC:
+         {
+            glFormat = GL_COMPRESSED_RGBA_ASTC_6x6;
+            break;
+         }
+#endif
+         default:
+            GEAssert(false);
+      }
 
       glCompressedTexImage2D(GL_TEXTURE_2D, 0, glFormat, glWidth, glHeight,
          0, glImageSize, cPreloadedTexture->Data->getData());
