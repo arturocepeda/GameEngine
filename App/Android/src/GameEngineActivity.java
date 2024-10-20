@@ -52,10 +52,13 @@ public class GameEngineActivity extends Activity implements SensorEventListener
 
       createMainView();
       createAssetManager();
+      sendInternalStoragePath();
       setupAudioManagerValues();
 
       if(UseAccelerometer)
+      {
          initializeAccelerometer();
+      }
    }
 
    private void createMainView()
@@ -70,17 +73,20 @@ public class GameEngineActivity extends Activity implements SensorEventListener
       GameEngineLib.CreateAssetManager(mAssetManager);
    }
 
+   private void sendInternalStoragePath()
+   {
+      String internalStoragePath = getFilesDir().getAbsolutePath();
+      GameEngineLib.SendInternalStoragePath(internalStoragePath);
+   }
+
    private void setupAudioManagerValues()
    {
-      if(Build.VERSION.SDK_INT >= 17)
-      {
-         mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-         GameEngineLib.SetAudioManagerValues
-         (
-            Integer.parseInt(mAudioManager.getProperty("android.media.property.OUTPUT_SAMPLE_RATE")),
-            Integer.parseInt(mAudioManager.getProperty("android.media.property.OUTPUT_FRAMES_PER_BUFFER"))
-         );
-      }
+      mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+      GameEngineLib.SetAudioManagerValues
+      (
+         Integer.parseInt(mAudioManager.getProperty("android.media.property.OUTPUT_SAMPLE_RATE")),
+         Integer.parseInt(mAudioManager.getProperty("android.media.property.OUTPUT_FRAMES_PER_BUFFER"))
+      );
    }
 
    private void initializeAccelerometer()
@@ -94,21 +100,18 @@ public class GameEngineActivity extends Activity implements SensorEventListener
 
    private void enableImmersiveMode()
    {
-      if(Build.VERSION.SDK_INT >= 19)
+      runOnUiThread(new Runnable()
       {
-         runOnUiThread(new Runnable()
+         public void run()
          {
-            public void run()
-            {
-               mView.setSystemUiVisibility
-               (
-                  View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN |
-                  View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                  View.SYSTEM_UI_FLAG_IMMERSIVE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-               );
-            }
-         });
-      }
+            mView.setSystemUiVisibility
+            (
+               View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN |
+               View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+               View.SYSTEM_UI_FLAG_IMMERSIVE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
+         }
+      });
    }
 
    @Override
@@ -117,7 +120,9 @@ public class GameEngineActivity extends Activity implements SensorEventListener
       super.onPause();
 
       if(UseAccelerometer)
+      {
          mSensorManager.unregisterListener(this);
+      }
 
       GameEngineLib.Pause();
    }
@@ -130,7 +135,9 @@ public class GameEngineActivity extends Activity implements SensorEventListener
       enableImmersiveMode();
 
       if(UseAccelerometer)
+      {
          mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+      }
 
       GameEngineLib.Resume();
    }

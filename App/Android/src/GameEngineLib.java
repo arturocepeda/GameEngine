@@ -27,6 +27,7 @@ public class GameEngineLib
    public static native void Resume();
 
    public static native void CreateAssetManager(AssetManager assetManager);
+   public static native void SendInternalStoragePath(String internalStoragePath);
    public static native void SetAudioManagerValues(int sampleRate, int framesPerBuffer);
 
    public static native void InputTouchDown(int index, float x, float y);
