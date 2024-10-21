@@ -13,6 +13,8 @@
 #include "Audio/GEAudioSystem.h"
 #include "Content/GEAudioData.h"
 
+#include <atomic>
+
 #include <aaudio/AAudio.h>
 
 using namespace GE::Audio;
@@ -26,6 +28,8 @@ struct AAudioChannel
    AAudioStream* Stream;
    int32_t FrameCursor;
    BufferID Buffer;
+   std::atomic<float> Volume;
+   std::atomic<float> Pitch;
    bool Looping;
 
    AAudioChannel()
@@ -33,6 +37,8 @@ struct AAudioChannel
       , Stream(nullptr)
       , FrameCursor(0)
       , Buffer(0u)
+      , Volume(-1.0f)
+      , Pitch(-1.0f)
       , Looping(false)
    {}
 };
@@ -129,6 +135,12 @@ void AudioSystem::platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool p
 
          GEAssert(aaudioChannel);
 
+         if(aaudioChannel->Volume < 0.0f || aaudioChannel->Pitch < 0.0f)
+         {
+            // Still uninitialized
+            return AAUDIO_CALLBACK_RESULT_CONTINUE;
+         }
+
          const AudioBuffer& audioBuffer = audioSystem->mBuffers[aaudioChannel->Buffer];
          const int32_t audioChannelCount = (int32_t)audioBuffer.Data->getNumberOfChannels();
 
@@ -158,6 +170,17 @@ void AudioSystem::platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool p
 
          memcpy(pAudioData, audioBuffer.Data->getData() + dataOffset, framesToCopySize);
          aaudioChannel->FrameCursor += framesToCopy;
+
+         if(!GEFloatEquals(aaudioChannel->Volume, 1.0f))
+         {
+            const int32_t samplesCount = framesToCopy * audioChannelCount;
+            int16_t* audioDataCursor = (int16_t*)pAudioData;
+
+            for(int32_t i = 0; i < samplesCount; i++, audioDataCursor++)
+            {
+               *audioDataCursor = (int16_t)((float)(*audioDataCursor) * aaudioChannel->Volume);
+            }
+         }
 
          return AAUDIO_CALLBACK_RESULT_CONTINUE;
       },
@@ -235,10 +258,22 @@ bool AudioSystem::platformIsInUse(ChannelID pChannel) const
 
 void AudioSystem::platformSetVolume(ChannelID pChannel, float pVolume)
 {
+   if(!gAAudioChannels[pChannel].Stream)
+   {
+      return;
+   }
+
+   gAAudioChannels[pChannel].Volume = pVolume;
 }
 
 void AudioSystem::platformSetPitch(ChannelID pChannel, float pPitch)
 {
+   if(!gAAudioChannels[pChannel].Stream)
+   {
+      return;
+   }
+
+   gAAudioChannels[pChannel].Pitch = pPitch;
 }
 
 void AudioSystem::platformSetPosition(ChannelID pChannel, const Vector3& pPosition)
