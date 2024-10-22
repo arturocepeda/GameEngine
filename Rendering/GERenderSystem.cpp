@@ -322,18 +322,20 @@ void RenderSystem::preloadTextures(const char* FileName)
          GEInvokeCtor(Texture, sPreloadedTexture.Tex)(sTextureName, cGroupName);
          sPreloadedTexture.Tex->loadFromXml(xmlTexture);
 
+         const char* sTextureFormat = "";
+
 #if defined (GE_PLATFORM_DESKTOP) || defined (GE_PLATFORM_SWITCH)
-         const char* sTextureFormat = "dds";
+         sTextureFormat = "dds";
 #elif defined (GE_PLATFORM_IOS)
-         const char* sTextureFormat = "pvr";
-         
+         sTextureFormat = "pvr";
+#elif defined (GE_PLATFORM_ANDROID)
+         sTextureFormat = "ktx";
+#endif
+
          if(!Device::contentFileExists(sSubDir, sTextureName, sTextureFormat))
          {
             sTextureFormat = sPreloadedTexture.Tex->getFormat();
          }
-#else
-         const char* sTextureFormat = sPreloadedTexture.Tex->getFormat();
-#endif
 
          Device::readContentFile(ContentType::Texture, sSubDir, sTextureName, sTextureFormat, sPreloadedTexture.Data);
 
