@@ -207,6 +207,7 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Pause(JNIEnv* env,
    cTimer.stop();
    dTime = 0.0;
    cStateManager.getActiveState()->pause();
+   cAudio->pauseAll();
 }
 
 JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Resume(JNIEnv* env, jobject obj)
@@ -217,6 +218,7 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Resume(JNIEnv* env
    bPaused = false;
    cTimer.start();
    cStateManager.getActiveState()->resume();
+   cAudio->resumeAll();
 }
 
 JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_SetAudioManagerValues(JNIEnv* env, jobject obj, jint sampleRate, jint framesPerBuffer)
