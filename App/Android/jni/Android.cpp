@@ -12,6 +12,8 @@
 
 
 #include <jni.h>
+#include <android/log.h>
+
 #include <stdio.h>
 #include <memory>
 #include <vector>
@@ -30,6 +32,7 @@
 #include "Core/GETimer.h"
 #include "Core/GETime.h"
 #include "Core/GEApplication.h"
+#include "Core/GELog.h"
 #include "Core/GEDistributionPlatform.h"
 
 using namespace GE;
@@ -56,6 +59,31 @@ Vector2 vFingerPosition[GE_MAX_FINGERS];
 
 Scaler* cPixelToScreenX;
 Scaler* cPixelToScreenY;
+
+class AndroidLogListener : public LogListener
+{
+public:
+   virtual void onLog(LogType pType, const char* pMessage) override
+   {
+      int logPrio = ANDROID_LOG_DEFAULT;
+
+      switch(pType)
+      {
+         case LogType::Info:
+            logPrio = ANDROID_LOG_INFO;
+            break;
+         case LogType::Warning:
+            logPrio = ANDROID_LOG_WARN;
+            break;
+         case LogType::Error:
+            logPrio = ANDROID_LOG_ERROR;
+            break;
+      }
+
+      __android_log_print(logPrio, GE_APP_NAME, "%s", pMessage);
+   }
+};
+static AndroidLogListener gLogListener;
 
 extern "C"
 {
@@ -86,6 +114,8 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
 #if defined (GE_BINARY_CONTENT)
    Application::ContentType = ApplicationContentType::Bin;
 #endif
+
+   Log::addListener(&gLogListener);
 
    gDistributionPlatform.init();
 
