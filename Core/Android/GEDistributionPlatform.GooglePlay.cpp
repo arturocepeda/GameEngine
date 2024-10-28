@@ -13,8 +13,59 @@
 #include "Core/GEDistributionPlatform.h"
 #include "Core/GEDevice.h"
 
+#include <jni.h>
+
+#include "gni/gni.h"
+#include "gni/gni_task.h"
+#include "pgs/pgs_play_games.h"
+#include "pgs/pgs_players_client.h"
+
 using namespace GE;
 using namespace GE::Core;
+
+static PgsPlayersClient* gPlayersClient = nullptr;
+static char gPlayerId[256] = { 0 };
+
+static void onGetCurrentPlayerIdCompleteCallback(GniTask* pTask, void* pUserData)
+{
+   (void)pUserData;
+
+   if(!GniTask_isSuccessful(pTask))
+   {
+      const char* errorMessage = nullptr;
+      GniTask_getErrorMessage(pTask, &errorMessage);
+
+      GniString_destroy(errorMessage);
+      GniTask_destroy(pTask);
+
+      return;
+   }
+
+   const char* result = nullptr;
+   PgsPlayersClient_getCurrentPlayerId_getResult(pTask, &result);
+   strcpy(gPlayerId, result);
+
+   GniString_destroy(result);
+   GniTask_destroy(pTask);
+}
+
+extern "C"
+JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InitializeDistributionPlatform(JNIEnv* pEnv, jclass pClass, jobject pMainActivity)
+{
+   (void)pClass;
+
+   JavaVM* javaVM = nullptr;
+   pEnv->GetJavaVM(&javaVM);
+
+   GniCore_init(javaVM, pMainActivity);
+
+   gPlayersClient = PgsPlayGames_getPlayersClient(pMainActivity);
+   GEAssert(gPlayersClient);
+
+   GniTask* getCurrentPlayerIdTask = PgsPlayersClient_getCurrentPlayerId(gPlayersClient);
+   GEAssert(getCurrentPlayerIdTask);
+   GniTask_addOnCompleteCallback(getCurrentPlayerIdTask, onGetCurrentPlayerIdCompleteCallback, nullptr);
+}
 
 bool DistributionPlatform::init()
 {
@@ -54,11 +105,12 @@ bool DistributionPlatform::internetConnectionAvailable() const
 
 bool DistributionPlatform::loggedIn() const
 {
-   return false;
+   return gPlayerId[0] != '\0';
 }
 
 void DistributionPlatform::logIn(std::function<void()> onFinished)
 {
+   (void)onFinished;
 }
 
 void DistributionPlatform::logOut()

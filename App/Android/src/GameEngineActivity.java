@@ -54,6 +54,7 @@ public class GameEngineActivity extends Activity implements SensorEventListener
       createAssetManager();
       sendInternalStoragePath();
       setupAudioManagerValues();
+      initializeDistributionPlatform();
 
       if(UseAccelerometer)
       {
@@ -87,6 +88,11 @@ public class GameEngineActivity extends Activity implements SensorEventListener
          Integer.parseInt(mAudioManager.getProperty("android.media.property.OUTPUT_SAMPLE_RATE")),
          Integer.parseInt(mAudioManager.getProperty("android.media.property.OUTPUT_FRAMES_PER_BUFFER"))
       );
+   }
+
+   private void initializeDistributionPlatform()
+   {
+      GameEngineLib.InitializeDistributionPlatform(this);
    }
 
    private void initializeAccelerometer()
