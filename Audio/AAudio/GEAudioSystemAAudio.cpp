@@ -106,6 +106,7 @@ void AudioSystem::platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool p
 
    AAudio_createStreamBuilder(&aaudioChannel.StreamBuilder);
    GEAssert(aaudioChannel.StreamBuilder);
+   AAudioStreamBuilder_setPerformanceMode(aaudioChannel.StreamBuilder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
 
    const AudioBuffer& audioBuffer = mBuffers[pBuffer];
    const int32_t audioSampleRate = (int32_t)audioBuffer.Data->getSampleRate();
@@ -189,7 +190,6 @@ void AudioSystem::platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool p
 
    AAudioStreamBuilder_openStream(aaudioChannel.StreamBuilder, &aaudioChannel.Stream);
    GEAssert(aaudioChannel.Stream);
-
    AAudioStream_requestStart(aaudioChannel.Stream);
 }
 
