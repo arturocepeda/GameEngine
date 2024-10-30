@@ -157,7 +157,10 @@ void AudioSystem::platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool p
             }
             else
             {
-               return AAUDIO_CALLBACK_RESULT_STOP;
+               const int32_t framesRead = (int32_t)AAudioStream_getFramesRead(aaudioChannel->Stream);
+               return framesRead < framesCount
+                  ? AAUDIO_CALLBACK_RESULT_CONTINUE
+                  : AAUDIO_CALLBACK_RESULT_STOP;
             }
          }
 
