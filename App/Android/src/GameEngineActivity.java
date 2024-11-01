@@ -12,15 +12,10 @@
 
 package com.GameEngine.Main;
 
-import android.util.Log;
-import android.os.Build;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.View;
-import android.view.MotionEvent;
 import android.view.KeyEvent;
-import android.view.WindowManager;
-import android.view.View.OnTouchListener;
 import android.content.res.AssetManager;
 import android.content.Context;
 import android.media.AudioManager;
@@ -28,7 +23,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import java.io.File;
 
 public class GameEngineActivity extends Activity implements SensorEventListener
 {
@@ -54,12 +48,13 @@ public class GameEngineActivity extends Activity implements SensorEventListener
       createAssetManager();
       sendInternalStoragePath();
       setupAudioManagerValues();
-      initializeDistributionPlatform();
 
       if(UseAccelerometer)
       {
          initializeAccelerometer();
       }
+
+      GameEngineGPG.initialize(this);
    }
 
    private void createMainView()
@@ -88,11 +83,6 @@ public class GameEngineActivity extends Activity implements SensorEventListener
          Integer.parseInt(mAudioManager.getProperty("android.media.property.OUTPUT_SAMPLE_RATE")),
          Integer.parseInt(mAudioManager.getProperty("android.media.property.OUTPUT_FRAMES_PER_BUFFER"))
       );
-   }
-
-   private void initializeDistributionPlatform()
-   {
-      GameEngineLib.InitializeDistributionPlatform(this);
    }
 
    private void initializeAccelerometer()

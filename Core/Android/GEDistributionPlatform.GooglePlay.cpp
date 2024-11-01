@@ -15,58 +15,67 @@
 
 #include <jni.h>
 
-#include "gni/gni.h"
-#include "gni/gni_task.h"
-#include "pgs/pgs_play_games.h"
-#include "pgs/pgs_players_client.h"
+static JavaVM* gJavaVM = nullptr;
+static jclass gGPGClass = nullptr;
+static jmethodID gMethodID_loggedIn = nullptr;
+static jmethodID gMethodID_logIn = nullptr;
+static jmethodID gMethodID_getUserName = nullptr;
+
+static std::function<void()> gOnLogInFinished = nullptr;
 
 using namespace GE;
 using namespace GE::Core;
 
-static PgsPlayersClient* gPlayersClient = nullptr;
-static char gPlayerId[256] = { 0 };
 
-static void onGetCurrentPlayerIdCompleteCallback(GniTask* pTask, void* pUserData)
+//
+//  JNI functions
+//
+extern "C"
 {
-   (void)pUserData;
-
-   if(!GniTask_isSuccessful(pTask))
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGInitialize(JNIEnv* pEnv, jclass pClass, jobject pMainActivity)
    {
-      const char* errorMessage = nullptr;
-      GniTask_getErrorMessage(pTask, &errorMessage);
+      (void)pClass;
 
-      GniString_destroy(errorMessage);
-      GniTask_destroy(pTask);
+      pEnv->GetJavaVM(&gJavaVM);
+      GEAssert(gJavaVM);
 
-      return;
+      jclass gpgClass = pEnv->FindClass("com/GameEngine/Main/GameEngineGPG");
+      GEAssert(gpgClass);
+      gGPGClass = (jclass)pEnv->NewGlobalRef(gpgClass);
+      GEAssert(gGPGClass);
+
+      gMethodID_loggedIn = pEnv->GetStaticMethodID(gGPGClass, "loggedIn", "()Z");
+      GEAssert(gMethodID_loggedIn);
+      gMethodID_logIn = pEnv->GetStaticMethodID(gGPGClass, "logIn", "()V");
+      GEAssert(gMethodID_logIn);
+      gMethodID_getUserName = pEnv->GetStaticMethodID(gGPGClass, "getUserName", "()Ljava/lang/String;");
+      GEAssert(gMethodID_getUserName);
    }
 
-   const char* result = nullptr;
-   PgsPlayersClient_getCurrentPlayerId_getResult(pTask, &result);
-   strcpy(gPlayerId, result);
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGOnLogInFinished(JNIEnv* pEnv, jclass pClass)
+   {
+      if(gOnLogInFinished)
+      {
+         gOnLogInFinished();
+      }
+   }
+};
 
-   GniString_destroy(result);
-   GniTask_destroy(pTask);
-}
 
-extern "C"
-JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_InitializeDistributionPlatform(JNIEnv* pEnv, jclass pClass, jobject pMainActivity)
+//
+//  Local static functions
+//
+static JNIEnv* getEnv()
 {
-   (void)pClass;
-
-   JavaVM* javaVM = nullptr;
-   pEnv->GetJavaVM(&javaVM);
-
-   GniCore_init(javaVM, pMainActivity);
-
-   gPlayersClient = PgsPlayGames_getPlayersClient(pMainActivity);
-   GEAssert(gPlayersClient);
-
-   GniTask* getCurrentPlayerIdTask = PgsPlayersClient_getCurrentPlayerId(gPlayersClient);
-   GEAssert(getCurrentPlayerIdTask);
-   GniTask_addOnCompleteCallback(getCurrentPlayerIdTask, onGetCurrentPlayerIdCompleteCallback, nullptr);
+   GEAssert(gJavaVM);
+   JNIEnv* env = nullptr;
+   return gJavaVM->AttachCurrentThread(&env, nullptr) == JNI_OK ? env : nullptr;
 }
 
+
+//
+//  DistributionPlatform
+//
 bool DistributionPlatform::init()
 {
    return true;
@@ -78,6 +87,7 @@ void DistributionPlatform::update()
 
 void DistributionPlatform::shutdown()
 {
+   gOnLogInFinished = nullptr;
 }
 
 const char* DistributionPlatform::getPlatformName() const
@@ -88,6 +98,23 @@ const char* DistributionPlatform::getPlatformName() const
 
 const char* DistributionPlatform::getUserName() const
 {
+   if(loggedIn())
+   {
+      GEAssert(gGPGClass);
+      GEAssert(gMethodID_getUserName);
+
+      JNIEnv* env = getEnv();
+      GEAssert(env);
+
+      jstring userNameJString = (jstring)env->CallStaticObjectMethod(gGPGClass, gMethodID_getUserName);
+      const char* userNameCString = env->GetStringUTFChars(userNameJString, nullptr);
+
+      static char userNameBuffer[256];
+      strcpy(userNameBuffer, userNameCString);
+
+      return userNameBuffer;
+   }
+
    static const char* defaultUserName = "";
    return defaultUserName;
 }
@@ -105,12 +132,26 @@ bool DistributionPlatform::internetConnectionAvailable() const
 
 bool DistributionPlatform::loggedIn() const
 {
-   return gPlayerId[0] != '\0';
+   GEAssert(gGPGClass);
+   GEAssert(gMethodID_loggedIn);
+
+   JNIEnv* env = getEnv();
+   GEAssert(env);
+
+   return (bool)env->CallStaticBooleanMethod(gGPGClass, gMethodID_loggedIn);
 }
 
 void DistributionPlatform::logIn(std::function<void()> onFinished)
 {
-   (void)onFinished;
+   gOnLogInFinished = onFinished;
+
+   GEAssert(gGPGClass);
+   GEAssert(gMethodID_loggedIn);
+
+   JNIEnv* env = getEnv();
+   GEAssert(env);
+
+   env->CallStaticVoidMethod(gGPGClass, gMethodID_logIn);
 }
 
 void DistributionPlatform::logOut()

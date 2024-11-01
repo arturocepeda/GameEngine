@@ -31,7 +31,6 @@ public class GameEngineLib
    public static native void SendInternalStoragePath(String internalStoragePath);
 
    public static native void SetAudioManagerValues(int sampleRate, int framesPerBuffer);
-   public static native void InitializeDistributionPlatform(Activity mainActivity);
 
    public static native void InputTouchDown(int index, float x, float y);
    public static native void InputTouchMove(int index, float x, float y);
@@ -40,4 +39,7 @@ public class GameEngineLib
    public static native void InputButtonUp(int button);
    public static native void UpdateAccelerometerStatus(float x, float y, float z);
    public static native void UpdateDeviceRotationVector(float x, float y, float z, float w);
+
+   public static native void GPGInitialize(Activity mainActivity);
+   public static native void GPGOnLogInFinished();
 }
