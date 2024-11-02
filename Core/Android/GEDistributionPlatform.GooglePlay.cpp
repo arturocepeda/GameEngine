@@ -24,8 +24,12 @@ static jmethodID gMethodID_loggedIn = nullptr;
 static jmethodID gMethodID_logIn = nullptr;
 static jmethodID gMethodID_getUserName = nullptr;
 static jmethodID gMethodID_updateLeaderboardScore = nullptr;
+static jmethodID gMethodID_requestLeaderboardScores = nullptr;
+static jmethodID gMethodID_requestLeaderboardScoresAroundUser = nullptr;
 
 static std::function<void()> gOnLogInFinished = nullptr;
+static std::function<void(uint16_t, const char*, uint32_t)> gAddLeaderboardEntry = nullptr;
+static std::function<void()> gOnLeaderboardQueryFinished = nullptr;
 
 using namespace GE;
 using namespace GE::Core;
@@ -48,13 +52,24 @@ extern "C"
       gGPGClass = (jclass)pEnv->NewGlobalRef(gpgClass);
       GEAssert(gGPGClass);
 
-      gMethodID_loggedIn = pEnv->GetStaticMethodID(gGPGClass, "loggedIn", "()Z");
+      gMethodID_loggedIn =
+         pEnv->GetStaticMethodID(gGPGClass, "loggedIn", "()Z");
       GEAssert(gMethodID_loggedIn);
-      gMethodID_logIn = pEnv->GetStaticMethodID(gGPGClass, "logIn", "()V");
+      gMethodID_logIn =
+         pEnv->GetStaticMethodID(gGPGClass, "logIn", "()V");
       GEAssert(gMethodID_logIn);
-      gMethodID_getUserName = pEnv->GetStaticMethodID(gGPGClass, "getUserName", "()Ljava/lang/String;");
+      gMethodID_getUserName =
+         pEnv->GetStaticMethodID(gGPGClass, "getUserName", "()Ljava/lang/String;");
       GEAssert(gMethodID_getUserName);
-      gMethodID_updateLeaderboardScore = pEnv->GetStaticMethodID(gGPGClass, "updateLeaderboardScore", "(Ljava/lang/String;J)V");
+      gMethodID_updateLeaderboardScore =
+         pEnv->GetStaticMethodID(gGPGClass, "updateLeaderboardScore", "(Ljava/lang/String;J)V");
+      GEAssert(gMethodID_updateLeaderboardScore);
+      gMethodID_requestLeaderboardScores =
+         pEnv->GetStaticMethodID(gGPGClass, "requestLeaderboardScores", "(Ljava/lang/String;II)V");
+      GEAssert(gMethodID_requestLeaderboardScores);
+      gMethodID_requestLeaderboardScoresAroundUser =
+         pEnv->GetStaticMethodID(gGPGClass, "requestLeaderboardScoresAroundUser", "(Ljava/lang/String;I)V");
+      GEAssert(gMethodID_requestLeaderboardScoresAroundUser);
    }
 
    JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGOnLogInFinished(JNIEnv* pEnv, jclass pClass)
@@ -62,6 +77,26 @@ extern "C"
       if(gOnLogInFinished)
       {
          gOnLogInFinished();
+      }
+   }
+
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGAddLeaderboardEntry(JNIEnv* pEnv, jclass pClass, jlong pRank, jstring pPlayerName, jlong pScore)
+   {
+      if(gAddLeaderboardEntry)
+      {
+         const uint16_t rank = (uint16_t)pRank;
+         const char* playerName = pEnv->GetStringUTFChars(pPlayerName, nullptr);
+         const uint32_t score = (uint32_t)pScore;
+
+         gAddLeaderboardEntry(rank, playerName, score);
+      }
+   }
+
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGOnLeaderboardQueryFinished(JNIEnv* pEnv, jclass pClass)
+   {
+      if(gOnLeaderboardQueryFinished)
+      {
+         gOnLeaderboardQueryFinished();
       }
    }
 };
@@ -107,6 +142,8 @@ void DistributionPlatform::update()
 void DistributionPlatform::shutdown()
 {
    gOnLogInFinished = nullptr;
+   gAddLeaderboardEntry = nullptr;
+   gOnLeaderboardQueryFinished = nullptr;
 }
 
 const char* DistributionPlatform::getPlatformName() const
@@ -237,7 +274,7 @@ void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboard
    const char* leaderboardID = it->second.c_str();
 
    GEAssert(gGPGClass);
-   GEAssert(gMethodID_getUserName);
+   GEAssert(gMethodID_updateLeaderboardScore);
 
    JNIEnv* env = getEnv();
    GEAssert(env);
@@ -250,10 +287,113 @@ void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboard
 
 void DistributionPlatform::requestLeaderboardScores(const ObjectName& pLeaderboardName, uint16_t pFirstPosition, uint16_t pLastPosition)
 {
+   mRequestingLeaderboardScores = true;
+
+   IDsMap::const_iterator it = gLeaderboardIDsMap.find(pLeaderboardName.getID());
+   GEAssert(it != gLeaderboardIDsMap.end());
+   const char* leaderboardID = it->second.c_str();
+
+   gAddLeaderboardEntry = [this, pLeaderboardName](uint16_t pRank, const char* pPlayerName, uint32_t pScore)
+   {
+      size_t leaderboardIndex = 0u;
+      bool leaderboardFound = false;
+
+      for(size_t i = 0u; i < mLeaderboards.size(); i++)
+      {
+         if(mLeaderboards[i].mLeaderboardName == pLeaderboardName)
+         {
+            leaderboardIndex = i;
+            leaderboardFound = true;
+            break;
+         }
+      }
+
+      if(!leaderboardFound)
+      {
+         mLeaderboards.emplace_back();
+         leaderboardIndex = mLeaderboards.size() - 1u;
+         mLeaderboards[leaderboardIndex].mLeaderboardName = pLeaderboardName;
+      }
+
+      LeaderboardEntry leaderboardEntry;
+      leaderboardEntry.mUserName.assign(pPlayerName);
+      leaderboardEntry.mPosition = pRank;
+      leaderboardEntry.mScore = pScore;
+      leaderboardEntry.mScoreDetail = 0u;
+      addLeaderboardEntry(leaderboardIndex, leaderboardEntry);
+   };
+
+   gOnLeaderboardQueryFinished = [this]()
+   {
+      mRequestingLeaderboardScores = false;
+   };
+
+   GEAssert(gGPGClass);
+   GEAssert(gMethodID_requestLeaderboardScores);
+
+   JNIEnv* env = getEnv();
+   GEAssert(env);
+
+   const jstring jargLeaderboardID = env->NewStringUTF(leaderboardID);
+   const jint jargFirstPosition = (jint)pFirstPosition;
+   const jint jargLastPosition = (jint)pFirstPosition;
+
+   env->CallStaticVoidMethod(gGPGClass, gMethodID_requestLeaderboardScores, jargLeaderboardID, jargFirstPosition, jargLastPosition);
 }
 
 void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName& pLeaderboardName, uint16_t pPositionsCount)
 {
+   mRequestingLeaderboardScores = true;
+
+   IDsMap::const_iterator it = gLeaderboardIDsMap.find(pLeaderboardName.getID());
+   GEAssert(it != gLeaderboardIDsMap.end());
+   const char* leaderboardID = it->second.c_str();
+
+   gAddLeaderboardEntry = [this, pLeaderboardName](uint16_t pRank, const char* pPlayerName, uint32_t pScore)
+   {
+      size_t leaderboardIndex = 0u;
+      bool leaderboardFound = false;
+
+      for(size_t i = 0u; i < mLeaderboards.size(); i++)
+      {
+         if(mLeaderboards[i].mLeaderboardName == pLeaderboardName)
+         {
+            leaderboardIndex = i;
+            leaderboardFound = true;
+            break;
+         }
+      }
+
+      if(!leaderboardFound)
+      {
+         mLeaderboards.emplace_back();
+         leaderboardIndex = mLeaderboards.size() - 1u;
+         mLeaderboards[leaderboardIndex].mLeaderboardName = pLeaderboardName;
+      }
+
+      LeaderboardEntry leaderboardEntry;
+      leaderboardEntry.mUserName.assign(pPlayerName);
+      leaderboardEntry.mPosition = pRank;
+      leaderboardEntry.mScore = pScore;
+      leaderboardEntry.mScoreDetail = 0u;
+      addLeaderboardEntry(leaderboardIndex, leaderboardEntry);
+   };
+
+   gOnLeaderboardQueryFinished = [this]()
+   {
+      mRequestingLeaderboardScores = false;
+   };
+
+   GEAssert(gGPGClass);
+   GEAssert(gMethodID_requestLeaderboardScoresAroundUser);
+
+   JNIEnv* env = getEnv();
+   GEAssert(env);
+
+   const jstring jargLeaderboardID = env->NewStringUTF(leaderboardID);
+   const jint jargPositionsCount = (jint)pPositionsCount;
+
+   env->CallStaticVoidMethod(gGPGClass, gMethodID_requestLeaderboardScoresAroundUser, jargLeaderboardID, jargPositionsCount);
 }
 
 bool DistributionPlatform::isDLCAvailable(const ObjectName& pDLCName) const

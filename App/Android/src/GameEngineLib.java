@@ -40,6 +40,8 @@ public class GameEngineLib
    public static native void UpdateAccelerometerStatus(float x, float y, float z);
    public static native void UpdateDeviceRotationVector(float x, float y, float z, float w);
 
-   public static native void GPGInitialize(Activity mainActivity);
+   public static native void GPGInitialize(Activity pMainActivity);
    public static native void GPGOnLogInFinished();
+   public static native void GPGAddLeaderboardEntry(long pRank, String pPlayerName, long pScore);
+   public static native void GPGOnLeaderboardQueryFinished();
 }
