@@ -15,6 +15,9 @@
 
 #include <jni.h>
 
+typedef GESTLMap(uint32_t, GESTLString) IDsMap;
+static IDsMap gLeaderboardIDsMap;
+
 static JavaVM* gJavaVM = nullptr;
 static jclass gGPGClass = nullptr;
 static jmethodID gMethodID_loggedIn = nullptr;
@@ -78,6 +81,20 @@ static JNIEnv* getEnv()
 //
 bool DistributionPlatform::init()
 {
+   Content::ContentData contentData;
+   Device::readContentFile(Content::ContentType::GenericTextData, ".", "android.metadata", "xml", &contentData);
+
+   pugi::xml_document xml;
+   xml.load_buffer(contentData.getData(), contentData.getDataSize());
+
+   const pugi::xml_node& xmlLeaderboards = xml.child("Leaderboards");
+
+   for(const pugi::xml_node& xmlLeaderboard : xmlLeaderboards.children("Leaderboard"))
+   {
+      const ObjectName leaderboardName(xmlLeaderboard.attribute("name").as_string());
+      gLeaderboardIDsMap[leaderboardName.getID()] = GESTLString(xmlLeaderboard.attribute("id").as_string());
+   }
+
    return true;
 }
 
