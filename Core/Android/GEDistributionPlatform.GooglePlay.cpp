@@ -97,8 +97,6 @@ bool DistributionPlatform::init()
       gLeaderboardIDsMap[leaderboardName.getID()] = GESTLString(xmlLeaderboard.attribute("id").as_string());
    }
 
-   updateLeaderboardScore("ranking_career", 100u, 0u);
-
    return true;
 }
 
