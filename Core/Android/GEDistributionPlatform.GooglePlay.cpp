@@ -23,6 +23,7 @@ static jclass gGPGClass = nullptr;
 static jmethodID gMethodID_loggedIn = nullptr;
 static jmethodID gMethodID_logIn = nullptr;
 static jmethodID gMethodID_getUserName = nullptr;
+static jmethodID gMethodID_updateLeaderboardScore = nullptr;
 
 static std::function<void()> gOnLogInFinished = nullptr;
 
@@ -53,6 +54,7 @@ extern "C"
       GEAssert(gMethodID_logIn);
       gMethodID_getUserName = pEnv->GetStaticMethodID(gGPGClass, "getUserName", "()Ljava/lang/String;");
       GEAssert(gMethodID_getUserName);
+      gMethodID_updateLeaderboardScore = pEnv->GetStaticMethodID(gGPGClass, "updateLeaderboardScore", "(Ljava/lang/String;J)V");
    }
 
    JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGOnLogInFinished(JNIEnv* pEnv, jclass pClass)
@@ -94,6 +96,8 @@ bool DistributionPlatform::init()
       const ObjectName leaderboardName(xmlLeaderboard.attribute("name").as_string());
       gLeaderboardIDsMap[leaderboardName.getID()] = GESTLString(xmlLeaderboard.attribute("id").as_string());
    }
+
+   updateLeaderboardScore("ranking_career", 100u, 0u);
 
    return true;
 }
@@ -228,6 +232,22 @@ void DistributionPlatform::unlockAchievement(const ObjectName&)
 
 void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore, uint32_t pScoreDetail)
 {
+   (void)pScoreDetail;
+
+   IDsMap::const_iterator it = gLeaderboardIDsMap.find(pLeaderboardName.getID());
+   GEAssert(it != gLeaderboardIDsMap.end());
+   const char* leaderboardID = it->second.c_str();
+
+   GEAssert(gGPGClass);
+   GEAssert(gMethodID_getUserName);
+
+   JNIEnv* env = getEnv();
+   GEAssert(env);
+
+   const jstring jargLeaderboardID = env->NewStringUTF(leaderboardID);
+   const jlong jargScore = (jlong)pScore;
+
+   env->CallStaticVoidMethod(gGPGClass, gMethodID_updateLeaderboardScore, jargLeaderboardID, jargScore);
 }
 
 void DistributionPlatform::requestLeaderboardScores(const ObjectName& pLeaderboardName, uint16_t pFirstPosition, uint16_t pLastPosition)
