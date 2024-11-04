@@ -44,4 +44,6 @@ public class GameEngineLib
    public static native void GPGOnLogInFinished();
    public static native void GPGAddLeaderboardEntry(long pRank, String pPlayerName, long pScore);
    public static native void GPGOnLeaderboardQueryFinished();
+   public static native void GPGNotifyPurchase(String pProductName);
+   public static native void GPGOnPurchasesUpdateFinished();
 }

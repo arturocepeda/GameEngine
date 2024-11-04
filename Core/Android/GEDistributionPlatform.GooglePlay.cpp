@@ -18,6 +18,9 @@
 typedef GESTLMap(uint32_t, GESTLString) IDsMap;
 static IDsMap gLeaderboardIDsMap;
 
+static GESTLSet(uint32_t) gPurchasedProducts;
+static std::atomic<uint32_t> gPurchasingProductIDHash(0u);
+
 static JavaVM* gJavaVM = nullptr;
 static jclass gGPGClass = nullptr;
 static jmethodID gMethodID_loggedIn = nullptr;
@@ -26,6 +29,7 @@ static jmethodID gMethodID_getUserName = nullptr;
 static jmethodID gMethodID_updateLeaderboardScore = nullptr;
 static jmethodID gMethodID_requestLeaderboardScores = nullptr;
 static jmethodID gMethodID_requestLeaderboardScoresAroundUser = nullptr;
+static jmethodID gMethodID_requestDLCPurchase = nullptr;
 
 static std::function<void()> gOnLogInFinished = nullptr;
 static std::function<void(uint16_t, const char*, uint32_t)> gAddLeaderboardEntry = nullptr;
@@ -70,6 +74,9 @@ extern "C"
       gMethodID_requestLeaderboardScoresAroundUser =
          pEnv->GetStaticMethodID(gGPGClass, "requestLeaderboardScoresAroundUser", "(Ljava/lang/String;I)V");
       GEAssert(gMethodID_requestLeaderboardScoresAroundUser);
+      gMethodID_requestDLCPurchase =
+         pEnv->GetStaticMethodID(gGPGClass, "requestDLCPurchase", "(Ljava/lang/String;)V");
+      GEAssert(gMethodID_requestDLCPurchase);
    }
 
    JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGOnLogInFinished(JNIEnv* pEnv, jclass pClass)
@@ -98,6 +105,17 @@ extern "C"
       {
          gOnLeaderboardQueryFinished();
       }
+   }
+
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGNotifyPurchase(JNIEnv* pEnv, jclass pClass, jstring pProductName)
+   {
+      const ObjectName productName(pEnv->GetStringUTFChars(pProductName, nullptr));
+      gPurchasedProducts.insert(productName.getID());
+   }
+
+   JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGOnPurchasesUpdateFinished(JNIEnv* pEnv, jclass pClass)
+   {
+      gPurchasingProductIDHash.store(0u);
    }
 };
 
@@ -200,6 +218,7 @@ bool DistributionPlatform::loggedIn() const
 void DistributionPlatform::logIn(std::function<void()> onFinished)
 {
    gOnLogInFinished = onFinished;
+   gPurchasedProducts.clear();
 
    GEAssert(gGPGClass);
    GEAssert(gMethodID_loggedIn);
@@ -398,16 +417,28 @@ void DistributionPlatform::requestLeaderboardScoresAroundUser(const ObjectName& 
 
 bool DistributionPlatform::isDLCAvailable(const ObjectName& pDLCName) const
 {
-   return false;
+   return gPurchasingProductIDHash.load() == 0u && gPurchasedProducts.find(pDLCName.getID()) != gPurchasedProducts.end();
 }
 
 void DistributionPlatform::requestDLCPurchase(const char* pURL) const
 {
+   const ObjectName productName(pURL);
+   gPurchasingProductIDHash.store(productName.getID());
+
+   GEAssert(gGPGClass);
+   GEAssert(gMethodID_requestDLCPurchase);
+
+   JNIEnv* env = getEnv();
+   GEAssert(env);
+
+   const jstring jargProductID = env->NewStringUTF(productName.getString());
+
+   env->CallStaticVoidMethod(gGPGClass, gMethodID_requestDLCPurchase, jargProductID);
 }
 
 bool DistributionPlatform::processingDLCPurchaseRequest() const
 {
-   return false;
+   return gPurchasingProductIDHash.load() != 0u;
 }
 
 void DistributionPlatform::findLobbies()

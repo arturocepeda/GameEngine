@@ -6,14 +6,20 @@
 //
 //  Android
 //
-//  --- GameEnginePlayGames.java ---
+//  --- GameEngineGPG.java ---
 //
 //////////////////////////////////////////////////////////////////
 
 package com.GameEngine.Main;
 
+import java.util.List;
+
 import android.app.Activity;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.android.billingclient.api.BillingFlowParams;
 import com.google.android.gms.games.PlayGamesSdk;
 import com.google.android.gms.games.PlayGames;
 import com.google.android.gms.games.GamesSignInClient;
@@ -21,18 +27,145 @@ import com.google.android.gms.games.LeaderboardsClient;
 import com.google.android.gms.games.leaderboard.LeaderboardScoreBuffer;
 import com.google.android.gms.games.leaderboard.LeaderboardVariant;
 
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesResponseListener;
+import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.ProductDetailsResponseListener;
+import com.android.billingclient.api.QueryPurchasesParams;
+import com.android.billingclient.api.QueryProductDetailsParams;
+
 public class GameEngineGPG
 {
    private static Activity smActivity;
    private static boolean smAuthenticated = false;
-   private static String smPlayerID;
    private static String smPlayerName;
+
+   private static BillingClient smBillingClient;
+   private static GameEngineBillingClientStateListener smBillingClientStateListener;
+   private static GameEngineProductDetailsResponseListener smProductDetailsResponseListener;
+   private static GameEnginePurchasesResponseListener smPurchasesResponseListener;
+   private static GameEnginePurchasesUpdatedListener smPurchasesUpdatedListener;
+
+   private static class GameEngineBillingClientStateListener implements BillingClientStateListener
+   {
+      @Override
+      public void onBillingSetupFinished(BillingResult pBillingResult)
+      {
+         if(pBillingResult.getResponseCode() ==  BillingClient.BillingResponseCode.OK)
+         {
+            smBillingClient.queryPurchasesAsync
+            (
+               QueryPurchasesParams.newBuilder()
+                  .setProductType(BillingClient.ProductType.INAPP)
+                  .build(),
+               smPurchasesResponseListener
+            );
+         }
+         else
+         {
+            smAuthenticated = false;
+         }
+      }
+
+      @Override
+      public void onBillingServiceDisconnected()
+      {
+         smAuthenticated = false;
+      }
+   }
+
+   private static class GameEngineProductDetailsResponseListener implements ProductDetailsResponseListener
+   {
+      @Override
+      public void onProductDetailsResponse(BillingResult pBillingResult, List<ProductDetails> pProductDetailsList)
+      {
+         if(pProductDetailsList.isEmpty())
+         {
+            GameEngineLib.GPGOnPurchasesUpdateFinished();
+         }
+         else
+         {
+            List<BillingFlowParams.ProductDetailsParams> productDetailsParamsList =
+               List.of
+               (
+                  BillingFlowParams.ProductDetailsParams.newBuilder()
+                     .setProductDetails(pProductDetailsList.get(0))
+                     .build()
+               );
+            BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+                    .setProductDetailsParamsList(productDetailsParamsList)
+                    .build();
+            BillingResult billingResult = smBillingClient.launchBillingFlow(smActivity, billingFlowParams);
+
+            if(billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK)
+            {
+               GameEngineLib.GPGOnPurchasesUpdateFinished();
+            }
+         }
+      }
+   }
+
+   private static class GameEnginePurchasesResponseListener implements PurchasesResponseListener
+   {
+      @Override
+      public void onQueryPurchasesResponse(BillingResult pBillingResult, List<Purchase> pPurchases)
+      {
+         if(pBillingResult != null && pBillingResult.getResponseCode() == BillingClient.BillingResponseCode.OK)
+         {
+            if(pPurchases != null)
+            {
+               for(Purchase purchase : pPurchases)
+               {
+                  GameEngineLib.GPGNotifyPurchase(purchase.getPackageName());
+               }
+            }
+         }
+
+         GameEngineLib.GPGOnPurchasesUpdateFinished();
+      }
+   }
+
+   private static class GameEnginePurchasesUpdatedListener implements PurchasesUpdatedListener
+   {
+      @Override
+      public void onPurchasesUpdated(@NonNull BillingResult pBillingResult, @Nullable List<Purchase> pPurchases)
+      {
+         if(pBillingResult.getResponseCode() == BillingClient.BillingResponseCode.OK)
+         {
+            if(pPurchases != null)
+            {
+               for(Purchase purchase : pPurchases)
+               {
+                  GameEngineLib.GPGNotifyPurchase(purchase.getPackageName());
+               }
+            }
+         }
+
+         GameEngineLib.GPGOnPurchasesUpdateFinished();
+      }
+   }
 
    public static void initialize(Activity pActivity)
    {
       smActivity = pActivity;
+
       PlayGamesSdk.initialize(pActivity);
       updateAuthenticationState();
+
+      smBillingClientStateListener = new GameEngineBillingClientStateListener();
+      smProductDetailsResponseListener = new GameEngineProductDetailsResponseListener();
+      smPurchasesResponseListener = new GameEnginePurchasesResponseListener();
+      smPurchasesUpdatedListener = new GameEnginePurchasesUpdatedListener();
+      smBillingClient = BillingClient.newBuilder(pActivity)
+              .enablePendingPurchases()
+              .setListener(smPurchasesUpdatedListener)
+              .build();
+      smBillingClient.startConnection(smBillingClientStateListener);
+
       GameEngineLib.GPGInitialize(pActivity);
    }
 
@@ -52,6 +185,7 @@ public class GameEngineGPG
       gamesSignInClient.signIn().addOnCompleteListener(pTask ->
       {
          updateAuthenticationState();
+         smBillingClient.startConnection(smBillingClientStateListener);
       });
    }
 
@@ -132,6 +266,18 @@ public class GameEngineGPG
       });
    }
 
+   public static void requestDLCPurchase(String pProductID)
+   {
+      QueryProductDetailsParams queryProductDetailsParams = QueryProductDetailsParams.newBuilder()
+         .setProductList(List.of(QueryProductDetailsParams.Product.newBuilder()
+            .setProductId(pProductID)
+            .setProductType(BillingClient.ProductType.INAPP)
+            .build()))
+         .build();
+
+      smBillingClient.queryProductDetailsAsync(queryProductDetailsParams, smProductDetailsResponseListener);
+   }
+
    private static void updateAuthenticationState()
    {
       GamesSignInClient gamesSignInClient = PlayGames.getGamesSignInClient(smActivity);
@@ -144,7 +290,6 @@ public class GameEngineGPG
          {
             PlayGames.getPlayersClient(smActivity).getCurrentPlayer().addOnCompleteListener(pTask ->
             {
-               smPlayerID = pTask.getResult().getPlayerId();
                smPlayerName = pTask.getResult().getDisplayName();
 
                GameEngineLib.GPGOnLogInFinished();
