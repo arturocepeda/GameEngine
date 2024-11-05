@@ -30,6 +30,7 @@ static jmethodID gMethodID_updateLeaderboardScore = nullptr;
 static jmethodID gMethodID_requestLeaderboardScores = nullptr;
 static jmethodID gMethodID_requestLeaderboardScoresAroundUser = nullptr;
 static jmethodID gMethodID_requestDLCPurchase = nullptr;
+static jmethodID gMethodID_showFullscreenAd = nullptr;
 
 static std::function<void()> gOnLogInFinished = nullptr;
 static std::function<void(uint16_t, const char*, uint32_t)> gAddLeaderboardEntry = nullptr;
@@ -77,6 +78,9 @@ extern "C"
       gMethodID_requestDLCPurchase =
          pEnv->GetStaticMethodID(gGPGClass, "requestDLCPurchase", "(Ljava/lang/String;)V");
       GEAssert(gMethodID_requestDLCPurchase);
+      gMethodID_showFullscreenAd =
+         pEnv->GetStaticMethodID(gGPGClass, "showFullscreenAd", "(Ljava/lang/String;)V");
+      GEAssert(gMethodID_showFullscreenAd);
    }
 
    JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGOnLogInFinished(JNIEnv* pEnv, jclass pClass)
@@ -478,4 +482,13 @@ bool DistributionPlatform::getLobbyMember(const Lobby*, size_t, LobbyMember*)
 
 void DistributionPlatform::showFullscreenAd(const char* pID)
 {
+   GEAssert(gGPGClass);
+   GEAssert(gMethodID_showFullscreenAd);
+
+   JNIEnv* env = getEnv();
+   GEAssert(env);
+
+   const jstring jargID = env->NewStringUTF(pID);
+
+   env->CallStaticVoidMethod(gGPGClass, gMethodID_showFullscreenAd, jargID);
 }

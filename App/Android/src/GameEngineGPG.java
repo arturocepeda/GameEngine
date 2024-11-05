@@ -19,7 +19,6 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.billingclient.api.BillingFlowParams;
 import com.google.android.gms.games.PlayGamesSdk;
 import com.google.android.gms.games.PlayGames;
 import com.google.android.gms.games.GamesSignInClient;
@@ -27,8 +26,15 @@ import com.google.android.gms.games.LeaderboardsClient;
 import com.google.android.gms.games.leaderboard.LeaderboardScoreBuffer;
 import com.google.android.gms.games.leaderboard.LeaderboardVariant;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.gms.ads.MobileAds;
+
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesResponseListener;
@@ -49,6 +55,8 @@ public class GameEngineGPG
    private static GameEngineProductDetailsResponseListener smProductDetailsResponseListener;
    private static GameEnginePurchasesResponseListener smPurchasesResponseListener;
    private static GameEnginePurchasesUpdatedListener smPurchasesUpdatedListener;
+
+   private static InterstitialAd smFullscreenAd;
 
    private static class GameEngineBillingClientStateListener implements BillingClientStateListener
    {
@@ -166,6 +174,8 @@ public class GameEngineGPG
               .build();
       smBillingClient.startConnection(smBillingClientStateListener);
 
+      MobileAds.initialize(pActivity);
+
       GameEngineLib.GPGInitialize(pActivity);
    }
 
@@ -276,6 +286,47 @@ public class GameEngineGPG
          .build();
 
       smBillingClient.queryProductDetailsAsync(queryProductDetailsParams, smProductDetailsResponseListener);
+   }
+
+   public static void showFullscreenAd(String pID)
+   {
+      smActivity.runOnUiThread(new Runnable()
+      {
+         @Override
+         public void run()
+         {
+            AdRequest adRequest = new AdRequest.Builder().build();
+
+            InterstitialAd.load(smActivity, pID, adRequest, new InterstitialAdLoadCallback()
+            {
+               @Override
+               public void onAdLoaded(@NonNull InterstitialAd pAd)
+               {
+                  smFullscreenAd = pAd;
+
+                  smFullscreenAd.setFullScreenContentCallback(new FullScreenContentCallback()
+                  {
+                     @Override
+                     public void onAdDismissedFullScreenContent()
+                     {
+                        smFullscreenAd = null;
+                     }
+
+                     @Override
+                     public void onAdShowedFullScreenContent()
+                     {
+                        smFullscreenAd = null;
+                     }
+                  });
+
+                  if(smFullscreenAd != null)
+                  {
+                     smFullscreenAd.show(smActivity);
+                  }
+               }
+            });
+         }
+      });
    }
 
    private static void updateAuthenticationState()

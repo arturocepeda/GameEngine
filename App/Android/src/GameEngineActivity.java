@@ -40,9 +40,9 @@ public class GameEngineActivity extends Activity implements SensorEventListener
    private boolean mKeyPressed[] = new boolean[256];
 
    @Override
-   protected void onCreate(Bundle savedInstanceState)
+   protected void onCreate(Bundle pSavedInstanceState)
    {
-      super.onCreate(savedInstanceState);
+      super.onCreate(pSavedInstanceState);
 
       createMainView();
       createAssetManager();
@@ -139,47 +139,47 @@ public class GameEngineActivity extends Activity implements SensorEventListener
    }
 
    @Override
-   public boolean onKeyDown(final int keyCode, KeyEvent event)
+   public boolean onKeyDown(final int pKeyCode, KeyEvent pEvent)
    {
-      if(!mKeyPressed[keyCode])
+      if(!mKeyPressed[pKeyCode])
       {
-         mKeyPressed[keyCode] = true;
-         GameEngineLib.InputButtonDown(keyCode);
+         mKeyPressed[pKeyCode] = true;
+         GameEngineLib.InputButtonDown(pKeyCode);
       }
 
-      return super.onKeyDown(keyCode, event);
+      return super.onKeyDown(pKeyCode, pEvent);
    }
 
    @Override
-   public boolean onKeyUp(final int keyCode, KeyEvent event)
+   public boolean onKeyUp(final int pKeyCode, KeyEvent pEvent)
    {
-      if(mKeyPressed[keyCode])
+      if(mKeyPressed[pKeyCode])
       {
-         mKeyPressed[keyCode] = false;
-         GameEngineLib.InputButtonUp(keyCode);
+         mKeyPressed[pKeyCode] = false;
+         GameEngineLib.InputButtonUp(pKeyCode);
       }
 
-      return super.onKeyUp(keyCode, event);
+      return super.onKeyUp(pKeyCode, pEvent);
    }
 
    @Override
-   public void onAccuracyChanged(Sensor sensor, int accuracy) 
+   public void onAccuracyChanged(Sensor pSensor, int pAccuracy)
    {
    }
 
    @Override
-   public final void onSensorChanged(SensorEvent event)
+   public final void onSensorChanged(SensorEvent pEvent)
    {
       // accelerometer
-      if(event.sensor == mAccelerometer)
+      if(pEvent.sensor == mAccelerometer)
       {
-         GameEngineLib.UpdateAccelerometerStatus(event.values[0], event.values[1], event.values[2]);
+         GameEngineLib.UpdateAccelerometerStatus(pEvent.values[0], pEvent.values[1], pEvent.values[2]);
       }
       // rotation vector
       else
       {
          float[] qQuaternion = new float[4];
-         SensorManager.getQuaternionFromVector(qQuaternion, event.values);
+         SensorManager.getQuaternionFromVector(qQuaternion, pEvent.values);
          GameEngineLib.UpdateDeviceRotationVector(qQuaternion[1], qQuaternion[2], qQuaternion[3], qQuaternion[0]);
       }
    }
