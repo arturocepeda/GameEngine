@@ -41,24 +41,26 @@ using namespace GE::Rendering;
 using namespace GE::Audio;
 using namespace GE::Input;
 
-RenderSystem* cRender;
-AudioSystem* cAudio;
-TaskManager* cTaskManager;
-AppSettings gSettings;
-DistributionPlatform gDistributionPlatform;
+static RenderSystem* cRender = nullptr;
+static AudioSystem* cAudio = nullptr;
+static TaskManager* cTaskManager = nullptr;
+static AppSettings gSettings;
+static DistributionPlatform gDistributionPlatform;
 
-bool bInitialized = false;
-bool bPaused = false;
+static bool bInitialized = false;
+static bool bPaused = false;
 
-StateManager cStateManager;
-Timer cTimer;
-double dTime;
+static StateManager cStateManager;
+static Timer cTimer;
+static double dTime = 0.0;
 
-int iFingerID[GE_MAX_FINGERS];
-Vector2 vFingerPosition[GE_MAX_FINGERS];
+static int iFingerID[GE_MAX_FINGERS];
+static Vector2 vFingerPosition[GE_MAX_FINGERS];
 
-Scaler* cPixelToScreenX;
-Scaler* cPixelToScreenY;
+static Scaler* cPixelToScreenX = nullptr;
+static Scaler* cPixelToScreenY = nullptr;
+
+static JavaVM* gJavaVM = nullptr;
 
 class AndroidLogListener : public LogListener
 {
@@ -106,6 +108,9 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
    if(bInitialized)
       return;
 
+   env->GetJavaVM(&gJavaVM);
+   GEAssert(gJavaVM);
+
    Application::Name = GE_APP_NAME;
    Application::ID = GE_APP_ID;
    Application::VersionString = GE_VERSION_STRING;
@@ -134,22 +139,6 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_Initialize(JNIEnv*
    Device::Orientation = DeviceOrientation::Landscape;
    Device::AspectRatio = (float)height / (float)width;
 #endif
-
-   // system language
-   jclass localeClass = env->FindClass("java/util/Locale");
-   jmethodID localeDefaultMethod = env->GetStaticMethodID(localeClass, "getDefault", "()Ljava/util/Locale;");
-   jmethodID localeGetLanguageMethod = env->GetMethodID(localeClass, "getLanguage", "()Ljava/lang/String;");
-   jobject localeInstance = env->CallStaticObjectMethod(localeClass, localeDefaultMethod);
-   jstring languageStringObj = (jstring)env->CallObjectMethod(localeInstance, localeGetLanguageMethod);
-
-   const char* sLanguage = env->GetStringUTFChars(languageStringObj, 0);
-
-   if(strcmp(sLanguage, "en") == 0)
-      Device::Language = SystemLanguage::English;
-   else if(strcmp(sLanguage, "es") == 0)
-      Device::Language = SystemLanguage::Spanish;
-   else if(strcmp(sLanguage, "de") == 0)
-      Device::Language = SystemLanguage::German;
 
    // IDs for touch management
    for(int i = 0; i < GE_MAX_FINGERS; i++)
@@ -303,6 +292,70 @@ JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_UpdateDeviceRotati
       Device::Rotation.Z = z;
       Device::Rotation.W = w;
    }
+}
+
+SystemLanguage Device::requestOSLanguage()
+{
+   GEAssert(gJavaVM);
+   JNIEnv* env = nullptr;
+   const jint attachmentResult = gJavaVM->AttachCurrentThread(&env, nullptr);
+   GEAssert(attachmentResult == JNI_OK);
+   GEAssert(env);
+
+   jclass localeClass = env->FindClass("java/util/Locale");
+   jmethodID localeDefaultMethod = env->GetStaticMethodID(localeClass, "getDefault", "()Ljava/util/Locale;");
+   jmethodID localeGetLanguageMethod = env->GetMethodID(localeClass, "getLanguage", "()Ljava/lang/String;");
+   jobject localeInstance = env->CallStaticObjectMethod(localeClass, localeDefaultMethod);
+   jstring languageStringObj = (jstring)env->CallObjectMethod(localeInstance, localeGetLanguageMethod);
+
+   const char* language = env->GetStringUTFChars(languageStringObj, nullptr);
+
+   if(strncmp(language, "en", 2u) == 0)
+   {
+      return SystemLanguage::English;
+   }
+   if(strncmp(language, "es", 2u) == 0)
+   {
+      return SystemLanguage::Spanish;
+   }
+   if(strncmp(language, "de", 2u) == 0)
+   {
+      return SystemLanguage::German;
+   }
+   if(strncmp(language, "fr", 2u) == 0)
+   {
+      return SystemLanguage::French;
+   }
+   if(strncmp(language, "it", 2u) == 0)
+   {
+      return SystemLanguage::Italian;
+   }
+   if(strncmp(language, "pt", 2u) == 0)
+   {
+      return SystemLanguage::Portuguese;
+   }
+   if(strncmp(language, "ru", 2u) == 0)
+   {
+      return SystemLanguage::Russian;
+   }
+   if(strncmp(language, "zh_CN", 5u) == 0 || strncmp(language, "zh", 2u) == 0)
+   {
+      return SystemLanguage::ChineseSimplified;
+   }
+   if(strncmp(language, "zh_TW", 5u) == 0)
+   {
+      return SystemLanguage::ChineseTraditional;
+   }
+   if(strncmp(language, "ja", 2u) == 0)
+   {
+      return SystemLanguage::Japanese;
+   }
+   if(strncmp(language, "ko", 2u) == 0)
+   {
+      return SystemLanguage::Korean;
+   }
+
+   return SystemLanguage::English;
 }
 
 int Device::getNumberOfCPUCores()

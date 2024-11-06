@@ -43,11 +43,6 @@ int Device::getTouchPadHeight()
    return ScreenHeight;
 }
 
-SystemLanguage Device::requestOSLanguage()
-{
-   return SystemLanguage::English;
-}
-
 void Device::requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutions)
 {
 }
