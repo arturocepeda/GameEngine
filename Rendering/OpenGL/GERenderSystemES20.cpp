@@ -249,7 +249,7 @@ void RenderSystem::loadTexture(PreloadedTexture* cPreloadedTexture)
 #if GL_ES_VERSION_3_2
          case ImageData::Format::ASTC:
          {
-            glFormat = GL_COMPRESSED_RGBA_ASTC_6x6;
+            glFormat = GL_COMPRESSED_RGBA_ASTC_8x8;
             break;
          }
 #endif
