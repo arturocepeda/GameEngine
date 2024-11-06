@@ -30,6 +30,7 @@ static jmethodID gMethodID_updateLeaderboardScore = nullptr;
 static jmethodID gMethodID_requestLeaderboardScores = nullptr;
 static jmethodID gMethodID_requestLeaderboardScoresAroundUser = nullptr;
 static jmethodID gMethodID_requestDLCPurchase = nullptr;
+static jmethodID gMethodID_openWebPage = nullptr;
 static jmethodID gMethodID_showFullscreenAd = nullptr;
 
 static std::function<void()> gOnLogInFinished = nullptr;
@@ -78,6 +79,9 @@ extern "C"
       gMethodID_requestDLCPurchase =
          pEnv->GetStaticMethodID(gGPGClass, "requestDLCPurchase", "(Ljava/lang/String;)V");
       GEAssert(gMethodID_requestDLCPurchase);
+      gMethodID_openWebPage =
+         pEnv->GetStaticMethodID(gGPGClass, "openWebPage", "(Ljava/lang/String;)V");
+      GEAssert(gMethodID_openWebPage);
       gMethodID_showFullscreenAd =
          pEnv->GetStaticMethodID(gGPGClass, "showFullscreenAd", "(Ljava/lang/String;)V");
       GEAssert(gMethodID_showFullscreenAd);
@@ -491,4 +495,17 @@ void DistributionPlatform::showFullscreenAd(const char* pID)
    const jstring jargID = env->NewStringUTF(pID);
 
    env->CallStaticVoidMethod(gGPGClass, gMethodID_showFullscreenAd, jargID);
+}
+
+void Device::openWebPage(const char* pURL)
+{
+   GEAssert(gGPGClass);
+   GEAssert(gMethodID_openWebPage);
+
+   JNIEnv* env = getEnv();
+   GEAssert(env);
+
+   const jstring jargURL = env->NewStringUTF(pURL);
+
+   env->CallStaticVoidMethod(gGPGClass, gMethodID_openWebPage, jargURL);
 }

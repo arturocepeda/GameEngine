@@ -138,7 +138,3 @@ const char* Device::getVirtualKeyboardCurrentText()
 {
    return "";
 }
-
-void Device::openWebPage(const char* pURL)
-{
-}

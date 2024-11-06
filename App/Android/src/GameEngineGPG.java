@@ -15,6 +15,8 @@ package com.GameEngine.Main;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -286,6 +288,12 @@ public class GameEngineGPG
          .build();
 
       smBillingClient.queryProductDetailsAsync(queryProductDetailsParams, smProductDetailsResponseListener);
+   }
+
+   public static void openWebPage(String pURL)
+   {
+      Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(pURL));
+      smActivity.startActivity(browserIntent);
    }
 
    public static void showFullscreenAd(String pID)
