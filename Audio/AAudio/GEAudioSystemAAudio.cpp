@@ -29,7 +29,6 @@ struct AAudioChannel
    int32_t FrameCursor;
    BufferID Buffer;
    std::atomic<float> Volume;
-   std::atomic<float> Pitch;
    bool Looping;
 
    AAudioChannel()
@@ -38,7 +37,6 @@ struct AAudioChannel
       , FrameCursor(0)
       , Buffer(0u)
       , Volume(-1.0f)
-      , Pitch(-1.0f)
       , Looping(false)
    {}
 };
@@ -104,96 +102,9 @@ void AudioSystem::platformPlaySound(ChannelID pChannel, BufferID pBuffer, bool p
    aaudioChannel.Buffer = pBuffer;
    aaudioChannel.Looping = pLooping;
 
-   AAudio_createStreamBuilder(&aaudioChannel.StreamBuilder);
-   GEAssert(aaudioChannel.StreamBuilder);
-   AAudioStreamBuilder_setPerformanceMode(aaudioChannel.StreamBuilder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
-
-   const AudioBuffer& audioBuffer = mBuffers[pBuffer];
-   const int32_t audioSampleRate = (int32_t)audioBuffer.Data->getSampleRate();
-   const int32_t audioChannelCount = (int32_t)audioBuffer.Data->getNumberOfChannels();
-
-   AAudioStreamBuilder_setSampleRate(aaudioChannel.StreamBuilder, audioSampleRate);
-   AAudioStreamBuilder_setChannelCount(aaudioChannel.StreamBuilder, audioChannelCount);
-   AAudioStreamBuilder_setFormat(aaudioChannel.StreamBuilder, AAUDIO_FORMAT_PCM_I16);
-   AAudioStreamBuilder_setDirection(aaudioChannel.StreamBuilder, AAUDIO_DIRECTION_OUTPUT);
-
-   AAudioStreamBuilder_setDataCallback
-   (
-      aaudioChannel.StreamBuilder,
-      [](AAudioStream* pStream, void* pUserData, void* pAudioData, int32_t pNumFrames) -> aaudio_data_callback_result_t
-      {
-         AudioSystem* audioSystem = (AudioSystem*)pUserData;
-         AAudioChannel* aaudioChannel = nullptr;
-
-         for(uint32_t i = 0u; i < audioSystem->mChannelsCount; i++)
-         {
-            if(pStream == gAAudioChannels[i].Stream)
-            {
-               aaudioChannel = &gAAudioChannels[i];
-               break;
-            }
-         }
-
-         GEAssert(aaudioChannel);
-
-         if(aaudioChannel->Volume < 0.0f || aaudioChannel->Pitch < 0.0f)
-         {
-            // Still uninitialized
-            return AAUDIO_CALLBACK_RESULT_CONTINUE;
-         }
-
-         const AudioBuffer& audioBuffer = audioSystem->mBuffers[aaudioChannel->Buffer];
-         const int32_t audioChannelCount = (int32_t)audioBuffer.Data->getNumberOfChannels();
-
-         static const int32_t kBitDepth = 2u; // 16-bit
-         const int32_t frameSize = kBitDepth * audioChannelCount;
-         const int32_t framesCount = (int32_t)audioBuffer.Data->getDataSize() / frameSize;
-
-         if(aaudioChannel->FrameCursor == framesCount)
-         {
-            if(aaudioChannel->Looping)
-            {
-               aaudioChannel->FrameCursor = 0;
-            }
-            else
-            {
-               const int32_t framesRead = (int32_t)AAudioStream_getFramesRead(aaudioChannel->Stream);
-               return framesRead < framesCount
-                  ? AAUDIO_CALLBACK_RESULT_CONTINUE
-                  : AAUDIO_CALLBACK_RESULT_STOP;
-            }
-         }
-
-         const int32_t remainingFrames = framesCount - aaudioChannel->FrameCursor;
-         const int32_t framesToCopy = pNumFrames <= remainingFrames
-                 ? pNumFrames
-                 : remainingFrames;
-
-         const int32_t dataOffset = aaudioChannel->FrameCursor * frameSize;
-         const int32_t framesToCopySize = framesToCopy * frameSize;
-
-         memcpy(pAudioData, audioBuffer.Data->getData() + dataOffset, framesToCopySize);
-         aaudioChannel->FrameCursor += framesToCopy;
-
-         if(!GEFloatEquals(aaudioChannel->Volume, 1.0f))
-         {
-            const int32_t samplesCount = framesToCopy * audioChannelCount;
-            int16_t* audioDataCursor = (int16_t*)pAudioData;
-
-            for(int32_t i = 0; i < samplesCount; i++, audioDataCursor++)
-            {
-               *audioDataCursor = (int16_t)((float)(*audioDataCursor) * aaudioChannel->Volume);
-            }
-         }
-
-         return AAUDIO_CALLBACK_RESULT_CONTINUE;
-      },
-      this
-   );
-
-   AAudioStreamBuilder_openStream(aaudioChannel.StreamBuilder, &aaudioChannel.Stream);
-   GEAssert(aaudioChannel.Stream);
-   AAudioStream_requestStart(aaudioChannel.Stream);
+   // The actual sound playback is handled in the 'platformSetPitch' function, which
+   // is called after 'platformPlaySound' - done that way since pitching is achieved
+   // by altering the sample rate.
 }
 
 void AudioSystem::platformStop(ChannelID pChannel)
@@ -261,22 +172,104 @@ bool AudioSystem::platformIsInUse(ChannelID pChannel) const
 
 void AudioSystem::platformSetVolume(ChannelID pChannel, float pVolume)
 {
-   if(!gAAudioChannels[pChannel].Stream)
-   {
-      return;
-   }
-
    gAAudioChannels[pChannel].Volume = pVolume;
 }
 
 void AudioSystem::platformSetPitch(ChannelID pChannel, float pPitch)
 {
-   if(!gAAudioChannels[pChannel].Stream)
-   {
-      return;
-   }
+   AAudioChannel& aaudioChannel = gAAudioChannels[pChannel];
 
-   gAAudioChannels[pChannel].Pitch = pPitch;
+   GEAssert(!aaudioChannel.StreamBuilder);
+   AAudio_createStreamBuilder(&aaudioChannel.StreamBuilder);
+   GEAssert(aaudioChannel.StreamBuilder);
+   AAudioStreamBuilder_setPerformanceMode(aaudioChannel.StreamBuilder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
+
+   const AudioBuffer& audioBuffer = mBuffers[aaudioChannel.Buffer];
+   const int32_t audioSampleRate = (int32_t)((float)audioBuffer.Data->getSampleRate() * pPitch);
+   const int32_t audioChannelCount = (int32_t)audioBuffer.Data->getNumberOfChannels();
+
+   AAudioStreamBuilder_setSampleRate(aaudioChannel.StreamBuilder, audioSampleRate);
+   AAudioStreamBuilder_setChannelCount(aaudioChannel.StreamBuilder, audioChannelCount);
+   AAudioStreamBuilder_setFormat(aaudioChannel.StreamBuilder, AAUDIO_FORMAT_PCM_I16);
+   AAudioStreamBuilder_setDirection(aaudioChannel.StreamBuilder, AAUDIO_DIRECTION_OUTPUT);
+
+   AAudioStreamBuilder_setDataCallback
+   (
+      aaudioChannel.StreamBuilder,
+      [](AAudioStream* pStream, void* pUserData, void* pAudioData, int32_t pNumFrames) -> aaudio_data_callback_result_t
+      {
+         AudioSystem* audioSystem = (AudioSystem*)pUserData;
+         AAudioChannel* aaudioChannel = nullptr;
+
+         for(uint32_t i = 0u; i < audioSystem->mChannelsCount; i++)
+         {
+            if(pStream == gAAudioChannels[i].Stream)
+            {
+               aaudioChannel = &gAAudioChannels[i];
+               break;
+            }
+         }
+
+         GEAssert(aaudioChannel);
+
+         if(aaudioChannel->Volume < 0.0f)
+         {
+            // Still uninitialized
+            return AAUDIO_CALLBACK_RESULT_CONTINUE;
+         }
+
+         const AudioBuffer& audioBuffer = audioSystem->mBuffers[aaudioChannel->Buffer];
+         const int32_t audioChannelCount = (int32_t)audioBuffer.Data->getNumberOfChannels();
+
+         static const int32_t kBitDepth = 2u; // 16-bit
+         const int32_t frameSize = kBitDepth * audioChannelCount;
+         const int32_t framesCount = (int32_t)audioBuffer.Data->getDataSize() / frameSize;
+
+         if(aaudioChannel->FrameCursor == framesCount)
+         {
+            if(aaudioChannel->Looping)
+            {
+               aaudioChannel->FrameCursor = 0;
+            }
+            else
+            {
+               const int32_t framesRead = (int32_t)AAudioStream_getFramesRead(aaudioChannel->Stream);
+               return framesRead < framesCount
+                  ? AAUDIO_CALLBACK_RESULT_CONTINUE
+                  : AAUDIO_CALLBACK_RESULT_STOP;
+            }
+         }
+
+         const int32_t remainingFrames = framesCount - aaudioChannel->FrameCursor;
+         const int32_t framesToCopy = pNumFrames <= remainingFrames
+            ? pNumFrames
+            : remainingFrames;
+
+         const int32_t dataOffset = aaudioChannel->FrameCursor * frameSize;
+         const int32_t framesToCopySize = framesToCopy * frameSize;
+
+         memcpy(pAudioData, audioBuffer.Data->getData() + dataOffset, framesToCopySize);
+         aaudioChannel->FrameCursor += framesToCopy;
+
+         if(!GEFloatEquals(aaudioChannel->Volume, 1.0f))
+         {
+            const int32_t samplesCount = framesToCopy * audioChannelCount;
+            int16_t* audioDataCursor = (int16_t*)pAudioData;
+
+            for(int32_t i = 0; i < samplesCount; i++, audioDataCursor++)
+            {
+               *audioDataCursor = (int16_t)((float)(*audioDataCursor) * aaudioChannel->Volume);
+            }
+         }
+
+         return AAUDIO_CALLBACK_RESULT_CONTINUE;
+      },
+      this
+   );
+
+   AAudioStreamBuilder_openStream(aaudioChannel.StreamBuilder, &aaudioChannel.Stream);
+   GEAssert(aaudioChannel.Stream);
+   AAudioStream_requestStart(aaudioChannel.Stream);
 }
 
 void AudioSystem::platformSetPosition(ChannelID pChannel, const Vector3& pPosition)
