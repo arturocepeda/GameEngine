@@ -47,13 +47,12 @@ namespace GE { namespace Audio
 
    struct AudioBuffer
    {
-      uint32_t AssignedFileID;
+      Core::ObjectName AssignedFileName;
       uint32_t References;
       Content::AudioData* Data;
 
       AudioBuffer()
-         : AssignedFileID(0u)
-         , References(0u)
+         : References(0u)
          , Data(nullptr) {}
    };
 
@@ -172,8 +171,10 @@ namespace GE { namespace Audio
 
       void releaseChannel(ChannelID pChannel);
 
-      void loadAudioBankFiles(AudioBank* pAudioBank);
+      void loadAudioBankFiles(AudioBank* pAudioBank, LoadingMode pLoadingMode);
       void releaseAudioBankFiles(AudioBank* pAudioBank);
+
+      void loadAudioFile(BufferID pBuffer);
 
       // platform specific methods
       const char* platformAudioFileExtension();
@@ -218,7 +219,8 @@ namespace GE { namespace Audio
       void update();
       void release();
 
-      void loadAudioBank(const Core::ObjectName& pAudioBankName);
+      void loadAudioBank(const Core::ObjectName& pAudioBankName, LoadingMode pLoadingMode);
+      AudioBankState getAudioBankState(const Core::ObjectName& pAudioBankName) const;
       void unloadAudioBank(const Core::ObjectName& pAudioBankName);
       void unloadAllAudioBanks();
 

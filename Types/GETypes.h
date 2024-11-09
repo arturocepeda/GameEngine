@@ -45,4 +45,11 @@ namespace GE
 
       Count
    };
+
+
+   enum class LoadingMode
+   {
+      Blocking,
+      Asynchronous
+   };
 }

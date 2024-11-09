@@ -724,6 +724,12 @@ void Environment::registerTypes()
       , "Alpha", &Color::Alpha
       , sol::meta_method::equal_to, &Color::operator==
    );
+   mLua.new_enum
+   (
+      "LoadingMode"
+      , "Blocking", LoadingMode::Blocking
+      , "Asynchronous", LoadingMode::Asynchronous
+   );
 
    //
    //  GE::Core

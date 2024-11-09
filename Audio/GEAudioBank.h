@@ -27,6 +27,15 @@ namespace GE { namespace Audio
       Count
    };
 
+   GESerializableEnum(AudioBankState)
+   {
+      Unloaded,
+      Loading,
+      Loaded,
+
+      Count
+   };
+
 
    class AudioEventEntry : public Core::SerializableArrayElement
    {
@@ -44,12 +53,21 @@ namespace GE { namespace Audio
 
    class AudioBank : public Content::Resource
    {
+   public:
+      enum class State : uint8_t
+      {
+         Unloaded,
+         Loading,
+         Loaded
+      };
+
    private:
       GESTLMap(uint32_t, AudioEvent*) mAudioEvents;
       GESTLVector(Core::ObjectName) mAudioFileNames;
 
       AudioBankType mType;
-      bool mLoaded;
+      std::atomic<AudioBankState> mState;
+      std::atomic<size_t> mAsyncLoadedAudioFiles;
 
    public:
       static const Core::ObjectName TypeName;
@@ -60,17 +78,21 @@ namespace GE { namespace Audio
       ~AudioBank();
 
       GEDefaultGetter(AudioBankType, Type, m)
+      GEDefaultGetter(AudioBankState, State, m)
+      GEDefaultGetter(const GESTLVector(Core::ObjectName)&, AudioFileNames, m)
 
       GEDefaultSetter(AudioBankType, Type, m)
+      GEDefaultSetter(AudioBankState, State, m)
 
       GEPropertyArray(AudioEventEntry, AudioEventEntry)
 
       void load(Core::ObjectManager<AudioEvent>& pAudioEventManager);
       void unload();
 
-      GEDefaultGetter(bool, Loaded, m)
-      GEDefaultGetter(const GESTLVector(Core::ObjectName)&, AudioFileNames, m)
-
       AudioEvent* getAudioEvent(const Core::ObjectName& pAudioEventName);
+
+      void resetAsyncLoadedAudioFiles();
+      void incrementAsyncLoadedAudioFiles();
+      size_t getAsyncLoadedAudioFiles() const;
    };
 }}

@@ -304,6 +304,13 @@ namespace GE { namespace Audio
       "Streamed"
    };
 
+   const char* strAudioBankState[] =
+   {
+      "Unloaded",
+      "Loading",
+      "Loaded"
+   };
+
    const char* strAudioEventPlayMode[] =
    {
       "OneShot",

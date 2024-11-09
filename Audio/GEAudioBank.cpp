@@ -44,10 +44,11 @@ const char* AudioBank::Extension = "banks";
 AudioBank::AudioBank(const ObjectName& pName, const ObjectName& pGroupName)
    : Resource(pName, pGroupName, TypeName)
    , mType(AudioBankType::Buffered)
-   , mLoaded(false)
+   , mState(AudioBankState::Unloaded)
+   , mAsyncLoadedAudioFiles(0u)
 {
    GERegisterPropertyEnum(AudioBankType, Type);
-   GERegisterPropertyReadonly(Bool, Loaded);
+   GERegisterPropertyEnumReadonly(AudioBankState, State);
 
    GERegisterPropertyArray(AudioEventEntry);
 }
@@ -59,7 +60,7 @@ AudioBank::~AudioBank()
 
 void AudioBank::load(ObjectManager<AudioEvent>& pAudioEventManager)
 {
-   if(mLoaded)
+   if(mState != AudioBankState::Unloaded)
       return;
 
    // cache audio events
@@ -104,12 +105,12 @@ void AudioBank::load(ObjectManager<AudioEvent>& pAudioEventManager)
    }
 
    // the bank has been loaded
-   mLoaded = true;
+   mState = AudioBankState::Loaded;
 }
 
 void AudioBank::unload()
 {
-   if(!mLoaded)
+   if(mState != AudioBankState::Loaded)
       return;
 
    // clear data
@@ -117,7 +118,7 @@ void AudioBank::unload()
    mAudioEvents.clear();
 
    // the bank has been unloaded
-   mLoaded = false;
+   mState = AudioBankState::Unloaded;
 }
 
 AudioEvent* AudioBank::getAudioEvent(const ObjectName& pAudioEventName)
@@ -127,5 +128,20 @@ AudioEvent* AudioBank::getAudioEvent(const ObjectName& pAudioEventName)
    if(it != mAudioEvents.end())
       return it->second;
 
-   return 0;
+   return nullptr;
+}
+
+void AudioBank::resetAsyncLoadedAudioFiles()
+{
+   mAsyncLoadedAudioFiles = 0u;
+}
+
+void AudioBank::incrementAsyncLoadedAudioFiles()
+{
+   mAsyncLoadedAudioFiles++;
+}
+
+size_t AudioBank::getAsyncLoadedAudioFiles() const
+{
+   return mAsyncLoadedAudioFiles.load();
 }
