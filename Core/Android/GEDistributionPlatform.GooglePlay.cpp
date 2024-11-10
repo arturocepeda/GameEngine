@@ -12,8 +12,15 @@
 
 #include "Core/GEDistributionPlatform.h"
 #include "Core/GEDevice.h"
+#include "Core/GEValue.h"
+
+#include <sstream>
 
 #include <jni.h>
+
+static const char* kPurchasedProductsSubDir = "Save";
+static const char* kPurchasedProductsFileName = "store";
+static const char* kPurchasedProductsFileExtension = "ge";
 
 typedef GESTLMap(uint32_t, GESTLString) IDsMap;
 static IDsMap gLeaderboardIDsMap;
@@ -39,6 +46,63 @@ static std::function<void()> gOnLeaderboardQueryFinished = nullptr;
 
 using namespace GE;
 using namespace GE::Core;
+
+
+//
+//  Local static functions
+//
+static JNIEnv* getEnv()
+{
+   GEAssert(gJavaVM);
+   JNIEnv* env = nullptr;
+   return gJavaVM->AttachCurrentThread(&env, nullptr) == JNI_OK ? env : nullptr;
+}
+
+static void savePurchasedProducts()
+{
+   std::stringstream stream;
+
+   Value valueReserved((uint32_t)0u);
+   valueReserved.writeToStream(stream);
+
+   Value valueCount((uint32_t)gPurchasedProducts.size());
+   valueCount.writeToStream(stream);
+
+   for(const uint32_t purchasedProductIDHash : gPurchasedProducts)
+   {
+      Value valuePurchasedProductIDHash(purchasedProductIDHash);
+      valuePurchasedProductIDHash.writeToStream(stream);
+   }
+
+   std::stringstream::pos_type streamSize = stream.tellp();
+   stream.seekp(0u, std::ios::beg);
+
+   Content::ContentData storeData;
+   storeData.load((uint32_t)streamSize, stream);
+
+   Device::writeUserFile(kPurchasedProductsSubDir, kPurchasedProductsFileName, kPurchasedProductsFileExtension, &storeData);
+}
+
+static void loadPurchasedProducts()
+{
+   if(Device::userFileExists(kPurchasedProductsSubDir, kPurchasedProductsFileName, kPurchasedProductsFileExtension))
+   {
+      Content::ContentData storeData;
+      Device::readUserFile(kPurchasedProductsSubDir, kPurchasedProductsFileName, kPurchasedProductsFileExtension, &storeData);
+
+      Content::ContentDataMemoryBuffer memoryBuffer(storeData);
+      std::istream stream(&memoryBuffer);
+
+      Value valueReserved = Value::fromStream(ValueType::UInt, stream);
+      Value valueCount = Value::fromStream(ValueType::UInt, stream);
+
+      for(uint32_t i = 0u; i < valueCount.getAsUInt(); i++)
+      {
+         Value valuePurchasedProductIDHash = Value::fromStream(ValueType::UInt, stream);
+         gPurchasedProducts.insert(valuePurchasedProductIDHash.getAsUInt());
+      }
+   }
+}
 
 
 //
@@ -119,6 +183,7 @@ extern "C"
    {
       const ObjectName productName(pEnv->GetStringUTFChars(pProductName, nullptr));
       gPurchasedProducts.insert(productName.getID());
+      savePurchasedProducts();
    }
 
    JNIEXPORT void JNICALL Java_com_GameEngine_Main_GameEngineLib_GPGOnPurchasesUpdateFinished(JNIEnv* pEnv, jclass pClass)
@@ -126,17 +191,6 @@ extern "C"
       gPurchasingProductIDHash.store(0u);
    }
 };
-
-
-//
-//  Local static functions
-//
-static JNIEnv* getEnv()
-{
-   GEAssert(gJavaVM);
-   JNIEnv* env = nullptr;
-   return gJavaVM->AttachCurrentThread(&env, nullptr) == JNI_OK ? env : nullptr;
-}
 
 
 //
@@ -157,6 +211,8 @@ bool DistributionPlatform::init()
       const ObjectName leaderboardName(xmlLeaderboard.attribute("name").as_string());
       gLeaderboardIDsMap[leaderboardName.getID()] = GESTLString(xmlLeaderboard.attribute("id").as_string());
    }
+
+   loadPurchasedProducts();
 
    return true;
 }
@@ -226,7 +282,6 @@ bool DistributionPlatform::loggedIn() const
 void DistributionPlatform::logIn(std::function<void()> onFinished)
 {
    gOnLogInFinished = onFinished;
-   gPurchasedProducts.clear();
 
    GEAssert(gGPGClass);
    GEAssert(gMethodID_loggedIn);
