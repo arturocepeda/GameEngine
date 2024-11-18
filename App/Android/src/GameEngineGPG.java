@@ -130,7 +130,12 @@ public class GameEngineGPG
             {
                for(Purchase purchase : pPurchases)
                {
-                  GameEngineLib.GPGNotifyPurchase(purchase.getPackageName());
+                  List<String> products = purchase.getProducts();
+
+                  for(String product : products)
+                  {
+                     GameEngineLib.GPGNotifyPurchase(product);
+                  }
                }
             }
          }
@@ -150,7 +155,12 @@ public class GameEngineGPG
             {
                for(Purchase purchase : pPurchases)
                {
-                  GameEngineLib.GPGNotifyPurchase(purchase.getPackageName());
+                  List<String> products = purchase.getProducts();
+
+                  for(String product : products)
+                  {
+                     GameEngineLib.GPGNotifyPurchase(product);
+                  }
                }
             }
          }
