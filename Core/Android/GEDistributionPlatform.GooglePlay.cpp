@@ -418,7 +418,7 @@ void DistributionPlatform::requestLeaderboardScores(const ObjectName& pLeaderboa
 
    const jstring jargLeaderboardID = env->NewStringUTF(leaderboardID);
    const jint jargFirstPosition = (jint)pFirstPosition;
-   const jint jargLastPosition = (jint)pFirstPosition;
+   const jint jargLastPosition = (jint)pLastPosition;
 
    env->CallStaticVoidMethod(gGPGClass, gMethodID_requestLeaderboardScores, jargLeaderboardID, jargFirstPosition, jargLastPosition);
 }
