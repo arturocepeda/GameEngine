@@ -24,6 +24,7 @@ static const char* kPurchasedProductsFileExtension = "ge";
 
 typedef GESTLMap(uint32_t, GESTLString) IDsMap;
 static IDsMap gLeaderboardIDsMap;
+static IDsMap gAchievementIDsMap;
 
 static GESTLSet(uint32_t) gPurchasedProducts;
 static std::atomic<uint32_t> gPurchasingProductIDHash(0u);
@@ -33,6 +34,7 @@ static jclass gGPGClass = nullptr;
 static jmethodID gMethodID_loggedIn = nullptr;
 static jmethodID gMethodID_logIn = nullptr;
 static jmethodID gMethodID_getUserName = nullptr;
+static jmethodID gMethodID_unlockAchievement = nullptr;
 static jmethodID gMethodID_updateLeaderboardScore = nullptr;
 static jmethodID gMethodID_requestLeaderboardScores = nullptr;
 static jmethodID gMethodID_requestLeaderboardScoresAroundUser = nullptr;
@@ -131,6 +133,9 @@ extern "C"
       gMethodID_getUserName =
          pEnv->GetStaticMethodID(gGPGClass, "getUserName", "()Ljava/lang/String;");
       GEAssert(gMethodID_getUserName);
+      gMethodID_unlockAchievement =
+         pEnv->GetStaticMethodID(gGPGClass, "unlockAchievement", "(Ljava/lang/String;)V");
+      GEAssert(gMethodID_unlockAchievement);
       gMethodID_updateLeaderboardScore =
          pEnv->GetStaticMethodID(gGPGClass, "updateLeaderboardScore", "(Ljava/lang/String;J)V");
       GEAssert(gMethodID_updateLeaderboardScore);
@@ -210,6 +215,14 @@ bool DistributionPlatform::init()
    {
       const ObjectName leaderboardName(xmlLeaderboard.attribute("name").as_string());
       gLeaderboardIDsMap[leaderboardName.getID()] = GESTLString(xmlLeaderboard.attribute("id").as_string());
+   }
+
+   const pugi::xml_node& xmlAchievements = xml.child("Achievements");
+
+   for(const pugi::xml_node& xmlAchievement : xmlAchievements.children("Achievement"))
+   {
+      const ObjectName achievementName(xmlAchievement.attribute("name").as_string());
+      gAchievementIDsMap[achievementName.getID()] = GESTLString(xmlAchievement.attribute("id").as_string());
    }
 
    loadPurchasedProducts();
@@ -343,8 +356,21 @@ float DistributionPlatform::getStat(const ObjectName&)
    return 0.0f;
 }
 
-void DistributionPlatform::unlockAchievement(const ObjectName&)
+void DistributionPlatform::unlockAchievement(const ObjectName& pAchievementName)
 {
+   IDsMap::const_iterator it = gAchievementIDsMap.find(pAchievementName.getID());
+   GEAssert(it != gAchievementIDsMap.end());
+   const char* achievementID = it->second.c_str();
+
+   GEAssert(gGPGClass);
+   GEAssert(gMethodID_unlockAchievement);
+
+   JNIEnv* env = getEnv();
+   GEAssert(env);
+
+   const jstring jargAchievementID = env->NewStringUTF(achievementID);
+
+   env->CallStaticVoidMethod(gGPGClass, gMethodID_unlockAchievement, jargAchievementID);
 }
 
 void DistributionPlatform::updateLeaderboardScore(const ObjectName& pLeaderboardName, uint32_t pScore, uint32_t pScoreDetail)

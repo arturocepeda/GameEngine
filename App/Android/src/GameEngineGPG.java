@@ -211,6 +211,11 @@ public class GameEngineGPG
       });
    }
 
+   public static void unlockAchievement(String pAchievementID)
+   {
+      PlayGames.getAchievementsClient(smActivity).unlock(pAchievementID);
+   }
+
    public static void updateLeaderboardScore(String pLeaderboardID, long pScore)
    {
       PlayGames.getLeaderboardsClient(smActivity).submitScore(pLeaderboardID, pScore);
