@@ -38,13 +38,14 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.QueryPurchasesParams;
 import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsResult;
 
 public class GameEngineGPG
 {
@@ -91,9 +92,9 @@ public class GameEngineGPG
    private static class GameEngineProductDetailsResponseListener implements ProductDetailsResponseListener
    {
       @Override
-      public void onProductDetailsResponse(BillingResult pBillingResult, List<ProductDetails> pProductDetailsList)
+      public void onProductDetailsResponse(@NonNull BillingResult pBillingResult, @NonNull QueryProductDetailsResult pProductDetailsResult)
       {
-         if(pProductDetailsList.isEmpty())
+         if(pProductDetailsResult.getProductDetailsList().isEmpty())
          {
             GameEngineLib.GPGOnPurchasesUpdateFinished();
          }
@@ -103,7 +104,7 @@ public class GameEngineGPG
                List.of
                (
                   BillingFlowParams.ProductDetailsParams.newBuilder()
-                     .setProductDetails(pProductDetailsList.get(0))
+                     .setProductDetails(pProductDetailsResult.getProductDetailsList().get(0))
                      .build()
                );
             BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
@@ -181,7 +182,7 @@ public class GameEngineGPG
       smPurchasesResponseListener = new GameEnginePurchasesResponseListener();
       smPurchasesUpdatedListener = new GameEnginePurchasesUpdatedListener();
       smBillingClient = BillingClient.newBuilder(pActivity)
-              .enablePendingPurchases()
+              .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
               .setListener(smPurchasesUpdatedListener)
               .build();
       smBillingClient.startConnection(smBillingClientStateListener);
