@@ -40,9 +40,6 @@
 # pragma comment(lib, "../../../GameEngine/Externals/glew/lib/Release/x64/glew32.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/glfw/lib-vc2017/glfw3.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/OpenAL/lib/Win64/OpenAL32.lib")
-# pragma comment(lib, "../../../GameEngine/Externals/libogg/lib/x64/libogg_static.lib")
-# pragma comment(lib, "../../../GameEngine/Externals/libvorbis/lib/x64/libvorbis_static.lib")
-# pragma comment(lib, "../../../GameEngine/Externals/libvorbis/lib/x64/libvorbisfile_static.lib")
 # pragma comment(lib, "../../../GameEngine/Externals/Brofiler/ProfilerCore64.lib")
 #else
 # pragma comment(lib, "../../../GameEngine/Externals/glew/lib/Release/Win32/glew32.lib")

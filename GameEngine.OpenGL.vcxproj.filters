@@ -58,6 +58,12 @@
     <Filter Include="Multiplayer">
       <UniqueIdentifier>{a4288e61-949f-4bb7-8b05-6b3cf95d25d3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Externals\libogg">
+      <UniqueIdentifier>{2b711575-7ad2-4459-9c74-96c0546e8c0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\libvorbis">
+      <UniqueIdentifier>{eb5efa56-5059-4fe9-a0e4-c999c6db06d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio\GEAudioSystem.cpp">
@@ -452,6 +458,81 @@
     </ClCompile>
     <ClCompile Include="Input\XInput\GEInputSystem.XInput.cpp">
       <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libogg\src\bitwise.c">
+      <Filter>Externals\libogg</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libogg\src\framing.c">
+      <Filter>Externals\libogg</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\analysis.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\barkmel.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\bitrate.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\block.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\codebook.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\envelope.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\floor0.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\floor1.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\info.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\lookup.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\lpc.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\lsp.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\mapping0.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\mdct.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\psy.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\registry.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\res0.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\sharedbook.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\smallft.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\synthesis.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\vorbisenc.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\vorbisfile.c">
+      <Filter>Externals\libvorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Externals\libvorbis\lib\window.c">
+      <Filter>Externals\libvorbis</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
