@@ -95,6 +95,31 @@
     <ClCompile Include="Externals\freetype2\src\type1\type1.c" />
     <ClCompile Include="Externals\freetype2\src\type42\type42.c" />
     <ClCompile Include="Externals\freetype2\src\winfonts\winfnt.c" />
+    <ClCompile Include="Externals\libogg\src\bitwise.c" />
+    <ClCompile Include="Externals\libogg\src\framing.c" />
+    <ClCompile Include="Externals\libvorbis\lib\analysis.c" />
+    <ClCompile Include="Externals\libvorbis\lib\barkmel.c" />
+    <ClCompile Include="Externals\libvorbis\lib\bitrate.c" />
+    <ClCompile Include="Externals\libvorbis\lib\block.c" />
+    <ClCompile Include="Externals\libvorbis\lib\codebook.c" />
+    <ClCompile Include="Externals\libvorbis\lib\envelope.c" />
+    <ClCompile Include="Externals\libvorbis\lib\floor0.c" />
+    <ClCompile Include="Externals\libvorbis\lib\floor1.c" />
+    <ClCompile Include="Externals\libvorbis\lib\info.c" />
+    <ClCompile Include="Externals\libvorbis\lib\lookup.c" />
+    <ClCompile Include="Externals\libvorbis\lib\lpc.c" />
+    <ClCompile Include="Externals\libvorbis\lib\lsp.c" />
+    <ClCompile Include="Externals\libvorbis\lib\mapping0.c" />
+    <ClCompile Include="Externals\libvorbis\lib\mdct.c" />
+    <ClCompile Include="Externals\libvorbis\lib\psy.c" />
+    <ClCompile Include="Externals\libvorbis\lib\registry.c" />
+    <ClCompile Include="Externals\libvorbis\lib\res0.c" />
+    <ClCompile Include="Externals\libvorbis\lib\sharedbook.c" />
+    <ClCompile Include="Externals\libvorbis\lib\smallft.c" />
+    <ClCompile Include="Externals\libvorbis\lib\synthesis.c" />
+    <ClCompile Include="Externals\libvorbis\lib\vorbisenc.c" />
+    <ClCompile Include="Externals\libvorbis\lib\vorbisfile.c" />
+    <ClCompile Include="Externals\libvorbis\lib\window.c" />
     <ClCompile Include="Externals\lua\src\lapi.c" />
     <ClCompile Include="Externals\lua\src\lauxlib.c" />
     <ClCompile Include="Externals\lua\src\lbaselib.c" />
@@ -372,7 +397,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals;$(ProjectDir)Externals\freetype2\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals;$(ProjectDir)Externals\freetype2\include;$(ProjectDir)Externals\libogg\include;$(ProjectDir)Externals\libvorbis\include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>
@@ -380,6 +405,7 @@
       <CompileAsWinRT>false</CompileAsWinRT>
       <TreatWarningAsError>true</TreatWarningAsError>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalOptions>/wd4244 /wd4267 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -420,7 +446,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals;$(ProjectDir)Externals\freetype2\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Externals;$(ProjectDir)Externals\freetype2\include;$(ProjectDir)Externals\libogg\include;$(ProjectDir)Externals\libvorbis\include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>
@@ -429,6 +455,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <TreatWarningAsError>true</TreatWarningAsError>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalOptions>/wd4244 /wd4267 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

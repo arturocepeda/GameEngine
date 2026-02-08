@@ -42,8 +42,8 @@ struct AudioDataStream
 #if defined (GE_VORBIS_SUPPORT)
 
 # if defined (GE_PLATFORM_DESKTOP)
-#  include "Externals/libogg/include/os_types.h"
-#  include "Externals/libvorbis/include/vorbisfile.h"
+#  include "Externals/libogg/include/ogg/os_types.h"
+#  include "Externals/libvorbis/include/vorbis/vorbisfile.h"
 # elif defined (GE_PLATFORM_ANDROID)
 #  include "Externals/Tremor/ivorbisfile.h"
 # endif
