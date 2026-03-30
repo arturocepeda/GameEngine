@@ -289,6 +289,11 @@ SystemLanguage DistributionPlatform::getLanguage() const
    return SystemLanguage::Count;
 }
 
+uint64_t DistributionPlatform::getGlobalTimestamp() const
+{
+   return (uint64_t)SteamUtils()->GetServerRealTime();
+}
+
 bool DistributionPlatform::internetConnectionAvailable() const
 {
    return true;
