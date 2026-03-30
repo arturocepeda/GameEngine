@@ -45,6 +45,11 @@ SystemLanguage DistributionPlatform::getLanguage() const
    return SystemLanguage::Count;
 }
 
+uint64_t DistributionPlatform::getGlobalTimestamp() const
+{
+   return Device::getLocalTimestamp();
+}
+
 bool DistributionPlatform::internetConnectionAvailable() const
 {
    return true;

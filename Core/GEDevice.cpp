@@ -102,6 +102,11 @@ float Device::getAspectRatio()
    return AspectRatio;
 }
 
+uint64_t Device::getLocalTimestamp()
+{
+   return (uint64_t)std::time(nullptr);
+}
+
 void Device::getContentFileNames(const char* pSubDir, const char* pExtension, FileNamesList* pOutFileNames)
 {
    pOutFileNames->clear();

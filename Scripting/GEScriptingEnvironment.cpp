@@ -973,6 +973,7 @@ void Environment::registerTypes()
       , "getInstance", &DistributionPlatform::getInstance
       , "getPlatformName", &DistributionPlatform::getPlatformName
       , "getUserName", &DistributionPlatform::getUserName
+      , "getGlobalTimestamp", &DistributionPlatform::getGlobalTimestamp
       , "internetConnectionAvailable", &DistributionPlatform::internetConnectionAvailable
       , "loggedIn", &DistributionPlatform::loggedIn
       , "setStat", &DistributionPlatform::setStat

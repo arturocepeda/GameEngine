@@ -81,6 +81,7 @@ namespace GE { namespace Core
       const char* getUserName() const;
 
       SystemLanguage getLanguage() const;
+      uint64_t getGlobalTimestamp() const;
 
       // Network
       bool internetConnectionAvailable() const;

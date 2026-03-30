@@ -107,6 +107,7 @@ namespace GE { namespace Core
       static int getTouchPadHeight();
 
       static int getNumberOfCPUCores();
+      static uint64_t getLocalTimestamp();
       static SystemLanguage requestOSLanguage();
       static void requestSupportedScreenResolutions(GESTLVector(Point)* pOutResolutions);
 
