@@ -230,7 +230,7 @@ bool DistributionPlatform::init()
    return true;
 }
 
-void DistributionPlatform::update()
+void DistributionPlatform::platformUpdate()
 {
 }
 

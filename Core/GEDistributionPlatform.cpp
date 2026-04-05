@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////////////
 
 #include "Core/GEDistributionPlatform.h"
+#include "Core/GETime.h"
 
 using namespace GE;
 using namespace GE::Core;
@@ -26,6 +27,14 @@ DistributionPlatform::DistributionPlatform()
 
 DistributionPlatform::~DistributionPlatform()
 {
+}
+
+void DistributionPlatform::update()
+{
+   const float deltaTime = Time::getDelta();
+   updateLeaderboardEntries(deltaTime);
+
+   platformUpdate();
 }
 
 void DistributionPlatform::updateLeaderboardEntries(float pDeltaTime)

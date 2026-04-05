@@ -209,7 +209,7 @@ bool DistributionPlatform::init()
    return success;
 }
 
-void DistributionPlatform::update()
+void DistributionPlatform::platformUpdate()
 {
    if(gStoreStatsPending)
    {
@@ -778,4 +778,5 @@ bool DistributionPlatform::getLobbyMember(const Lobby* pLobby, size_t pIndex, Lo
 
 void DistributionPlatform::showFullscreenAd(const char* pID)
 {
+   (void)pID;
 }

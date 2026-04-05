@@ -66,6 +66,8 @@ namespace GE { namespace Core
 
       std::atomic<uint32_t> mErrorCode;
 
+      void platformUpdate();
+
       void updateLeaderboardEntries(float pDeltaTime);
       void addLeaderboardEntry(size_t pLeaderboardIndex, const LeaderboardEntry& pEntry);
 
