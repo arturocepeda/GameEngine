@@ -202,18 +202,6 @@ ComponentUI3DElement::ComponentUI3DElement(Entity* Owner)
 {
    mClassNames.push_back(ClassName);
 
-   Entity* cParent = cOwner->getParent();
-
-   if(cParent)
-   {
-      ComponentUIElement* cUIElement = cParent->getComponent<ComponentUIElement>();
-
-      if(cUIElement && cUIElement->is(ComponentUI3DElement::ClassName))
-      {
-         iCanvasIndex = static_cast<ComponentUI3DElement*>(cUIElement)->getCanvasIndex();
-      }
-   }
-
    GERegisterProperty(Byte, CanvasIndex);
 }
 
