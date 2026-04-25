@@ -24,9 +24,17 @@ namespace GE { namespace Entities
       Justify              = 1 << 0,
       VariableReplacement  = 1 << 1,
       RichTextSupport      = 1 << 2,
-      FitSizeToLineWidth   = 1 << 3,
 
-      Count = 4
+      Count = 3
+   };
+
+   GESerializableEnum(LabelLineFitMode)
+   {
+      MultiLine,
+      SingleLineAutoFit,
+      MultiLineAutoFit,
+
+      Count
    };
 
 
@@ -98,6 +106,7 @@ namespace GE { namespace Entities
       float mHorizontalSpacing;
       float mVerticalSpacing;
       float mLineWidth;
+      LabelLineFitMode mLineFitMode;
       float mTextWidth;
 
       GESTLVector(float) mLineWidths;
@@ -128,6 +137,7 @@ namespace GE { namespace Entities
       float getHorizontalSpacing() const;
       float getVerticalSpacing() const;
       float getLineWidth() const;
+      LabelLineFitMode getLineFitMode() const;
       float getTextWidth() const;
 
       void setFont(Rendering::Font* pTextFont);
@@ -136,6 +146,7 @@ namespace GE { namespace Entities
       void setHorizontalSpacing(float pHorizontalSpacing);
       void setVerticalSpacing(float pVerticalSpacing);
       void setLineWidth(float pLineWidth);
+      void setLineFitMode(LabelLineFitMode pLineFitMode);
    };
 
 #if defined (GE_TEXT_RASTERIZER_SUPPORT)

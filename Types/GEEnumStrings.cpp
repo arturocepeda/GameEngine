@@ -197,8 +197,14 @@ namespace GE { namespace Entities
    {
       "Justify",
       "VariableReplacement",
-      "RichTextSupport",
-      "FitSizeToLineWidth"
+      "RichTextSupport"
+   };
+
+   const char* strLabelLineFitMode[] =
+   {
+      "MultiLine",
+      "SingleLineAutoFit",
+      "MultiLineAutoFit"
    };
 
    const char* strScriptSettingsBitMask[] =

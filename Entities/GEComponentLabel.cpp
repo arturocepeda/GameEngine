@@ -385,6 +385,7 @@ ComponentLabel::ComponentLabel(Entity* pOwner)
    , mHorizontalSpacing(0.0f)
    , mVerticalSpacing(0.0f)
    , mLineWidth(0.0f)
+   , mLineFitMode(LabelLineFitMode::MultiLine)
    , mTextWidth(0.0f)
 {
    mClassNames.push_back(ClassName);
@@ -398,6 +399,7 @@ ComponentLabel::ComponentLabel(Entity* pOwner)
    GERegisterProperty(Float, HorizontalSpacing);
    GERegisterProperty(Float, VerticalSpacing);
    GERegisterProperty(Float, LineWidth);
+   GERegisterPropertyEnum(LabelLineFitMode, LineFitMode);
    GERegisterProperty(UInt, CharacterCountLimit);
    GERegisterPropertyEnum(SpriteLayer, Layer);
    GERegisterPropertyBitMask(LabelSettingsBitMask, Settings);
@@ -447,7 +449,13 @@ void ComponentLabel::generateText()
 
    const bool bJustifyText = GEHasFlag(mSettings, LabelSettingsBitMask::Justify);
    const bool bRichTextSupport = GEHasFlag(mSettings, LabelSettingsBitMask::RichTextSupport);
-   const bool bFixSizeToLineWidth = GEHasFlag(mSettings, LabelSettingsBitMask::FitSizeToLineWidth);
+
+   const bool bMultiLine =
+      mLineFitMode == LabelLineFitMode::MultiLine ||
+      mLineFitMode == LabelLineFitMode::MultiLineAutoFit;
+   const bool bAutoFit =
+      mLineFitMode == LabelLineFitMode::SingleLineAutoFit ||
+      mLineFitMode == LabelLineFitMode::MultiLineAutoFit;
 
    mLineWidths.clear();
    mLineFeedIndices.clear();
@@ -520,7 +528,7 @@ void ComponentLabel::generateText()
       fCurrentLineWidth += fCharWidth;
 
       if(mLineWidth > GE_EPSILON &&
-         !bFixSizeToLineWidth &&
+         bMultiLine &&
          fCurrentLineWidth > mLineWidth &&
          iLastSpaceIndex >= 0)
       {
@@ -588,7 +596,7 @@ void ComponentLabel::generateText()
       }
    }
 
-   if(mLineWidth > GE_EPSILON && bFixSizeToLineWidth)
+   if(mLineWidth > GE_EPSILON && bAutoFit)
    {
       for(size_t i = 0u; i < mLineWidths.size(); i++)
       {
@@ -923,6 +931,11 @@ float ComponentLabel::getLineWidth() const
    return mLineWidth;
 }
 
+LabelLineFitMode ComponentLabel::getLineFitMode() const
+{
+   return mLineFitMode;
+}
+
 float ComponentLabel::getTextWidth() const
 {
    return mTextWidth;
@@ -998,6 +1011,16 @@ void ComponentLabel::setVerticalSpacing(float pVerticalSpacing)
 void ComponentLabel::setLineWidth(float pLineWidth)
 {
    mLineWidth = pLineWidth;
+
+   if(!mText.empty())
+   {
+      generateText();
+   }
+}
+
+void ComponentLabel::setLineFitMode(LabelLineFitMode pLineFitMode)
+{
+   mLineFitMode = pLineFitMode;
 
    if(!mText.empty())
    {
