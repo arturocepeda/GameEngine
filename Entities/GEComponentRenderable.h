@@ -48,12 +48,11 @@ namespace GE { namespace Entities
       RenderingMode eRenderingMode;
       uint8_t iRenderPriority;
       Rendering::RenderPass mRenderPass;
+      uint8_t iInternalFlags;
       ComponentTransform* cTransform;
       Color cColor;
     
       Content::GeometryData sGeometryData;
-
-      uint8_t iInternalFlags;
 
       ComponentRenderable(Entity* Owner);
       ~ComponentRenderable();
